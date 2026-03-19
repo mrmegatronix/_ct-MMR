@@ -14,6 +14,18 @@ interface RaffleState {
   secondChanceNumbers: number[];
   currentDraw: number | null;
   drawSettings: { amountToDraw: number };
+  prizePool?: string;
+  numberOfPrizes?: string;
+  prizeSizes?: string;
+  slide1Title?: string;
+  slide1Subtitle?: string;
+  slide2Title?: string;
+  slide2Subtitle?: string;
+  slide3Title?: string;
+  slide3Subtitle?: string;
+  ticketPriceSingle?: string;
+  ticketPricePack?: string;
+  ticketPackQuantity?: string;
 }
 
 let state: RaffleState = {
@@ -24,6 +36,18 @@ let state: RaffleState = {
   secondChanceNumbers: [],
   currentDraw: null,
   drawSettings: { amountToDraw: 1 },
+  prizePool: '$950',
+  numberOfPrizes: '50',
+  prizeSizes: '$15, $25 & $50',
+  slide1Title: 'Monster Meat Raffle',
+  slide1Subtitle: 'Tickets on sale NOW!',
+  slide2Title: "Tonight's Prizes",
+  slide2Subtitle: 'Massive Meat Trays to be won!',
+  slide3Title: 'Ticket Prices',
+  slide3Subtitle: 'Get yours before the draw!',
+  ticketPriceSingle: '$5',
+  ticketPricePack: '$20',
+  ticketPackQuantity: '4',
 };
 
 async function startServer() {

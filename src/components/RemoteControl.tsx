@@ -97,6 +97,26 @@ export default function RemoteControl() {
               {state.status === 'buildup' ? 'Stop Slides' : 'Start Slides'}
             </button>
             <button
+              onClick={() => updateState({ status: 'idle' })}
+              className={`flex items-center justify-center gap-2 py-3 rounded-xl font-bold transition-colors ${
+                state.status === 'idle' 
+                  ? 'bg-blue-100 text-blue-700 border border-blue-300' 
+                  : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+              }`}
+            >
+              Show Results
+            </button>
+            <button
+              onClick={() => updateState({ status: 'thankyou' })}
+              className={`flex items-center justify-center gap-2 py-3 rounded-xl font-bold transition-colors ${
+                state.status === 'thankyou' 
+                  ? 'bg-purple-100 text-purple-700 border border-purple-300' 
+                  : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+              }`}
+            >
+              Thank You
+            </button>
+            <button
               onClick={resetDraw}
               className="flex items-center justify-center gap-2 py-3 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl font-bold transition-colors"
             >
@@ -131,7 +151,50 @@ export default function RemoteControl() {
             <Settings size={16} /> Settings
           </h2>
           
-          <div className="grid grid-cols-2 gap-4 mb-6">
+          <div className="space-y-4 mb-6">
+            <div>
+              <label className="block text-xs font-bold text-slate-400 uppercase mb-1">Prize Pool Amount</label>
+              <input
+                type="text"
+                value={state.prizePool}
+                onChange={(e) => updateState({ prizePool: e.target.value })}
+                className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 font-bold text-slate-700 focus:ring-2 focus:ring-red-500 outline-none"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-400 uppercase mb-1">Total Prizes</label>
+                <input
+                  type="text"
+                  value={state.numberOfPrizes}
+                  onChange={(e) => updateState({ numberOfPrizes: e.target.value })}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 font-bold text-slate-700 focus:ring-2 focus:ring-red-500 outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-400 uppercase mb-1">Amount to Draw</label>
+                <input
+                  type="number"
+                  min="1"
+                  max="100"
+                  value={state.drawSettings.amountToDraw}
+                  onChange={(e) => updateState({ drawSettings: { ...state.drawSettings, amountToDraw: parseInt(e.target.value) || 1 } })}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 font-bold text-slate-700 focus:ring-2 focus:ring-red-500 outline-none"
+                />
+              </div>
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-slate-400 uppercase mb-1">Prize Size Range</label>
+              <input
+                type="text"
+                value={state.prizeSizes}
+                onChange={(e) => updateState({ prizeSizes: e.target.value })}
+                className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 font-bold text-slate-700 focus:ring-2 focus:ring-red-500 outline-none"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4 mb-6 pt-4 border-t border-slate-100">
             <div>
               <label className="block text-xs font-bold text-slate-400 uppercase mb-1">Min Number</label>
               <input
@@ -150,18 +213,6 @@ export default function RemoteControl() {
                 className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-lg font-mono font-bold text-slate-700 focus:ring-2 focus:ring-red-500 outline-none"
               />
             </div>
-          </div>
-          
-          <div className="mb-6">
-            <label className="block text-xs font-bold text-slate-400 uppercase mb-1">Amount to Draw</label>
-            <input
-              type="number"
-              min="1"
-              max="100"
-              value={state.drawSettings.amountToDraw}
-              onChange={(e) => updateState({ drawSettings: { ...state.drawSettings, amountToDraw: parseInt(e.target.value) || 1 } })}
-              className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-lg font-mono font-bold text-slate-700 focus:ring-2 focus:ring-red-500 outline-none"
-            />
           </div>
 
           {/* Exclusions */}
@@ -192,6 +243,110 @@ export default function RemoteControl() {
               {state.excludedNumbers.length === 0 && (
                 <span className="text-xs text-slate-400 italic">No numbers excluded</span>
               )}
+            </div>
+          </div>
+        </section>
+
+        {/* Slide Content Settings */}
+        <section className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+          <h2 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4 flex items-center gap-2">
+            <Settings size={16} /> Slide Content
+          </h2>
+          
+          <div className="space-y-4">
+            <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 space-y-3">
+              <h3 className="text-xs font-bold text-slate-400 uppercase">Slide 1: Intro</h3>
+              <div>
+                <label className="block text-xs font-bold text-slate-400 uppercase mb-1">Title</label>
+                <input
+                  type="text"
+                  value={state.slide1Title || ''}
+                  onChange={(e) => updateState({ slide1Title: e.target.value })}
+                  className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm font-medium text-slate-700 focus:ring-2 focus:ring-red-500 outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-400 uppercase mb-1">Subtitle</label>
+                <input
+                  type="text"
+                  value={state.slide1Subtitle || ''}
+                  onChange={(e) => updateState({ slide1Subtitle: e.target.value })}
+                  className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm font-medium text-slate-700 focus:ring-2 focus:ring-red-500 outline-none"
+                />
+              </div>
+            </div>
+
+            <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 space-y-3">
+              <h3 className="text-xs font-bold text-slate-400 uppercase">Slide 2: Prizes</h3>
+              <div>
+                <label className="block text-xs font-bold text-slate-400 uppercase mb-1">Title</label>
+                <input
+                  type="text"
+                  value={state.slide2Title || ''}
+                  onChange={(e) => updateState({ slide2Title: e.target.value })}
+                  className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm font-medium text-slate-700 focus:ring-2 focus:ring-red-500 outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-400 uppercase mb-1">Subtitle</label>
+                <input
+                  type="text"
+                  value={state.slide2Subtitle || ''}
+                  onChange={(e) => updateState({ slide2Subtitle: e.target.value })}
+                  className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm font-medium text-slate-700 focus:ring-2 focus:ring-red-500 outline-none"
+                />
+              </div>
+            </div>
+
+            <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 space-y-3">
+              <h3 className="text-xs font-bold text-slate-400 uppercase">Slide 3: Tickets</h3>
+              <div>
+                <label className="block text-xs font-bold text-slate-400 uppercase mb-1">Title</label>
+                <input
+                  type="text"
+                  value={state.slide3Title || ''}
+                  onChange={(e) => updateState({ slide3Title: e.target.value })}
+                  className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm font-medium text-slate-700 focus:ring-2 focus:ring-red-500 outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-400 uppercase mb-1">Subtitle</label>
+                <input
+                  type="text"
+                  value={state.slide3Subtitle || ''}
+                  onChange={(e) => updateState({ slide3Subtitle: e.target.value })}
+                  className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm font-medium text-slate-700 focus:ring-2 focus:ring-red-500 outline-none"
+                />
+              </div>
+              <div className="grid grid-cols-3 gap-2">
+                <div>
+                  <label className="block text-xs font-bold text-slate-400 uppercase mb-1">Single Price</label>
+                  <input
+                    type="text"
+                    value={state.ticketPriceSingle || ''}
+                    onChange={(e) => updateState({ ticketPriceSingle: e.target.value })}
+                    className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm font-medium text-slate-700 focus:ring-2 focus:ring-red-500 outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-400 uppercase mb-1">Pack Price</label>
+                  <input
+                    type="text"
+                    value={state.ticketPricePack || ''}
+                    onChange={(e) => updateState({ ticketPricePack: e.target.value })}
+                    className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm font-medium text-slate-700 focus:ring-2 focus:ring-red-500 outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-400 uppercase mb-1">Pack Qty</label>
+                  <input
+                    type="text"
+                    value={state.ticketPackQuantity || ''}
+                    onChange={(e) => updateState({ ticketPackQuantity: e.target.value })}
+                    className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm font-medium text-slate-700 focus:ring-2 focus:ring-red-500 outline-none"
+                  />
+                </div>
+              </div>
             </div>
           </div>
         </section>
