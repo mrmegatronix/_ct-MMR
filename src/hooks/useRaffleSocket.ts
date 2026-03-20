@@ -1,60 +1,155 @@
-import { useEffect, useState } from 'react';
-import { io, Socket } from 'socket.io-client';
+import { useEffect, useState, useCallback } from 'react';
 import { RaffleState } from '../types';
 
-let socket: Socket | null = null;
+const initialState: RaffleState = {
+  status: 'idle',
+  numberRange: { min: 1, max: 1000 },
+  excludedNumbers: [],
+  drawnNumbers: [],
+  secondChanceNumbers: [],
+  currentDraw: null,
+  drawSettings: { amountToDraw: 1 },
+  prizePool: '$950',
+  numberOfPrizes: '50',
+  prizeSizes: '$15, $25 & $50',
+  slide1Title: 'Monster Meat Raffle',
+  slide1Subtitle: 'Tickets on sale NOW!',
+  slide2Title: "Tonight's Prizes",
+  slide2Subtitle: 'Massive Meat Trays to be won!',
+  slide3Title: 'Ticket Prices',
+  slide3Subtitle: 'Get yours before the draw!',
+  ticketPriceSingle: '$5',
+  ticketPricePack: '$20',
+  ticketPackQuantity: '4',
+};
+
+// Global state
+let globalState = initialState;
+
+// Load from localStorage if available
+try {
+  const stored = localStorage.getItem('raffleState');
+  if (stored) {
+    globalState = { ...initialState, ...JSON.parse(stored) };
+  }
+} catch (e) {
+  console.error('Failed to load state', e);
+}
+
+// Subscriptions
+const listeners = new Set<(state: RaffleState) => void>();
+
+function setGlobalState(newState: Partial<RaffleState> | ((prev: RaffleState) => RaffleState)) {
+  const nextState = typeof newState === 'function' ? newState(globalState) : { ...globalState, ...newState };
+  globalState = nextState;
+  
+  try {
+    localStorage.setItem('raffleState', JSON.stringify(globalState));
+  } catch (e) {
+    console.error('Failed to save state', e);
+  }
+
+  listeners.forEach((listener) => listener(globalState));
+}
+
+// Keep track of the timeout so we can optionally clear it if needed
+let animationTimeout: any = null;
 
 export function useRaffleSocket() {
-  const [state, setState] = useState<RaffleState | null>(null);
-  const [isConnected, setIsConnected] = useState(false);
+  const [state, setState] = useState<RaffleState>(globalState);
 
   useEffect(() => {
-    if (!socket) {
-      socket = io();
-    }
-
-    socket.on('connect', () => {
-      setIsConnected(true);
-    });
-
-    socket.on('disconnect', () => {
-      setIsConnected(false);
-    });
-
-    socket.on('stateUpdate', (newState: RaffleState) => {
-      setState(newState);
-    });
-
+    // Sync React state with globalState
+    setState(globalState);
+    
+    listeners.add(setState);
     return () => {
-      socket?.off('connect');
-      socket?.off('disconnect');
-      socket?.off('stateUpdate');
+      listeners.delete(setState);
     };
   }, []);
 
-  const updateState = (newState: Partial<RaffleState>) => {
-    socket?.emit('updateState', newState);
-  };
+  const updateState = useCallback((newState: Partial<RaffleState>) => {
+    setGlobalState(newState);
+  }, []);
 
-  const drawNumber = (isSecondChance: boolean = false) => {
-    socket?.emit('drawNumber', isSecondChance);
-  };
+  const drawNumber = useCallback((isSecondChance: boolean = false) => {
+    if (globalState.status === 'drawing') return; // Prevent concurrent draws
+    
+    const amount = globalState.drawSettings.amountToDraw || 1;
+    const drawnThisRound: number[] = [];
 
-  const resetDraw = () => {
-    socket?.emit('resetDraw');
-  };
+    for (let j = 0; j < amount; j++) {
+      const availableNumbers: number[] = [];
+      for (let i = globalState.numberRange.min; i <= globalState.numberRange.max; i++) {
+        if (!globalState.excludedNumbers.includes(i) && 
+            !globalState.drawnNumbers.includes(i) && 
+            !globalState.secondChanceNumbers.includes(i) && 
+            !drawnThisRound.includes(i)) {
+          availableNumbers.push(i);
+        }
+      }
 
-  const excludeNumber = (num: number) => {
-    socket?.emit('excludeNumber', num);
-  };
+      if (availableNumbers.length === 0) {
+        if (j === 0) console.error("No more numbers available to draw.");
+        break;
+      }
 
-  const removeExcludedNumber = (num: number) => {
-    socket?.emit('removeExcludedNumber', num);
-  };
+      const randomIndex = Math.floor(Math.random() * availableNumbers.length);
+      drawnThisRound.push(availableNumbers[randomIndex]);
+    }
+
+    if (drawnThisRound.length === 0) return;
+
+    if (animationTimeout) {
+      clearTimeout(animationTimeout);
+    }
+
+    setGlobalState({
+      currentDraw: drawnThisRound[drawnThisRound.length - 1],
+      status: 'drawing',
+    });
+
+    animationTimeout = setTimeout(() => {
+      setGlobalState((prev) => ({
+        ...prev,
+        secondChanceNumbers: isSecondChance 
+          ? [...prev.secondChanceNumbers, ...drawnThisRound] 
+          : prev.secondChanceNumbers,
+        drawnNumbers: !isSecondChance 
+          ? [...prev.drawnNumbers, ...drawnThisRound] 
+          : prev.drawnNumbers,
+        status: 'idle',
+      }));
+    }, 3000);
+  }, []);
+
+  const resetDraw = useCallback(() => {
+    if (animationTimeout) clearTimeout(animationTimeout);
+    setGlobalState({
+      drawnNumbers: [],
+      secondChanceNumbers: [],
+      currentDraw: null,
+      status: 'idle',
+    });
+  }, []);
+
+  const excludeNumber = useCallback((num: number) => {
+    if (!globalState.excludedNumbers.includes(num)) {
+      setGlobalState({
+        excludedNumbers: [...globalState.excludedNumbers, num],
+      });
+    }
+  }, []);
+
+  const removeExcludedNumber = useCallback((num: number) => {
+    setGlobalState({
+      excludedNumbers: globalState.excludedNumbers.filter(n => n !== num),
+    });
+  }, []);
 
   return {
     state,
-    isConnected,
+    isConnected: true, // Always true for local state
     updateState,
     drawNumber,
     resetDraw,
