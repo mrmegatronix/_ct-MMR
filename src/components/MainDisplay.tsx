@@ -58,6 +58,19 @@ function MeatConfetti() {
   );
 }
 
+function formatTimeLeft(diff: number) {
+  if (diff <= 0) return '00 Hours 00 Minutes 00 Seconds';
+  const d = Math.floor(diff / (3600 * 24));
+  const h = Math.floor((diff % (3600 * 24)) / 3600);
+  const m = Math.floor((diff % 3600) / 60);
+  const s = diff % 60;
+  const dStr = d > 0 ? `${d} Days ` : '';
+  const hStr = `${h.toString().padStart(2, '0')} Hours `;
+  const mStr = `${m.toString().padStart(2, '0')} Minutes `;
+  const sStr = `${s.toString().padStart(2, '0')} Seconds`;
+  return `${dStr}${hStr}${mStr}${sStr}`;
+}
+
 function CountdownSlide() {
   const [timeLeft, setTimeLeft] = useState('');
 
@@ -69,12 +82,9 @@ function CountdownSlide() {
       const diff = differenceInSeconds(target, now);
       
       if (diff <= 0) {
-        setTimeLeft('00:00:00');
+        setTimeLeft(formatTimeLeft(0));
       } else {
-        const h = Math.floor(diff / 3600);
-        const m = Math.floor((diff % 3600) / 60);
-        const s = diff % 60;
-        setTimeLeft(`${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`);
+        setTimeLeft(formatTimeLeft(diff));
       }
     }, 1000);
     
@@ -84,8 +94,8 @@ function CountdownSlide() {
   return (
     <div className="flex flex-col items-center px-4">
       <div className="text-3xl md:text-4xl lg:text-5xl text-red-400 mb-4 md:mb-6 font-bold uppercase tracking-widest drop-shadow-md text-center">Draw Commences In</div>
-      <div className="text-6xl sm:text-7xl md:text-8xl lg:text-[10rem] font-mono font-black text-white tabular-nums leading-none drop-shadow-[0_0_40px_rgba(255,255,255,0.4)] text-center">
-        {timeLeft || '00:00:00'}
+      <div className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-mono font-black text-white tabular-nums leading-tight drop-shadow-[0_0_40px_rgba(255,255,255,0.4)] text-center">
+        {timeLeft || '00 Hours 00 Minutes 00 Seconds'}
       </div>
     </div>
   );
@@ -419,13 +429,7 @@ export default function MainDisplay() {
 
   const target = getNextDrawDate();
   const diff = differenceInSeconds(target, currentTime);
-  let timeLeft = '00:00:00';
-  if (diff > 0) {
-    const h = Math.floor(diff / 3600);
-    const m = Math.floor((diff % 3600) / 60);
-    const s = diff % 60;
-    timeLeft = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
-  }
+  const timeLeft = formatTimeLeft(diff);
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 overflow-hidden flex flex-col font-sans">
@@ -447,8 +451,8 @@ export default function MainDisplay() {
           </div>
         </div>
         <div className="text-right shrink-0">
-          <div className="text-3xl md:text-5xl font-mono font-bold text-slate-100 tabular-nums">{timeLeft}</div>
-          <div className="text-slate-400 text-sm md:text-xl uppercase tracking-widest mt-1">Until Draw</div>
+          <div className="text-xl md:text-3xl lg:text-4xl font-mono font-bold text-slate-100 tabular-nums">{timeLeft}</div>
+          <div className="text-slate-400 text-xs md:text-sm uppercase tracking-widest mt-1">Until Draw</div>
         </div>
       </header>
 
