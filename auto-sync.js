@@ -1,5 +1,5 @@
 import { exec } from 'child_process';
-import { watch } from 'fs';
+import { watch } from 'chokidar';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
@@ -53,10 +53,14 @@ function sync() {
   });
 }
 
-// Watch the src directory and the root files
+// Watch the root directory
 console.log('Watching for file changes...');
-watch(resolve(__dirname, 'src'), { recursive: true }, (eventType, filename) => {
-  if (filename) {
+watch(__dirname, {
+  ignored: /(^|[\/\\])\..|node_modules|dist/,
+  persistent: true,
+  ignoreInitial: true
+}).on('all', (event, filePath) => {
+  if (filePath) {
     if (syncTimeout) {
       clearTimeout(syncTimeout);
     }
