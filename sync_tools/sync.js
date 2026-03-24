@@ -2,15 +2,18 @@ import { NodeSSH } from 'node-ssh';
 import chokidar from 'chokidar';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import dotenv from 'dotenv';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+dotenv.config({ path: path.resolve(__dirname, '../.env') });
+
 const ssh = new NodeSSH();
 const config = {
-  host: '192.168.1.150',
-  username: 'owner',
-  password: '781869'
+  host: process.env.PI_HOST || '192.168.1.150',
+  username: process.env.PI_USERNAME || 'owner',
+  password: process.env.PI_PASSWORD || '781869'
 };
 
 const localDir = path.resolve(__dirname, '..');
