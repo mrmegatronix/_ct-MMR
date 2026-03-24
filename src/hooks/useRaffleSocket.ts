@@ -59,8 +59,12 @@ export function useRaffleSocket() {
   const [state, setState] = useState<RaffleState>(globalState);
 
   useEffect(() => {
-    // Sync React state with globalState
-    setState(globalState);
+    // Sync React state with globalState and ensure it's valid
+    if (globalState) {
+      setState(globalState);
+    } else {
+      setState(initialState);
+    }
     
     listeners.add(setState);
     return () => {

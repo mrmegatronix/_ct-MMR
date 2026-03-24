@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useRaffleSocket } from '../hooks/useRaffleSocket';
 import { motion, AnimatePresence } from 'motion/react';
 import { format, differenceInSeconds } from 'date-fns';
@@ -428,8 +428,19 @@ export default function MainDisplay() {
   const showBuildup = state.status === 'buildup' || (state.status === 'idle' && isBeforeMainDraw && state.drawnNumbers.length === 0);
 
   const target = getNextDrawDate();
-  const diff = differenceInSeconds(target, currentTime);
-  const timeLeft = formatTimeLeft(diff);
+  const diff = useMemo(() => differenceInSeconds(target, currentTime), [target, currentTime]);
+  const timeLeft = useMemo(() => formatTimeLeft(diff), [diff]);
+
+  // Defensive check for state properties
+  const safeState = {
+    status: state?.status || 'idle',
+    drawnNumbers: state?.drawnNumbers || [],
+    currentDraw: state?.currentDraw ?? null,
+    prizePool: state?.prizePool || '$950',
+    numberOfPrizes: state?.numberOfPrizes || '50',
+    prizeSizes: state?.prizeSizes || '$15, $25 & $50',
+    ...state
+  };
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 overflow-hidden flex flex-col font-sans">
@@ -459,14 +470,14 @@ export default function MainDisplay() {
       {/* Main Content Area */}
       <main className="flex-1 relative flex flex-col p-8 overflow-hidden">
         <AnimatePresence mode="wait">
-          {state.status === 'thankyou' ? (
+          {safeState.status === 'thankyou' ? (
             <ThankYouSlides key="thankyou" />
           ) : showBuildup ? (
-             <BuildupSlides key="buildup" state={state} />
-          ) : state.status === 'drawing' ? (
-            <DrawingAnimation key="drawing" currentDraw={state.currentDraw} />
+             <BuildupSlides key="buildup" state={safeState} />
+          ) : safeState.status === 'drawing' ? (
+            <DrawingAnimation key="drawing" currentDraw={safeState.currentDraw} />
           ) : (
-            <ResultsBoard key="results" state={state} />
+            <ResultsBoard key="results" state={safeState} />
           )}
         </AnimatePresence>
       </main>
