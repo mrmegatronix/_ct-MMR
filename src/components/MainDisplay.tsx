@@ -72,12 +72,16 @@ function formatTimeLeft(diff: number) {
 }
 
 function CountdownSlide() {
-  const [timeLeft, setTimeLeft] = useState('');
+  const [timeLeft, setTimeLeft] = useState(() => {
+    const target = getNextDrawDate();
+    const now = new Date();
+    const diff = differenceInSeconds(target, now);
+    return formatTimeLeft(Math.max(0, diff));
+  });
 
   useEffect(() => {
-    const target = getNextDrawDate();
-    
     const timer = setInterval(() => {
+      const target = getNextDrawDate();
       const now = new Date();
       const diff = differenceInSeconds(target, now);
       
@@ -163,8 +167,15 @@ function BuildupSlides({ state }: { state: any; key?: string }) {
 
   const slide = slides[slideIndex];
 
+  const handleNextSlide = () => {
+    setSlideIndex((prev) => (prev + 1) % slides.length);
+  };
+
   return (
-    <div className="w-full h-full z-10 overflow-hidden relative">
+    <div 
+      className="w-full h-full z-10 overflow-hidden relative cursor-pointer"
+      onClick={handleNextSlide}
+    >
       <MeatConfetti />
       <AnimatePresence mode="wait">
         <motion.div
