@@ -418,6 +418,19 @@ function ResultsBoard({ state }: { state: any; key?: string }) {
 export default function MainDisplay() {
   const { state, isConnected } = useRaffleSocket();
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen();
+      setIsFullscreen(true);
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+        setIsFullscreen(false);
+      }
+    }
+  };
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
@@ -504,9 +517,17 @@ export default function MainDisplay() {
             Tickets: $5 each or $20 for 4 • Main Draw at 7:00 PM
           </motion.div>
         </div>
-        <a href="#/remote" target="_blank" rel="noopener noreferrer" className="text-slate-700 hover:text-slate-400 transition-colors opacity-0 group-hover:opacity-100 absolute right-6 bg-slate-900 px-4 py-2 rounded-lg z-10">
-          Remote Control
-        </a>
+        <div className="flex gap-4 absolute right-6">
+          <button 
+            onClick={toggleFullscreen}
+            className="text-slate-700 hover:text-slate-400 transition-colors opacity-0 group-hover:opacity-100 bg-slate-900 px-4 py-2 rounded-lg z-10"
+          >
+            {isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}
+          </button>
+          <a href="#/remote" target="_blank" rel="noopener noreferrer" className="text-slate-700 hover:text-slate-400 transition-colors opacity-0 group-hover:opacity-100 bg-slate-900 px-4 py-2 rounded-lg z-10">
+            Remote Control
+          </a>
+        </div>
       </footer>
     </div>
   );

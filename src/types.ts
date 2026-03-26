@@ -1,11 +1,16 @@
 export interface RaffleState {
-  status: 'idle' | 'buildup' | 'drawing' | 'finished' | 'thankyou';
-  numberRange: { min: number; max: number };
+  status: 'idle' | 'buildup' | 'drawing' | 'results' | 'thankyou';
+  numberRange: {
+    min: number;
+    max: number;
+  };
   excludedNumbers: number[];
   drawnNumbers: number[];
   secondChanceNumbers: number[];
   currentDraw: number | null;
-  drawSettings: { amountToDraw: number };
+  drawSettings: {
+    amountToDraw: number;
+  };
   prizePool: string;
   numberOfPrizes: string;
   prizeSizes: string;

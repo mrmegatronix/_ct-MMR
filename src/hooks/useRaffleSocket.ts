@@ -1,5 +1,10 @@
 import { useEffect, useState, useCallback } from 'react';
 import { RaffleState } from '../types';
+import { db } from '../lib/firebase';
+import { doc, onSnapshot, updateDoc, setDoc, getDoc } from 'firebase/firestore';
+
+const RAFFLE_DOC_ID = 'default';
+const RAFFLE_COLLECTION = 'raffles';
 
 const initialState: RaffleState = {
   status: 'idle',
@@ -23,80 +28,71 @@ const initialState: RaffleState = {
   ticketPackQuantity: '4',
 };
 
-// Global state
-let globalState = initialState;
-
-// Load from localStorage if available
-try {
-  const stored = localStorage.getItem('raffleState');
-  if (stored) {
-    globalState = { ...initialState, ...JSON.parse(stored) };
-  }
-} catch (e) {
-  console.error('Failed to load state', e);
-}
-
-// Subscriptions
-const listeners = new Set<(state: RaffleState) => void>();
-
-function setGlobalState(newState: Partial<RaffleState> | ((prev: RaffleState) => RaffleState)) {
-  const nextState = typeof newState === 'function' ? newState(globalState) : { ...globalState, ...newState };
-  globalState = nextState;
-  
-  try {
-    localStorage.setItem('raffleState', JSON.stringify(globalState));
-  } catch (e) {
-    console.error('Failed to save state', e);
-  }
-
-  listeners.forEach((listener) => listener(globalState));
-}
-
-// Keep track of the timeout so we can optionally clear it if needed
-let animationTimeout: any = null;
-
 export function useRaffleSocket() {
-  const [state, setState] = useState<RaffleState>(globalState);
+  const [state, setState] = useState<RaffleState | null>(null);
+  const [isConnected, setIsConnected] = useState(false);
 
   useEffect(() => {
-    // Sync React state with globalState and ensure it's valid
-    if (globalState) {
-      setState(globalState);
-    } else {
-      setState(initialState);
-    }
-    
-    listeners.add(setState);
-    return () => {
-      listeners.delete(setState);
+    const raffleDoc = doc(db, RAFFLE_COLLECTION, RAFFLE_DOC_ID);
+
+    // Initial check/create
+    const init = async () => {
+      try {
+        const snap = await getDoc(raffleDoc);
+        if (!snap.exists()) {
+          await setDoc(raffleDoc, initialState);
+        }
+      } catch (e) {
+        console.error("Firebase init error:", e);
+      }
     };
+    init();
+
+    const unsubscribe = onSnapshot(raffleDoc, (snapshot) => {
+      if (snapshot.exists()) {
+        setState(snapshot.data() as RaffleState);
+        setIsConnected(true);
+      } else {
+        setIsConnected(false);
+      }
+    }, (error) => {
+      console.error("Firestore error:", error);
+      setIsConnected(false);
+    });
+
+    return () => unsubscribe();
   }, []);
 
-  const updateState = useCallback((newState: Partial<RaffleState>) => {
-    setGlobalState(newState);
+  const updateState = useCallback(async (newState: Partial<RaffleState>) => {
+    const raffleDoc = doc(db, RAFFLE_COLLECTION, RAFFLE_DOC_ID);
+    try {
+      await updateDoc(raffleDoc, newState);
+    } catch (e) {
+      console.error("Update error:", e);
+    }
   }, []);
 
-  const drawNumber = useCallback((isSecondChance: boolean = false) => {
-    if (globalState.status === 'drawing') return; // Prevent concurrent draws
-    
-    const amount = globalState.drawSettings.amountToDraw || 1;
+  const drawNumber = useCallback(async (isSecondChance: boolean = false) => {
+    if (!state || state.status === 'drawing') return;
+
+    const amount = state.drawSettings.amountToDraw || 1;
     const drawnThisRound: number[] = [];
+    const currentDrawn = [...state.drawnNumbers];
+    const currentSC = [...state.secondChanceNumbers];
+    const excluded = [...state.excludedNumbers];
 
     for (let j = 0; j < amount; j++) {
       const availableNumbers: number[] = [];
-      for (let i = globalState.numberRange.min; i <= globalState.numberRange.max; i++) {
-        if (!globalState.excludedNumbers.includes(i) && 
-            !globalState.drawnNumbers.includes(i) && 
-            !globalState.secondChanceNumbers.includes(i) && 
+      for (let i = state.numberRange.min; i <= state.numberRange.max; i++) {
+        if (!excluded.includes(i) && 
+            !currentDrawn.includes(i) && 
+            !currentSC.includes(i) && 
             !drawnThisRound.includes(i)) {
           availableNumbers.push(i);
         }
       }
 
-      if (availableNumbers.length === 0) {
-        if (j === 0) console.error("No more numbers available to draw.");
-        break;
-      }
+      if (availableNumbers.length === 0) break;
 
       const randomIndex = Math.floor(Math.random() * availableNumbers.length);
       drawnThisRound.push(availableNumbers[randomIndex]);
@@ -104,32 +100,34 @@ export function useRaffleSocket() {
 
     if (drawnThisRound.length === 0) return;
 
-    if (animationTimeout) {
-      clearTimeout(animationTimeout);
-    }
-
-    setGlobalState({
+    const raffleDoc = doc(db, RAFFLE_COLLECTION, RAFFLE_DOC_ID);
+    
+    // Step 1: Set status to drawing
+    await updateDoc(raffleDoc, {
       currentDraw: drawnThisRound[drawnThisRound.length - 1],
       status: 'drawing',
     });
 
-    animationTimeout = setTimeout(() => {
-      setGlobalState((prev) => ({
-        ...prev,
+    // Step 2: Wait for animation (3 seconds) and then update results
+    // Navigation logic might trigger this once per drawing state, 
+    // but we'll do it from the remote caller side.
+    setTimeout(async () => {
+      await updateDoc(raffleDoc, {
         secondChanceNumbers: isSecondChance 
-          ? [...prev.secondChanceNumbers, ...drawnThisRound] 
-          : prev.secondChanceNumbers,
+          ? [...currentSC, ...drawnThisRound] 
+          : currentSC,
         drawnNumbers: !isSecondChance 
-          ? [...prev.drawnNumbers, ...drawnThisRound] 
-          : prev.drawnNumbers,
+          ? [...currentDrawn, ...drawnThisRound] 
+          : currentDrawn,
         status: 'idle',
-      }));
-    }, 3000);
-  }, []);
+        currentDraw: drawnThisRound[drawnThisRound.length - 1], // Keep on screen or nullify? User said "stay on screen untill the end"
+      });
+    }, 4500); // 4.5s to allow for full animation cycle
+  }, [state]);
 
-  const resetDraw = useCallback(() => {
-    if (animationTimeout) clearTimeout(animationTimeout);
-    setGlobalState({
+  const resetDraw = useCallback(async () => {
+    const raffleDoc = doc(db, RAFFLE_COLLECTION, RAFFLE_DOC_ID);
+    await updateDoc(raffleDoc, {
       drawnNumbers: [],
       secondChanceNumbers: [],
       currentDraw: null,
@@ -137,23 +135,27 @@ export function useRaffleSocket() {
     });
   }, []);
 
-  const excludeNumber = useCallback((num: number) => {
-    if (!globalState.excludedNumbers.includes(num)) {
-      setGlobalState({
-        excludedNumbers: [...globalState.excludedNumbers, num],
+  const excludeNumber = useCallback(async (num: number) => {
+    if (!state) return;
+    if (!state.excludedNumbers.includes(num)) {
+      const raffleDoc = doc(db, RAFFLE_COLLECTION, RAFFLE_DOC_ID);
+      await updateDoc(raffleDoc, {
+        excludedNumbers: [...state.excludedNumbers, num],
       });
     }
-  }, []);
+  }, [state]);
 
-  const removeExcludedNumber = useCallback((num: number) => {
-    setGlobalState({
-      excludedNumbers: globalState.excludedNumbers.filter(n => n !== num),
+  const removeExcludedNumber = useCallback(async (num: number) => {
+    if (!state) return;
+    const raffleDoc = doc(db, RAFFLE_COLLECTION, RAFFLE_DOC_ID);
+    await updateDoc(raffleDoc, {
+      excludedNumbers: state.excludedNumbers.filter(n => n !== num),
     });
-  }, []);
+  }, [state]);
 
   return {
     state,
-    isConnected: true, // Always true for local state
+    isConnected,
     updateState,
     drawNumber,
     resetDraw,

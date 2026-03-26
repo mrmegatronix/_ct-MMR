@@ -6,8 +6,14 @@ export default function RemoteControl() {
   const { state, isConnected, updateState, drawNumber, resetDraw, excludeNumber, removeExcludedNumber } = useRaffleSocket();
   const [excludeInput, setExcludeInput] = useState('');
 
-  if (!state) {
-    return <div className="p-8 text-center text-slate-500">Connecting to server...</div>;
+  if (!state || !isConnected) {
+    return (
+      <div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center p-8 text-center text-white">
+        <div className="w-16 h-16 border-4 border-red-500 border-t-transparent rounded-full animate-spin mb-6"></div>
+        <h1 className="text-2xl font-black uppercase tracking-widest mb-2">Connecting</h1>
+        <p className="text-slate-400">Establishing real-time link to raffle...</p>
+      </div>
+    );
   }
 
   const handleDraw = () => {
@@ -42,6 +48,42 @@ export default function RemoteControl() {
     if (!isNaN(num)) {
       excludeNumber(num);
       setExcludeInput('');
+    }
+  };
+
+  const handleGoogleSheetsSync = async () => {
+    const url = prompt("Enter public Google Sheets CSV URL:");
+    if (!url) return;
+
+    try {
+      const response = await fetch(url);
+      const text = await response.text();
+      // Simple CSV parsing for a specific format: Key, Value
+      const lines = text.split('\n');
+      const updates: any = {};
+      
+      lines.forEach(line => {
+        const [key, value] = line.split(',').map(s => s.trim());
+        if (key && value) {
+          // Map some common keys
+          if (key.toLowerCase() === 'prize pool') updates.prizePool = value;
+          if (key.toLowerCase() === 'total prizes') updates.numberOfPrizes = value;
+          if (key.toLowerCase() === 'prize sizes') updates.prizeSizes = value;
+          if (key.toLowerCase() === 'slide 1 title') updates.slide1Title = value;
+          if (key.toLowerCase() === 'slide 1 subtitle') updates.slide1Subtitle = value;
+          // ... add more as needed
+        }
+      });
+
+      if (Object.keys(updates).length > 0) {
+        await updateState(updates);
+        alert(`Synced ${Object.keys(updates).length} fields from Google Sheets!`);
+      } else {
+        alert("No valid fields found in CSV. Expected format: Key, Value");
+      }
+    } catch (e) {
+      console.error(e);
+      alert("Failed to sync from Google Sheets. Ensure the URL is a public CSV link.");
     }
   };
 
@@ -385,13 +427,22 @@ export default function RemoteControl() {
             </div>
           </div>
 
-          <button
-            onClick={downloadCSV}
-            className="w-full flex items-center justify-center gap-2 py-3 bg-slate-800 hover:bg-slate-900 text-white rounded-xl font-bold transition-colors"
-          >
-            <Download size={18} />
-            Download Results CSV
-          </button>
+          <div className="grid grid-cols-2 gap-3 mb-3">
+            <button
+              onClick={handleGoogleSheetsSync}
+              className="flex items-center justify-center gap-2 py-3 bg-green-50 text-green-700 hover:bg-green-100 rounded-xl font-bold transition-colors border border-green-200"
+            >
+              <Download size={18} className="rotate-180" />
+              Sync Sheets
+            </button>
+            <button
+              onClick={downloadCSV}
+              className="flex items-center justify-center gap-2 py-3 bg-slate-800 hover:bg-slate-900 text-white rounded-xl font-bold transition-colors"
+            >
+              <Download size={18} />
+              Export CSV
+            </button>
+          </div>
         </section>
       </div>
     </div>

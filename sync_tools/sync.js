@@ -47,15 +47,11 @@ async function syncFiles() {
     const failed = [];
     let uploadCount = 0;
     
-    await ssh.putDirectory(localDir, remoteTempDir, {
+    const distDir = path.resolve(localDir, 'dist');
+    
+    await ssh.putDirectory(distDir, remoteTempDir, {
       recursive: true,
       concurrency: 10,
-      validate: function(itemPath) {
-        const relativePath = path.relative(localDir, itemPath);
-        const parts = relativePath.split(path.sep);
-        const excluded = ['node_modules', '.git', '.github', 'sync_tools', 'dist'];
-        return !parts.some(part => excluded.includes(part));
-      },
       tick: function(localPath, remotePath, error) {
         if (error) {
           failed.push(localPath);
