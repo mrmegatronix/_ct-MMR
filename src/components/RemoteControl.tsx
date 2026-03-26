@@ -111,8 +111,13 @@ export default function RemoteControl() {
         <h1 className="text-2xl font-black text-red-700 uppercase tracking-tight flex items-center gap-2">
           <span>🥩</span> Remote
         </h1>
-        <div className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${isConnected ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-          {isConnected ? 'Connected' : 'Offline'}
+        <div className="flex items-center gap-3">
+          <a href="#/ads-admin" className="text-slate-500 hover:text-red-700 transition-colors" title="Ad Manager">
+            <Settings size={20} />
+          </a>
+          <div className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${isConnected ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+            {isConnected ? 'Connected' : 'Offline'}
+          </div>
         </div>
       </header>
 

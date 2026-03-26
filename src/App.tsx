@@ -7,6 +7,7 @@ import { HashRouter as Router, Routes, Route } from 'react-router-dom';
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import MainDisplay from './components/MainDisplay';
 import RemoteControl from './components/RemoteControl';
+import AdAdmin from './components/AdAdmin';
 
 interface Props {
   children?: ReactNode;
@@ -52,7 +53,7 @@ class ErrorBoundary extends Component<Props, State> {
       );
     }
 
-    return this.props.children;
+    return (this.props as Props).children;
   }
 }
 
@@ -63,6 +64,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<MainDisplay />} />
           <Route path="/remote" element={<RemoteControl />} />
+          <Route path="/ads-admin" element={<AdAdmin />} />
         </Routes>
       </Router>
     </ErrorBoundary>

@@ -1,0 +1,8 @@
+Your web app's Firebase configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyAzLRV-FNtxbGljKx6K_O21FV8NxdRDxkE",
+  authDomain: "ct-mmr-raffle.firebaseapp.com",
+  projectId: "ct-mmr-raffle",
+  storageBucket: "ct-mmr-raffle.firebasestorage.app",
+  messagingSenderId: "937760987236",
+  appId: "1:937760987236:web:036e1b945f5cd511922771"
