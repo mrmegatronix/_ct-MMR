@@ -15,6 +15,7 @@ export default function AdDisplay() {
   const [slides, setSlides] = useState<Slide[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [sheetUrl, setSheetUrl] = useState<string>(DEFAULT_CSV);
+  const [excludedSlides, setExcludedSlides] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -28,6 +29,7 @@ export default function AdDisplay() {
         } else if (!data.sheetUrl) {
           setSheetUrl(DEFAULT_CSV);
         }
+        setExcludedSlides(data.excludedSlides || []);
         setError(null);
       } else {
         setError("Configuration document 'config/ads' not found in Firestore.");
@@ -45,12 +47,24 @@ export default function AdDisplay() {
       if (!response.ok) throw new Error(`HTTP Error: ${response.statusText}`);
       
       const text = await response.text();
-      const rows = text.split('\n').filter(r => r.trim()).slice(1); // Skip header and empty rows
-      
-      const parsedSlides: Slide[] = rows
-        .map(row => {
-          // Simple CSV parse handle potential quotes
-          const cols = row.split(',').map(s => s.trim().replace(/^"|"$/g, ''));
+      // Robust CSV parsing (handles quotes and commas)
+      const rows = text.split(/\r?\n/).filter(line => line.trim());
+      const parsedSlides: Slide[] = rows.slice(1)
+        .map(line => {
+          const result = [];
+          let cur = '';
+          let inQuote = false;
+          for (let i = 0; i < line.length; i++) {
+            const char = line[i];
+            if (char === '"') inQuote = !inQuote;
+            else if (char === ',' && !inQuote) {
+              result.push(cur.trim());
+              cur = '';
+            } else cur += char;
+          }
+          result.push(cur.trim());
+          const cols = result.map(s => s.replace(/^"|"$/g, ''));
+          
           const [title, subtitle, image, duration] = cols;
           if (!title) return null;
           return {
@@ -114,17 +128,20 @@ export default function AdDisplay() {
     );
   }
 
-  if (slides.length === 0) {
+  const activeSlides = slides.filter(s => !excludedSlides.includes(s.title));
+
+  if (activeSlides.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-screen bg-slate-950 text-white gap-4">
-        <div className="w-16 h-16 border-4 border-red-500 border-t-transparent rounded-full animate-spin"></div>
-        <p className="text-xl font-bold uppercase tracking-widest text-slate-400 animate-pulse">Loading Advertisements...</p>
-        <p className="text-slate-600 text-sm">Fetching from Google Sheets: {sheetUrl ? 'Connected' : 'Waiting for URL...'}</p>
+        <div className="w-16 h-16 border-4 border-slate-800 border-t-red-600 rounded-full animate-spin"></div>
+        <p className="text-xl font-bold uppercase tracking-widest text-slate-500">Wait for slides...</p>
       </div>
     );
   }
 
-  const slide = slides[currentIndex];
+  // Ensure index is within bounds if slides were just filtered
+  const safeIndex = currentIndex % activeSlides.length;
+  const slide = activeSlides[safeIndex];
 
   return (
     <div className="h-screen w-screen bg-black overflow-hidden relative">
@@ -188,6 +205,9 @@ export default function AdDisplay() {
           animate={{ width: "100%" }}
           transition={{ duration: (slide.duration / 1000), ease: "linear" }}
           className="h-full bg-red-600 shadow-[0_0_15px_rgba(220,38,38,0.8)]"
+          onAnimationComplete={() => {
+            setCurrentIndex((prev) => (prev + 1) % activeSlides.length);
+          }}
         />
       </div>
 

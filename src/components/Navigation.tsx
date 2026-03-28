@@ -1,5 +1,5 @@
 import React from 'react';
-import { Monitor, Smartphone, Settings, Tv } from 'lucide-react';
+import { Monitor, Smartphone, Settings, Tv, ExternalLink } from 'lucide-react';
 
 interface NavigationProps {
   currentPath: string;
@@ -11,6 +11,7 @@ export default function Navigation({ currentPath }: NavigationProps) {
     { path: '#/remote', label: 'Remote', icon: Smartphone },
     { path: '#/ads-admin', label: 'Admin', icon: Settings },
     { path: './mmr-ads.html', label: 'Ads', icon: Tv, isExternal: true },
+    { path: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSGkdY9CpTGOcRZf-giDDGGqDcXJaO7BYO9nxyNO4Jw_XpODvq2sicVYtNDy1w-qGnaA5iNJ-lghCNy/pubhtml', label: 'Edit', icon: ExternalLink, isExternal: true },
   ];
 
   return (

@@ -1,32 +1,38 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRaffleSocket } from '../hooks/useRaffleSocket';
-import { Settings, Play, Square, RotateCcw, Download, XCircle, Plus, Monitor, Smartphone, Tv } from 'lucide-react';
+import { db } from '../lib/firebase';
+import { doc, getDoc, onSnapshot } from 'firebase/firestore';
+import { Settings, Play, Square, RotateCcw, Download, XCircle, Plus, ExternalLink } from 'lucide-react';
 import Navigation from './Navigation';
+import FirebaseDiagnostics from './FirebaseDiagnostics';
 
 export default function RemoteControl() {
   const { state, isConnected, error, updateState, drawNumber, resetDraw, excludeNumber, removeExcludedNumber } = useRaffleSocket();
   const [excludeInput, setExcludeInput] = useState('');
+  const [editUrl, setEditUrl] = useState('');
+
+  useEffect(() => {
+    const adsDoc = doc(db, 'config', 'ads');
+    const unsubscribe = onSnapshot(adsDoc, (snapshot) => {
+      if (snapshot.exists()) {
+        setEditUrl(snapshot.data().editUrl || '');
+      }
+    });
+    return () => unsubscribe();
+  }, []);
 
   if (error) {
     return (
-      <div className="min-h-screen bg-slate-100 flex flex-col items-center justify-center p-8 text-center text-slate-900 font-sans max-w-md mx-auto">
-        <div className="bg-white p-8 rounded-3xl shadow-2xl border border-red-200">
-          <div className="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-6">
+      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-8 text-center text-white font-sans max-w-md mx-auto">
+        <div className="bg-slate-900 p-8 rounded-3xl shadow-2xl border border-red-900/50">
+          <div className="w-16 h-16 bg-red-900/30 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6">
             <XCircle size={32} />
           </div>
-          <h1 className="text-2xl font-black text-red-700 uppercase tracking-tight mb-4">Remote Error</h1>
-          <p className="text-slate-600 mb-6">{error}</p>
-          <div className="text-left bg-slate-50 p-4 rounded-xl border border-slate-200 text-sm mb-6">
-            <p className="font-bold text-slate-700 mb-2">Troubleshooting:</p>
-            <ul className="list-disc ml-5 space-y-1 text-slate-500">
-              <li>Is the Raspberry Pi online?</li>
-              <li>Check your internet connection.</li>
-              <li>Is Firebase Project active?</li>
-            </ul>
-          </div>
+          <h1 className="text-2xl font-black text-white uppercase tracking-tight mb-4">Remote Error</h1>
+          <p className="text-slate-400 mb-6">{error}</p>
           <button 
             onClick={() => window.location.reload()}
-            className="w-full py-4 bg-red-600 hover:bg-red-700 text-white rounded-xl font-black uppercase tracking-widest transition-all"
+            className="w-full py-4 bg-red-600 hover:bg-red-700 text-white rounded-xl font-black uppercase tracking-widest transition-all shadow-lg shadow-red-600/20"
           >
             Reconnect
           </button>
@@ -37,10 +43,10 @@ export default function RemoteControl() {
 
   if (!state || !isConnected) {
     return (
-      <div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center p-8 text-center text-white">
-        <div className="w-16 h-16 border-4 border-red-500 border-t-transparent rounded-full animate-spin mb-6"></div>
-        <h1 className="text-2xl font-black uppercase tracking-widest mb-2">Connecting</h1>
-        <p className="text-slate-400">Establishing real-time link to raffle...</p>
+      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-8 text-center text-white">
+        <div className="w-16 h-16 border-4 border-red-600 border-t-transparent rounded-full animate-spin mb-6"></div>
+        <h1 className="text-2xl font-black uppercase tracking-widest mb-2 text-white">Connecting</h1>
+        <p className="text-slate-500">Establishing real-time link...</p>
       </div>
     );
   }
@@ -80,42 +86,6 @@ export default function RemoteControl() {
     }
   };
 
-  const handleGoogleSheetsSync = async () => {
-    const url = prompt("Enter public Google Sheets CSV URL:");
-    if (!url) return;
-
-    try {
-      const response = await fetch(url);
-      const text = await response.text();
-      // Simple CSV parsing for a specific format: Key, Value
-      const lines = text.split('\n');
-      const updates: any = {};
-      
-      lines.forEach(line => {
-        const [key, value] = line.split(',').map(s => s.trim());
-        if (key && value) {
-          // Map some common keys
-          if (key.toLowerCase() === 'prize pool') updates.prizePool = value;
-          if (key.toLowerCase() === 'total prizes') updates.numberOfPrizes = value;
-          if (key.toLowerCase() === 'prize sizes') updates.prizeSizes = value;
-          if (key.toLowerCase() === 'slide 1 title') updates.slide1Title = value;
-          if (key.toLowerCase() === 'slide 1 subtitle') updates.slide1Subtitle = value;
-          // ... add more as needed
-        }
-      });
-
-      if (Object.keys(updates).length > 0) {
-        await updateState(updates);
-        alert(`Synced ${Object.keys(updates).length} fields from Google Sheets!`);
-      } else {
-        alert("No valid fields found in CSV. Expected format: Key, Value");
-      }
-    } catch (e) {
-      console.error(e);
-      alert("Failed to sync from Google Sheets. Ensure the URL is a public CSV link.");
-    }
-  };
-
   const downloadCSV = () => {
     const headers = ['Type', 'Number', 'Timestamp'];
     const rows = [
@@ -135,14 +105,14 @@ export default function RemoteControl() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-100 text-slate-900 p-4 font-sans max-w-md mx-auto shadow-2xl">
-      <header className="flex flex-col gap-4 mb-6 pb-4 border-b border-slate-300">
+    <div className="min-h-screen bg-slate-950 text-white p-4 font-sans max-w-md mx-auto">
+      <header className="flex flex-col gap-4 mb-6 pb-4 border-b border-slate-800">
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-black text-red-700 uppercase tracking-tight flex items-center gap-2">
+          <h1 className="text-2xl font-black text-white uppercase tracking-tight flex items-center gap-2">
             <span>🥩</span> Remote
           </h1>
           <div className="flex items-center gap-2">
-            <div className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${isConnected ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+            <div className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${isConnected ? 'bg-green-900/30 text-green-400' : 'bg-red-900/30 text-red-400'}`}>
               {isConnected ? 'ONLINE' : 'OFFLINE'}
             </div>
           </div>
@@ -153,11 +123,14 @@ export default function RemoteControl() {
       </header>
 
       <div className="space-y-6 pb-20">
+        {/* Diagnostics */}
+        <FirebaseDiagnostics />
+
         {/* Status & Main Controls */}
-        <section className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+        <section className="bg-slate-900 p-5 rounded-2xl shadow-xl border border-slate-800">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-sm font-bold text-slate-500 uppercase tracking-wider">Status</h2>
-            <span className="px-3 py-1 bg-slate-100 text-slate-700 rounded-lg text-sm font-medium capitalize">
+            <h2 className="text-xs font-bold text-slate-500 uppercase tracking-widest">Status</h2>
+            <span className="px-3 py-1 bg-slate-800 text-red-400 rounded-lg text-sm font-black uppercase tracking-wider border border-red-500/20">
               {state.status}
             </span>
           </div>
@@ -165,10 +138,10 @@ export default function RemoteControl() {
           <div className="grid grid-cols-2 gap-3">
             <button
               onClick={toggleBuildup}
-              className={`flex items-center justify-center gap-2 py-3 rounded-xl font-bold transition-colors ${
+              className={`flex items-center justify-center gap-2 py-3 rounded-xl font-bold transition-all ${
                 state.status === 'buildup' 
-                  ? 'bg-amber-100 text-amber-700 border border-amber-300' 
-                  : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                  ? 'bg-amber-900/40 text-amber-400 border border-amber-500/30' 
+                  : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
               }`}
             >
               {state.status === 'buildup' ? <Square size={18} /> : <Play size={18} />}
@@ -176,27 +149,27 @@ export default function RemoteControl() {
             </button>
             <button
               onClick={() => updateState({ status: 'idle' })}
-              className={`flex items-center justify-center gap-2 py-3 rounded-xl font-bold transition-colors ${
+              className={`flex items-center justify-center gap-2 py-3 rounded-xl font-bold transition-all ${
                 state.status === 'idle' 
-                  ? 'bg-blue-100 text-blue-700 border border-blue-300' 
-                  : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                  ? 'bg-blue-900/40 text-blue-400 border border-blue-500/30' 
+                  : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
               }`}
             >
-              Show Results
+              Results
             </button>
             <button
               onClick={() => updateState({ status: 'thankyou' })}
-              className={`flex items-center justify-center gap-2 py-3 rounded-xl font-bold transition-colors ${
+              className={`flex items-center justify-center gap-2 py-3 rounded-xl font-bold transition-all ${
                 state.status === 'thankyou' 
-                  ? 'bg-purple-100 text-purple-700 border border-purple-300' 
-                  : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                  ? 'bg-purple-900/40 text-purple-400 border border-purple-500/30' 
+                  : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
               }`}
             >
               Thank You
             </button>
             <button
               onClick={resetDraw}
-              className="flex items-center justify-center gap-2 py-3 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl font-bold transition-colors"
+              className="flex items-center justify-center gap-2 py-3 bg-red-900/20 text-red-500 hover:bg-red-900/40 rounded-xl font-bold transition-all border border-red-900/50"
             >
               <RotateCcw size={18} />
               Reset All
@@ -205,11 +178,11 @@ export default function RemoteControl() {
         </section>
 
         {/* Draw Actions */}
-        <section className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 space-y-3">
+        <section className="bg-slate-900 p-5 rounded-3xl shadow-2xl border border-red-900/30 space-y-3">
           <button
             onClick={handleDraw}
             disabled={state.status === 'drawing'}
-            className="w-full py-4 bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white rounded-xl font-black text-xl uppercase tracking-widest shadow-lg shadow-red-600/20 transition-all active:scale-95"
+            className="w-full py-5 bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white rounded-2xl font-black text-2xl uppercase tracking-widest shadow-xl shadow-red-600/30 transition-all active:scale-95"
           >
             {state.status === 'drawing' ? 'Drawing...' : 'Draw Number'}
           </button>
@@ -217,266 +190,122 @@ export default function RemoteControl() {
           <button
             onClick={handleSecondChanceDraw}
             disabled={state.status === 'drawing'}
-            className="w-full py-3 bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white rounded-xl font-bold text-lg uppercase tracking-wider shadow-md shadow-orange-500/20 transition-all active:scale-95"
+            className="w-full py-4 bg-orange-600 hover:bg-orange-700 disabled:opacity-50 text-white rounded-2xl font-black text-lg uppercase tracking-widest shadow-lg shadow-orange-600/20 transition-all active:scale-95 border border-orange-500/30"
           >
-            Second Chance Draw
+            Second Chance
           </button>
         </section>
 
         {/* Settings */}
-        <section className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
-          <h2 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4 flex items-center gap-2">
-            <Settings size={16} /> Settings
+        <section className="bg-slate-900 p-5 rounded-2xl shadow-xl border border-slate-800">
+          <h2 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4 flex items-center gap-2">
+            <Settings size={14} /> Raffle Settings
           </h2>
           
           <div className="space-y-4 mb-6">
             <div>
-              <label className="block text-xs font-bold text-slate-400 uppercase mb-1">Prize Pool Amount</label>
+              <label className="block text-[10px] font-black text-slate-500 uppercase mb-1 tracking-wider">Prize Pool</label>
               <input
                 type="text"
                 value={state.prizePool}
                 onChange={(e) => updateState({ prizePool: e.target.value })}
-                className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 font-bold text-slate-700 focus:ring-2 focus:ring-red-500 outline-none"
+                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2 font-bold text-white focus:border-red-500 outline-none transition-all"
               />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase mb-1">Total Prizes</label>
+                <label className="block text-[10px] font-black text-slate-500 uppercase mb-1 tracking-wider">Total Prizes</label>
                 <input
                   type="text"
                   value={state.numberOfPrizes}
                   onChange={(e) => updateState({ numberOfPrizes: e.target.value })}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 font-bold text-slate-700 focus:ring-2 focus:ring-red-500 outline-none"
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2 font-bold text-white focus:border-red-500 outline-none"
                 />
               </div>
               <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase mb-1">Amount to Draw</label>
+                <label className="block text-[10px] font-black text-slate-500 uppercase mb-1 tracking-wider">Draw Qty</label>
                 <input
                   type="number"
                   min="1"
-                  max="100"
                   value={state.drawSettings.amountToDraw}
                   onChange={(e) => updateState({ drawSettings: { ...state.drawSettings, amountToDraw: parseInt(e.target.value) || 1 } })}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 font-bold text-slate-700 focus:ring-2 focus:ring-red-500 outline-none"
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2 font-bold text-white focus:border-red-500 outline-none"
                 />
               </div>
             </div>
-            <div>
-              <label className="block text-xs font-bold text-slate-400 uppercase mb-1">Prize Size Range</label>
-              <input
-                type="text"
-                value={state.prizeSizes}
-                onChange={(e) => updateState({ prizeSizes: e.target.value })}
-                className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 font-bold text-slate-700 focus:ring-2 focus:ring-red-500 outline-none"
-              />
-            </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4 mb-6 pt-4 border-t border-slate-100">
+          <div className="grid grid-cols-2 gap-4 mb-6 pt-4 border-t border-slate-800">
             <div>
-              <label className="block text-xs font-bold text-slate-400 uppercase mb-1">Min Number</label>
+              <label className="block text-[10px] font-black text-slate-500 uppercase mb-1 tracking-wider">Min No.</label>
               <input
                 type="number"
                 value={state.numberRange.min}
                 onChange={(e) => handleRangeChange(e, 'min')}
-                className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-lg font-mono font-bold text-slate-700 focus:ring-2 focus:ring-red-500 outline-none"
+                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2 font-mono font-bold text-white focus:border-red-500 outline-none"
               />
             </div>
             <div>
-              <label className="block text-xs font-bold text-slate-400 uppercase mb-1">Max Number</label>
+              <label className="block text-[10px] font-black text-slate-500 uppercase mb-1 tracking-wider">Max No.</label>
               <input
                 type="number"
                 value={state.numberRange.max}
                 onChange={(e) => handleRangeChange(e, 'max')}
-                className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-lg font-mono font-bold text-slate-700 focus:ring-2 focus:ring-red-500 outline-none"
+                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2 font-mono font-bold text-white focus:border-red-500 outline-none"
               />
             </div>
           </div>
 
           {/* Exclusions */}
-          <div className="border-t border-slate-100 pt-4">
-            <label className="block text-xs font-bold text-slate-400 uppercase mb-2">Exclude Numbers</label>
+          <div className="border-t border-slate-800 pt-4">
+            <label className="block text-[10px] font-black text-slate-500 uppercase mb-2">Exclude Numbers</label>
             <form onSubmit={handleAddExclude} className="flex gap-2 mb-3">
               <input
                 type="number"
                 value={excludeInput}
                 onChange={(e) => setExcludeInput(e.target.value)}
                 placeholder="e.g. 42"
-                className="flex-1 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 font-mono focus:ring-2 focus:ring-red-500 outline-none"
+                className="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-4 py-2 font-mono focus:border-red-500 outline-none"
               />
-              <button type="submit" className="bg-slate-800 text-white px-4 rounded-lg hover:bg-slate-700 transition-colors flex items-center justify-center">
+              <button type="submit" className="bg-slate-800 text-white px-4 rounded-xl hover:bg-red-600 transition-all flex items-center justify-center">
                 <Plus size={20} />
               </button>
             </form>
             
             <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto p-1">
               {state.excludedNumbers.map(num => (
-                <span key={num} className="inline-flex items-center gap-1 bg-slate-100 border border-slate-200 text-slate-600 px-2 py-1 rounded-md text-sm font-mono">
+                <span key={num} className="inline-flex items-center gap-1 bg-slate-800 border border-slate-700 text-slate-300 px-2 py-1 rounded-lg text-xs font-mono">
                   {num}
-                  <button onClick={() => removeExcludedNumber(num)} className="text-slate-400 hover:text-red-500">
-                    <XCircle size={14} />
+                  <button onClick={() => removeExcludedNumber(num)} className="text-slate-500 hover:text-red-500">
+                    <XCircle size={12} />
                   </button>
                 </span>
               ))}
-              {state.excludedNumbers.length === 0 && (
-                <span className="text-xs text-slate-400 italic">No numbers excluded</span>
-              )}
             </div>
           </div>
         </section>
 
-        {/* Slide Content Settings */}
-        <section className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
-          <h2 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4 flex items-center gap-2">
-            <Settings size={16} /> Slide Content
-          </h2>
-          
-          <div className="space-y-4">
-            <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 space-y-3">
-              <h3 className="text-xs font-bold text-slate-400 uppercase">Slide 1: Intro</h3>
-              <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase mb-1">Title</label>
-                <input
-                  type="text"
-                  value={state.slide1Title || ''}
-                  onChange={(e) => updateState({ slide1Title: e.target.value })}
-                  className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm font-medium text-slate-700 focus:ring-2 focus:ring-red-500 outline-none"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase mb-1">Subtitle</label>
-                <input
-                  type="text"
-                  value={state.slide1Subtitle || ''}
-                  onChange={(e) => updateState({ slide1Subtitle: e.target.value })}
-                  className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm font-medium text-slate-700 focus:ring-2 focus:ring-red-500 outline-none"
-                />
-              </div>
-            </div>
-
-            <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 space-y-3">
-              <h3 className="text-xs font-bold text-slate-400 uppercase">Slide 2: Prizes</h3>
-              <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase mb-1">Title</label>
-                <input
-                  type="text"
-                  value={state.slide2Title || ''}
-                  onChange={(e) => updateState({ slide2Title: e.target.value })}
-                  className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm font-medium text-slate-700 focus:ring-2 focus:ring-red-500 outline-none"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase mb-1">Subtitle</label>
-                <input
-                  type="text"
-                  value={state.slide2Subtitle || ''}
-                  onChange={(e) => updateState({ slide2Subtitle: e.target.value })}
-                  className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm font-medium text-slate-700 focus:ring-2 focus:ring-red-500 outline-none"
-                />
-              </div>
-            </div>
-
-            <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 space-y-3">
-              <h3 className="text-xs font-bold text-slate-400 uppercase">Slide 3: Tickets</h3>
-              <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase mb-1">Title</label>
-                <input
-                  type="text"
-                  value={state.slide3Title || ''}
-                  onChange={(e) => updateState({ slide3Title: e.target.value })}
-                  className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm font-medium text-slate-700 focus:ring-2 focus:ring-red-500 outline-none"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase mb-1">Subtitle</label>
-                <input
-                  type="text"
-                  value={state.slide3Subtitle || ''}
-                  onChange={(e) => updateState({ slide3Subtitle: e.target.value })}
-                  className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm font-medium text-slate-700 focus:ring-2 focus:ring-red-500 outline-none"
-                />
-              </div>
-              <div className="grid grid-cols-3 gap-2">
-                <div>
-                  <label className="block text-xs font-bold text-slate-400 uppercase mb-1">Single Price</label>
-                  <input
-                    type="text"
-                    value={state.ticketPriceSingle || ''}
-                    onChange={(e) => updateState({ ticketPriceSingle: e.target.value })}
-                    className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm font-medium text-slate-700 focus:ring-2 focus:ring-red-500 outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-slate-400 uppercase mb-1">Pack Price</label>
-                  <input
-                    type="text"
-                    value={state.ticketPricePack || ''}
-                    onChange={(e) => updateState({ ticketPricePack: e.target.value })}
-                    className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm font-medium text-slate-700 focus:ring-2 focus:ring-red-500 outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-slate-400 uppercase mb-1">Pack Qty</label>
-                  <input
-                    type="text"
-                    value={state.ticketPackQuantity || ''}
-                    onChange={(e) => updateState({ ticketPackQuantity: e.target.value })}
-                    className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm font-medium text-slate-700 focus:ring-2 focus:ring-red-500 outline-none"
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Data Management */}
-        <section className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-sm font-bold text-slate-500 uppercase tracking-wider">Data</h2>
-            <div className="text-xs font-mono text-slate-400">
-              {state.drawnNumbers.length} drawn
-            </div>
-          </div>
-
-          <div className="mb-4">
-            <label className="block text-xs font-bold text-slate-400 uppercase mb-2">Drawn Numbers</label>
-            <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto p-1">
-              {state.drawnNumbers.map(num => (
-                <span key={`drawn-${num}`} className="inline-flex items-center gap-1 bg-red-100 border border-red-200 text-red-700 px-2 py-1 rounded-md text-sm font-mono">
-                  {num}
-                  <button 
-                    onClick={() => {
-                      excludeNumber(num);
-                      // We also need to remove it from drawnNumbers on the server
-                      updateState({ drawnNumbers: state.drawnNumbers.filter(n => n !== num) });
-                    }} 
-                    className="text-red-400 hover:text-red-600 ml-1"
-                    title="Move to Excluded"
-                  >
-                    <XCircle size={14} />
-                  </button>
-                </span>
-              ))}
-              {state.drawnNumbers.length === 0 && (
-                <span className="text-xs text-slate-400 italic">No numbers drawn yet</span>
-              )}
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3 mb-3">
-            <button
-              onClick={handleGoogleSheetsSync}
-              className="flex items-center justify-center gap-2 py-3 bg-green-50 text-green-700 hover:bg-green-100 rounded-xl font-bold transition-colors border border-green-200"
-            >
-              <Download size={18} className="rotate-180" />
-              Sync Sheets
-            </button>
+        {/* Quick Links */}
+        <section className="bg-slate-900 p-5 rounded-2xl shadow-xl border border-slate-800">
+          <h2 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4">Quick Actions</h2>
+          <div className="grid grid-cols-2 gap-3">
+            {editUrl && (
+              <a
+                href={editUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-center gap-2 py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-bold transition-all border border-slate-700"
+              >
+                <ExternalLink size={16} />
+                Edit Sheet
+              </a>
+            )}
             <button
               onClick={downloadCSV}
-              className="flex items-center justify-center gap-2 py-3 bg-slate-800 hover:bg-slate-900 text-white rounded-xl font-bold transition-colors"
+              className="flex items-center justify-center gap-2 py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-bold transition-all border border-slate-700"
             >
-              <Download size={18} />
-              Export CSV
+              <Download size={16} />
+              Export
             </button>
           </div>
         </section>

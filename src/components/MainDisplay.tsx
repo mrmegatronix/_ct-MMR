@@ -109,6 +109,20 @@ function BuildupSlides({ state }: { state: any; key?: string }) {
   const [slideIndex, setSlideIndex] = useState(0);
   const slides = [
     {
+      title: "Thursday Monster Meat Raffles",
+      subtitle: "Join us every Thursday at Coasters Tavern!",
+      content: (
+        <div className="flex flex-col items-center gap-4 md:gap-8 bg-red-900/40 p-10 rounded-[3rem] border-4 border-red-500/50 backdrop-blur-md">
+          <div className="text-4xl md:text-6xl lg:text-8xl font-black text-white drop-shadow-2xl">
+            WIN BIG 🥩
+          </div>
+          <div className="text-2xl md:text-4xl text-red-200 font-bold uppercase tracking-[0.2em]">
+            Draws from 7:00 PM
+          </div>
+        </div>
+      )
+    },
+    {
       title: state.slide1Title || "Monster Meat Raffle",
       subtitle: state.slide1Subtitle || "Tickets on sale NOW!",
       content: (
@@ -329,9 +343,9 @@ function ResultsBoard({ state }: { state: any; key?: string }) {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
       className="h-full flex flex-col gap-8"
     >
+      <MeatConfetti />
       {/* Main Winners */}
       <div className="flex-1 bg-slate-900/50 rounded-3xl border border-slate-800 p-4 md:p-8 flex flex-col">
         <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
