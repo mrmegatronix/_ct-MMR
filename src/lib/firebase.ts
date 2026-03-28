@@ -13,5 +13,10 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
+const isPlaceholder = Object.values(firebaseConfig).some(v => v === "PLACEHOLDER");
+if (isPlaceholder) {
+  console.warn("Firebase configuration contains PLACEHOLDER values. Check your .env file.");
+}
+
 const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app);

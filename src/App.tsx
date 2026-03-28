@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { HashRouter as Router, Routes, Route } from 'react-router-dom';
+import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import MainDisplay from './components/MainDisplay';
 import RemoteControl from './components/RemoteControl';
@@ -32,7 +32,7 @@ class ErrorBoundary extends Component<Props, State> {
     console.error('Uncaught error:', error, errorInfo);
   }
 
-  public render() {
+  public render(): ReactNode {
     if (this.state.hasError) {
       return (
         <div className="min-h-screen bg-slate-900 text-white p-8 flex flex-col items-center justify-center font-sans">
@@ -53,7 +53,7 @@ class ErrorBoundary extends Component<Props, State> {
       );
     }
 
-    return (this.props as Props).children;
+    return (this as any).props.children;
   }
 }
 
@@ -65,6 +65,7 @@ export default function App() {
           <Route path="/" element={<MainDisplay />} />
           <Route path="/remote" element={<RemoteControl />} />
           <Route path="/ads-admin" element={<AdAdmin />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Router>
     </ErrorBoundary>

@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../lib/firebase';
 import { doc, getDoc, setDoc, updateDoc, onSnapshot } from 'firebase/firestore';
-import { Settings, Save, AlertCircle, ExternalLink, Link2, Info, ChevronRight, Play } from 'lucide-react';
+import { Settings, Save, AlertCircle, ExternalLink, Link2, Info, ChevronRight, Play, Monitor, Smartphone, Tv } from 'lucide-react';
+import Navigation from './Navigation';
 
 export default function AdAdmin() {
   const [sheetUrl, setSheetUrl] = useState('');
@@ -69,25 +70,30 @@ export default function AdAdmin() {
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 p-4 md:p-8 font-sans max-w-4xl mx-auto shadow-sm">
-      <header className="flex flex-col md:flex-row items-center justify-between mb-8 pb-6 border-b border-slate-200 gap-4">
-        <div className="flex items-center gap-4">
-          <div className="bg-red-600 p-3 rounded-2xl shadow-lg shadow-red-600/30">
-            <Settings className="text-white h-8 w-8" />
+      <header className="flex flex-col gap-6 mb-8 pb-6 border-b border-slate-200">
+        <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <div className="bg-red-600 p-3 rounded-2xl shadow-lg shadow-red-600/30">
+              <Settings className="text-white h-8 w-8" />
+            </div>
+            <div>
+              <h1 className="text-3xl font-black text-slate-800 uppercase tracking-tight">Ad Manager</h1>
+              <p className="text-slate-500 font-medium">Configure Display Advertisements</p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-3xl font-black text-slate-800 uppercase tracking-tight">Ad Manager</h1>
-            <p className="text-slate-500 font-medium">Configure Display Advertisements</p>
+          <div className="flex gap-4">
+            <a
+              href="./mmr-ads.html"
+              target="_blank"
+              className="flex items-center gap-2 px-6 py-3 bg-slate-800 hover:bg-slate-900 text-white rounded-xl font-bold transition-all shadow-md"
+            >
+              <Play size={18} fill="white" />
+              Open Screen
+            </a>
           </div>
         </div>
-        <div className="flex gap-4">
-          <a
-            href="/mmr-ads.html"
-            target="_blank"
-            className="flex items-center gap-2 px-6 py-3 bg-slate-800 hover:bg-slate-900 text-white rounded-xl font-bold transition-all shadow-md"
-          >
-            <Play size={18} fill="white" />
-            Open Screen
-          </a>
+        <div className="flex justify-center">
+          <Navigation currentPath="#/ads-admin" />
         </div>
       </header>
 

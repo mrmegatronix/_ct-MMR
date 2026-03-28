@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useRaffleSocket } from '../hooks/useRaffleSocket';
-import { Settings, Play, Square, RotateCcw, Download, XCircle, Plus } from 'lucide-react';
+import { Settings, Play, Square, RotateCcw, Download, XCircle, Plus, Monitor, Smartphone, Tv } from 'lucide-react';
+import Navigation from './Navigation';
 
 export default function RemoteControl() {
   const { state, isConnected, error, updateState, drawNumber, resetDraw, excludeNumber, removeExcludedNumber } = useRaffleSocket();
@@ -135,17 +136,19 @@ export default function RemoteControl() {
 
   return (
     <div className="min-h-screen bg-slate-100 text-slate-900 p-4 font-sans max-w-md mx-auto shadow-2xl">
-      <header className="flex items-center justify-between mb-6 pb-4 border-b border-slate-300">
-        <h1 className="text-2xl font-black text-red-700 uppercase tracking-tight flex items-center gap-2">
-          <span>🥩</span> Remote
-        </h1>
-        <div className="flex items-center gap-3">
-          <a href="#/ads-admin" className="text-slate-500 hover:text-red-700 transition-colors" title="Ad Manager">
-            <Settings size={20} />
-          </a>
-          <div className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${isConnected ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-            {isConnected ? 'Connected' : 'Offline'}
+      <header className="flex flex-col gap-4 mb-6 pb-4 border-b border-slate-300">
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl font-black text-red-700 uppercase tracking-tight flex items-center gap-2">
+            <span>🥩</span> Remote
+          </h1>
+          <div className="flex items-center gap-2">
+            <div className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${isConnected ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+              {isConnected ? 'ONLINE' : 'OFFLINE'}
+            </div>
           </div>
+        </div>
+        <div className="flex justify-center">
+          <Navigation currentPath="#/remote" />
         </div>
       </header>
 

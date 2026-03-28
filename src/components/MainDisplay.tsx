@@ -478,10 +478,10 @@ export default function MainDisplay() {
   const hours = nzTime.getHours();
   const minutes = nzTime.getMinutes();
   
-  // Show buildup slides if it's not Thursday, or if it's Thursday before 6:30 PM
-  const isBeforeMainDraw = !isThursdayNow || (hours < 18 || (hours === 18 && minutes < 30));
-
-  const showBuildup = state.status === 'buildup' || (state.status === 'idle' && isBeforeMainDraw && state.drawnNumbers.length === 0);
+  const isBeforeMainDraw = (hours < 18 || (hours === 18 && minutes < 30));
+  
+  // Show buildup slides ONLY if explicitly in buildup status, or if idle and it's Thursday before the main draw
+  const showBuildup = state.status === 'buildup' || (state.status === 'idle' && isThursdayNow && isBeforeMainDraw && state.drawnNumbers.length === 0);
 
   const target = getNextDrawDate();
   const diff = useMemo(() => differenceInSeconds(target, currentTime), [target, currentTime]);
@@ -540,7 +540,11 @@ export default function MainDisplay() {
 
       {/* Footer */}
       <footer className="bg-slate-900 p-4 md:p-6 text-center text-slate-500 text-lg md:text-xl font-medium border-t border-slate-800 flex justify-between items-center z-30 relative group overflow-hidden">
-        <div className="flex-1 overflow-hidden whitespace-nowrap relative flex items-center">
+        <div className="absolute left-6 flex items-center gap-2 z-40">
+           <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`}></div>
+           <span className="text-[10px] font-black uppercase tracking-widest text-slate-600">{isConnected ? 'LIVE' : 'OFFLINE'}</span>
+        </div>
+        <div className="flex-1 overflow-hidden whitespace-nowrap relative flex items-center mx-12">
           <motion.div
             animate={{ x: ["100%", "-100%"] }}
             transition={{ repeat: Infinity, duration: 25, ease: "linear" }}
