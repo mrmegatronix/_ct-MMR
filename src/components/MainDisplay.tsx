@@ -1,5 +1,28 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import { useRaffleSocket } from '../hooks/useRaffleSocket';
+import { useRaffleSocket } from '../hooks/useRaffleLocal';
+import { RaffleState } from '../types';
+
+const initialState: RaffleState = {
+  status: 'idle',
+  numberRange: { min: 1, max: 1000 },
+  excludedNumbers: [],
+  drawnNumbers: [],
+  secondChanceNumbers: [],
+  currentDraw: null,
+  drawSettings: { amountToDraw: 1 },
+  prizePool: '$950',
+  numberOfPrizes: '50',
+  prizeSizes: '$15, $25 & $50',
+  slide1Title: 'Monster Meat Raffle',
+  slide1Subtitle: 'Tickets on sale NOW!',
+  slide2Title: "Tonight's Prizes",
+  slide2Subtitle: 'Massive Meat Trays to be won!',
+  slide3Title: 'Ticket Prices',
+  slide3Subtitle: 'Get yours before the draw!',
+  ticketPriceSingle: '$5',
+  ticketPricePack: '$20',
+  ticketPackQuantity: '4',
+};
 import { motion, AnimatePresence } from 'motion/react';
 import { format, differenceInSeconds } from 'date-fns';
 import { toZonedTime, formatInTimeZone, fromZonedTime } from 'date-fns-tz';
@@ -201,12 +224,18 @@ function BuildupSlides({ state }: { state: any; key?: string }) {
           className="w-full h-full flex flex-col items-center justify-center text-center px-4 py-8 z-10"
         >
           {slide.title && (
-            <h2 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl leading-tight font-black uppercase tracking-tight mb-4 md:mb-6 text-white drop-shadow-xl">
+            <h2 
+              className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl leading-tight font-black uppercase tracking-tight mb-4 md:mb-6 text-white drop-shadow-xl"
+              style={{ fontSize: (state.titleSize || 100) > 100 ? `${(state.titleSize || 100) / 100}em` : undefined }}
+            >
               {slide.title}
             </h2>
           )}
           {slide.subtitle && (
-            <h3 className="text-2xl md:text-3xl lg:text-4xl text-red-400 font-bold tracking-wide mb-6 md:mb-10 drop-shadow-md">
+            <h3 
+              className="text-2xl md:text-3xl lg:text-4xl text-red-400 font-bold tracking-wide mb-6 md:mb-10 drop-shadow-md"
+              style={{ fontSize: (state.subtitleSize || 100) > 100 ? `${(state.subtitleSize || 100) / 100}em` : undefined }}
+            >
               {slide.subtitle}
             </h3>
           )}
@@ -343,9 +372,11 @@ function ResultsBoard({ state }: { state: any; key?: string }) {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="h-full flex flex-col gap-8"
+      className="h-full flex flex-col gap-8 relative z-10"
     >
-      <MeatConfetti />
+      <div className="absolute inset-0 z-[-1] pointer-events-none">
+        <MeatConfetti />
+      </div>
       {/* Main Winners */}
       <div className="flex-1 bg-slate-900/50 rounded-3xl border border-slate-800 p-4 md:p-8 flex flex-col">
         <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
@@ -451,41 +482,7 @@ export default function MainDisplay() {
     return () => clearInterval(timer);
   }, []);
 
-  if (error) {
-    return (
-      <div className="min-h-screen bg-slate-900 text-white p-8 flex flex-col items-center justify-center font-sans">
-        <div className="max-w-2xl w-full bg-slate-800 p-8 rounded-3xl border border-red-500/50 shadow-2xl text-center">
-          <h1 className="text-4xl font-black text-red-500 mb-4 uppercase tracking-tight">Connection Issue</h1>
-          <p className="text-slate-300 mb-6 text-lg">{error}</p>
-          <div className="bg-black/50 p-4 rounded-xl border border-slate-700 font-mono text-sm overflow-auto mb-6 text-left">
-            <p>Verification Checklist:</p>
-            <ul className="list-disc ml-5 mt-2 space-y-1 text-slate-400">
-              <li>Check your internet connection.</li>
-              <li>Ensure Firebase Project <b>ct-mmr-raffle</b> is active.</li>
-              <li>Verify Firestore rules allow read/write.</li>
-              <li>Confirm VITE_FIREBASE_* env vars are correct.</li>
-            </ul>
-          </div>
-          <button 
-            onClick={() => window.location.reload()}
-            className="px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl transition-colors"
-          >
-            Retry Connection
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  if (!state) {
-    return (
-      <div className="flex flex-col items-center justify-center h-screen bg-slate-900 text-white gap-4">
-        <div className="w-16 h-16 border-4 border-red-500 border-t-transparent rounded-full animate-spin"></div>
-        <div className="text-3xl font-bold animate-pulse text-red-500">Connecting to server...</div>
-        <p className="text-slate-500">Initializing Firebase & Firestore</p>
-      </div>
-    );
-  }
+  const safeState = state || initialState;
 
   const nzTime = toZonedTime(currentTime, TIMEZONE);
   const isThursdayNow = nzTime.getDay() === 4;
@@ -495,25 +492,16 @@ export default function MainDisplay() {
   const isBeforeMainDraw = (hours < 18 || (hours === 18 && minutes < 30));
   
   // Show buildup slides ONLY if explicitly in buildup status, or if idle and it's Thursday before the main draw
-  const showBuildup = state.status === 'buildup' || (state.status === 'idle' && isThursdayNow && isBeforeMainDraw && state.drawnNumbers.length === 0);
+  const showBuildup = safeState.status === 'buildup' || (safeState.status === 'idle' && isThursdayNow && isBeforeMainDraw && (safeState.drawnNumbers?.length || 0) === 0);
 
   const target = getNextDrawDate();
   const diff = useMemo(() => differenceInSeconds(target, currentTime), [target, currentTime]);
   const timeLeft = useMemo(() => formatTimeLeft(diff), [diff]);
 
-  // Defensive check for state properties
-  const safeState = {
-    status: state?.status || 'idle',
-    drawnNumbers: state?.drawnNumbers || [],
-    currentDraw: state?.currentDraw ?? null,
-    prizePool: state?.prizePool || '$950',
-    numberOfPrizes: state?.numberOfPrizes || '50',
-    prizeSizes: state?.prizeSizes || '$15, $25 & $50',
-    ...state
-  };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 overflow-hidden flex flex-col font-sans">
+    <div className="min-h-screen bg-slate-950 text-slate-100 overflow-hidden flex flex-col font-sans relative">
+      <MeatConfetti />
       {/* Header */}
       <header className="bg-slate-900/90 p-4 md:p-8 shadow-2xl border-b border-slate-700 flex flex-wrap justify-between items-center gap-4 z-30 relative">
         <div className="flex items-center gap-4 md:gap-6">
@@ -531,9 +519,9 @@ export default function MainDisplay() {
             <p className="text-slate-300 text-lg md:text-2xl font-medium tracking-wide mt-1">Weekly Thursday Draw</p>
           </div>
         </div>
-        <div className="text-right shrink-0">
-          <div className="text-xl md:text-3xl lg:text-4xl font-mono font-bold text-slate-100 tabular-nums">{timeLeft}</div>
-          <div className="text-slate-400 text-xs md:text-sm uppercase tracking-widest mt-1">Until Draw</div>
+        <div className="text-right shrink-0 bg-black/40 p-4 rounded-2xl border border-white/10 shadow-inner">
+          <div className="text-3xl md:text-5xl lg:text-7xl font-mono font-black text-red-500 tabular-nums drop-shadow-[0_0_20px_rgba(239,68,68,0.5)]">{timeLeft}</div>
+          <div className="text-slate-400 text-sm md:text-base uppercase tracking-widest mt-1 font-black">Until Next Draw</div>
         </div>
       </header>
 

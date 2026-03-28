@@ -1,38 +1,21 @@
 import React, { useState, useEffect } from 'react';
-import { db } from '../lib/firebase';
-import { doc, getDoc, setDoc, updateDoc, onSnapshot } from 'firebase/firestore';
-import { Settings, Save, AlertCircle, ExternalLink, Link2, Info, ChevronRight, Play, Eye, EyeOff } from 'lucide-react';
+import { Settings, Save, AlertCircle, ExternalLink, Link2, Play, Eye, EyeOff, ChevronRight } from 'lucide-react';
 import Navigation from './Navigation';
-import FirebaseDiagnostics from './FirebaseDiagnostics';
 
 export default function AdAdmin() {
   const DEFAULT_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSGkdY9CpTGOcRZf-giDDGGqDcXJaO7BYO9nxyNO4Jw_XpODvq2sicVYtNDy1w-qGnaA5iNJ-lghCNy/pub?output=csv";
-  const [sheetUrl, setSheetUrl] = useState(DEFAULT_CSV);
-  const [editUrl, setEditUrl] = useState('');
-  const [excludedSlides, setExcludedSlides] = useState<string[]>([]);
+  
+  const [sheetUrl, setSheetUrl] = useState(localStorage.getItem('mmr_sheet_url') || DEFAULT_CSV);
+  const [editUrl, setEditUrl] = useState(localStorage.getItem('mmr_edit_url') || '');
+  const [excludedSlides, setExcludedSlides] = useState<string[]>(JSON.parse(localStorage.getItem('mmr_excluded_slides') || '[]'));
   const [previewSlides, setPreviewSlides] = useState<any[]>([]);
+  const [titleSize, setTitleSize] = useState(JSON.parse(localStorage.getItem('mmr_raffle_state') || '{}').titleSize || 100);
+  const [subtitleSize, setSubtitleSize] = useState(JSON.parse(localStorage.getItem('mmr_raffle_state') || '{}').subtitleSize || 100);
   const [isSaving, setIsSaving] = useState(false);
   const [message, setMessage] = useState({ text: '', type: '' });
 
   useEffect(() => {
-    const adsDoc = doc(db, 'config', 'ads');
-    const unsubscribe = onSnapshot(adsDoc, (snapshot) => {
-      if (snapshot.exists()) {
-        const data = snapshot.data();
-        const url = data.sheetUrl || DEFAULT_CSV;
-        setSheetUrl(url);
-        setEditUrl(data.editUrl || '');
-        setExcludedSlides(data.excludedSlides || []);
-        if (url) {
-            fetchPreview(url);
-        }
-      } else {
-        setSheetUrl(DEFAULT_CSV);
-        fetchPreview(DEFAULT_CSV);
-      }
-    });
-
-    return () => unsubscribe();
+    fetchPreview(sheetUrl);
   }, []);
 
   const fetchPreview = async (url: string) => {
@@ -68,22 +51,16 @@ export default function AdAdmin() {
     setMessage({ text: '', type: '' });
     
     try {
-      const adsDoc = doc(db, 'config', 'ads');
-      const snap = await getDoc(adsDoc);
+      localStorage.setItem('mmr_sheet_url', sheetUrl);
+      localStorage.setItem('mmr_edit_url', editUrl);
+      localStorage.setItem('mmr_excluded_slides', JSON.stringify(excludedSlides));
       
-      const payload = { 
-        sheetUrl, 
-        editUrl, 
-        excludedSlides 
-      };
+      // Notify other tabs
+      const bc = new BroadcastChannel('mmr_sync_ads');
+      bc.postMessage({ sheetUrl, editUrl, excludedSlides });
+      bc.close();
 
-      if (!snap.exists()) {
-        await setDoc(adsDoc, payload);
-      } else {
-        await updateDoc(adsDoc, payload);
-      }
-      
-      setMessage({ text: 'Configuration saved successfully!', type: 'success' });
+      setMessage({ text: 'Configuration saved to local storage!', type: 'success' });
       fetchPreview(sheetUrl);
     } catch (e: any) {
       console.error(e);
@@ -91,6 +68,21 @@ export default function AdAdmin() {
     } finally {
       setIsSaving(false);
     }
+  };
+
+  const toggleSlide = (slideTitle: string) => {
+    const isExcluded = excludedSlides.includes(slideTitle);
+    const newExcluded = isExcluded
+      ? excludedSlides.filter(s => s !== slideTitle)
+      : [...excludedSlides, slideTitle];
+    
+    setExcludedSlides(newExcluded);
+    localStorage.setItem('mmr_excluded_slides', JSON.stringify(newExcluded));
+    
+    // Notify other tabs
+    const bc = new BroadcastChannel('mmr_sync_ads');
+    bc.postMessage({ excludedSlides: newExcluded });
+    bc.close();
   };
 
   return (
@@ -103,7 +95,7 @@ export default function AdAdmin() {
             </div>
             <div>
               <h1 className="text-3xl font-black text-white uppercase tracking-tight">Ad Manager</h1>
-              <p className="text-slate-400 font-medium">Configure Display Advertisements</p>
+              <p className="text-slate-400 font-medium tracking-tight">Configure Slides & Sources (No Cloud Required)</p>
             </div>
           </div>
           <div className="flex gap-4">
@@ -123,8 +115,11 @@ export default function AdAdmin() {
       </header>
 
       <div className="space-y-8">
-        {/* Diagnostics - Compact at top */}
-        <FirebaseDiagnostics />
+        {/* Local Status Indicator */}
+        <div className="bg-green-900/20 border border-green-500/30 p-4 rounded-2xl flex items-center gap-3">
+          <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+          <span className="text-sm font-bold text-green-400 uppercase tracking-widest">Local-Only Mode Active</span>
+        </div>
 
         {/* URL Configuration */}
         <section className="bg-slate-900 p-6 md:p-8 rounded-3xl shadow-xl border border-slate-800">
@@ -160,6 +155,59 @@ export default function AdAdmin() {
               />
             </div>
 
+            {/* Text Size Scaling */}
+            <div className="border-t border-slate-800 pt-6 space-y-6">
+              <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                <Settings size={16} /> Global Slide Scale
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div>
+                  <div className="flex justify-between text-xs font-bold text-slate-500 mb-3 uppercase tracking-widest">
+                    <span>Title Growth</span>
+                    <span className="text-red-500">{titleSize}%</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="100"
+                    max="300"
+                    step="5"
+                    value={titleSize}
+                    onChange={(e) => {
+                      const newSize = parseInt(e.target.value);
+                      setTitleSize(newSize);
+                      const st = JSON.parse(localStorage.getItem('mmr_raffle_state') || '{}');
+                      st.titleSize = newSize;
+                      localStorage.setItem('mmr_raffle_state', JSON.stringify(st));
+                      new BroadcastChannel('mmr_sync').postMessage(st);
+                    }}
+                    className="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-red-600"
+                  />
+                </div>
+                <div>
+                  <div className="flex justify-between text-xs font-bold text-slate-500 mb-3 uppercase tracking-widest">
+                    <span>Subtitle Growth</span>
+                    <span className="text-red-500">{subtitleSize}%</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="100"
+                    max="300"
+                    step="5"
+                    value={subtitleSize}
+                    onChange={(e) => {
+                      const newSize = parseInt(e.target.value);
+                      setSubtitleSize(newSize);
+                      const st = JSON.parse(localStorage.getItem('mmr_raffle_state') || '{}');
+                      st.subtitleSize = newSize;
+                      localStorage.setItem('mmr_raffle_state', JSON.stringify(st));
+                      new BroadcastChannel('mmr_sync').postMessage(st);
+                    }}
+                    className="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-red-600"
+                  />
+                </div>
+              </div>
+            </div>
+
             <div className="flex flex-col sm:flex-row gap-4 pt-2">
               <button
                 onClick={saveConfig}
@@ -168,7 +216,7 @@ export default function AdAdmin() {
                   isSaving ? 'bg-slate-800 text-slate-600' : 'bg-red-600 hover:bg-red-700 text-white shadow-red-600/20'
                 }`}
               >
-                {isSaving ? <div className="w-5 h-5 border-3 border-white border-t-transparent rounded-full animate-spin"></div> : <><Save size={20} /> Save Source</>}
+                {isSaving ? <div className="w-5 h-5 border-3 border-white border-t-transparent rounded-full animate-spin"></div> : <><Save size={20} /> Save Configuration</>}
               </button>
               
               {editUrl && (
@@ -213,15 +261,7 @@ export default function AdAdmin() {
                   }`}>
                     <div className="flex items-center gap-4">
                       <button 
-                        onClick={() => {
-                          const newExcluded = isExcluded
-                            ? excludedSlides.filter(s => s !== slide[0])
-                            : [...excludedSlides, slide[0]];
-                          setExcludedSlides(newExcluded);
-                          // Auto-save exclusion
-                          const adsDoc = doc(db, 'config', 'ads');
-                          updateDoc(adsDoc, { excludedSlides: newExcluded });
-                        }}
+                        onClick={() => toggleSlide(slide[0])}
                         className={`p-2 rounded-lg transition-colors ${
                           isExcluded ? 'text-slate-600 hover:text-red-500' : 'text-red-500 hover:bg-red-500/10'
                         }`}
@@ -230,7 +270,8 @@ export default function AdAdmin() {
                         {isExcluded ? <EyeOff size={20} /> : <Eye size={20} />}
                       </button>
                       <div className="w-12 h-12 bg-slate-900 rounded-xl border border-slate-700 flex items-center justify-center text-slate-600 font-mono text-xs overflow-hidden shrink-0">
-                        {slide[2] ? <img src={slide[2]} className="w-full h-full object-cover" /> : i+1}
+                        {slide[2] && <img src={slide[2]} className="w-full h-full object-cover" />}
+                        {!slide[2] && (i+1)}
                       </div>
                       <div>
                         <h4 className={`font-bold line-clamp-1 ${isExcluded ? 'text-slate-600 line-through' : 'text-white'}`}>

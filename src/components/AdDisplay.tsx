@@ -1,6 +1,4 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { db } from '../lib/firebase';
-import { doc, onSnapshot } from 'firebase/firestore';
 import { motion, AnimatePresence } from 'motion/react';
 
 interface Slide {
@@ -12,34 +10,35 @@ interface Slide {
 
 export default function AdDisplay() {
   const DEFAULT_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSGkdY9CpTGOcRZf-giDDGGqDcXJaO7BYO9nxyNO4Jw_XpODvq2sicVYtNDy1w-qGnaA5iNJ-lghCNy/pub?output=csv";
+  
   const [slides, setSlides] = useState<Slide[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [sheetUrl, setSheetUrl] = useState<string>(DEFAULT_CSV);
-  const [excludedSlides, setExcludedSlides] = useState<string[]>([]);
+  const [sheetUrl, setSheetUrl] = useState<string>(localStorage.getItem('mmr_sheet_url') || DEFAULT_CSV);
+  const [excludedSlides, setExcludedSlides] = useState<string[]>(JSON.parse(localStorage.getItem('mmr_excluded_slides') || '[]'));
+  const [titleSize, setTitleSize] = useState(JSON.parse(localStorage.getItem('mmr_raffle_state') || '{}').titleSize || 100);
+  const [subtitleSize, setSubtitleSize] = useState(JSON.parse(localStorage.getItem('mmr_raffle_state') || '{}').subtitleSize || 100);
   const [error, setError] = useState<string | null>(null);
 
+  // Sync with Admin tab
   useEffect(() => {
-    // Listen for the ads configuration in Firestore
-    const adsDoc = doc(db, 'config', 'ads');
-    const unsubscribe = onSnapshot(adsDoc, (snapshot) => {
-      if (snapshot.exists()) {
-        const data = snapshot.data();
-        if (data.sheetUrl && data.sheetUrl !== sheetUrl) {
-          setSheetUrl(data.sheetUrl);
-        } else if (!data.sheetUrl) {
-          setSheetUrl(DEFAULT_CSV);
-        }
-        setExcludedSlides(data.excludedSlides || []);
-        setError(null);
-      } else {
-        setError("Configuration document 'config/ads' not found in Firestore.");
-      }
-    }, (err) => {
-      console.error("Firestore error in AdDisplay:", err);
-      setError(`Firestore Error: ${err.message}`);
-    });
-    return () => unsubscribe();
-  }, [sheetUrl]);
+    const bcAds = new BroadcastChannel('mmr_sync_ads');
+    bcAds.onmessage = (event) => {
+      const { sheetUrl: newUrl, excludedSlides: newExcluded } = event.data;
+      if (newUrl) setSheetUrl(newUrl);
+      if (newExcluded) setExcludedSlides(newExcluded);
+    };
+
+    const bcSync = new BroadcastChannel('mmr_sync');
+    bcSync.onmessage = (event) => {
+      if (event.data?.titleSize !== undefined) setTitleSize(event.data.titleSize);
+      if (event.data?.subtitleSize !== undefined) setSubtitleSize(event.data.subtitleSize);
+    };
+
+    return () => {
+      bcAds.close();
+      bcSync.close();
+    };
+  }, []);
 
   const fetchSlides = useCallback(async (url: string) => {
     try {
@@ -47,7 +46,7 @@ export default function AdDisplay() {
       if (!response.ok) throw new Error(`HTTP Error: ${response.statusText}`);
       
       const text = await response.text();
-      // Robust CSV parsing (handles quotes and commas)
+      // Robust CSV parsing
       const rows = text.split(/\r?\n/).filter(line => line.trim());
       const parsedSlides: Slide[] = rows.slice(1)
         .map(line => {
@@ -83,50 +82,18 @@ export default function AdDisplay() {
         setError("No valid slides found in the Google Sheets CSV.");
       }
     } catch (e: any) {
-      console.error("Error fetching slides from Google Sheets:", e);
-      setError(`Google Sheets Sync Error: ${e.message}`);
+      console.error("Error fetching slides:", e);
+      setError(`Sync Error: ${e.message}`);
     }
   }, []);
 
   useEffect(() => {
     if (sheetUrl) {
       fetchSlides(sheetUrl);
-      // Refresh slides every 5 minutes
-      const interval = setInterval(() => fetchSlides(sheetUrl), 300000);
+      const interval = setInterval(() => fetchSlides(sheetUrl), 300000); // 5 min refresh
       return () => clearInterval(interval);
     }
   }, [sheetUrl, fetchSlides]);
-
-  useEffect(() => {
-    if (slides.length === 0) return;
-
-    const currentSlide = slides[currentIndex];
-    const timer = setTimeout(() => {
-      setCurrentIndex((prev) => (prev + 1) % slides.length);
-    }, currentSlide?.duration || 8000);
-
-    return () => clearTimeout(timer);
-  }, [currentIndex, slides]);
-
-  if (error) {
-    return (
-      <div className="flex items-center justify-center h-screen bg-slate-950 text-white p-8">
-        <div className="max-w-xl w-full bg-slate-900 p-8 rounded-3xl border border-red-500/30 text-center shadow-2xl">
-          <div className="w-16 h-16 bg-red-500/10 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6">
-             <span className="text-3xl font-bold">!</span>
-          </div>
-          <h1 className="text-3xl font-black text-red-500 mb-4 uppercase tracking-tight">Ad System Error</h1>
-          <p className="text-slate-300 mb-6 text-lg">{error}</p>
-          <button 
-            onClick={() => window.location.reload()}
-            className="px-8 py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl transition-all"
-          >
-            Retry
-          </button>
-        </div>
-      </div>
-    );
-  }
 
   const activeSlides = slides.filter(s => !excludedSlides.includes(s.title));
 
@@ -139,7 +106,6 @@ export default function AdDisplay() {
     );
   }
 
-  // Ensure index is within bounds if slides were just filtered
   const safeIndex = currentIndex % activeSlides.length;
   const slide = activeSlides[safeIndex];
 
@@ -147,14 +113,13 @@ export default function AdDisplay() {
     <div className="h-screen w-screen bg-black overflow-hidden relative">
       <AnimatePresence mode="wait">
         <motion.div
-          key={currentIndex}
+          key={safeIndex}
           initial={{ opacity: 0, scale: 1.1, filter: "blur(20px)" }}
           animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
           exit={{ opacity: 0, scale: 0.9, filter: "blur(20px)" }}
           transition={{ duration: 1.2, ease: "anticipate" }}
           className="absolute inset-0 flex flex-col items-center justify-center text-center p-8"
         >
-          {/* Background Image / Effect */}
           {slide.image && (
             <div 
               className="absolute inset-0 opacity-40 z-0 bg-cover bg-center"
@@ -178,6 +143,7 @@ export default function AdDisplay() {
               initial={{ y: 30, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.3 }}
+              style={{ fontSize: (titleSize > 100) ? `${(titleSize / 100)}em` : undefined }}
               className="text-6xl md:text-8xl lg:text-9xl font-black text-white uppercase tracking-tighter drop-shadow-[0_0_30px_rgba(255,255,255,0.4)] leading-none"
             >
               {slide.title}
@@ -188,7 +154,8 @@ export default function AdDisplay() {
                 initial={{ y: 30, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ delay: 0.6 }}
-                className="text-3xl md:text-5xl lg:text-6xl text-red-500 font-bold uppercase tracking-widest drop-shadow-md"
+                style={{ fontSize: (subtitleSize > 100) ? `${(subtitleSize / 100)}em` : undefined }}
+                className="text-4xl md:text-6xl lg:text-7xl text-red-500 font-bold uppercase tracking-widest drop-shadow-md"
               >
                 {slide.subtitle}
               </motion.p>
@@ -197,7 +164,6 @@ export default function AdDisplay() {
         </motion.div>
       </AnimatePresence>
       
-      {/* Progress Bar */}
       <div className="absolute bottom-0 left-0 w-full h-2 bg-white/10 overflow-hidden">
         <motion.div
           key={`progress-${currentIndex}`}

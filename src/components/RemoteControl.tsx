@@ -1,24 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { useRaffleSocket } from '../hooks/useRaffleSocket';
-import { db } from '../lib/firebase';
-import { doc, getDoc, onSnapshot } from 'firebase/firestore';
+import { useRaffleSocket } from '../hooks/useRaffleLocal';
 import { Settings, Play, Square, RotateCcw, Download, XCircle, Plus, ExternalLink } from 'lucide-react';
 import Navigation from './Navigation';
-import FirebaseDiagnostics from './FirebaseDiagnostics';
 
 export default function RemoteControl() {
   const { state, isConnected, error, updateState, drawNumber, resetDraw, excludeNumber, removeExcludedNumber } = useRaffleSocket();
   const [excludeInput, setExcludeInput] = useState('');
-  const [editUrl, setEditUrl] = useState('');
+  const [editUrl, setEditUrl] = useState(localStorage.getItem('mmr_edit_url') || '');
 
   useEffect(() => {
-    const adsDoc = doc(db, 'config', 'ads');
-    const unsubscribe = onSnapshot(adsDoc, (snapshot) => {
-      if (snapshot.exists()) {
-        setEditUrl(snapshot.data().editUrl || '');
-      }
-    });
-    return () => unsubscribe();
+    // Sync editUrl from localStorage periodically or on change
+    const handleStorage = () => {
+      setEditUrl(localStorage.getItem('mmr_edit_url') || '');
+    };
+    window.addEventListener('storage', handleStorage);
+    return () => window.removeEventListener('storage', handleStorage);
   }, []);
 
   if (error) {
@@ -112,8 +108,8 @@ export default function RemoteControl() {
             <span>🥩</span> Remote
           </h1>
           <div className="flex items-center gap-2">
-            <div className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${isConnected ? 'bg-green-900/30 text-green-400' : 'bg-red-900/30 text-red-400'}`}>
-              {isConnected ? 'ONLINE' : 'OFFLINE'}
+            <div className="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-green-900/30 text-green-400">
+              LOCAL SYNC
             </div>
           </div>
         </div>
@@ -123,9 +119,6 @@ export default function RemoteControl() {
       </header>
 
       <div className="space-y-6 pb-20">
-        {/* Diagnostics */}
-        <FirebaseDiagnostics />
-
         {/* Status & Main Controls */}
         <section className="bg-slate-900 p-5 rounded-2xl shadow-xl border border-slate-800">
           <div className="flex justify-between items-center mb-4">
@@ -252,6 +245,41 @@ export default function RemoteControl() {
                 value={state.numberRange.max}
                 onChange={(e) => handleRangeChange(e, 'max')}
                 className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2 font-mono font-bold text-white focus:border-red-500 outline-none"
+              />
+            </div>
+          </div>
+
+          {/* Text Size Scaling */}
+          <div className="border-t border-slate-800 pt-4 space-y-4">
+            <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Display Scale</h3>
+            <div>
+              <div className="flex justify-between text-[10px] font-bold text-slate-400 mb-1">
+                <span>TITLE SIZE</span>
+                <span>{state.titleSize || 100}%</span>
+              </div>
+              <input
+                type="range"
+                min="100"
+                max="300"
+                step="5"
+                value={state.titleSize || 100}
+                onChange={(e) => updateState({ titleSize: parseInt(e.target.value) })}
+                className="w-full h-1 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-red-600"
+              />
+            </div>
+            <div>
+              <div className="flex justify-between text-[10px] font-bold text-slate-400 mb-1">
+                <span>SUBTITLE SIZE</span>
+                <span>{state.subtitleSize || 100}%</span>
+              </div>
+              <input
+                type="range"
+                min="100"
+                max="300"
+                step="5"
+                value={state.subtitleSize || 100}
+                onChange={(e) => updateState({ subtitleSize: parseInt(e.target.value) })}
+                className="w-full h-1 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-red-600"
               />
             </div>
           </div>

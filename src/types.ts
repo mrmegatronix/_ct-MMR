@@ -23,4 +23,6 @@ export interface RaffleState {
   ticketPriceSingle: string;
   ticketPricePack: string;
   ticketPackQuantity: string;
+  titleSize?: number;
+  subtitleSize?: number;
 }
