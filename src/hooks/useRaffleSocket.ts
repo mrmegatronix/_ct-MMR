@@ -31,6 +31,7 @@ const initialState: RaffleState = {
 export function useRaffleSocket() {
   const [state, setState] = useState<RaffleState | null>(null);
   const [isConnected, setIsConnected] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const raffleDoc = doc(db, RAFFLE_COLLECTION, RAFFLE_DOC_ID);
@@ -40,10 +41,12 @@ export function useRaffleSocket() {
       try {
         const snap = await getDoc(raffleDoc);
         if (!snap.exists()) {
+          console.log("Document does not exist, creating initial state...");
           await setDoc(raffleDoc, initialState);
         }
-      } catch (e) {
+      } catch (e: any) {
         console.error("Firebase init error:", e);
+        setError(`Initialization Error: ${e.message}`);
       }
     };
     init();
@@ -52,12 +55,15 @@ export function useRaffleSocket() {
       if (snapshot.exists()) {
         setState(snapshot.data() as RaffleState);
         setIsConnected(true);
+        setError(null);
       } else {
         setIsConnected(false);
+        setError("Raffle document does not exist in Firestore.");
       }
-    }, (error) => {
-      console.error("Firestore error:", error);
+    }, (err) => {
+      console.error("Firestore error:", err);
       setIsConnected(false);
+      setError(`Firestore Connection Error: ${err.message}`);
     });
 
     return () => unsubscribe();
@@ -67,23 +73,26 @@ export function useRaffleSocket() {
     const raffleDoc = doc(db, RAFFLE_COLLECTION, RAFFLE_DOC_ID);
     try {
       await updateDoc(raffleDoc, newState);
-    } catch (e) {
+    } catch (e: any) {
       console.error("Update error:", e);
+      setError(`Update failed: ${e.message}`);
     }
   }, []);
 
   const drawNumber = useCallback(async (isSecondChance: boolean = false) => {
     if (!state || state.status === 'drawing') return;
 
-    const amount = state.drawSettings.amountToDraw || 1;
+    const amount = state.drawSettings?.amountToDraw || 1;
     const drawnThisRound: number[] = [];
-    const currentDrawn = [...state.drawnNumbers];
-    const currentSC = [...state.secondChanceNumbers];
-    const excluded = [...state.excludedNumbers];
+    const currentDrawn = [...(state.drawnNumbers || [])];
+    const currentSC = [...(state.secondChanceNumbers || [])];
+    const excluded = [...(state.excludedNumbers || [])];
 
     for (let j = 0; j < amount; j++) {
       const availableNumbers: number[] = [];
-      for (let i = state.numberRange.min; i <= state.numberRange.max; i++) {
+      const min = state.numberRange?.min ?? 1;
+      const max = state.numberRange?.max ?? 1000;
+      for (let i = min; i <= max; i++) {
         if (!excluded.includes(i) && 
             !currentDrawn.includes(i) && 
             !currentSC.includes(i) && 
@@ -102,60 +111,84 @@ export function useRaffleSocket() {
 
     const raffleDoc = doc(db, RAFFLE_COLLECTION, RAFFLE_DOC_ID);
     
-    // Step 1: Set status to drawing
-    await updateDoc(raffleDoc, {
-      currentDraw: drawnThisRound[drawnThisRound.length - 1],
-      status: 'drawing',
-    });
-
-    // Step 2: Wait for animation (3 seconds) and then update results
-    // Navigation logic might trigger this once per drawing state, 
-    // but we'll do it from the remote caller side.
-    setTimeout(async () => {
+    try {
+      // Step 1: Set status to drawing
       await updateDoc(raffleDoc, {
-        secondChanceNumbers: isSecondChance 
-          ? [...currentSC, ...drawnThisRound] 
-          : currentSC,
-        drawnNumbers: !isSecondChance 
-          ? [...currentDrawn, ...drawnThisRound] 
-          : currentDrawn,
-        status: 'idle',
-        currentDraw: drawnThisRound[drawnThisRound.length - 1], // Keep on screen or nullify? User said "stay on screen untill the end"
+        currentDraw: drawnThisRound[drawnThisRound.length - 1],
+        status: 'drawing',
       });
-    }, 4500); // 4.5s to allow for full animation cycle
+
+      // Step 2: Wait for animation (4.5 seconds) and then update results
+      setTimeout(async () => {
+        try {
+          await updateDoc(raffleDoc, {
+            secondChanceNumbers: isSecondChance 
+              ? [...currentSC, ...drawnThisRound] 
+              : currentSC,
+            drawnNumbers: !isSecondChance 
+              ? [...currentDrawn, ...drawnThisRound] 
+              : currentDrawn,
+            status: 'idle',
+            currentDraw: drawnThisRound[drawnThisRound.length - 1],
+          });
+        } catch (e: any) {
+          console.error("Update results error:", e);
+          setError(`Drawing update failed: ${e.message}`);
+        }
+      }, 4500);
+    } catch (e: any) {
+      console.error("Start drawing error:", e);
+      setError(`Failed to start drawing: ${e.message}`);
+    }
   }, [state]);
 
   const resetDraw = useCallback(async () => {
     const raffleDoc = doc(db, RAFFLE_COLLECTION, RAFFLE_DOC_ID);
-    await updateDoc(raffleDoc, {
-      drawnNumbers: [],
-      secondChanceNumbers: [],
-      currentDraw: null,
-      status: 'idle',
-    });
+    try {
+      await updateDoc(raffleDoc, {
+        drawnNumbers: [],
+        secondChanceNumbers: [],
+        currentDraw: null,
+        status: 'idle',
+      });
+    } catch (e: any) {
+      console.error("Reset error:", e);
+      setError(`Reset failed: ${e.message}`);
+    }
   }, []);
 
   const excludeNumber = useCallback(async (num: number) => {
     if (!state) return;
     if (!state.excludedNumbers.includes(num)) {
       const raffleDoc = doc(db, RAFFLE_COLLECTION, RAFFLE_DOC_ID);
-      await updateDoc(raffleDoc, {
-        excludedNumbers: [...state.excludedNumbers, num],
-      });
+      try {
+        await updateDoc(raffleDoc, {
+          excludedNumbers: [...state.excludedNumbers, num],
+        });
+      } catch (e: any) {
+        console.error("Exclude error:", e);
+        setError(`Failed to exclude number: ${e.message}`);
+      }
     }
   }, [state]);
 
   const removeExcludedNumber = useCallback(async (num: number) => {
     if (!state) return;
     const raffleDoc = doc(db, RAFFLE_COLLECTION, RAFFLE_DOC_ID);
-    await updateDoc(raffleDoc, {
-      excludedNumbers: state.excludedNumbers.filter(n => n !== num),
-    });
+    try {
+      await updateDoc(raffleDoc, {
+        excludedNumbers: state.excludedNumbers.filter(n => n !== num),
+      });
+    } catch (e: any) {
+      console.error("Remove exclude error:", e);
+      setError(`Failed to remove excluded number: ${e.message}`);
+    }
   }, [state]);
 
   return {
     state,
     isConnected,
+    error,
     updateState,
     drawNumber,
     resetDraw,
@@ -163,3 +196,4 @@ export function useRaffleSocket() {
     removeExcludedNumber,
   };
 }
+

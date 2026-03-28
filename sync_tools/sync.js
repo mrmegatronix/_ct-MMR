@@ -20,29 +20,46 @@ const localDir = path.resolve(__dirname, '..');
 const remoteTempDir = '/home/owner/app_sync_temp';
 const remoteDeployDir = '/var/www/html';
 
+import { execSync } from 'child_process';
+
+async function buildProject() {
+  console.log(`[${new Date().toLocaleTimeString()}] Building project (npm run build)...`);
+  try {
+    execSync('npm run build', { cwd: localDir, stdio: 'inherit' });
+    console.log(`[${new Date().toLocaleTimeString()}] Build successful!`);
+    return true;
+  } catch (err) {
+    console.error(`[${new Date().toLocaleTimeString()}] Build failed:`, err);
+    return false;
+  }
+}
+
 async function setupServer() {
   console.log(`[${new Date().toLocaleTimeString()}] Connecting to Raspberry Pi...`);
   await ssh.connect(config);
   console.log(`[${new Date().toLocaleTimeString()}] Connected!`);
 
   console.log(`[${new Date().toLocaleTimeString()}] Ensuring Apache is installed...`);
-  // Use sudo -S so it reads the password from stdin
   const installCmd = `echo "${config.password}" | sudo -S apt-get update && echo "${config.password}" | sudo -S DEBIAN_FRONTEND=noninteractive apt-get install -y apache2`;
   const result = await ssh.execCommand(installCmd);
   if (result.stdout && !result.stdout.includes('already the newest version')) {
     console.log(result.stdout);
   }
-  if (result.stderr && !result.stderr.includes('password')) {
-    // some apt-get output goes to stderr safely
-    console.error(result.stderr);
-  }
-
+  
   console.log(`[${new Date().toLocaleTimeString()}] Preparing remote directories...`);
   await ssh.execCommand(`mkdir -p ${remoteTempDir}`);
 }
 
 async function syncFiles() {
   console.log(`[${new Date().toLocaleTimeString()}] Syncing files to Raspberry Pi...`);
+  
+  // Always build before syncing to ensure latest code is deployed
+  const buildSuccess = await buildProject();
+  if (!buildSuccess) {
+    console.error(`[${new Date().toLocaleTimeString()}] Skipping sync due to build failure.`);
+    return;
+  }
+
   try {
     const failed = [];
     let uploadCount = 0;
@@ -85,6 +102,7 @@ let syncTimeout;
 async function start() {
   try {
     await setupServer();
+    // No need to build on start, syncFiles handles it
     await syncFiles();
 
     console.log(`[${new Date().toLocaleTimeString()}] Starting file watcher. Editing local files will trigger a sync...`);
@@ -100,7 +118,7 @@ async function start() {
       // Debounce the sync to group rapid file changes (e.g., from formatters)
       syncTimeout = setTimeout(() => {
         syncFiles();
-      }, 2000);
+      }, 5000); // 5s debounce for builds
     });
   } catch (err) {
     console.error('Initialization error:', err);

@@ -14,6 +14,7 @@ export default function AdDisplay() {
   const [slides, setSlides] = useState<Slide[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [sheetUrl, setSheetUrl] = useState<string>('');
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     // Listen for the ads configuration in Firestore
@@ -24,7 +25,13 @@ export default function AdDisplay() {
         if (data.sheetUrl && data.sheetUrl !== sheetUrl) {
           setSheetUrl(data.sheetUrl);
         }
+        setError(null);
+      } else {
+        setError("Configuration document 'config/ads' not found in Firestore.");
       }
+    }, (err) => {
+      console.error("Firestore error in AdDisplay:", err);
+      setError(`Firestore Error: ${err.message}`);
     });
     return () => unsubscribe();
   }, [sheetUrl]);
@@ -32,12 +39,16 @@ export default function AdDisplay() {
   const fetchSlides = useCallback(async (url: string) => {
     try {
       const response = await fetch(url);
+      if (!response.ok) throw new Error(`HTTP Error: ${response.statusText}`);
+      
       const text = await response.text();
-      const rows = text.split('\n').slice(1); // Skip header
+      const rows = text.split('\n').filter(r => r.trim()).slice(1); // Skip header and empty rows
       
       const parsedSlides: Slide[] = rows
         .map(row => {
-          const [title, subtitle, image, duration] = row.split(',').map(s => s.trim());
+          // Simple CSV parse handle potential quotes
+          const cols = row.split(',').map(s => s.trim().replace(/^"|"$/g, ''));
+          const [title, subtitle, image, duration] = cols;
           if (!title) return null;
           return {
             title,
@@ -50,9 +61,13 @@ export default function AdDisplay() {
 
       if (parsedSlides.length > 0) {
         setSlides(parsedSlides);
+        setError(null);
+      } else {
+        setError("No valid slides found in the Google Sheets CSV.");
       }
-    } catch (e) {
+    } catch (e: any) {
       console.error("Error fetching slides from Google Sheets:", e);
+      setError(`Google Sheets Sync Error: ${e.message}`);
     }
   }, []);
 
@@ -76,13 +91,32 @@ export default function AdDisplay() {
     return () => clearTimeout(timer);
   }, [currentIndex, slides]);
 
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-slate-950 text-white p-8">
+        <div className="max-w-xl w-full bg-slate-900 p-8 rounded-3xl border border-red-500/30 text-center shadow-2xl">
+          <div className="w-16 h-16 bg-red-500/10 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6">
+             <span className="text-3xl font-bold">!</span>
+          </div>
+          <h1 className="text-3xl font-black text-red-500 mb-4 uppercase tracking-tight">Ad System Error</h1>
+          <p className="text-slate-300 mb-6 text-lg">{error}</p>
+          <button 
+            onClick={() => window.location.reload()}
+            className="px-8 py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl transition-all"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   if (slides.length === 0) {
     return (
-      <div className="flex items-center justify-center h-screen bg-slate-950 text-white">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-red-500 border-t-transparent rounded-full animate-spin mb-4 mx-auto"></div>
-          <p className="text-xl font-bold uppercase tracking-widest text-slate-400">Loading Advertisements...</p>
-        </div>
+      <div className="flex flex-col items-center justify-center h-screen bg-slate-950 text-white gap-4">
+        <div className="w-16 h-16 border-4 border-red-500 border-t-transparent rounded-full animate-spin"></div>
+        <p className="text-xl font-bold uppercase tracking-widest text-slate-400 animate-pulse">Loading Advertisements...</p>
+        <p className="text-slate-600 text-sm">Fetching from Google Sheets: {sheetUrl ? 'Connected' : 'Waiting for URL...'}</p>
       </div>
     );
   }

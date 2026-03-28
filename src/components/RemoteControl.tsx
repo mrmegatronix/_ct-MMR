@@ -3,8 +3,36 @@ import { useRaffleSocket } from '../hooks/useRaffleSocket';
 import { Settings, Play, Square, RotateCcw, Download, XCircle, Plus } from 'lucide-react';
 
 export default function RemoteControl() {
-  const { state, isConnected, updateState, drawNumber, resetDraw, excludeNumber, removeExcludedNumber } = useRaffleSocket();
+  const { state, isConnected, error, updateState, drawNumber, resetDraw, excludeNumber, removeExcludedNumber } = useRaffleSocket();
   const [excludeInput, setExcludeInput] = useState('');
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-slate-100 flex flex-col items-center justify-center p-8 text-center text-slate-900 font-sans max-w-md mx-auto">
+        <div className="bg-white p-8 rounded-3xl shadow-2xl border border-red-200">
+          <div className="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-6">
+            <XCircle size={32} />
+          </div>
+          <h1 className="text-2xl font-black text-red-700 uppercase tracking-tight mb-4">Remote Error</h1>
+          <p className="text-slate-600 mb-6">{error}</p>
+          <div className="text-left bg-slate-50 p-4 rounded-xl border border-slate-200 text-sm mb-6">
+            <p className="font-bold text-slate-700 mb-2">Troubleshooting:</p>
+            <ul className="list-disc ml-5 space-y-1 text-slate-500">
+              <li>Is the Raspberry Pi online?</li>
+              <li>Check your internet connection.</li>
+              <li>Is Firebase Project active?</li>
+            </ul>
+          </div>
+          <button 
+            onClick={() => window.location.reload()}
+            className="w-full py-4 bg-red-600 hover:bg-red-700 text-white rounded-xl font-black uppercase tracking-widest transition-all"
+          >
+            Reconnect
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   if (!state || !isConnected) {
     return (

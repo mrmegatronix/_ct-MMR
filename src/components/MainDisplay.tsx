@@ -416,7 +416,7 @@ function ResultsBoard({ state }: { state: any; key?: string }) {
 }
 
 export default function MainDisplay() {
-  const { state, isConnected } = useRaffleSocket();
+  const { state, isConnected, error } = useRaffleSocket();
   const [currentTime, setCurrentTime] = useState(new Date());
   const [isFullscreen, setIsFullscreen] = useState(false);
 
@@ -437,8 +437,40 @@ export default function MainDisplay() {
     return () => clearInterval(timer);
   }, []);
 
+  if (error) {
+    return (
+      <div className="min-h-screen bg-slate-900 text-white p-8 flex flex-col items-center justify-center font-sans">
+        <div className="max-w-2xl w-full bg-slate-800 p-8 rounded-3xl border border-red-500/50 shadow-2xl text-center">
+          <h1 className="text-4xl font-black text-red-500 mb-4 uppercase tracking-tight">Connection Issue</h1>
+          <p className="text-slate-300 mb-6 text-lg">{error}</p>
+          <div className="bg-black/50 p-4 rounded-xl border border-slate-700 font-mono text-sm overflow-auto mb-6 text-left">
+            <p>Verification Checklist:</p>
+            <ul className="list-disc ml-5 mt-2 space-y-1 text-slate-400">
+              <li>Check your internet connection.</li>
+              <li>Ensure Firebase Project <b>ct-mmr-raffle</b> is active.</li>
+              <li>Verify Firestore rules allow read/write.</li>
+              <li>Confirm VITE_FIREBASE_* env vars are correct.</li>
+            </ul>
+          </div>
+          <button 
+            onClick={() => window.location.reload()}
+            className="px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl transition-colors"
+          >
+            Retry Connection
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   if (!state) {
-    return <div className="flex items-center justify-center h-screen bg-slate-900 text-white text-3xl font-bold">Connecting to server...</div>;
+    return (
+      <div className="flex flex-col items-center justify-center h-screen bg-slate-900 text-white gap-4">
+        <div className="w-16 h-16 border-4 border-red-500 border-t-transparent rounded-full animate-spin"></div>
+        <div className="text-3xl font-bold animate-pulse text-red-500">Connecting to server...</div>
+        <p className="text-slate-500">Initializing Firebase & Firestore</p>
+      </div>
+    );
   }
 
   const nzTime = toZonedTime(currentTime, TIMEZONE);
