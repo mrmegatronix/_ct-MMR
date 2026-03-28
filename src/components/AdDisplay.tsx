@@ -11,9 +11,10 @@ interface Slide {
 }
 
 export default function AdDisplay() {
+  const DEFAULT_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSGkdY9CpTGOcRZf-giDDGGqDcXJaO7BYO9nxyNO4Jw_XpODvq2sicVYtNDy1w-qGnaA5iNJ-lghCNy/pub?output=csv";
   const [slides, setSlides] = useState<Slide[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [sheetUrl, setSheetUrl] = useState<string>('');
+  const [sheetUrl, setSheetUrl] = useState<string>(DEFAULT_CSV);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -24,6 +25,8 @@ export default function AdDisplay() {
         const data = snapshot.data();
         if (data.sheetUrl && data.sheetUrl !== sheetUrl) {
           setSheetUrl(data.sheetUrl);
+        } else if (!data.sheetUrl) {
+          setSheetUrl(DEFAULT_CSV);
         }
         setError(null);
       } else {

@@ -5,7 +5,8 @@ import { Settings, Save, AlertCircle, ExternalLink, Link2, Info, ChevronRight, P
 import Navigation from './Navigation';
 
 export default function AdAdmin() {
-  const [sheetUrl, setSheetUrl] = useState('');
+  const DEFAULT_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSGkdY9CpTGOcRZf-giDDGGqDcXJaO7BYO9nxyNO4Jw_XpODvq2sicVYtNDy1w-qGnaA5iNJ-lghCNy/pub?output=csv";
+  const [sheetUrl, setSheetUrl] = useState(DEFAULT_CSV);
   const [previewSlides, setPreviewSlides] = useState<any[]>([]);
   const [isSaving, setIsSaving] = useState(false);
   const [message, setMessage] = useState({ text: '', type: '' });
@@ -15,14 +16,15 @@ export default function AdAdmin() {
     const unsubscribe = onSnapshot(adsDoc, (snapshot) => {
       if (snapshot.exists()) {
         const data = snapshot.data();
-        const url = data.sheetUrl || '';
+        const url = data.sheetUrl || DEFAULT_CSV;
         setSheetUrl(url);
         if (url) {
             fetchPreview(url);
         }
       } else {
-        // Init with empty
-        setSheetUrl('');
+        // Init with default CSV if no config exists
+        setSheetUrl(DEFAULT_CSV);
+        fetchPreview(DEFAULT_CSV); // Also fetch preview for the default
       }
     });
 
