@@ -501,6 +501,10 @@ export default function MainDisplay() {
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 overflow-hidden flex flex-col font-sans relative">
+      {/* Event Banner */}
+      <div className="bg-red-600 text-white font-black text-center py-2 px-4 shadow-lg border-b-4 border-white z-50 uppercase tracking-widest text-lg md:text-xl">
+        Join us for our weekly Monster Meat Raffles every Thursday night!
+      </div>
       <MeatConfetti />
       {/* Header */}
       <header className="bg-slate-900/90 p-4 md:p-8 shadow-2xl border-b border-slate-700 flex flex-wrap justify-between items-center gap-4 z-30 relative">

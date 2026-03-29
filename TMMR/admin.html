@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TMMR Admin - Dashboard</title>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --red-primary: #ef4444;
+            --slate-950: #020617;
+            --slate-900: #0f172a;
+            --slate-800: #1e293b;
+            --slate-700: #334155;
+            --slate-400: #94a3b8;
+        }
+
+        body {
+            background-color: var(--slate-950);
+            color: #f1f5f9;
+            font-family: 'Inter', -apple-system, sans-serif;
+            margin: 0;
+            padding: 2rem;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid var(--slate-800);
+            padding-bottom: 1rem;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--red-primary);
+        }
+
+        /* Card Styles */
+        .card {
+            background: var(--slate-900);
+            border: 1px solid var(--slate-800);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            font-size: 0.75rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--slate-400);
+            margin-bottom: 1rem;
+        }
+
+        /* Form Elements */
+        .form-group { margin-bottom: 1rem; }
+        label { display: block; font-size: 0.7rem; font-weight: 700; color: var(--slate-400); text-transform: uppercase; margin-bottom: 0.4rem; }
+        input, textarea {
+            width: 100%;
+            background: var(--slate-950);
+            border: 1px solid var(--slate-800);
+            border-radius: 0.5rem;
+            padding: 0.75rem;
+            color: white;
+            font-family: inherit;
+            outline: none;
+        }
+        input:focus { border-color: var(--red-primary); }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.6rem 1.2rem;
+            border-radius: 0.5rem;
+            font-weight: 700;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+        }
+        .btn-primary { background: var(--red-primary); color: white; }
+        .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
+        .btn-outline { background: transparent; border: 1px solid var(--slate-700); color: var(--slate-400); }
+        .btn-outline:hover { background: var(--slate-800); color: white; }
+        .btn-danger { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); }
+        .btn-danger:hover { background: #ef4444; color: white; }
+
+        /* Slide List */
+        .slide-item {
+            display: grid;
+            grid-template-columns: 80px 1fr auto;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            background: var(--slate-950);
+            border: 1px solid var(--slate-800);
+            border-radius: 0.75rem;
+            margin-bottom: 0.75rem;
+        }
+        .slide-thumb {
+            width: 80px;
+            height: 50px;
+            background-size: cover;
+            background-position: center;
+            border-radius: 0.4rem;
+            background-color: var(--slate-800);
+        }
+        .slide-info h3 { font-size: 1rem; margin-bottom: 0.2rem; }
+        .slide-info p { font-size: 0.75rem; color: var(--slate-400); }
+
+        /* Status Toast */
+        #toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: #22c55e;
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 0.75rem;
+            font-weight: 700;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            display: none;
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <i data-lucide="layout-dashboard" style="color: var(--red-primary);"></i>
+                <h1>TMMR Admin Dashboard</h1>
+            </div>
+            <div style="display: flex; gap: 1rem;">
+                <button onclick="importFromCSV()" class="btn btn-outline">
+                    <i data-lucide="download"></i> Import CSV
+                </button>
+                <a href="index.html" target="_blank" class="btn btn-outline">
+                    <i data-lucide="external-link"></i> Launch Ads
+                </a>
+            </div>
+        </header>
+
+        <section class="card">
+            <h2>Billboard Banner</h2>
+            <div class="form-group">
+                <label>Top Banner Message</label>
+                <input type="text" id="bannerInput" placeholder="Join us for our weekly Monster Meat Raffles...">
+            </div>
+            <button onclick="saveBanner()" class="btn btn-primary">
+                <i data-lucide="save"></i> Update Banner
+            </button>
+        </section>
+
+        <section class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h2>Current Slides</h2>
+                <button onclick="showAddSlide()" class="btn btn-outline" style="padding: 0.4rem 0.8rem;">
+                    <i data-lucide="plus"></i> Add Slide
+                </button>
+            </div>
+            <div id="slideList">
+                <!-- Slides will be injected here -->
+            </div>
+        </section>
+
+        <!-- Slide Modal (Simple for this version) -->
+        <section id="slideForm" class="card" style="display: none;">
+            <h2 id="modalTitle">Add New Slide</h2>
+            <div class="form-group">
+                <label>Title</label>
+                <input type="text" id="sTitle">
+            </div>
+            <div class="form-group">
+                <label>Subtitle</label>
+                <input type="text" id="sSubtitle">
+            </div>
+            <div class="form-group">
+                <label>Image URL</label>
+                <input type="text" id="sImage">
+            </div>
+            <div class="form-group">
+                <label>Duration (ms)</label>
+                <input type="number" id="sDuration" value="8000">
+            </div>
+            <div style="display: flex; gap: 1rem;">
+                <button onclick="saveSlide()" class="btn btn-primary">Save Slide</button>
+                <button onclick="hideAddSlide()" class="btn btn-outline">Cancel</button>
+            </div>
+        </section>
+    </div>
+
+    <div id="toast">Saved Successfully!</div>
+
+    <script>
+        const STORAGE_KEY = 'tmmr_slides';
+        const BANNER_KEY = 'tmmr_banner';
+        const SYNC_CHANNEL = 'tmmr_sync';
+        const DEFAULT_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSGkdY9CpTGOcRZf-giDDGGqDcXJaO7BYO9nxyNO4Jw_XpODvq2sicVYtNDy1w-qGnaA5iNJ-lghCNy/pub?output=csv";
+
+        let slides = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+        let currentEditIndex = -1;
+
+        const bc = new BroadcastChannel(SYNC_CHANNEL);
+
+        function init() {
+            lucide.createIcons();
+            document.getElementById('bannerInput').value = localStorage.getItem(BANNER_KEY) || "Join us for our weekly Monster Meat Raffles every Thursday night!";
+            renderSlides();
+        }
+
+        function renderSlides() {
+            const list = document.getElementById('slideList');
+            if (slides.length === 0) {
+                list.innerHTML = '<p style="text-align: center; color: var(--slate-400); font-size: 0.8rem; padding: 2rem;">No slides found. Import from CSV or add manually.</p>';
+                return;
+            }
+
+            list.innerHTML = slides.map((s, i) => `
+                <div class="slide-item">
+                    <div class="slide-thumb" style="background-image: url('${s.image}')"></div>
+                    <div class="slide-info">
+                        <h3>${s.title}</h3>
+                        <p>${s.subtitle}</p>
+                    </div>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <button onclick="editSlide(${i})" class="btn btn-outline" style="padding: 0.4rem;"><i data-lucide="edit-2"></i></button>
+                        <button onclick="deleteSlide(${i})" class="btn btn-danger" style="padding: 0.4rem;"><i data-lucide="trash-2"></i></button>
+                    </div>
+                </div>
+            `).join('');
+            lucide.createIcons();
+        }
+
+        function saveBanner() {
+            const val = document.getElementById('bannerInput').value;
+            localStorage.setItem(BANNER_KEY, val);
+            sync('banner', val);
+            showToast();
+        }
+
+        function showAddSlide() {
+            currentEditIndex = -1;
+            document.getElementById('modalTitle').innerText = "Add New Slide";
+            document.getElementById('sTitle').value = "";
+            document.getElementById('sSubtitle').value = "";
+            document.getElementById('sImage').value = "";
+            document.getElementById('sDuration').value = "8000";
+            document.getElementById('slideForm').style.display = 'block';
+        }
+
+        function hideAddSlide() {
+            document.getElementById('slideForm').style.display = 'none';
+        }
+
+        function editSlide(index) {
+            currentEditIndex = index;
+            const s = slides[index];
+            document.getElementById('modalTitle').innerText = "Edit Slide";
+            document.getElementById('sTitle').value = s.title;
+            document.getElementById('sSubtitle').value = s.subtitle;
+            document.getElementById('sImage').value = s.image;
+            document.getElementById('sDuration').value = s.duration;
+            document.getElementById('slideForm').style.display = 'block';
+        }
+
+        function saveSlide() {
+            const newSlide = {
+                title: document.getElementById('sTitle').value,
+                subtitle: document.getElementById('sSubtitle').value,
+                image: document.getElementById('sImage').value,
+                duration: parseInt(document.getElementById('sDuration').value) || 8000
+            };
+
+            if (currentEditIndex > -1) slides[currentEditIndex] = newSlide;
+            else slides.push(newSlide);
+
+            saveAndSync();
+            hideAddSlide();
+        }
+
+        function deleteSlide(index) {
+            if (confirm("Delete this slide?")) {
+                slides.splice(index, 1);
+                saveAndSync();
+            }
+        }
+
+        function saveAndSync() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(slides));
+            sync('slides', slides);
+            renderSlides();
+            showToast();
+        }
+
+        function sync(type, data) {
+            const payload = {};
+            payload[type] = data;
+            bc.postMessage(payload);
+        }
+
+        async function importFromCSV() {
+            try {
+                const response = await fetch(DEFAULT_CSV);
+                const text = await response.text();
+                // Minimal CSV parser
+                const rows = text.split(/\r?\n/).filter(line => line.trim());
+                slides = rows.slice(1).map(line => {
+                    const result = [];
+                    let cur = '';
+                    let inQuote = false;
+                    for (let i = 0; i < line.length; i++) {
+                        const char = line[i];
+                        if (char === '"') inQuote = !inQuote;
+                        else if (char === ',' && !inQuote) {
+                            result.push(cur.trim());
+                            cur = '';
+                        } else cur += char;
+                    }
+                    result.push(cur.trim());
+                    const cols = result.map(s => s.replace(/^"|"$/g, ''));
+                    return {
+                        title: cols[0],
+                        subtitle: cols[1] || '',
+                        image: cols[2] || '',
+                        duration: parseInt(cols[3]) || 8000
+                    };
+                }).filter(s => s.title);
+                
+                saveAndSync();
+                alert("Imported " + slides.length + " slides from Google Sheets!");
+            } catch (err) {
+                alert("CSV Import Failed: " + err.message);
+            }
+        }
+
+        function showToast() {
+            const t = document.getElementById('toast');
+            t.style.display = 'block';
+            setTimeout(() => t.style.display = 'none', 2000);
+        }
+
+        init();
+    </script>
+</body>
+</html>

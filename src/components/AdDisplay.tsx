@@ -111,6 +111,10 @@ export default function AdDisplay() {
 
   return (
     <div className="h-screen w-screen bg-black overflow-hidden relative">
+      {/* Event Banner */}
+      <div className="bg-red-600 text-white font-black text-center py-2 px-4 shadow-lg border-b-4 border-white z-50 uppercase tracking-widest text-lg md:text-xl relative">
+        Join us for our weekly Monster Meat Raffles every Thursday night!
+      </div>
       <AnimatePresence mode="wait">
         <motion.div
           key={safeIndex}
