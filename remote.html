@@ -236,6 +236,7 @@
             activeView: 'slides',
             nextDrawTime: getNextThursday7PM(),
             slides: [
+                { type: "countdown", title: "Time Until Draw", duration: 30000 },
                 { title: "Tickets on Sale", subtitle: "Thursdays from 5.30pm", duration: 30000 },
                 { title: "Ticket Info", subtitle: "$5 per ticket or 5 for $20", duration: 30000 },
                 { title: "Next Draw", subtitle: "62 Trays - $1225 Total Value", duration: 30000 },
@@ -252,7 +253,7 @@
 
         // Initialize
         function init() {
-            const saved = localStorage.getItem('mmr_state_v3');
+            const saved = localStorage.getItem('mmr_state_v4');
             if (saved) {
                 try { state = { ...state, ...JSON.parse(saved) }; } catch(e){}
             }
@@ -267,7 +268,7 @@
         }
 
         function broadcast() {
-            localStorage.setItem('mmr_state_v3', JSON.stringify(state));
+            localStorage.setItem('mmr_state_v4', JSON.stringify(state));
             bc.postMessage({ type: 'STATE_UPDATE', payload: state });
         }
 

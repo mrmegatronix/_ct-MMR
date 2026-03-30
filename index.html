@@ -40,22 +40,10 @@
             filter: drop-shadow(0 0 20px rgba(0,0,0,0.8));
         }
 
-        /* Countdown Clock Top Right */
+        /* Global Countdown (Hidden as per request, now a slide) */
         .global-countdown {
-            position: absolute;
-            top: 2rem;
-            right: 2rem;
-            background: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(10px);
-            padding: 1rem 2rem;
-            border-radius: 1rem;
-            border: 2px solid rgba(255,255,255,0.1);
-            z-index: 1000;
-            text-align: center;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            display: none;
         }
-        .global-countdown .label { font-size: 1rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; }
-        .global-countdown .time { font-size: 2.5rem; font-weight: 900; color: var(--primary); text-shadow: 0 0 15px var(--primary-glow); }
 
         /* Container for Views */
         #view-container {
@@ -113,6 +101,29 @@
             animation: title-pulse 3s infinite ease-in-out;
         }
 
+        .slide-subtitle {
+            font-size: 5rem;
+            color: var(--primary);
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            text-shadow: 0 0 20px var(--primary-glow), 0 0 40px var(--primary-glow);
+            background: linear-gradient(to bottom, #ff7b7b, #ef4444);
+            -webkit-background-clip: text;
+            background-clip: text;
+            margin-top: 2rem;
+        }
+
+        .slide-countdown {
+            font-size: 8rem;
+            font-weight: 900;
+            color: white;
+            text-shadow: 0 0 20px rgba(255,255,255,0.5), 0 0 40px rgba(255,255,255,0.3), 0 10px 20px rgba(0,0,0,0.5);
+            margin-top: 1rem;
+            font-variant-numeric: tabular-nums;
+            letter-spacing: 0.05em;
+        }
+
         @keyframes title-pulse {
             0%, 100% { text-shadow: 0 0 20px var(--primary-glow), 0 0 40px var(--primary-glow), 0 5px 20px rgba(0,0,0,0.8); }
             50% { text-shadow: 0 0 30px var(--primary), 0 0 60px var(--primary-glow), 0 5px 20px rgba(0,0,0,0.8); }
@@ -131,12 +142,6 @@
             line-height: 1.1;
             text-shadow: 0 10px 30px rgba(0,0,0,0.8);
             margin-bottom: 2rem;
-        }
-        .slide h2 {
-            font-size: 3.5rem;
-            color: var(--primary);
-            text-shadow: 0 0 20px var(--primary-glow);
-            font-weight: 700;
         }
         .slide .highlight { color: #facc15; /* Yellow */ }
 
@@ -283,11 +288,6 @@
 
     <img src="public/logo-new.png" alt="Logo" class="brand-logo" id="logo">
 
-    <div class="global-countdown">
-        <div class="label">Next Draw In</div>
-        <div class="time" id="clock">00:00</div>
-    </div>
-
     <div id="view-container">
         
         <!-- SLIDES VIEW -->
@@ -363,6 +363,7 @@
             activeView: 'slides', // slides, draw, congrats
             nextDrawTime: getNextThursday7PM(),
             slides: [
+                { type: "countdown", title: "Time Until Draw", duration: 30000 },
                 { title: "Tickets on Sale", subtitle: "Thursdays from 5.30pm", duration: 30000 },
                 { title: "Ticket Info", subtitle: "$5 per ticket or 5 for $20", duration: 30000 },
                 { title: "Next Draw", subtitle: "62 Trays - $1225 Total Value", duration: 30000 },
@@ -383,7 +384,6 @@
             draw: document.getElementById('view-draw'),
             congrats: document.getElementById('view-congrats')
         };
-        const clockEl = document.getElementById('clock');
         const slidesWrapper = document.getElementById('slides-wrapper');
         const progressBar = document.getElementById('progress-bar');
         const lottoNumberEl = document.getElementById('lottery-number');
@@ -432,30 +432,32 @@
             }
         }
 
-        // Live Clock logic
-        setInterval(() => {
-            if (!state.nextDrawTime) return;
-            // Target is treated as NZ local. new Date("YYYY-MM-DDTHH:MM") treats it as local system time.
+        // Live Clock logic for dynamic values
+        function calculateTimeRemaining() {
+            if (!state.nextDrawTime) return "00:00";
             const target = new Date(state.nextDrawTime); 
-            const nzNow = getNZDate(); // Our fake local Date representing NZ
+            const nzNow = getNZDate();
             
             const diff = target.getTime() - nzNow.getTime();
-            if (diff <= 0) {
-                clockEl.innerText = "00:00";
-                return;
-            }
+            if (diff <= 0) return "00:00";
             
             const days = Math.floor(diff / (1000 * 60 * 60 * 24));
             const hrs = Math.floor((diff / (1000 * 60 * 60)) % 24);
             const m = Math.floor((diff / 1000 / 60) % 60);
             const s = Math.floor((diff / 1000) % 60);
             
-            let displayStr = "";
-            if (days > 0) displayStr = `${days}d ${hrs}h ${m}m`;
-            else if (hrs > 0) displayStr = `${hrs}h ${m}m ${s}s`;
-            else displayStr = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
-            
-            clockEl.innerText = displayStr;
+            if (days > 0) return `${days}d ${hrs}h ${m}m`;
+            if (hrs > 0) return `${hrs}h ${m}m ${s}s`;
+            return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+        }
+
+        setInterval(() => {
+            const timeStr = calculateTimeRemaining();
+            // Try to update countdown slide if it's active
+            const dynamicCounter = document.getElementById('slide-countdown-timer');
+            if (dynamicCounter) {
+                dynamicCounter.innerText = timeStr;
+            }
         }, 1000);
 
         // Slide logic
@@ -465,16 +467,22 @@
 
         function renderSlides(slidesData) {
             if (slidesData.length === 0) return;
-            // Prevent restart if already running same slides
             
-            slidesWrapper.innerHTML = slidesData.map((s, i) => `
-                <div class="slide ${i === currentSlideIdx ? 'active' : ''}" id="slide-${i}">
-                    <h1>${s.title}</h1>
-                    <h2>${s.subtitle}</h2>
-                </div>
-            `).join('');
+            const slide = slidesData[currentSlideIdx];
+            const timeStr = slide.type === 'countdown' ? calculateTimeRemaining() : '';
 
-            startSlideTimer(slidesData[currentSlideIdx].duration);
+            // Render
+            slidesWrapper.innerHTML = `
+                <div class="slide active">
+                    <h1>${slide.title}</h1>
+                    ${slide.type === 'countdown' 
+                        ? `<div class="slide-countdown" id="slide-countdown-timer">${timeStr}</div>` 
+                        : `<h2 class="slide-subtitle">${slide.subtitle}</h2>`
+                    }
+                </div>
+            `;
+
+            startSlideTimer(slide.duration);
         }
 
         function startSlideTimer(duration) {
@@ -587,7 +595,7 @@
         setInterval(spawnAmbientConfetti, 355); // ambient loop (increasing density by another 50%)
 
         // Initialization
-        const storedState = localStorage.getItem('mmr_state_v3');
+        const storedState = localStorage.getItem('mmr_state_v4');
         if (storedState) {
             try { updateState(JSON.parse(storedState)); } catch(e){}
         } else {
