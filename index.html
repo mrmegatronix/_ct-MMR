@@ -586,7 +586,7 @@
         setInterval(spawnAmbientConfetti, 800); // ambient loop
 
         // Initialization
-        const storedState = localStorage.getItem('mmr_state');
+        const storedState = localStorage.getItem('mmr_state_v2');
         if (storedState) {
             try { updateState(JSON.parse(storedState)); } catch(e){}
         } else {

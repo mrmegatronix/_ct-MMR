@@ -252,7 +252,7 @@
 
         // Initialize
         function init() {
-            const saved = localStorage.getItem('mmr_state');
+            const saved = localStorage.getItem('mmr_state_v2');
             if (saved) {
                 try { state = { ...state, ...JSON.parse(saved) }; } catch(e){}
             }
@@ -267,7 +267,7 @@
         }
 
         function broadcast() {
-            localStorage.setItem('mmr_state', JSON.stringify(state));
+            localStorage.setItem('mmr_state_v2', JSON.stringify(state));
             bc.postMessage({ type: 'STATE_UPDATE', payload: state });
         }
 
