@@ -91,7 +91,7 @@
             text-align: center;
             opacity: 0;
             transform: scale(1.05);
-            transition: opacity 1s ease, transform 1s ease;
+            transition: opacity 1.5s ease-in-out, transform 1.5s cubic-bezier(0.4, 0, 0.2, 1);
             padding: 4rem;
             padding-top: 10rem; /* make room for fixed title */
         }
@@ -107,8 +107,14 @@
             color: #f8fafc;
             text-transform: uppercase;
             letter-spacing: 0.1em;
-            text-shadow: 0 5px 20px rgba(0,0,0,0.8);
+            text-shadow: 0 0 20px var(--primary-glow), 0 0 40px var(--primary-glow), 0 5px 20px rgba(0,0,0,0.8);
             z-index: 100;
+            animation: title-pulse 3s infinite ease-in-out;
+        }
+
+        @keyframes title-pulse {
+            0%, 100% { text-shadow: 0 0 20px var(--primary-glow), 0 0 40px var(--primary-glow), 0 5px 20px rgba(0,0,0,0.8); }
+            50% { text-shadow: 0 0 30px var(--primary), 0 0 60px var(--primary-glow), 0 5px 20px rgba(0,0,0,0.8); }
         }
 
         .ambient-confetti {
@@ -356,11 +362,11 @@
             activeView: 'slides', // slides, draw, congrats
             nextDrawTime: getNextThursday7PM(),
             slides: [
-                { title: "Tickets on Sale", subtitle: "5.30pm - Main Draw @ 7pm", duration: 8000 },
-                { title: "Ticket Info", subtitle: "$5 per ticket or 5 for $20", duration: 8000 },
-                { title: "Next Draw", subtitle: "62 Trays - $1225 Total Value", duration: 8000 },
-                { title: "Previous Winners", subtitle: "15 Lucky Winners Last Week", duration: 8000 },
-                { title: "Proudly Supplied By", subtitle: "<span class='highlight'>Hibbards Butchery</span>", duration: 8000 }
+                { title: "Tickets on Sale", subtitle: "Thursdays from 5.30pm", duration: 30000 },
+                { title: "Ticket Info", subtitle: "$5 per ticket or 5 for $20", duration: 30000 },
+                { title: "Next Draw", subtitle: "62 Trays - $1225 Total Value", duration: 30000 },
+                { title: "Previous Winners", subtitle: "15 Lucky Winners Last Week", duration: 30000 },
+                { title: "Proudly Supplied By", subtitle: "<span class='highlight'>Hibbards Butchery</span>", duration: 30000 }
             ],
             draw: {
                 isRolling: false,
