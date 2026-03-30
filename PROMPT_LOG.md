@@ -14,6 +14,12 @@ This file logs prompt instructions and project state to ensure reproducibility.
 
 ### Current Project State
 The project is now a standalone, zero-dependency HTML application.
-- `index.html`: Open on the TV/Display.
-- `remote.html`: Open on the controlling device (must be same browser/machine for BroadcastChannel, or just use the dual screen).
 - Synchronization happens instantly via `BroadcastChannel('mmr_sync')` and `localStorage`.
+
+### Action: Refine Display Logic and Slides
+- **Request**: Update countdown to target Thursday 7PM, add "Monster Meat Raffle weekly on Thursdays" title to slides, add continuous background confetti (with logo) behind slides, and set default next draw amount to $1225 with 62 prizes.
+- **Result**:
+  - Implemented `getNextThursday7PM()` in both `index.html` and `remote.html` to auto-calculate the next Thursday at 19:00 local time.
+  - Added a `.slides-fixed-title` overlay on the slides view.
+  - Added `spawnAmbientConfetti()` logic to `index.html` that drops slow-moving meat and logo emojis continuously while in slides view.
+  - Updated default `state` and HTML inputs to 62 prizes and $1225.

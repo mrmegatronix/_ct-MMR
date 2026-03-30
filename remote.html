@@ -176,7 +176,7 @@
 
             <div class="form-group">
                 <label>Total Prizes (Starting Amount)</label>
-                <input type="number" id="cfg-prizes" value="10" onchange="updateDrawState()">
+                <input type="number" id="cfg-prizes" value="62" onchange="updateDrawState()">
             </div>
 
             <div class="form-group">
@@ -189,7 +189,7 @@
             </div>
             
             <div style="display: flex; justify-content: space-between; align-items: center;">
-                <span id="draw-status" style="color: var(--text-muted);">Prizes left: <strong id="lbl-left" style="color:white;">10</strong></span>
+                <span id="draw-status" style="color: var(--text-muted);">Prizes left: <strong id="lbl-left" style="color:white;">62</strong></span>
                 <button class="btn" onclick="resetDraw()">Reset Draws</button>
             </div>
             
@@ -206,13 +206,25 @@
     <script>
         const bc = new BroadcastChannel('mmr_sync');
         
+        function getNextThursday7PM() {
+            const now = new Date();
+            const result = new Date(now);
+            let daysUntilThursday = (4 + 7 - now.getDay()) % 7;
+            if (daysUntilThursday === 0 && now.getHours() >= 19) {
+                daysUntilThursday = 7;
+            }
+            result.setDate(now.getDate() + daysUntilThursday);
+            result.setHours(19, 0, 0, 0);
+            return result.toISOString();
+        }
+
         let state = {
             activeView: 'slides',
-            nextDrawTime: new Date(Date.now() + 3600000).toISOString(),
+            nextDrawTime: getNextThursday7PM(),
             slides: [
                 { title: "Tickets on Sale", subtitle: "5.30pm - Main Draw @ 7pm", duration: 8000 },
                 { title: "Ticket Info", subtitle: "$5 per ticket or 5 for $20", duration: 8000 },
-                { title: "Next Draw", subtitle: "10 Trays - $500 Total Value", duration: 8000 },
+                { title: "Next Draw", subtitle: "62 Trays - $1225 Total Value", duration: 8000 },
                 { title: "Previous Winners", subtitle: "15 Lucky Winners Last Week", duration: 8000 },
                 { title: "Proudly Supplied By", subtitle: "<span class='highlight'>Hibbards Butchery</span>", duration: 8000 }
             ],
@@ -220,7 +232,7 @@
                 isRolling: false,
                 currentNumber: '---',
                 drawnNumbers: [],
-                prizesLeft: 10
+                prizesLeft: 62
             }
         };
 

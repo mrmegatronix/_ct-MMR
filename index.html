@@ -93,8 +93,29 @@
             transform: scale(1.05);
             transition: opacity 1s ease, transform 1s ease;
             padding: 4rem;
+            padding-top: 10rem; /* make room for fixed title */
         }
         .slide.active { opacity: 1; transform: scale(1); }
+
+        .slides-fixed-title {
+            position: absolute;
+            top: 3.5rem;
+            width: 100%;
+            text-align: center;
+            font-size: 3rem;
+            font-weight: 900;
+            color: #f8fafc;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            text-shadow: 0 5px 20px rgba(0,0,0,0.8);
+            z-index: 100;
+        }
+
+        .ambient-confetti {
+            position: absolute;
+            pointer-events: none;
+            z-index: 10;
+        }
 
         .slide h1 {
             font-size: 6rem;
@@ -264,6 +285,10 @@
         
         <!-- SLIDES VIEW -->
         <div id="view-slides" class="view active">
+            <!-- Ambient Slides Confetti -->
+            <div id="ambient-confetti-container" style="position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: 5;"></div>
+            
+            <div class="slides-fixed-title">Monster Meat Raffle weekly on Thursdays</div>
             <div id="slides-wrapper"></div>
             <div id="progress-container"><div id="progress-bar"></div></div>
         </div>
@@ -300,14 +325,30 @@
     <div id="confetti-container" style="position: absolute; inset: 0; pointer-events: none; z-index: 50; overflow: hidden;"></div>
 
     <script>
+        function getNextThursday7PM() {
+            const now = new Date();
+            const result = new Date(now);
+            // Thursday is day 4 (0=Sunday, 1=Monday... 4=Thursday)
+            let daysUntilThursday = (4 + 7 - now.getDay()) % 7;
+            
+            // If today is Thursday but past 7 PM, get next Thursday
+            if (daysUntilThursday === 0 && now.getHours() >= 19) {
+                daysUntilThursday = 7;
+            }
+            
+            result.setDate(now.getDate() + daysUntilThursday);
+            result.setHours(19, 0, 0, 0);
+            return result.toISOString();
+        }
+
         // State
         let state = {
             activeView: 'slides', // slides, draw, congrats
-            nextDrawTime: new Date(Date.now() + 3600000).toISOString(), // Default 1 hour
+            nextDrawTime: getNextThursday7PM(),
             slides: [
                 { title: "Tickets on Sale", subtitle: "5.30pm - Main Draw @ 7pm", duration: 8000 },
                 { title: "Ticket Info", subtitle: "$5 per ticket or 5 for $20", duration: 8000 },
-                { title: "Next Draw", subtitle: "10 Trays - $500 Total Value", duration: 8000 },
+                { title: "Next Draw", subtitle: "62 Trays - $1225 Total Value", duration: 8000 },
                 { title: "Previous Winners", subtitle: "15 Lucky Winners Last Week", duration: 8000 },
                 { title: "Proudly Supplied By", subtitle: "<span class='highlight'>Hibbards Butchery</span>", duration: 8000 }
             ],
@@ -315,7 +356,7 @@
                 isRolling: false,
                 currentNumber: '---',
                 drawnNumbers: [],
-                prizesLeft: 10
+                prizesLeft: 62
             }
         };
 
@@ -482,6 +523,38 @@
                 setTimeout(() => el.remove(), (duration + delay) * 1000 + 100);
             }
         }
+
+        // Ambient Slide Confetti
+        const ambientContainer = document.getElementById('ambient-confetti-container');
+        function spawnAmbientConfetti() {
+            if (state.activeView !== 'slides') return;
+            const symbols = ['🥩', '🥓', '🍗', '🍖', 'LOGO'];
+            const symbol = symbols[Math.floor(Math.random() * symbols.length)];
+            const el = document.createElement('div');
+            el.className = 'ambient-confetti';
+            el.style.top = '-100px';
+            el.style.left = Math.random() * 100 + '%';
+            el.style.fontSize = Math.random() * 2 + 2 + 'rem';
+            el.style.filter = 'drop-shadow(0 5px 15px rgba(0,0,0,0.3))';
+            el.style.opacity = Math.random() * 0.4 + 0.2; // subtle opacity for background
+            
+            if (symbol === 'LOGO') {
+                el.innerHTML = '<img src="public/logo-new.png" style="width: 3rem; height: auto; opacity: 0.8;">';
+            } else {
+                el.innerText = symbol;
+            }
+
+            const duration = Math.random() * 5 + 8; // Medium speed (8-13 seconds)
+            el.style.transition = `transform ${duration}s linear`;
+            ambientContainer.appendChild(el);
+            
+            setTimeout(() => {
+                el.style.transform = `translateY(120vh) rotate(${Math.random() * 360}deg)`;
+            }, 50);
+
+            setTimeout(() => el.remove(), duration * 1000 + 100);
+        }
+        setInterval(spawnAmbientConfetti, 800); // ambient loop
 
         // Initialization
         const storedState = localStorage.getItem('mmr_state');
