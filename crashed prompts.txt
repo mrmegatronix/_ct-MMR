@@ -1,0 +1,21 @@
+https://mrmegatronix.github.io/_ace-chase/
+
+please look at my other similar project at https://mrmegatronix.github.io/_ace-chase/
+
+i want this project to be in the same kind of style/ format,  obviously this project is about meat raffles and the other is a card game jackpot promo we run at the venue.
+
+i do like the red accent for this meat raffle project. 
+i prefer the text sizing in ace chase project more, and we should impliment into this project, countdown clockdays , hours sould not be abreviated.
+
+
+
+just a comment to consider: 
+well i did say the automated sync to github was very important when i was laying out the new rennovation tasks of the project, and i also had stipulated to only delete "unused code only., so your coding may have been correct, but you didn't process/read the request properlly.
+
+ive had a look at the latest.... its looking much better, on the right track, just a few more tweaks i think:
+
+logo is missing from top  left.
+
+countdown clock has no seconds?
+
+where have the slides gone? its just stuck on the clock?
