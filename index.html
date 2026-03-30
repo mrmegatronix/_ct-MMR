@@ -365,7 +365,7 @@
                 { title: "Tickets on Sale", subtitle: "Thursdays from 5.30pm", duration: 30000 },
                 { title: "Ticket Info", subtitle: "$5 per ticket or 5 for $20", duration: 30000 },
                 { title: "Next Draw", subtitle: "62 Trays - $1225 Total Value", duration: 30000 },
-                { title: "Previous Winners", subtitle: "15 Lucky Winners Last Week", duration: 30000 },
+                { title: "Previous Winners", subtitle: "60+ Winners Last Week - $1200+ Value", duration: 30000 },
                 { title: "Proudly Supplied By", subtitle: "<span class='highlight'>Hibbards Butchery</span>", duration: 30000 }
             ],
             draw: {
@@ -586,7 +586,7 @@
         setInterval(spawnAmbientConfetti, 800); // ambient loop
 
         // Initialization
-        const storedState = localStorage.getItem('mmr_state_v2');
+        const storedState = localStorage.getItem('mmr_state_v3');
         if (storedState) {
             try { updateState(JSON.parse(storedState)); } catch(e){}
         } else {
