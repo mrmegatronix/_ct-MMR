@@ -102,8 +102,9 @@
             top: 2rem;
             width: 100%;
             text-align: center;
-            font-size: 4.5rem;
+            font-size: 6rem;
             font-weight: 900;
+            line-height: 1.1;
             color: #f8fafc;
             text-transform: uppercase;
             letter-spacing: 0.1em;
@@ -294,7 +295,7 @@
             <!-- Ambient Slides Confetti -->
             <div id="ambient-confetti-container" style="position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: 5;"></div>
             
-            <div class="slides-fixed-title">Monster Meat Raffle weekly on Thursdays</div>
+            <div class="slides-fixed-title">Monster Meat Raffle<br><span style="font-size: 0.6em;">weekly on Thursdays</span></div>
             <div id="slides-wrapper"></div>
             <div id="progress-container"><div id="progress-bar"></div></div>
         </div>
@@ -532,7 +533,7 @@
                 el.style.zIndex = Math.random() > 0.5 ? 60 : 40;
                 
                 if (symbol === 'LOGO') {
-                    el.innerHTML = '<img src="public/logo-new.png" style="width: 4rem; height: auto;">';
+                    el.innerHTML = '<img src="./logo-new.png" style="width: 4rem; height: auto;">';
                 } else {
                     el.innerText = symbol;
                 }
@@ -568,7 +569,7 @@
             el.style.opacity = Math.random() * 0.4 + 0.2; // subtle opacity for background
             
             if (symbol === 'LOGO') {
-                el.innerHTML = '<img src="public/logo-new.png" style="width: 3rem; height: auto; opacity: 0.8;">';
+                el.innerHTML = '<img src="./logo-new.png" style="width: 3rem; height: auto; opacity: 0.8;">';
             } else {
                 el.innerText = symbol;
             }
@@ -583,7 +584,7 @@
 
             setTimeout(() => el.remove(), duration * 1000 + 100);
         }
-        setInterval(spawnAmbientConfetti, 533); // ambient loop (50% more confetti)
+        setInterval(spawnAmbientConfetti, 355); // ambient loop (increasing density by another 50%)
 
         // Initialization
         const storedState = localStorage.getItem('mmr_state_v3');
