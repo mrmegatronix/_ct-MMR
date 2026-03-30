@@ -325,20 +325,30 @@
     <div id="confetti-container" style="position: absolute; inset: 0; pointer-events: none; z-index: 50; overflow: hidden;"></div>
 
     <script>
+        function getNZDate() {
+            const parts = new Intl.DateTimeFormat('en-US', {
+                timeZone: 'Pacific/Auckland',
+                year: 'numeric', month: 'numeric', day: 'numeric',
+                hour: 'numeric', minute: 'numeric', second: 'numeric',
+                hourCycle: 'h23'
+            }).formatToParts(new Date());
+            const v = {};
+            parts.forEach(p => v[p.type] = p.value);
+            return new Date(v.year, v.month - 1, v.day, v.hour, v.minute, v.second);
+        }
+
         function getNextThursday7PM() {
-            const now = new Date();
-            const result = new Date(now);
-            // Thursday is day 4 (0=Sunday, 1=Monday... 4=Thursday)
-            let daysUntilThursday = (4 + 7 - now.getDay()) % 7;
-            
-            // If today is Thursday but past 7 PM, get next Thursday
-            if (daysUntilThursday === 0 && now.getHours() >= 19) {
+            const nzDate = getNZDate();
+            let daysUntilThursday = (4 + 7 - nzDate.getDay()) % 7;
+            if (daysUntilThursday === 0 && nzDate.getHours() >= 19) {
                 daysUntilThursday = 7;
             }
+            nzDate.setDate(nzDate.getDate() + daysUntilThursday);
             
-            result.setDate(now.getDate() + daysUntilThursday);
-            result.setHours(19, 0, 0, 0);
-            return result.toISOString();
+            const yr = nzDate.getFullYear();
+            const mo = String(nzDate.getMonth() + 1).padStart(2, '0');
+            const da = String(nzDate.getDate()).padStart(2, '0');
+            return `${yr}-${mo}-${da}T19:00`;
         }
 
         // State
@@ -418,14 +428,27 @@
         // Live Clock logic
         setInterval(() => {
             if (!state.nextDrawTime) return;
-            const diff = new Date(state.nextDrawTime).getTime() - Date.now();
+            // Target is treated as NZ local. new Date("YYYY-MM-DDTHH:MM") treats it as local system time.
+            const target = new Date(state.nextDrawTime); 
+            const nzNow = getNZDate(); // Our fake local Date representing NZ
+            
+            const diff = target.getTime() - nzNow.getTime();
             if (diff <= 0) {
                 clockEl.innerText = "00:00";
                 return;
             }
+            
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hrs = Math.floor((diff / (1000 * 60 * 60)) % 24);
             const m = Math.floor((diff / 1000 / 60) % 60);
             const s = Math.floor((diff / 1000) % 60);
-            clockEl.innerText = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+            
+            let displayStr = "";
+            if (days > 0) displayStr = `${days}d ${hrs}h ${m}m`;
+            else if (hrs > 0) displayStr = `${hrs}h ${m}m ${s}s`;
+            else displayStr = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+            
+            clockEl.innerText = displayStr;
         }, 1000);
 
         // Slide logic

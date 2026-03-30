@@ -206,16 +206,30 @@
     <script>
         const bc = new BroadcastChannel('mmr_sync');
         
+        function getNZDate() {
+            const parts = new Intl.DateTimeFormat('en-US', {
+                timeZone: 'Pacific/Auckland',
+                year: 'numeric', month: 'numeric', day: 'numeric',
+                hour: 'numeric', minute: 'numeric', second: 'numeric',
+                hourCycle: 'h23'
+            }).formatToParts(new Date());
+            const v = {};
+            parts.forEach(p => v[p.type] = p.value);
+            return new Date(v.year, v.month - 1, v.day, v.hour, v.minute, v.second);
+        }
+
         function getNextThursday7PM() {
-            const now = new Date();
-            const result = new Date(now);
-            let daysUntilThursday = (4 + 7 - now.getDay()) % 7;
-            if (daysUntilThursday === 0 && now.getHours() >= 19) {
+            const nzDate = getNZDate();
+            let daysUntilThursday = (4 + 7 - nzDate.getDay()) % 7;
+            if (daysUntilThursday === 0 && nzDate.getHours() >= 19) {
                 daysUntilThursday = 7;
             }
-            result.setDate(now.getDate() + daysUntilThursday);
-            result.setHours(19, 0, 0, 0);
-            return result.toISOString();
+            nzDate.setDate(nzDate.getDate() + daysUntilThursday);
+            
+            const yr = nzDate.getFullYear();
+            const mo = String(nzDate.getMonth() + 1).padStart(2, '0');
+            const da = String(nzDate.getDate()).padStart(2, '0');
+            return `${yr}-${mo}-${da}T19:00`;
         }
 
         let state = {
@@ -248,9 +262,8 @@
             broadcast(); // Initial sync when remote opens
             
             // Format time for input
-            const dt = new Date(state.nextDrawTime);
-            dt.setMinutes(dt.getMinutes() - dt.getTimezoneOffset());
-            document.getElementById('drawTime').value = dt.toISOString().slice(0, 16);
+            // state.nextDrawTime is now a string like "YYYY-MM-DDTHH:MM" without 'Z'
+            document.getElementById('drawTime').value = state.nextDrawTime;
         }
 
         function broadcast() {
@@ -277,7 +290,7 @@
         function updateTime() {
             const val = document.getElementById('drawTime').value;
             if (val) {
-                state.nextDrawTime = new Date(val).toISOString();
+                state.nextDrawTime = val;
                 broadcast();
                 showStatus();
             }

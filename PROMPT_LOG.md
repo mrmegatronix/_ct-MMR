@@ -21,5 +21,9 @@ The project is now a standalone, zero-dependency HTML application.
 - **Result**:
   - Implemented `getNextThursday7PM()` in both `index.html` and `remote.html` to auto-calculate the next Thursday at 19:00 local time.
   - Added a `.slides-fixed-title` overlay on the slides view.
-  - Added `spawnAmbientConfetti()` logic to `index.html` that drops slow-moving meat and logo emojis continuously while in slides view.
-  - Updated default `state` and HTML inputs to 62 prizes and $1225.
+### Action: NZ Timezone Logic for Countdown
+- **Request**: The countdown clock should correctly target Thursdays at 7PM New Zealand Local Time, rather than relying on the device's local clock timezone.
+- **Result**:
+  - Implemented an `Intl.DateTimeFormat(..., {timeZone: 'Pacific/Auckland'})` based parsing system in both `index.html` and `remote.html`.
+  - The script extracts the active runtime numbers for year/month/day/hour directly in NZ format, dynamically calculating the difference between the "live NZ time" and "next Thursday 7PM NZ time."
+  - Updated the countdown clock display logic to appropriately render days (`d`) and hours (`h`) if the target time is further away.
