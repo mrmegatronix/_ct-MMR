@@ -108,10 +108,8 @@
             text-transform: uppercase;
             letter-spacing: 0.15em;
             text-shadow: 0 0 20px var(--primary-glow), 0 0 40px var(--primary-glow);
-            background: linear-gradient(to bottom, #ff7b7b, #ef4444);
-            -webkit-background-clip: text;
-            background-clip: text;
             margin-top: 2rem;
+            animation: subtitle-pulse 3s infinite ease-in-out;
         }
 
         .slide-countdown {
@@ -127,6 +125,11 @@
         @keyframes title-pulse {
             0%, 100% { text-shadow: 0 0 20px var(--primary-glow), 0 0 40px var(--primary-glow), 0 5px 20px rgba(0,0,0,0.8); }
             50% { text-shadow: 0 0 30px var(--primary), 0 0 60px var(--primary-glow), 0 5px 20px rgba(0,0,0,0.8); }
+        }
+
+        @keyframes subtitle-pulse {
+            0%, 100% { text-shadow: 0 0 20px var(--primary-glow), 0 0 40px var(--primary-glow); }
+            50% { text-shadow: 0 0 30px var(--primary), 0 0 60px var(--primary-glow), 0 0 80px var(--primary-glow); }
         }
 
         .ambient-confetti {
