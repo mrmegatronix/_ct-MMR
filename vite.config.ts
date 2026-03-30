@@ -16,6 +16,8 @@ export default defineConfig(({mode}) => {
         input: {
           main: path.resolve(__dirname, 'index.html'),
           ads: path.resolve(__dirname, 'mmr-ads.html'),
+          tmmr: path.resolve(__dirname, 'TMMR/index.html'),
+          admin: path.resolve(__dirname, 'TMMR/admin.html'),
         },
       },
     },
