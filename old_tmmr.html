@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TMMR Ads Pro - Coasters Tavern</title>
+    <style>
+        :root {
+            --red-primary: #ef4444; /* Brighter Red for Glow */
+            --red-glow: rgba(239, 68, 68, 0.6);
+            --slate-950: #020617;
+            --white-glow: rgba(255, 255, 255, 0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--slate-950);
+            color: white;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+        }
+
+        #app {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            background: radial-gradient(circle at center, #1e293b 0%, #020617 100%);
+        }
+
+        /* Top Banner */
+        #banner {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background: linear-gradient(to right, #991b1b, #dc2626, #991b1b);
+            color: white;
+            padding: 1.2rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            z-index: 200;
+            border-bottom: 5px solid white;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.8);
+            font-size: 1.8rem;
+            text-align: center;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        }
+
+        /* Confetti Styles */
+        .confetti-container {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .confetti {
+            position: absolute;
+            top: -60px;
+            font-size: 2.5rem;
+            animation: fall linear infinite;
+            filter: drop-shadow(0 0 10px rgba(0,0,0,0.5));
+        }
+
+        @keyframes fall {
+            to {
+                transform: translateY(110vh) rotate(360deg);
+            }
+        }
+
+        /* Slide Styles */
+        .slide {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 4rem;
+            opacity: 0;
+            transition: opacity 1.2s ease-in-out, transform 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+            transform: scale(1.1) translateY(20px);
+            z-index: 20;
+        }
+
+        .slide.active {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+        }
+
+        .slide-bg {
+            position: absolute;
+            inset: 0;
+            background-size: cover;
+            background-position: center;
+            filter: blur(40px) brightness(0.4);
+            transform: scale(1.2);
+            z-index: -1;
+        }
+
+        .slide-image {
+            max-height: 45vh;
+            max-width: 75vw;
+            border-radius: 3rem;
+            box-shadow: 0 0 80px rgba(0,0,0,0.8), 0 0 30px var(--white-glow);
+            border: 6px solid rgba(255,255,255,0.15);
+            margin-bottom: 3rem;
+            animation: pulse-border 4s infinite ease-in-out;
+        }
+
+        @keyframes pulse-border {
+            0%, 100% { border-color: rgba(255,255,255,0.15); box-shadow: 0 0 80px rgba(0,0,0,0.8), 0 0 30px var(--white-glow); }
+            50% { border-color: rgba(255,255,255,0.4); box-shadow: 0 0 80px rgba(0,0,0,0.8), 0 0 60px var(--white-glow); }
+        }
+
+        .slide-title {
+            font-size: 8rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: -0.04em;
+            margin-bottom: 1.5rem;
+            line-height: 0.85;
+            color: white;
+            text-shadow: 0 0 20px rgba(255,255,255,0.5), 0 0 40px rgba(255,255,255,0.3), 0 10px 20px rgba(0,0,0,0.5);
+            animation: text-pulse 2s infinite ease-in-out;
+        }
+
+        @keyframes text-pulse {
+            0%, 100% { transform: scale(1); text-shadow: 0 0 20px rgba(255,255,255,0.5), 0 0 40px rgba(255,255,255,0.3); }
+            50% { transform: scale(1.02); text-shadow: 0 0 30px rgba(255,255,255,0.7), 0 0 60px rgba(255,255,255,0.4); }
+        }
+
+        .slide-subtitle {
+            font-size: 4.5rem;
+            color: var(--red-primary);
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            text-shadow: 0 0 20px var(--red-glow), 0 0 40px var(--red-glow);
+            background: linear-gradient(to bottom, #ff7b7b, #ef4444);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-top: 0.5rem;
+        }
+
+        /* Branding */
+        .logo-container {
+            position: absolute;
+            top: 6rem;
+            left: 3rem;
+            z-index: 50;
+            background: rgba(255,255,255,0.9);
+            padding: 1rem;
+            border-radius: 1.5rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .logo {
+            height: 100px;
+            width: auto;
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 12px;
+            background: rgba(255,255,255,0.05);
+            z-index: 100;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(to right, #ef4444, #f87171);
+            box-shadow: 0 0 20px var(--red-primary);
+            width: 0%;
+            transition: width 0.1s linear;
+        }
+
+        #error {
+            position: absolute;
+            bottom: 2rem;
+            color: #ef4444;
+            background: rgba(0,0,0,0.8);
+            padding: 1rem 2rem;
+            border-radius: 1rem;
+            font-weight: bold;
+            z-index: 1000;
+            font-size: 1.2rem;
+            display: none;
+        }
+
+        @media (max-width: 1024px) {
+            .slide-title { font-size: 5rem; }
+            .slide-subtitle { font-size: 2.5rem; }
+            .logo { height: 60px; }
+        }
+    </style>
+</head>
+<body>
+    <div id="banner">Join us for our weekly Monster Meat Raffles every Thursday night!</div>
+    
+    <div id="app">
+        <div class="logo-container" style="background: transparent; box-shadow: none; top: 5.5rem;">
+            <img src="logo-new.png" class="logo" alt="Coasters Logo" style="height: 150px; filter: drop-shadow(0 0 20px rgba(0,0,0,0.8));">
+        </div>
+        <div id="slides-container" style="width: 100%; height: 100%;"></div>
+        <div class="confetti-container" id="confetti"></div>
+        <div class="progress-container">
+            <div class="progress-bar" id="progress"></div>
+        </div>
+        <div id="error"></div>
+    </div>
+
+    <script>
+        const DEFAULT_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSGkdY9CpTGOcRZf-giDDGGqDcXJaO7BYO9nxyNO4Jw_XpODvq2sicVYtNDy1w-qGnaA5iNJ-lghCNy/pub?output=csv";
+        const SYNC_CHANNEL = "tmmr_sync";
+        
+        let slides = [];
+        let currentIndex = 0;
+        let progressInterval;
+        let lastSyncTime = 0;
+
+        // Initialize Confetti
+        function createConfetti() {
+            const container = document.getElementById('confetti');
+            container.innerHTML = '';
+            const meats = ['🥩', '🥓', '🍗', '🍖', 'LOGO'];
+            for (let i = 0; i < 50; i++) {
+                const symbol = meats[Math.floor(Math.random() * meats.length)];
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                
+                if (symbol === 'LOGO') {
+                    const img = document.createElement('img');
+                    img.src = 'logo-new.png';
+                    img.style.width = '3.5rem';
+                    img.style.height = 'auto';
+                    img.style.filter = 'drop-shadow(0 0 10px rgba(0,0,0,0.5))';
+                    confetti.appendChild(img);
+                } else {
+                    confetti.innerText = symbol;
+                }
+                
+                confetti.style.left = Math.random() * 100 + '%';
+                confetti.style.animationDuration = (Math.random() * 10 + 15) + 's';
+                confetti.style.animationDelay = (Math.random() * 10) + 's';
+                confetti.style.opacity = Math.random() * 0.7 + 0.3;
+                container.appendChild(confetti);
+            }
+        }
+
+        // CSV Parser
+        function parseCSV(text) {
+            const rows = text.split(/\r?\n/).filter(line => line.trim());
+            return rows.slice(1).map(line => {
+                const result = [];
+                let cur = '';
+                let inQuote = false;
+                for (let i = 0; i < line.length; i++) {
+                    const char = line[i];
+                    if (char === '"') inQuote = !inQuote;
+                    else if (char === ',' && !inQuote) {
+                        result.push(cur.trim());
+                        cur = '';
+                    } else cur += char;
+                }
+                result.push(cur.trim());
+                const cols = result.map(s => s.replace(/^"|"$/g, ''));
+                return {
+                    title: cols[0],
+                    subtitle: cols[1] || '',
+                    image: cols[2] || '',
+                    duration: parseInt(cols[3]) || 8000
+                };
+            }).filter(s => s.title);
+        }
+
+        async function init() {
+            // Priority 1: LocalStorage
+            const localData = localStorage.getItem('tmmr_slides');
+            const localBanner = localStorage.getItem('tmmr_banner');
+            
+            if (localBanner) document.getElementById('banner').innerText = localBanner;
+            
+            if (localData) {
+                try {
+                    slides = JSON.parse(localData);
+                    console.log("Loaded slides from LocalStorage");
+                } catch (e) {
+                    console.error("Local data corrupt, falling back to CSV");
+                }
+            }
+
+            // Priority 2: Google Sheets Fallback
+            if (slides.length === 0) {
+                try {
+                    const response = await fetch(DEFAULT_CSV);
+                    const text = await response.text();
+                    slides = parseCSV(text);
+                    console.log("Loaded slides from CSV");
+                } catch (err) {
+                    showError("Sync Error: " + err.message);
+                }
+            }
+            
+            if (slides.length > 0) {
+                renderSlide();
+                createConfetti();
+            } else {
+                showError("No slides available. Please configure in Admin.");
+            }
+
+            // Real-time Sync
+            const bc = new BroadcastChannel(SYNC_CHANNEL);
+            bc.onmessage = (event) => {
+                console.log("Received Sync Data:", event.data);
+                if (event.data.slides) {
+                    slides = event.data.slides;
+                    localStorage.setItem('tmmr_slides', JSON.stringify(slides));
+                    currentIndex = 0; // Reset to first slide on update
+                    renderSlide();
+                }
+                if (event.data.banner) {
+                    document.getElementById('banner').innerText = event.data.banner;
+                    localStorage.setItem('tmmr_banner', event.data.banner);
+                }
+            };
+        }
+
+        function renderSlide() {
+            const container = document.getElementById('slides-container');
+            const slide = slides[currentIndex];
+            if (!slide) return;
+            
+            container.innerHTML = `
+                <div class="slide active">
+                    <div class="slide-bg" style="background-image: url('${slide.image}')"></div>
+                    ${slide.image ? `<img src="${slide.image}" class="slide-image">` : ''}
+                    <h1 class="slide-title">${slide.title}</h1>
+                    <h2 class="slide-subtitle">${slide.subtitle}</h2>
+                </div>
+            `;
+
+            startProgress(slide.duration);
+        }
+
+        function startProgress(duration) {
+            const bar = document.getElementById('progress');
+            let start = Date.now();
+            if (progressInterval) clearInterval(progressInterval);
+            
+            progressInterval = setInterval(() => {
+                let elapsed = Date.now() - start;
+                let percent = (elapsed / duration) * 100;
+                bar.style.width = percent + '%';
+                
+                if (elapsed >= duration) {
+                    clearInterval(progressInterval);
+                    currentIndex = (currentIndex + 1) % slides.length;
+                    renderSlide();
+                }
+            }, 50);
+        }
+
+        function showError(msg) {
+            const err = document.getElementById('error');
+            err.innerText = msg;
+            err.style.display = 'block';
+        }
+
+        init();
+    </script>
+</body>
+</html>
