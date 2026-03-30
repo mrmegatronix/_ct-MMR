@@ -509,8 +509,8 @@ export default function MainDisplay() {
       {/* Header */}
       <header className="bg-slate-900/90 p-4 md:p-8 shadow-2xl border-b border-slate-700 flex flex-wrap justify-between items-center gap-4 z-30 relative">
         <div className="flex items-center gap-4 md:gap-6">
-          <div className="w-16 h-16 md:w-24 md:h-24 flex items-center justify-center bg-white rounded-xl p-1 md:p-2 shadow-[0_0_15px_rgba(255,255,255,0.2)] shrink-0">
-            <img src="https://coasterstavern.co.nz/wp-content/uploads/2024/03/coasters-new-600-1.png" alt="Coasters Tavern Logo" className="w-full h-full object-contain" referrerPolicy="no-referrer" />
+          <div className="w-16 h-16 md:w-32 md:h-32 flex items-center justify-center bg-transparent drop-shadow-[0_0_15px_rgba(239,68,68,0.3)] shrink-0 group">
+            <img src="/logo-new.png" alt="Coasters Tavern Logo" className="w-full h-full object-contain filter drop-shadow-2xl transition-transform group-hover:scale-110" referrerPolicy="no-referrer" />
           </div>
           <div className="min-w-0">
             <motion.h1 

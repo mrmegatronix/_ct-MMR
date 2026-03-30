@@ -181,8 +181,8 @@ export default function AdDisplay() {
         />
       </div>
 
-      <div className="absolute top-8 left-8 flex items-center gap-4 opacity-50 z-20">
-         <img src="https://coasterstavern.co.nz/wp-content/uploads/2024/03/coasters-new-600-1.png" alt="Logo" className="h-16 w-auto" />
+      <div className="absolute top-8 left-8 flex items-center gap-4 z-20">
+         <img src="/logo-new.png" alt="Logo" className="h-20 w-auto drop-shadow-2xl" />
       </div>
     </div>
   );

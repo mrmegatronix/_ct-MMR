@@ -216,8 +216,8 @@
     <div id="banner">Join us for our weekly Monster Meat Raffles every Thursday night!</div>
     
     <div id="app">
-        <div class="logo-container">
-            <img src="https://coasterstavern.co.nz/wp-content/uploads/2024/03/coasters-new-600-1.png" class="logo" alt="Coasters Logo">
+        <div class="logo-container" style="background: transparent; box-shadow: none; top: 5.5rem;">
+            <img src="logo-new.png" class="logo" alt="Coasters Logo" style="height: 150px; filter: drop-shadow(0 0 20px rgba(0,0,0,0.8));">
         </div>
         <div id="slides-container" style="width: 100%; height: 100%;"></div>
         <div class="confetti-container" id="confetti"></div>
@@ -240,16 +240,28 @@
         function createConfetti() {
             const container = document.getElementById('confetti');
             container.innerHTML = '';
-            const meats = ['🥩', '🥓', '🍗', '🍖'];
-            for (let i = 0; i < 40; i++) {
-                const meat = document.createElement('div');
-                meat.className = 'confetti';
-                meat.innerText = meats[Math.floor(Math.random() * meats.length)];
-                meat.style.left = Math.random() * 100 + '%';
-                meat.style.animationDuration = (Math.random() * 10 + 15) + 's';
-                meat.style.animationDelay = (Math.random() * 10) + 's';
-                meat.style.opacity = Math.random() * 0.7 + 0.3;
-                container.appendChild(meat);
+            const meats = ['🥩', '🥓', '🍗', '🍖', 'LOGO'];
+            for (let i = 0; i < 50; i++) {
+                const symbol = meats[Math.floor(Math.random() * meats.length)];
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                
+                if (symbol === 'LOGO') {
+                    const img = document.createElement('img');
+                    img.src = 'logo-new.png';
+                    img.style.width = '3.5rem';
+                    img.style.height = 'auto';
+                    img.style.filter = 'drop-shadow(0 0 10px rgba(0,0,0,0.5))';
+                    confetti.appendChild(img);
+                } else {
+                    confetti.innerText = symbol;
+                }
+                
+                confetti.style.left = Math.random() * 100 + '%';
+                confetti.style.animationDuration = (Math.random() * 10 + 15) + 's';
+                confetti.style.animationDelay = (Math.random() * 10) + 's';
+                confetti.style.opacity = Math.random() * 0.7 + 0.3;
+                container.appendChild(confetti);
             }
         }
 
