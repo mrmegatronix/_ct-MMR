@@ -573,7 +573,7 @@
                 el.innerText = symbol;
             }
 
-            const duration = Math.random() * 5 + 8; // Medium speed (8-13 seconds)
+            const duration = Math.random() * 6.25 + 10; // 25% slower (10 to 16.25 seconds)
             el.style.transition = `transform ${duration}s linear`;
             ambientContainer.appendChild(el);
             
@@ -583,7 +583,7 @@
 
             setTimeout(() => el.remove(), duration * 1000 + 100);
         }
-        setInterval(spawnAmbientConfetti, 800); // ambient loop
+        setInterval(spawnAmbientConfetti, 533); // ambient loop (50% more confetti)
 
         // Initialization
         const storedState = localStorage.getItem('mmr_state_v3');
