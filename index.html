@@ -102,7 +102,7 @@
         }
 
         .slide-subtitle {
-            font-size: 5rem;
+            font-size: 7rem;
             color: var(--primary);
             font-weight: 900;
             text-transform: uppercase;
@@ -115,7 +115,7 @@
         }
 
         .slide-countdown {
-            font-size: 8rem;
+            font-size: 13rem;
             font-weight: 900;
             color: white;
             text-shadow: 0 0 20px rgba(255,255,255,0.5), 0 0 40px rgba(255,255,255,0.3), 0 10px 20px rgba(0,0,0,0.5);
@@ -142,6 +142,7 @@
             line-height: 1.1;
             text-shadow: 0 10px 30px rgba(0,0,0,0.8);
             margin-bottom: 2rem;
+            font-size: 10rem; /* Increased size to match Ace Chase */
         }
         .slide .highlight { color: #facc15; /* Yellow */ }
 
@@ -286,7 +287,7 @@
 </head>
 <body>
 
-    <img src="public/logo-new.png" alt="Logo" class="brand-logo" id="logo">
+    <img src="logo-new.png" alt="Logo" class="brand-logo" id="logo">
 
     <div id="view-container">
         
@@ -446,18 +447,16 @@
             const m = Math.floor((diff / 1000 / 60) % 60);
             const s = Math.floor((diff / 1000) % 60);
             
-            if (days > 0) return `${days}d ${hrs}h ${m}m`;
-            if (hrs > 0) return `${hrs}h ${m}m ${s}s`;
+            if (days > 0) return `${days} Days ${hrs} Hours ${m} Minutes ${s} Seconds`;
+            if (hrs > 0) return `${hrs} Hours ${m} Minutes ${s} Seconds`;
             return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
         }
 
         setInterval(() => {
             const timeStr = calculateTimeRemaining();
-            // Try to update countdown slide if it's active
-            const dynamicCounter = document.getElementById('slide-countdown-timer');
-            if (dynamicCounter) {
-                dynamicCounter.innerText = timeStr;
-            }
+            // Try to update countdown slide if it's rendered
+            const dynamicCounters = document.querySelectorAll('.slide-countdown-timer');
+            dynamicCounters.forEach(el => el.innerText = timeStr);
         }, 1000);
 
         // Slide logic
@@ -468,21 +467,21 @@
         function renderSlides(slidesData) {
             if (slidesData.length === 0) return;
             
-            const slide = slidesData[currentSlideIdx];
-            const timeStr = slide.type === 'countdown' ? calculateTimeRemaining() : '';
+            // Render ALL slides to DOM first
+            slidesWrapper.innerHTML = slidesData.map((slide, i) => {
+                const timeStr = slide.type === 'countdown' ? calculateTimeRemaining() : '';
+                return `
+                    <div class="slide ${i === currentSlideIdx ? 'active' : ''}">
+                        <h1>${slide.title}</h1>
+                        ${slide.type === 'countdown' 
+                            ? `<div class="slide-countdown slide-countdown-timer">${timeStr}</div>` 
+                            : `<h2 class="slide-subtitle">${slide.subtitle}</h2>`
+                        }
+                    </div>
+                `;
+            }).join('');
 
-            // Render
-            slidesWrapper.innerHTML = `
-                <div class="slide active">
-                    <h1>${slide.title}</h1>
-                    ${slide.type === 'countdown' 
-                        ? `<div class="slide-countdown" id="slide-countdown-timer">${timeStr}</div>` 
-                        : `<h2 class="slide-subtitle">${slide.subtitle}</h2>`
-                    }
-                </div>
-            `;
-
-            startSlideTimer(slide.duration);
+            startSlideTimer(slidesData[currentSlideIdx].duration);
         }
 
         function startSlideTimer(duration) {
@@ -541,7 +540,7 @@
                 el.style.zIndex = Math.random() > 0.5 ? 60 : 40;
                 
                 if (symbol === 'LOGO') {
-                    el.innerHTML = '<img src="./logo-new.png" style="width: 4rem; height: auto;">';
+                    el.innerHTML = '<img src="logo-new.png" style="width: 4rem; height: auto;">';
                 } else {
                     el.innerText = symbol;
                 }
@@ -577,7 +576,7 @@
             el.style.opacity = Math.random() * 0.4 + 0.2; // subtle opacity for background
             
             if (symbol === 'LOGO') {
-                el.innerHTML = '<img src="./logo-new.png" style="width: 3rem; height: auto; opacity: 0.8;">';
+                el.innerHTML = '<img src="logo-new.png" style="width: 3rem; height: auto; opacity: 0.8;">';
             } else {
                 el.innerText = symbol;
             }
