@@ -1,15 +1,496 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="mobile-web-app-capable" content="yes" />
-    <title>Monster Meat Raffle</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
-</html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monster Meat Raffle - Display</title>
+    <!-- Tailwind CSS for styling (via CDN for simplicity since we removed node_modules, but wait, the user wants pure HTML. Pure CSS is better for no dependencies, or Tailwind CDN) -->
+    <!-- Actually, let's use pure CSS to keep it 100% dependency-free and robust. -->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap');
 
+        :root {
+            --primary: #ef4444; /* Red */
+            --primary-glow: rgba(239, 68, 68, 0.6);
+            --bg-dark: #020617; /* Slate 950 */
+            --bg-grad: radial-gradient(circle at center, #1e293b 0%, #020617 100%);
+            --text-light: #f8fafc;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: var(--bg-dark);
+            color: var(--text-light);
+            font-family: 'Outfit', sans-serif;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Branding Top Left */
+        .brand-logo {
+            position: absolute;
+            top: 2rem;
+            left: 2rem;
+            width: 150px;
+            z-index: 1000;
+            filter: drop-shadow(0 0 20px rgba(0,0,0,0.8));
+        }
+
+        /* Countdown Clock Top Right */
+        .global-countdown {
+            position: absolute;
+            top: 2rem;
+            right: 2rem;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(10px);
+            padding: 1rem 2rem;
+            border-radius: 1rem;
+            border: 2px solid rgba(255,255,255,0.1);
+            z-index: 1000;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        .global-countdown .label { font-size: 1rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; }
+        .global-countdown .time { font-size: 2.5rem; font-weight: 900; color: var(--primary); text-shadow: 0 0 15px var(--primary-glow); }
+
+        /* Container for Views */
+        #view-container {
+            flex: 1;
+            position: relative;
+            background: var(--bg-grad);
+        }
+
+        .view {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 1s ease-in-out;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .view.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* --- SLIDES VIEW --- */
+        .slide {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            opacity: 0;
+            transform: scale(1.05);
+            transition: opacity 1s ease, transform 1s ease;
+            padding: 4rem;
+        }
+        .slide.active { opacity: 1; transform: scale(1); }
+
+        .slide h1 {
+            font-size: 6rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            line-height: 1.1;
+            text-shadow: 0 10px 30px rgba(0,0,0,0.8);
+            margin-bottom: 2rem;
+        }
+        .slide h2 {
+            font-size: 3.5rem;
+            color: var(--primary);
+            text-shadow: 0 0 20px var(--primary-glow);
+            font-weight: 700;
+        }
+        .slide .highlight { color: #facc15; /* Yellow */ }
+
+        /* Progress Bar */
+        #progress-container {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 8px;
+            background: rgba(255,255,255,0.05);
+            z-index: 100;
+        }
+        #progress-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #ef4444, #f87171);
+            box-shadow: 0 0 15px var(--primary);
+            transition: width 0.1s linear;
+        }
+
+        /* --- DRAW VIEW --- */
+        .lottery-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2rem;
+            z-index: 10;
+        }
+        .draw-title { font-size: 4rem; font-weight: 900; color: #f8fafc; text-transform: uppercase; }
+        .number-display {
+            font-size: 15rem;
+            font-weight: 900;
+            color: #facc15;
+            text-shadow: 0 0 50px rgba(250, 204, 21, 0.5), 0 10px 30px rgba(0,0,0,0.8);
+            background: rgba(0,0,0,0.4);
+            backdrop-filter: blur(10px);
+            padding: 2rem 5rem;
+            border-radius: 3rem;
+            border: 4px solid rgba(250, 204, 21, 0.3);
+            min-width: 400px;
+            text-align: center;
+            line-height: 1;
+        }
+        .number-display.rolling {
+            animation: pulse-rapid 0.1s infinite alternate;
+            color: #ffffff;
+            text-shadow: 0 0 20px rgba(255,255,255,0.5);
+            border-color: rgba(255,255,255,0.2);
+        }
+        @keyframes pulse-rapid {
+            from { transform: scale(0.98); }
+            to { transform: scale(1.02); }
+        }
+
+        .drawn-numbers-bar {
+            position: absolute;
+            bottom: 2rem;
+            left: 2rem;
+            right: 2rem;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(10px);
+            padding: 1.5rem;
+            border-radius: 1rem;
+            border: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .drawn-numbers-bar .title { font-size: 1.2rem; color: #94a3b8; text-transform: uppercase; font-weight: 700; }
+        .drawn-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            justify-content: center;
+            font-size: 2rem;
+            font-weight: 700;
+            color: #fff;
+        }
+        .drawn-list span {
+            background: var(--primary);
+            padding: 0.5rem 1.5rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 0 10px var(--primary-glow);
+            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        @keyframes popIn {
+            0% { transform: scale(0); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .prizes-left {
+            position: absolute;
+            top: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(10px);
+            padding: 1rem 3rem;
+            border-radius: 2rem;
+            border: 2px solid var(--primary);
+            text-align: center;
+            box-shadow: 0 0 20px var(--primary-glow);
+        }
+        .prizes-left .label { font-size: 1.2rem; color: #cbd5e1; text-transform: uppercase; font-weight: 700; }
+        .prizes-left .value { font-size: 3rem; font-weight: 900; color: #fff; }
+
+        /* --- CONGRATS VIEW --- */
+        .congrats-title {
+            font-size: 7rem;
+            font-weight: 900;
+            color: #facc15;
+            text-shadow: 0 0 40px rgba(250, 204, 21, 0.6);
+            text-transform: uppercase;
+            text-align: center;
+            margin-bottom: 2rem;
+            animation: bounce 2s infinite;
+        }
+        .congrats-subtitle {
+            font-size: 3rem;
+            color: #fff;
+            text-align: center;
+            max-width: 80%;
+            line-height: 1.4;
+        }
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        /* Confetti Canvas */
+        #confetti-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 50;
+        }
+    </style>
+</head>
+<body>
+
+    <img src="public/logo-new.png" alt="Logo" class="brand-logo" id="logo">
+
+    <div class="global-countdown">
+        <div class="label">Next Draw In</div>
+        <div class="time" id="clock">00:00</div>
+    </div>
+
+    <div id="view-container">
+        
+        <!-- SLIDES VIEW -->
+        <div id="view-slides" class="view active">
+            <div id="slides-wrapper"></div>
+            <div id="progress-container"><div id="progress-bar"></div></div>
+        </div>
+
+        <!-- DRAW VIEW -->
+        <div id="view-draw" class="view">
+            <div class="prizes-left">
+                <div class="label">Prizes Left</div>
+                <div class="value" id="prizes-count">0</div>
+            </div>
+            
+            <div class="lottery-container">
+                <div class="draw-title">Winning Number</div>
+                <div class="number-display" id="lottery-number">---</div>
+            </div>
+
+            <div class="drawn-numbers-bar">
+                <div class="title">Previously Drawn Numbers</div>
+                <div class="drawn-list" id="drawn-list">
+                    <!-- Numbers go here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- CONGRATS VIEW -->
+        <div id="view-congrats" class="view">
+            <div class="congrats-title">Congratulations!</div>
+            <div class="congrats-subtitle">Thank you to all who participated.<br>We hope to see you all next week!</div>
+        </div>
+
+    </div>
+
+    <!-- Confetti logic -->
+    <div id="confetti-container" style="position: absolute; inset: 0; pointer-events: none; z-index: 50; overflow: hidden;"></div>
+
+    <script>
+        // State
+        let state = {
+            activeView: 'slides', // slides, draw, congrats
+            nextDrawTime: new Date(Date.now() + 3600000).toISOString(), // Default 1 hour
+            slides: [
+                { title: "Tickets on Sale", subtitle: "5.30pm - Main Draw @ 7pm", duration: 8000 },
+                { title: "Ticket Info", subtitle: "$5 per ticket or 5 for $20", duration: 8000 },
+                { title: "Next Draw", subtitle: "10 Trays - $500 Total Value", duration: 8000 },
+                { title: "Previous Winners", subtitle: "15 Lucky Winners Last Week", duration: 8000 },
+                { title: "Proudly Supplied By", subtitle: "<span class='highlight'>Hibbards Butchery</span>", duration: 8000 }
+            ],
+            draw: {
+                isRolling: false,
+                currentNumber: '---',
+                drawnNumbers: [],
+                prizesLeft: 10
+            }
+        };
+
+        // DOM Elements
+        const views = {
+            slides: document.getElementById('view-slides'),
+            draw: document.getElementById('view-draw'),
+            congrats: document.getElementById('view-congrats')
+        };
+        const clockEl = document.getElementById('clock');
+        const slidesWrapper = document.getElementById('slides-wrapper');
+        const progressBar = document.getElementById('progress-bar');
+        const lottoNumberEl = document.getElementById('lottery-number');
+        const drawnListEl = document.getElementById('drawn-list');
+        const prizesCountEl = document.getElementById('prizes-count');
+        const confettiContainer = document.getElementById('confetti-container');
+
+        // Broadcast Channel setup
+        const bc = new BroadcastChannel('mmr_sync');
+        bc.onmessage = (event) => {
+            const data = event.data;
+            if (data.type === 'STATE_UPDATE') {
+                updateState(data.payload);
+            }
+            if (data.type === 'START_ROLL') {
+                startLotteryRoll();
+            }
+            if (data.type === 'STOP_ROLL') {
+                stopLotteryRoll(data.payload.number);
+            }
+            if (data.type === 'CONFETTI') {
+                triggerConfetti();
+            }
+        };
+
+        function updateState(newState) {
+            state = { ...state, ...newState };
+            
+            // View switching
+            Object.keys(views).forEach(k => {
+                if (k === state.activeView) views[k].classList.add('active');
+                else views[k].classList.remove('active');
+            });
+
+            // Slides rendering
+            if (state.activeView === 'slides') {
+                renderSlides(state.slides);
+            }
+
+            // Draw rendering
+            prizesCountEl.innerText = state.draw.prizesLeft;
+            
+            // Only update drawn list if it changed
+            if (drawnListEl.children.length !== state.draw.drawnNumbers.length) {
+                drawnListEl.innerHTML = state.draw.drawnNumbers.map(n => `<span>${n}</span>`).join('');
+            }
+        }
+
+        // Live Clock logic
+        setInterval(() => {
+            if (!state.nextDrawTime) return;
+            const diff = new Date(state.nextDrawTime).getTime() - Date.now();
+            if (diff <= 0) {
+                clockEl.innerText = "00:00";
+                return;
+            }
+            const m = Math.floor((diff / 1000 / 60) % 60);
+            const s = Math.floor((diff / 1000) % 60);
+            clockEl.innerText = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+        }, 1000);
+
+        // Slide logic
+        let currentSlideIdx = 0;
+        let slideInterval;
+        let progressInterval;
+
+        function renderSlides(slidesData) {
+            if (slidesData.length === 0) return;
+            // Prevent restart if already running same slides
+            
+            slidesWrapper.innerHTML = slidesData.map((s, i) => `
+                <div class="slide ${i === currentSlideIdx ? 'active' : ''}" id="slide-${i}">
+                    <h1>${s.title}</h1>
+                    <h2>${s.subtitle}</h2>
+                </div>
+            `).join('');
+
+            startSlideTimer(slidesData[currentSlideIdx].duration);
+        }
+
+        function startSlideTimer(duration) {
+            clearInterval(slideInterval);
+            clearInterval(progressInterval);
+            
+            let start = Date.now();
+            progressBar.style.width = '0%';
+            
+            progressInterval = setInterval(() => {
+                let elapsed = Date.now() - start;
+                let percent = (elapsed / duration) * 100;
+                progressBar.style.width = Math.min(percent, 100) + '%';
+            }, 50);
+
+            slideInterval = setInterval(() => {
+                const slides = document.querySelectorAll('.slide');
+                if(slides.length === 0) return;
+                
+                slides[currentSlideIdx].classList.remove('active');
+                currentSlideIdx = (currentSlideIdx + 1) % slides.length;
+                slides[currentSlideIdx].classList.add('active');
+                
+                startSlideTimer(state.slides[currentSlideIdx].duration);
+            }, duration);
+        }
+
+        // Draw Logic
+        let rollInterval;
+        function startLotteryRoll() {
+            lottoNumberEl.classList.add('rolling');
+            rollInterval = setInterval(() => {
+                lottoNumberEl.innerText = Math.floor(Math.random() * 999) + 1;
+            }, 50);
+        }
+
+        function stopLotteryRoll(finalNumber) {
+            clearInterval(rollInterval);
+            lottoNumberEl.classList.remove('rolling');
+            lottoNumberEl.innerText = finalNumber;
+            triggerConfetti();
+        }
+
+        // Confetti Logic
+        function triggerConfetti() {
+            confettiContainer.innerHTML = '';
+            const symbols = ['🥩', '🥓', '🍗', '🍖', 'LOGO'];
+            for (let i = 0; i < 60; i++) {
+                const symbol = symbols[Math.floor(Math.random() * symbols.length)];
+                const el = document.createElement('div');
+                el.style.position = 'absolute';
+                el.style.top = '-100px';
+                el.style.left = Math.random() * 100 + '%';
+                el.style.fontSize = '3rem';
+                el.style.filter = 'drop-shadow(0 5px 15px rgba(0,0,0,0.5))';
+                el.style.zIndex = Math.random() > 0.5 ? 60 : 40;
+                
+                if (symbol === 'LOGO') {
+                    el.innerHTML = '<img src="public/logo-new.png" style="width: 4rem; height: auto;">';
+                } else {
+                    el.innerText = symbol;
+                }
+
+                // Animation
+                const duration = Math.random() * 3 + 2;
+                const delay = Math.random() * 2;
+                el.style.transition = `transform ${duration}s linear, opacity ${duration}s ease-in`;
+                
+                confettiContainer.appendChild(el);
+                
+                setTimeout(() => {
+                    el.style.transform = `translateY(120vh) rotate(${Math.random() * 360}deg)`;
+                    el.style.opacity = '0';
+                }, delay * 1000 + 50);
+
+                setTimeout(() => el.remove(), (duration + delay) * 1000 + 100);
+            }
+        }
+
+        // Initialization
+        const storedState = localStorage.getItem('mmr_state');
+        if (storedState) {
+            try { updateState(JSON.parse(storedState)); } catch(e){}
+        } else {
+            updateState(state); // trigger initial render
+        }
+
+    </script>
+</body>
+</html>

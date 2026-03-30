@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MMR - Remote Control</title>
+    <style>
+        :root {
+            --bg: #0f172a;
+            --surface: #1e293b;
+            --primary: #ef4444;
+            --text: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #334155;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: -apple-system, system-ui, sans-serif;
+            margin: 0;
+            padding: 2rem;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 1rem;
+        }
+        
+        .header h1 { margin: 0; color: var(--primary); }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            .grid { grid-template-columns: 1fr; }
+        }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            padding: 1.5rem;
+        }
+
+        .card h2 {
+            margin-top: 0;
+            font-size: 1.2rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        label {
+            display: block;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            font-weight: bold;
+            margin-bottom: 0.4rem;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            font-family: inherit;
+            box-sizing: border-box;
+        }
+
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .btn {
+            background: var(--surface);
+            color: var(--text);
+            border: 1px solid var(--border);
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+
+        .btn:hover { background: var(--border); }
+        
+        .btn-primary { background: var(--primary); border-color: var(--primary); }
+        .btn-primary:hover { background: #dc2626; }
+        
+        .btn-success { background: #22c55e; border-color: #22c55e; }
+        .btn-success:hover { background: #16a34a; }
+
+        .btn-group {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .slide-edit {
+            border: 1px solid var(--border);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .status {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: rgba(34, 197, 94, 0.1);
+            color: #22c55e;
+            border-radius: 0.5rem;
+            display: none;
+        }
+        
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>MMR Remote Control</h1>
+        <a href="index.html" target="_blank" class="btn btn-primary">Open Display</a>
+    </div>
+
+    <div class="grid">
+        <!-- Display Controls -->
+        <div class="card">
+            <h2>Display Controls</h2>
+            
+            <label>Active View</label>
+            <div class="btn-group">
+                <button class="btn" onclick="setView('slides')" id="btn-slides">Slides</button>
+                <button class="btn" onclick="setView('draw')" id="btn-draw">Draw Mode</button>
+                <button class="btn" onclick="setView('congrats')" id="btn-congrats">Congrats</button>
+            </div>
+
+            <div class="form-group">
+                <label>Next Draw Time (YYYY-MM-DDTHH:MM)</label>
+                <input type="datetime-local" id="drawTime" onchange="updateTime()">
+            </div>
+            
+            <button class="btn" onclick="triggerConfetti()">🎉 Trigger Confetti</button>
+            <div class="status" id="status-display">Updated Successfully</div>
+        </div>
+
+        <!-- Draw Controls -->
+        <div class="card">
+            <h2>Draw Configuration</h2>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="form-group">
+                    <label>Min Ticket</label>
+                    <input type="number" id="cfg-min" value="1">
+                </div>
+                <div class="form-group">
+                    <label>Max Ticket</label>
+                    <input type="number" id="cfg-max" value="999">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Total Prizes (Starting Amount)</label>
+                <input type="number" id="cfg-prizes" value="10" onchange="updateDrawState()">
+            </div>
+
+            <div class="form-group">
+                <label>Excluded Numbers (comma separated)</label>
+                <input type="text" id="cfg-excludes" placeholder="e.g. 5,12,45">
+            </div>
+
+            <div class="btn-group" style="margin-top: 2rem;">
+                <button class="btn btn-success" onclick="runDraw()" id="btn-run-draw" style="flex: 1; font-size: 1.2rem; padding: 1rem;">🎰 RUN DRAW</button>
+            </div>
+            
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span id="draw-status" style="color: var(--text-muted);">Prizes left: <strong id="lbl-left" style="color:white;">10</strong></span>
+                <button class="btn" onclick="resetDraw()">Reset Draws</button>
+            </div>
+            
+        </div>
+
+        <!-- Slides Editor -->
+        <div class="card" style="grid-column: 1 / -1;">
+            <h2>Slides Configuration</h2>
+            <div id="slides-editor"></div>
+            <button class="btn btn-primary" onclick="saveSlides()">Save & Update Slides</button>
+        </div>
+    </div>
+
+    <script>
+        const bc = new BroadcastChannel('mmr_sync');
+        
+        let state = {
+            activeView: 'slides',
+            nextDrawTime: new Date(Date.now() + 3600000).toISOString(),
+            slides: [
+                { title: "Tickets on Sale", subtitle: "5.30pm - Main Draw @ 7pm", duration: 8000 },
+                { title: "Ticket Info", subtitle: "$5 per ticket or 5 for $20", duration: 8000 },
+                { title: "Next Draw", subtitle: "10 Trays - $500 Total Value", duration: 8000 },
+                { title: "Previous Winners", subtitle: "15 Lucky Winners Last Week", duration: 8000 },
+                { title: "Proudly Supplied By", subtitle: "<span class='highlight'>Hibbards Butchery</span>", duration: 8000 }
+            ],
+            draw: {
+                isRolling: false,
+                currentNumber: '---',
+                drawnNumbers: [],
+                prizesLeft: 10
+            }
+        };
+
+        // Initialize
+        function init() {
+            const saved = localStorage.getItem('mmr_state');
+            if (saved) {
+                try { state = { ...state, ...JSON.parse(saved) }; } catch(e){}
+            }
+            
+            renderEditor();
+            updateUI();
+            broadcast(); // Initial sync when remote opens
+            
+            // Format time for input
+            const dt = new Date(state.nextDrawTime);
+            dt.setMinutes(dt.getMinutes() - dt.getTimezoneOffset());
+            document.getElementById('drawTime').value = dt.toISOString().slice(0, 16);
+        }
+
+        function broadcast() {
+            localStorage.setItem('mmr_state', JSON.stringify(state));
+            bc.postMessage({ type: 'STATE_UPDATE', payload: state });
+        }
+
+        function updateUI() {
+            document.getElementById('btn-slides').style.borderColor = state.activeView === 'slides' ? 'var(--primary)' : 'var(--border)';
+            document.getElementById('btn-draw').style.borderColor = state.activeView === 'draw' ? 'var(--primary)' : 'var(--border)';
+            document.getElementById('btn-congrats').style.borderColor = state.activeView === 'congrats' ? 'var(--primary)' : 'var(--border)';
+            
+            document.getElementById('cfg-prizes').value = state.draw.prizesLeft + state.draw.drawnNumbers.length;
+            document.getElementById('lbl-left').innerText = state.draw.prizesLeft;
+        }
+
+        function setView(view) {
+            state.activeView = view;
+            updateUI();
+            broadcast();
+            showStatus();
+        }
+
+        function updateTime() {
+            const val = document.getElementById('drawTime').value;
+            if (val) {
+                state.nextDrawTime = new Date(val).toISOString();
+                broadcast();
+                showStatus();
+            }
+        }
+
+        function updateDrawState() {
+            const total = parseInt(document.getElementById('cfg-prizes').value) || 10;
+            const drawn = state.draw.drawnNumbers.length;
+            state.draw.prizesLeft = Math.max(0, total - drawn);
+            updateUI();
+            broadcast();
+        }
+
+        function resetDraw() {
+            if(confirm('Are you sure you want to clear all drawn numbers and reset?')) {
+                state.draw.drawnNumbers = [];
+                state.draw.currentNumber = '---';
+                updateDrawState();
+            }
+        }
+
+        // Draw Runner
+        let isDrawing = false;
+        function runDraw() {
+            if (isDrawing || state.draw.prizesLeft <= 0) {
+                if(state.draw.prizesLeft <= 0) alert('No prizes left to draw!');
+                return;
+            }
+
+            const min = parseInt(document.getElementById('cfg-min').value) || 1;
+            const max = parseInt(document.getElementById('cfg-max').value) || 999;
+            const excludeStr = document.getElementById('cfg-excludes').value;
+            const excludes = excludeStr.split(',').map(n => parseInt(n.trim())).filter(n => !isNaN(n));
+            
+            // Available numbers
+            let available = [];
+            for (let i = min; i <= max; i++) {
+                if (!excludes.includes(i) && !state.draw.drawnNumbers.includes(i)) {
+                    available.push(i);
+                }
+            }
+
+            if (available.length === 0) {
+                alert("No valid numbers available to draw! Check ranges/excludes.");
+                return;
+            }
+
+            // Make sure we are in draw view
+            if (state.activeView !== 'draw') {
+                setView('draw');
+            }
+
+            isDrawing = true;
+            document.getElementById('btn-run-draw').disabled = true;
+            document.getElementById('btn-run-draw').innerText = 'ROLLING...';
+
+            // Select number
+            const winner = available[Math.floor(Math.random() * available.length)];
+            
+            // Tell display to start rolling animation
+            bc.postMessage({ type: 'START_ROLL' });
+            
+            // Wait 3 seconds then stop on winner
+            setTimeout(() => {
+                state.draw.drawnNumbers.unshift(winner); // Add to top
+                state.draw.prizesLeft -= 1;
+                state.draw.currentNumber = winner;
+                
+                broadcast(); // updates prizes and history
+                bc.postMessage({ type: 'STOP_ROLL', payload: { number: winner } });
+                
+                isDrawing = false;
+                document.getElementById('btn-run-draw').disabled = false;
+                document.getElementById('btn-run-draw').innerHTML = '🎰 RUN DRAW';
+                updateUI();
+            }, 3000);
+        }
+
+        function triggerConfetti() {
+            bc.postMessage({ type: 'CONFETTI' });
+        }
+
+        // Slide Editor
+        function renderEditor() {
+            const container = document.getElementById('slides-editor');
+            container.innerHTML = state.slides.map((s, i) => `
+                <div class="slide-edit">
+                    <strong>Slide ${i+1}</strong>
+                    <div class="grid" style="margin-top: 1rem; gap: 1rem;">
+                        <div class="form-group" style="margin:0;">
+                            <label>Title</label>
+                            <input type="text" id="s-title-${i}" value="${s.title}">
+                        </div>
+                        <div class="form-group" style="margin:0;">
+                            <label>Subtitle (HTML allowed)</label>
+                            <input type="text" id="s-sub-${i}" value="${s.subtitle.replace(/"/g, '&quot;')}">
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function saveSlides() {
+            state.slides.forEach((s, i) => {
+                s.title = document.getElementById(`s-title-${i}`).value;
+                s.subtitle = document.getElementById(`s-sub-${i}`).value;
+            });
+            broadcast();
+            showStatus();
+        }
+
+        function showStatus() {
+            const el = document.getElementById('status-display');
+            el.style.display = 'block';
+            setTimeout(() => el.style.display = 'none', 2000);
+        }
+
+        init();
+    </script>
+</body>
+</html>

@@ -1,25 +1,19 @@
-# Antigravity Prompt Log - MMR-Ads / Monster Meat Raffle System
+# Auto-generated Prompt Log - MMR System
 
-This file serves as a persistent log of the user's prompts, progress, and issues, to ensure that the Antigravity assistant can continue effectively even if the conversation crashes or restarts.
+This file logs prompt instructions and project state to ensure reproducibility.
 
----
+## Prompts & Actions
 
-**Investigation & Actions:**
+### Action: Major Project Simplification
+- **Request**: User requested to completely simplify the project to pure HTML suitable for TV display, with `index.html` (Main Display) and `remote.html` (Remote Control). They asked to remove all unused code (React, Vite, Firebase). They requested slides, draw animations, and congrats screens.
+- **Result**:
+  - Deleted the entire React/Vite setup (`src`, `package.json`, etc.).
+  - Created `index.html` as the main TV display, featuring a looped slideshow, lottery animation view, and congrats view, driven by CSS animations and BroadcastChannel.
+  - Created `remote.html` to control the display, edit slides, configure ticket ranges, exclusions, and trigger draws.
+  - Setup auto-sync to GitHub by committing changes.
 
-- **Prompt Log Created:** Added `PROMPT_LOG.md` to ensure context persistence and track progress/prompts.
-- **Hook Improvement:** Modified `src/hooks/useRaffleSocket.ts` to include an `error` state. This ensures that initialization failures or snapshot errors are captured.
-- **UI Improvement (Raffle):** Updated `src/components/MainDisplay.tsx` and `src/components/RemoteControl.tsx` to display specific connection errors instead of a generic "Connecting" loop.
-- **UI Improvement (Ads):** Updated `src/components/AdDisplay.tsx` to handle Firestore and Google Sheets fetching errors, providing clear feedback when slides fail to load.
-- **Root Cause Analysis:** The "looping" was caused by a lack of error reporting in the loading states. The app was waiting for Firestore snapshots or Fetch requests that were silently failing (likely due to missing documents or network restrictions).
-
-**Current Project State:**
-
-- **Error Reporting:** Active across all major components. Any connection issue will now show a descriptive error message and a retry button.
-- **Persistence:** `PROMPT_LOG.md` is initialized and should be updated in every session.
-- **Build/Sync:** The project uses `vite` and has sync scripts for Raspberry Pi and GitHub.
-
-**Next Steps:**
-
-- User to check the app and report the specific error message now displayed (if any).
-- Continue with any remaining feature development for the MMR Ads or Raffle System.
-- Address any specific Raspberry Pi sync issues if they arise.
+### Current Project State
+The project is now a standalone, zero-dependency HTML application.
+- `index.html`: Open on the TV/Display.
+- `remote.html`: Open on the controlling device (must be same browser/machine for BroadcastChannel, or just use the dual screen).
+- Synchronization happens instantly via `BroadcastChannel('mmr_sync')` and `localStorage`.
