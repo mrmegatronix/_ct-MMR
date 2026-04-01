@@ -113,7 +113,7 @@
         }
 
         .slide-countdown {
-            font-size: 9rem; /* Reduced by another 10% */
+            font-size: 7.65rem; /* Reduced by 15% as per request */
             font-weight: 900;
             color: white;
             text-shadow: 0 0 20px rgba(255,255,255,0.5), 0 0 40px rgba(255,255,255,0.3), 0 10px 20px rgba(0,0,0,0.5);
@@ -414,6 +414,11 @@
         };
 
         function updateState(newState) {
+            // Deep merge draw object if present
+            if (newState.draw) {
+                state.draw = { ...state.draw, ...newState.draw };
+                delete newState.draw;
+            }
             state = { ...state, ...newState };
             
             // View switching

@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MMR - Admin Panel</title>
+    <style>
+        :root {
+            --bg: #0f172a;
+            --surface: #1e293b;
+            --primary: #ef4444;
+            --text: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #334155;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: -apple-system, system-ui, sans-serif;
+            margin: 0;
+            padding: 2rem;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 1rem;
+        }
+        
+        .header h1 { margin: 0; color: var(--primary); }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .card h2 {
+            margin-top: 0;
+            font-size: 1.2rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            font-weight: bold;
+            margin-bottom: 0.4rem;
+        }
+
+        input {
+            width: 100%;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            font-family: inherit;
+            box-sizing: border-box;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .btn {
+            background: var(--bg);
+            color: var(--text);
+            border: 1px solid var(--border);
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1rem;
+            transition: all 0.2s;
+            width: 100%;
+        }
+
+        .btn:hover { background: var(--border); }
+        .btn-primary { background: var(--primary); border-color: var(--primary); }
+        .btn-primary:hover { background: #dc2626; }
+
+        .status {
+            margin-top: 1rem;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            display: none;
+            font-weight: bold;
+        }
+        .status-success { background: rgba(34, 197, 94, 0.1); color: #22c55e; }
+        .status-error { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
+
+        .links {
+            margin-top: 2rem;
+            text-align: center;
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+        }
+        .links a { color: var(--text-muted); text-decoration: none; font-size: 0.9rem; }
+        .links a:hover { color: var(--primary); text-decoration: underline; }
+
+        pre {
+            background: var(--bg);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            font-size: 0.8rem;
+            overflow-x: auto;
+            color: #94a3b8;
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>MMR Admin Panel</h1>
+    </div>
+
+    <div class="card">
+        <h2>Google Sheets Configuration</h2>
+        
+        <div class="form-group">
+            <label>Slides CSV URL</label>
+            <input type="text" id="slides-url" placeholder="https://docs.google.com/spreadsheets/d/e/.../pub?output=csv">
+        </div>
+
+        <div class="form-group">
+            <label>Config CSV URL (Optional)</label>
+            <input type="text" id="config-url" placeholder="https://docs.google.com/spreadsheets/d/e/.../pub?output=csv">
+            <p style="font-size: 0.7rem; color: var(--text-muted); margin-top: 0.5rem;">
+                Optional sheet for: next_draw_time, prizes_left, drawn_numbers
+            </p>
+        </div>
+
+        <button class="btn btn-primary" onclick="syncFromSheets()">🔄 SYNC EVERYTHING NOW</button>
+        
+        <div id="status" class="status"></div>
+
+        <div style="margin-top: 2rem;">
+            <label>Slides Sheet (Tab 1)</label>
+            <pre>Title, Subtitle, Type, Duration
+"Time Until Draw", "", "countdown", 30000
+"Tickets on Sale", "Thursdays from 5.30pm", "normal", 30000</pre>
+
+            <label style="margin-top: 1rem;">Config Sheet (Tab 2)</label>
+            <pre>Key, Value
+next_draw_time, 2026-04-09T19:00
+prizes_left, 62
+drawn_numbers, "12, 45, 67"</pre>
+        </div>
+    </div>
+
+    <div class="links">
+        <a href="index.html" target="_blank">Open Main Display</a>
+        <span>|</span>
+        <a href="remote.html">Open Draw Remote</a>
+    </div>
+
+    <script>
+        const bc = new BroadcastChannel('mmr_sync');
+        const STORAGE_KEY = 'mmr_admin_config';
+
+        function init() {
+            const saved = localStorage.getItem(STORAGE_KEY);
+            if (saved) {
+                const config = JSON.parse(saved);
+                document.getElementById('slides-url').value = config.slidesUrl || '';
+                document.getElementById('config-url').value = config.configUrl || '';
+            }
+        }
+
+        async function syncFromSheets() {
+            const slidesUrl = document.getElementById('slides-url').value.trim();
+            const configUrl = document.getElementById('config-url').value.trim();
+            
+            if (!slidesUrl && !configUrl) {
+                showStatus('Please enter at least one CSV URL.', 'error');
+                return;
+            }
+
+            localStorage.setItem(STORAGE_KEY, JSON.stringify({ 
+                slidesUrl: slidesUrl,
+                configUrl: configUrl
+            }));
+            
+            showStatus('Fetching data...', 'success');
+            let updatePayload = {};
+
+            try {
+                // Fetch Slides
+                if (slidesUrl) {
+                    const res = await fetch(slidesUrl + (slidesUrl.includes('?') ? '&' : '?') + 't=' + Date.now());
+                    const csv = await res.text();
+                    updatePayload.slides = parseSlidesCSV(csv);
+                }
+
+                // Fetch Config
+                if (configUrl) {
+                    const res = await fetch(configUrl + (configUrl.includes('?') ? '&' : '?') + 't=' + Date.now());
+                    const csv = await res.text();
+                    const config = parseConfigCSV(csv);
+                    
+                    if (config.next_draw_time) updatePayload.nextDrawTime = config.next_draw_time;
+                    
+                    updatePayload.draw = {};
+                    if (config.prizes_left) updatePayload.draw.prizesLeft = parseInt(config.prizes_left);
+                    if (config.drawn_numbers) {
+                        updatePayload.draw.drawnNumbers = config.drawn_numbers.split(',').map(n => n.trim()).filter(n => n);
+                    }
+                }
+
+                // Broadcast updated state
+                bc.postMessage({ 
+                    type: 'STATE_UPDATE', 
+                    payload: updatePayload 
+                });
+
+                // Update local storage
+                const savedState = localStorage.getItem('mmr_state_v4');
+                let state = savedState ? JSON.parse(savedState) : {};
+                
+                // Deep merge helper
+                if (updatePayload.slides) state.slides = updatePayload.slides;
+                if (updatePayload.nextDrawTime) state.nextDrawTime = updatePayload.nextDrawTime;
+                if (updatePayload.draw) {
+                    state.draw = { ...state.draw, ...updatePayload.draw };
+                }
+                
+                localStorage.setItem('mmr_state_v4', JSON.stringify(state));
+
+                showStatus('Successfully synced from Google Sheets!', 'success');
+            } catch (err) {
+                console.error(err);
+                showStatus('Error fetching CSV: ' + err.message, 'error');
+            }
+        }
+
+        function parseSlidesCSV(text) {
+            const rows = text.split(/\r?\n/).filter(line => line.trim());
+            if (rows.length < 2) return [];
+
+            return rows.slice(1).map(line => {
+                const parts = splitCSVLine(line);
+                const clean = parts.map(p => p.replace(/^"|"$/g, ''));
+
+                return {
+                    title: clean[0] || 'Untitled',
+                    subtitle: clean[1] || '',
+                    type: (clean[2] || 'normal').toLowerCase(),
+                    duration: parseInt(clean[3]) || 30000
+                };
+            }).filter(s => s.title);
+        }
+
+        function parseConfigCSV(text) {
+            const rows = text.split(/\r?\n/).filter(line => line.trim());
+            const config = {};
+            rows.forEach(line => {
+                const parts = splitCSVLine(line);
+                const key = parts[0]?.replace(/^"|"$/g, '').trim();
+                const val = parts[1]?.replace(/^"|"$/g, '').trim();
+                if (key && val) config[key] = val;
+            });
+            return config;
+        }
+
+        function splitCSVLine(line) {
+            const parts = [];
+            let current = '';
+            let inQuotes = false;
+            for (let i = 0; i < line.length; i++) {
+                const char = line[i];
+                if (char === '"') inQuotes = !inQuotes;
+                else if (char === ',' && !inQuotes) {
+                    parts.push(current.trim());
+                    current = '';
+                } else current += char;
+            }
+            parts.push(current.trim());
+            return parts;
+        }
+
+        function showStatus(msg, type) {
+            const el = document.getElementById('status');
+            el.innerText = msg;
+            el.className = 'status status-' + type;
+            el.style.display = 'block';
+            if (type === 'success') {
+                setTimeout(() => el.style.display = 'none', 5000);
+            }
+        }
+
+        init();
+    </script>
+</body>
+</html>

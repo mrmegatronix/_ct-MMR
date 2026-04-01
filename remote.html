@@ -135,7 +135,10 @@
 
     <div class="header">
         <h1>MMR Remote Control</h1>
-        <a href="index.html" target="_blank" class="btn btn-primary">Open Display</a>
+        <div style="display: flex; gap: 10px; align-items: center;">
+            <a href="admin.html" class="btn">⚙️ Admin (Slides)</a>
+            <a href="index.html" target="_blank" class="btn btn-primary">Open Display</a>
+        </div>
     </div>
 
     <div class="grid">
@@ -195,16 +198,23 @@
             
         </div>
 
-        <!-- Slides Editor -->
-        <div class="card" style="grid-column: 1 / -1;">
-            <h2>Slides Configuration</h2>
-            <div id="slides-editor"></div>
-            <button class="btn btn-primary" onclick="saveSlides()">Save & Update Slides</button>
-        </div>
     </div>
 
     <script>
         const bc = new BroadcastChannel('mmr_sync');
+        bc.onmessage = (event) => {
+            const data = event.data;
+            if (data.type === 'STATE_UPDATE') {
+                const newState = data.payload;
+                // Deep merge draw object if present
+                if (newState.draw) {
+                    state.draw = { ...state.draw, ...newState.draw };
+                    delete newState.draw;
+                }
+                state = { ...state, ...newState };
+                updateUI();
+            }
+        };
         
         function getNZDate() {
             const parts = new Intl.DateTimeFormat('en-US', {
@@ -258,7 +268,7 @@
                 try { state = { ...state, ...JSON.parse(saved) }; } catch(e){}
             }
             
-            renderEditor();
+            
             updateUI();
             broadcast(); // Initial sync when remote opens
             
@@ -374,34 +384,6 @@
             bc.postMessage({ type: 'CONFETTI' });
         }
 
-        // Slide Editor
-        function renderEditor() {
-            const container = document.getElementById('slides-editor');
-            container.innerHTML = state.slides.map((s, i) => `
-                <div class="slide-edit">
-                    <strong>Slide ${i+1}</strong>
-                    <div class="grid" style="margin-top: 1rem; gap: 1rem;">
-                        <div class="form-group" style="margin:0;">
-                            <label>Title</label>
-                            <input type="text" id="s-title-${i}" value="${s.title}">
-                        </div>
-                        <div class="form-group" style="margin:0;">
-                            <label>Subtitle (HTML allowed)</label>
-                            <input type="text" id="s-sub-${i}" value="${s.subtitle.replace(/"/g, '&quot;')}">
-                        </div>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        function saveSlides() {
-            state.slides.forEach((s, i) => {
-                s.title = document.getElementById(`s-title-${i}`).value;
-                s.subtitle = document.getElementById(`s-sub-${i}`).value;
-            });
-            broadcast();
-            showStatus();
-        }
 
         function showStatus() {
             const el = document.getElementById('status-display');

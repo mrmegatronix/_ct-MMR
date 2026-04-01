@@ -19,3 +19,14 @@ logo is missing from top  left.
 countdown clock has no seconds?
 
 where have the slides gone? its just stuck on the clock?
+
+
+tmmr and ace, are no longer used, ace was only there to copy the formatting and style sizes for the mmr.
+
+we should have mmr:
+main display which is index.html.
+ and remote: for draw control etc.
+and admin: slide editing with google sheets backend
+
+why isnt prompt log being auto updated?
+it should also have timestamps in it?
