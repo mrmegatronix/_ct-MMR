@@ -176,13 +176,16 @@ drawn_numbers, "12, 45, 67"</pre>
     <script>
         const bc = new BroadcastChannel('mmr_sync');
         const STORAGE_KEY = 'mmr_admin_config';
+        const DEFAULT_SLIDES_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQMXn3GlWIeGLKc3XqYXFSi_ofevUW4JZtptUoDoyzapOQCmoDSdC96QRZf0EXpWQ8CYoJ7YJ5h5Boy/pub?output=csv';
 
         function init() {
             const saved = localStorage.getItem(STORAGE_KEY);
             if (saved) {
                 const config = JSON.parse(saved);
-                document.getElementById('slides-url').value = config.slidesUrl || '';
+                document.getElementById('slides-url').value = config.slidesUrl || DEFAULT_SLIDES_URL;
                 document.getElementById('config-url').value = config.configUrl || '';
+            } else {
+                document.getElementById('slides-url').value = DEFAULT_SLIDES_URL;
             }
         }
 

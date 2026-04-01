@@ -81,16 +81,16 @@
             transform: scale(1.05);
             transition: opacity 1.5s ease-in-out, transform 1.5s cubic-bezier(0.4, 0, 0.2, 1);
             padding: 4rem;
-            padding-top: 12rem; /* make room for fixed title */
+            padding-top: 25vh; /* heavily push content down to avoid header */
         }
         .slide.active { opacity: 1; transform: scale(1); }
 
         .slides-fixed-title {
             position: absolute;
-            top: 2rem;
+            top: 3vmin;
             width: 100%;
             text-align: center;
-            font-size: 6rem;
+            font-size: clamp(2rem, 6vmin, 5rem);
             font-weight: 900;
             line-height: 1.1;
             color: #f8fafc;
@@ -102,24 +102,26 @@
         }
 
         .slide-subtitle {
-            font-size: 7rem;
+            font-size: clamp(1.5rem, 7vmin, 6rem);
             color: var(--primary);
             font-weight: 900;
             text-transform: uppercase;
             letter-spacing: 0.15em;
-            text-shadow: 0 0 20px var(--primary-glow), 0 0 40px var(--primary-glow);
-            margin-top: 2rem;
+            -webkit-text-stroke: 2px white;
+            text-shadow: 0 0 10px rgba(0,0,0,0.5); /* subtle shadow instead of glowing white to keep red color */
+            margin-top: 1rem;
             animation: subtitle-pulse 3s infinite ease-in-out;
         }
 
         .slide-countdown {
-            font-size: 7.65rem; /* Reduced by 15% as per request */
+            font-size: clamp(2rem, 11vmin, 10rem); /* slightly larger since it won't wrap */
             font-weight: 900;
             color: white;
             text-shadow: 0 0 20px rgba(255,255,255,0.5), 0 0 40px rgba(255,255,255,0.3), 0 10px 20px rgba(0,0,0,0.5);
             margin-top: 1rem;
             font-variant-numeric: tabular-nums;
-            letter-spacing: 0.05em;
+            letter-spacing: 0.02em;
+            white-space: nowrap;
         }
 
         @keyframes title-pulse {
@@ -128,8 +130,8 @@
         }
 
         @keyframes subtitle-pulse {
-            0%, 100% { text-shadow: 0 0 20px var(--primary-glow), 0 0 40px var(--primary-glow); }
-            50% { text-shadow: 0 0 30px var(--primary), 0 0 60px var(--primary-glow), 0 0 80px var(--primary-glow); }
+            0%, 100% { text-shadow: 0 0 10px rgba(0,0,0,0.5); }
+            50% { text-shadow: 0 0 20px var(--primary-glow); }
         }
 
         .ambient-confetti {
@@ -139,13 +141,12 @@
         }
 
         .slide h1 {
-            font-size: 6rem;
+            font-size: clamp(2.5rem, 9vmin, 8rem);
             font-weight: 900;
             text-transform: uppercase;
             line-height: 1.1;
             text-shadow: 0 10px 30px rgba(0,0,0,0.8);
-            margin-bottom: 2rem;
-            font-size: 10rem; /* Increased size to match Ace Chase */
+            margin-bottom: 1.5rem;
         }
         .slide .highlight { color: #facc15; /* Yellow */ }
 
@@ -175,15 +176,15 @@
             gap: 2rem;
             z-index: 10;
         }
-        .draw-title { font-size: 4rem; font-weight: 900; color: #f8fafc; text-transform: uppercase; }
+        .draw-title { font-size: 4vmin; font-weight: 900; color: #f8fafc; text-transform: uppercase; }
         .number-display {
-            font-size: 15rem;
+            font-size: 15vmin;
             font-weight: 900;
             color: #facc15;
             text-shadow: 0 0 50px rgba(250, 204, 21, 0.5), 0 10px 30px rgba(0,0,0,0.8);
             background: rgba(0,0,0,0.4);
             backdrop-filter: blur(10px);
-            padding: 2rem 5rem;
+            padding: 2vmin 5vmin;
             border-radius: 3rem;
             border: 4px solid rgba(250, 204, 21, 0.3);
             min-width: 400px;
@@ -255,7 +256,7 @@
 
         /* --- CONGRATS VIEW --- */
         .congrats-title {
-            font-size: 7rem;
+            font-size: 8vmin;
             font-weight: 900;
             color: #facc15;
             text-shadow: 0 0 40px rgba(250, 204, 21, 0.6);
@@ -265,7 +266,7 @@
             animation: bounce 2s infinite;
         }
         .congrats-subtitle {
-            font-size: 3rem;
+            font-size: 3vmin;
             color: #fff;
             text-align: center;
             max-width: 80%;
@@ -455,8 +456,8 @@
             const m = Math.floor((diff / 1000 / 60) % 60);
             const s = Math.floor((diff / 1000) % 60);
             
-            if (days > 0) return `${days} Days ${hrs} Hours ${m} Minutes ${s} Seconds`;
-            if (hrs > 0) return `${hrs} Hours ${m} Minutes ${s} Seconds`;
+            if (days > 0) return `${days}d ${hrs}h ${m}m ${s}s`;
+            if (hrs > 0) return `${hrs}h ${m}m ${s}s`;
             return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
         }
 
@@ -601,13 +602,73 @@
         }
         setInterval(spawnAmbientConfetti, 355); // ambient loop (increasing density by another 50%)
 
-        // Initialization
-        const storedState = localStorage.getItem('mmr_state_v4');
-        if (storedState) {
-            try { updateState(JSON.parse(storedState)); } catch(e){}
-        } else {
-            updateState(state); // trigger initial render
+        // Initialization and Google Sheets Sync
+        function splitCSVLine(line) {
+            const parts = [];
+            let current = '';
+            let inQuotes = false;
+            for (let i = 0; i < line.length; i++) {
+                const char = line[i];
+                if (char === '"') inQuotes = !inQuotes;
+                else if (char === ',' && !inQuotes) {
+                    parts.push(current.trim());
+                    current = '';
+                } else current += char;
+            }
+            parts.push(current.trim());
+            return parts;
         }
+
+        function parseSlidesCSV(text) {
+            const rows = text.split(/\r?\n/).filter(line => line.trim());
+            if (rows.length < 2) return [];
+
+            return rows.slice(1).map(line => {
+                const parts = splitCSVLine(line);
+                const clean = parts.map(p => p.replace(/^"|"$/g, ''));
+
+                return {
+                    title: clean[0] || 'Untitled',
+                    subtitle: clean[1] || '',
+                    type: (clean[2] || 'normal').toLowerCase(),
+                    duration: parseInt(clean[3]) || 30000
+                };
+            }).filter(s => s.title);
+        }
+
+        async function init() {
+            const storedState = localStorage.getItem('mmr_state_v4');
+            if (storedState) {
+                try { updateState(JSON.parse(storedState)); } catch(e){}
+            } else {
+                updateState(state); // trigger initial render with defaults
+            }
+
+            // Attempt to sync slides from Google Sheets if URL is configured
+            const adminCfg = localStorage.getItem('mmr_admin_config');
+            if (adminCfg) {
+                try {
+                    const cfg = JSON.parse(adminCfg);
+                    if (cfg.slidesUrl) {
+                        const res = await fetch(cfg.slidesUrl + (cfg.slidesUrl.includes('?') ? '&' : '?') + 't=' + Date.now());
+                        const csv = await res.text();
+                        const slides = parseSlidesCSV(csv);
+                        if (slides.length > 0) {
+                            updateState({ slides: slides });
+                            // Also save to state
+                            const currentStored = localStorage.getItem('mmr_state_v4');
+                            let fullState = currentStored ? JSON.parse(currentStored) : state;
+                            fullState.slides = slides;
+                            localStorage.setItem('mmr_state_v4', JSON.stringify(fullState));
+                        }
+                    }
+                } catch (e) {
+                    console.error("Failed to auto-sync slides:", e);
+                }
+            }
+        }
+
+        init();
 
     </script>
 </body>
