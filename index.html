@@ -482,9 +482,10 @@
                 return `
                     <div class="slide ${i === currentSlideIdx ? 'active' : ''}">
                         <h1>${slide.title}</h1>
+                        <h2 class="slide-subtitle">${slide.subtitle}</h2>
                         ${slide.type === 'countdown' 
                             ? `<div class="slide-countdown slide-countdown-timer">${timeStr}</div>` 
-                            : `<h2 class="slide-subtitle">${slide.subtitle}</h2>`
+                            : ''
                         }
                     </div>
                 `;
@@ -636,6 +637,8 @@
             }).filter(s => s.title);
         }
 
+        const DEFAULT_SLIDES_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQMXn3GlWIeGLKc3XqYXFSi_ofevUW4JZtptUoDoyzapOQCmoDSdC96QRZf0EXpWQ8CYoJ7YJ5h5Boy/pub?output=csv';
+
         async function init() {
             const storedState = localStorage.getItem('mmr_state_v4');
             if (storedState) {
@@ -644,23 +647,28 @@
                 updateState(state); // trigger initial render with defaults
             }
 
-            // Attempt to sync slides from Google Sheets if URL is configured
+            // Attempt to sync slides from Google Sheets
+            let slidesUrl = DEFAULT_SLIDES_URL;
             const adminCfg = localStorage.getItem('mmr_admin_config');
             if (adminCfg) {
                 try {
                     const cfg = JSON.parse(adminCfg);
-                    if (cfg.slidesUrl) {
-                        const res = await fetch(cfg.slidesUrl + (cfg.slidesUrl.includes('?') ? '&' : '?') + 't=' + Date.now());
-                        const csv = await res.text();
-                        const slides = parseSlidesCSV(csv);
-                        if (slides.length > 0) {
-                            updateState({ slides: slides });
-                            // Also save to state
-                            const currentStored = localStorage.getItem('mmr_state_v4');
-                            let fullState = currentStored ? JSON.parse(currentStored) : state;
-                            fullState.slides = slides;
-                            localStorage.setItem('mmr_state_v4', JSON.stringify(fullState));
-                        }
+                    if (cfg.slidesUrl) slidesUrl = cfg.slidesUrl;
+                } catch(e) {}
+            }
+
+            if (slidesUrl) {
+                try {
+                    const res = await fetch(slidesUrl + (slidesUrl.includes('?') ? '&' : '?') + 't=' + Date.now());
+                    const csv = await res.text();
+                    const slides = parseSlidesCSV(csv);
+                    if (slides.length > 0) {
+                        updateState({ slides: slides });
+                        // Also save to state
+                        const currentStored = localStorage.getItem('mmr_state_v4');
+                        let fullState = currentStored ? JSON.parse(currentStored) : state;
+                        fullState.slides = slides;
+                        localStorage.setItem('mmr_state_v4', JSON.stringify(fullState));
                     }
                 } catch (e) {
                     console.error("Failed to auto-sync slides:", e);
