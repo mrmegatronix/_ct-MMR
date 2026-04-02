@@ -35,7 +35,7 @@
             position: absolute;
             top: 2rem;
             left: 2rem;
-            width: 150px;
+            width: 165px;
             z-index: 1000;
             filter: drop-shadow(0 0 20px rgba(0,0,0,0.8));
         }
@@ -90,7 +90,7 @@
             top: 3vmin;
             width: 100%;
             text-align: center;
-            font-size: clamp(2rem, 6vmin, 5rem);
+            font-size: clamp(2.64rem, 7.92vmin, 6.6rem);
             font-weight: 900;
             line-height: 1.1;
             color: #f8fafc;
@@ -102,22 +102,21 @@
         }
 
         .slide-subtitle {
-            font-size: clamp(1.5rem, 7vmin, 6rem);
-            color: var(--primary);
+            font-size: clamp(1.65rem, 7.7vmin, 6.6rem);
+            color: white;
             font-weight: 900;
             text-transform: uppercase;
             letter-spacing: 0.15em;
-            -webkit-text-stroke: 2px white;
-            text-shadow: 0 0 10px rgba(0,0,0,0.5); /* subtle shadow instead of glowing white to keep red color */
+            text-shadow: 0 0 10px var(--primary-glow), 0 0 20px var(--primary-glow);
             margin-top: 1rem;
             animation: subtitle-pulse 3s infinite ease-in-out;
         }
 
         .slide-countdown {
-            font-size: clamp(2rem, 7vmin, 6rem); /* Reduced to fit on one line guaranteed */
+            font-size: clamp(2.2rem, 7.7vmin, 6.6rem); /* Reduced to fit on one line guaranteed */
             font-weight: 900;
             color: white;
-            text-shadow: 0 0 20px rgba(255,255,255,0.5), 0 0 40px rgba(255,255,255,0.3), 0 10px 20px rgba(0,0,0,0.5);
+            text-shadow: 0 0 20px var(--primary-glow), 0 0 40px var(--primary-glow), 0 10px 20px rgba(0,0,0,0.5);
             margin-top: 1rem;
             font-variant-numeric: tabular-nums;
             letter-spacing: 0.02em;
@@ -130,8 +129,8 @@
         }
 
         @keyframes subtitle-pulse {
-            0%, 100% { text-shadow: 0 0 10px rgba(0,0,0,0.5); }
-            50% { text-shadow: 0 0 20px var(--primary-glow); }
+            0%, 100% { text-shadow: 0 0 10px var(--primary-glow), 0 0 20px var(--primary-glow); }
+            50% { text-shadow: 0 0 20px var(--primary), 0 0 40px var(--primary-glow); }
         }
 
         .ambient-confetti {
@@ -141,14 +140,18 @@
         }
 
         .slide h1 {
-            font-size: clamp(2.5rem, 9vmin, 8rem);
+            font-size: clamp(3.3rem, 11.88vmin, 10.56rem);
             font-weight: 900;
+            color: white;
             text-transform: uppercase;
             line-height: 1.1;
-            text-shadow: 0 10px 30px rgba(0,0,0,0.8);
+            text-shadow: 0 0 20px var(--primary-glow), 0 0 40px var(--primary-glow);
             margin-bottom: 1.5rem;
         }
-        .slide .highlight { color: #facc15; /* Yellow */ }
+        .slide .highlight { 
+            color: white; 
+            text-shadow: 0 0 15px var(--primary-glow), 0 0 30px var(--primary-glow);
+        }
 
         /* Progress Bar */
         #progress-container {
@@ -176,18 +179,24 @@
             gap: 2rem;
             z-index: 10;
         }
-        .draw-title { font-size: 4vmin; font-weight: 900; color: #f8fafc; text-transform: uppercase; }
+        .draw-title { 
+            font-size: 4.4vmin; 
+            font-weight: 900; 
+            color: white; 
+            text-transform: uppercase; 
+            text-shadow: 0 0 15px var(--primary-glow);
+        }
         .number-display {
-            font-size: 15vmin;
+            font-size: 16.5vmin;
             font-weight: 900;
-            color: #facc15;
-            text-shadow: 0 0 50px rgba(250, 204, 21, 0.5), 0 10px 30px rgba(0,0,0,0.8);
+            color: white;
+            text-shadow: 0 0 30px var(--primary-glow), 0 0 60px var(--primary-glow);
             background: rgba(0,0,0,0.4);
             backdrop-filter: blur(10px);
             padding: 2vmin 5vmin;
             border-radius: 3rem;
-            border: 4px solid rgba(250, 204, 21, 0.3);
-            min-width: 400px;
+            border: 4px solid var(--primary-glow);
+            min-width: 440px;
             text-align: center;
             line-height: 1;
         }
@@ -216,13 +225,13 @@
             flex-direction: column;
             gap: 1rem;
         }
-        .drawn-numbers-bar .title { font-size: 1.2rem; color: #94a3b8; text-transform: uppercase; font-weight: 700; }
+        .drawn-numbers-bar .title { font-size: 1.32rem; color: #94a3b8; text-transform: uppercase; font-weight: 700; }
         .drawn-list {
             display: flex;
             flex-wrap: wrap;
             gap: 1rem;
             justify-content: center;
-            font-size: 2rem;
+            font-size: 2.2rem;
             font-weight: 700;
             color: #fff;
         }
@@ -251,23 +260,35 @@
             text-align: center;
             box-shadow: 0 0 20px var(--primary-glow);
         }
-        .prizes-left .label { font-size: 1.2rem; color: #cbd5e1; text-transform: uppercase; font-weight: 700; }
-        .prizes-left .value { font-size: 3rem; font-weight: 900; color: #fff; }
+        .prizes-left .label { 
+            font-size: 1.32rem; 
+            color: white; 
+            text-transform: uppercase; 
+            font-weight: 700; 
+            text-shadow: 0 0 10px var(--primary-glow);
+        }
+        .prizes-left .value { 
+            font-size: 3.3rem; 
+            font-weight: 900; 
+            color: white; 
+            text-shadow: 0 0 20px var(--primary-glow);
+        }
 
         /* --- CONGRATS VIEW --- */
         .congrats-title {
-            font-size: 8vmin;
+            font-size: 8.8vmin;
             font-weight: 900;
-            color: #facc15;
-            text-shadow: 0 0 40px rgba(250, 204, 21, 0.6);
+            color: white;
+            text-shadow: 0 0 30px var(--primary-glow), 0 0 60px var(--primary-glow);
             text-transform: uppercase;
             text-align: center;
             margin-bottom: 2rem;
             animation: bounce 2s infinite;
         }
         .congrats-subtitle {
-            font-size: 3vmin;
+            font-size: 3.3vmin;
             color: #fff;
+            text-shadow: 0 0 15px var(--primary-glow);
             text-align: center;
             max-width: 80%;
             line-height: 1.4;
@@ -368,12 +389,15 @@
             activeView: 'slides', // slides, draw, congrats
             nextDrawTime: getNextThursday7PM(),
             slides: [
-                { type: "countdown", title: "Time Until Draw", duration: 30000 },
-                { title: "Tickets on Sale", subtitle: "Thursdays from 5.30pm", duration: 30000 },
-                { title: "Ticket Info", subtitle: "$5 per ticket or 5 for $20", duration: 30000 },
-                { title: "Next Draw", subtitle: "62 Trays - $1225 Total Value", duration: 30000 },
-                { title: "Previous Winners", subtitle: "60+ Winners Last Week - $1200+ Value", duration: 30000 },
-                { title: "Proudly Supplied By", subtitle: "<span class='highlight'>Hibbards Butchery</span>", duration: 30000 }
+                { title: "Next Draw:", subtitle: "", type: "countdown", duration: 30000 },
+                { title: "Get Your Tickets:", subtitle: "Thursdays from 5.30pm", duration: 30000 },
+                { title: "Tickets:", subtitle: "1x for $5 or 5x for $20", duration: 30000 },
+                { title: "This Weeks Prize Pool:", subtitle: "62x Assorted Meat Trays Valued @ $1300.00", duration: 30000 },
+                { title: "Prize Values:", subtitle: "2x $100, 4x $50, 6x $25, & 50x $15", duration: 30000 },
+                { title: "Last Weeks Draw:", subtitle: "62x Meat Trays Valued @ $1225.00", duration: 30000 },
+                { title: "Event made possible by:", subtitle: "Coasters Tavern", duration: 30000 },
+                { title: "Meat Trays supplied by:", subtitle: "Hibbards Butchery", duration: 30000 },
+                { title: "EASTER BONUS PRIZE", subtitle: "auto-entry for all non-winning tickets", duration: 30000 }
             ],
             draw: {
                 isRolling: false,
