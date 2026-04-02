@@ -102,18 +102,23 @@
         }
 
         .slide-subtitle {
-            font-size: clamp(1.65rem, 7.7vmin, 6.6rem);
-            color: white;
+            font-size: clamp(1.4rem, 6vmin, 5.5rem);
+            color: #fff8f0;
             font-weight: 900;
             text-transform: uppercase;
-            letter-spacing: 0.15em;
-            text-shadow: 0 0 10px var(--primary-glow), 0 0 20px var(--primary-glow);
+            letter-spacing: 0.1em;
+            text-shadow: 0 0 10px var(--primary-glow), 0 0 20px var(--primary-glow), 0 2px 12px rgba(0,0,0,0.95);
             margin-top: 1rem;
             animation: subtitle-pulse 3s infinite ease-in-out;
+            text-wrap: balance;
+            max-width: 85%;
+            line-height: 1.3;
+            position: relative;
+            z-index: 2;
         }
 
         .slide-countdown {
-            font-size: clamp(2.2rem, 7.7vmin, 6.6rem); /* Reduced to fit on one line guaranteed */
+            font-size: clamp(1.6rem, 5.5vmin, 5rem);
             font-weight: 900;
             color: white;
             text-shadow: 0 0 20px var(--primary-glow), 0 0 40px var(--primary-glow), 0 10px 20px rgba(0,0,0,0.5);
@@ -121,6 +126,8 @@
             font-variant-numeric: tabular-nums;
             letter-spacing: 0.02em;
             white-space: nowrap;
+            position: relative;
+            z-index: 2;
         }
 
         @keyframes title-pulse {
@@ -129,8 +136,19 @@
         }
 
         @keyframes subtitle-pulse {
-            0%, 100% { text-shadow: 0 0 10px var(--primary-glow), 0 0 20px var(--primary-glow); }
-            50% { text-shadow: 0 0 20px var(--primary), 0 0 40px var(--primary-glow); }
+            0%, 100% { text-shadow: 0 0 10px var(--primary-glow), 0 0 20px var(--primary-glow), 0 2px 12px rgba(0,0,0,0.95); }
+            50% { text-shadow: 0 0 20px var(--primary), 0 0 40px var(--primary-glow), 0 2px 12px rgba(0,0,0,0.95); }
+        }
+
+        @keyframes colon-flash {
+            0%, 49.9% { opacity: 1; }
+            50%, 100% { opacity: 0; }
+        }
+        .colon-flash {
+            animation: colon-flash 1s step-start infinite;
+            display: inline-block;
+            margin: 0 0.2em;
+            color: var(--primary);
         }
 
         .ambient-confetti {
@@ -145,12 +163,22 @@
             color: white;
             text-transform: uppercase;
             line-height: 1.1;
-            text-shadow: 0 0 20px var(--primary-glow), 0 0 40px var(--primary-glow);
+            text-shadow: 0 0 20px var(--primary-glow), 0 0 40px var(--primary-glow), 0 2px 10px rgba(0,0,0,0.9);
             margin-bottom: 1.5rem;
+            position: relative;
+            z-index: 2;
+            text-wrap: balance;
+            max-width: 90%;
         }
         .slide .highlight { 
             color: white; 
             text-shadow: 0 0 15px var(--primary-glow), 0 0 30px var(--primary-glow);
+        }
+        .slide-image-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(2, 6, 23, 0.65);
+            z-index: 1;
         }
 
         /* Progress Bar */
@@ -464,32 +492,36 @@
             if (drawnListEl.children.length !== state.draw.drawnNumbers.length) {
                 drawnListEl.innerHTML = state.draw.drawnNumbers.map(n => `<span>${n}</span>`).join('');
             }
+
+            // Persist to localStorage
+            localStorage.setItem('mmr_state_v5', JSON.stringify(state));
         }
 
         // Live Clock logic for dynamic values
-        function calculateTimeRemaining() {
-            if (!state.nextDrawTime) return "00:00";
+        function calculateTimeRemainingHTML() {
+            if (!state.nextDrawTime) return '<span>Starting Soon!</span>';
             const target = new Date(state.nextDrawTime); 
             const nzNow = getNZDate();
             
             const diff = target.getTime() - nzNow.getTime();
-            if (diff <= 0) return "00:00";
+            if (diff <= 0) return '<span>Starting Now!</span>';
             
             const days = Math.floor(diff / (1000 * 60 * 60 * 24));
             const hrs = Math.floor((diff / (1000 * 60 * 60)) % 24);
             const m = Math.floor((diff / 1000 / 60) % 60);
             const s = Math.floor((diff / 1000) % 60);
             
-            if (days > 0) return `${days}d ${hrs}h ${m}m ${s}s`;
-            if (hrs > 0) return `${hrs}h ${m}m ${s}s`;
-            return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+            const c = '<span class="colon-flash">:</span>';
+            
+            if (days > 0) return `${days} Days${c}${hrs} Hours${c}${m} Minutes${c}${s} Seconds`;
+            if (hrs > 0) return `${hrs} Hours${c}${m} Minutes${c}${s} Seconds`;
+            return `${String(m).padStart(2,'0')} Minutes${c}${String(s).padStart(2,'0')} Seconds`;
         }
 
         setInterval(() => {
-            const timeStr = calculateTimeRemaining();
-            // Try to update countdown slide if it's rendered
+            const timeHtml = calculateTimeRemainingHTML();
             const dynamicCounters = document.querySelectorAll('.slide-countdown-timer');
-            dynamicCounters.forEach(el => el.innerText = timeStr);
+            dynamicCounters.forEach(el => el.innerHTML = timeHtml);
         }, 1000);
 
         // Slide logic
@@ -502,13 +534,15 @@
             
             // Render ALL slides to DOM first
             slidesWrapper.innerHTML = slidesData.map((slide, i) => {
-                const timeStr = slide.type === 'countdown' ? calculateTimeRemaining() : '';
+                const timeHtml = slide.type === 'countdown' ? calculateTimeRemainingHTML() : '';
+                const bgStyle = slide.imageUrl ? `background-image: url('${slide.imageUrl}'); background-size: cover; background-position: center;` : '';
                 return `
-                    <div class="slide ${i === currentSlideIdx ? 'active' : ''}">
+                    <div class="slide ${i === currentSlideIdx ? 'active' : ''}" style="${bgStyle}">
+                        ${slide.imageUrl ? '<div class="slide-image-overlay"></div>' : ''}
                         <h1>${slide.title}</h1>
                         <h2 class="slide-subtitle">${slide.subtitle}</h2>
                         ${slide.type === 'countdown' 
-                            ? `<div class="slide-countdown slide-countdown-timer">${timeStr}</div>` 
+                            ? `<div class="slide-countdown slide-countdown-timer">${timeHtml}</div>` 
                             : ''
                         }
                     </div>
@@ -656,7 +690,8 @@
                     title: clean[0] || 'Untitled',
                     subtitle: clean[1] || '',
                     type: (clean[2] || 'normal').toLowerCase(),
-                    duration: parseInt(clean[3]) || 30000
+                    duration: parseInt(clean[3]) || 30000,
+                    imageUrl: clean[4] || ''
                 };
             }).filter(s => s.title);
         }
@@ -664,14 +699,14 @@
         const DEFAULT_SLIDES_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQMXn3GlWIeGLKc3XqYXFSi_ofevUW4JZtptUoDoyzapOQCmoDSdC96QRZf0EXpWQ8CYoJ7YJ5h5Boy/pub?output=csv';
 
         async function init() {
-            const storedState = localStorage.getItem('mmr_state_v4');
+            const storedState = localStorage.getItem('mmr_state_v5');
             if (storedState) {
                 try { updateState(JSON.parse(storedState)); } catch(e){}
             } else {
                 updateState(state); // trigger initial render with defaults
             }
 
-            // Attempt to sync slides from Google Sheets
+            // Always fetch fresh slides from Google Sheets (skip cache)
             let slidesUrl = DEFAULT_SLIDES_URL;
             const adminCfg = localStorage.getItem('mmr_admin_config');
             if (adminCfg) {
@@ -683,16 +718,15 @@
 
             if (slidesUrl) {
                 try {
-                    const res = await fetch(slidesUrl + (slidesUrl.includes('?') ? '&' : '?') + 't=' + Date.now());
+                    const res = await fetch(slidesUrl + (slidesUrl.includes('?') ? '&' : '?') + 't=' + Date.now(), { cache: 'no-store' });
                     const csv = await res.text();
                     const slides = parseSlidesCSV(csv);
                     if (slides.length > 0) {
                         updateState({ slides: slides });
-                        // Also save to state
-                        const currentStored = localStorage.getItem('mmr_state_v4');
+                        const currentStored = localStorage.getItem('mmr_state_v5');
                         let fullState = currentStored ? JSON.parse(currentStored) : state;
                         fullState.slides = slides;
-                        localStorage.setItem('mmr_state_v4', JSON.stringify(fullState));
+                        localStorage.setItem('mmr_state_v5', JSON.stringify(fullState));
                     }
                 } catch (e) {
                     console.error("Failed to auto-sync slides:", e);
@@ -701,6 +735,48 @@
         }
 
         init();
+
+        // ── Firebase cross-device sync (optional) ──────────────────────────
+        let fbDbUrl = '';
+        let lastFbCmdTs = 0;
+
+        function initFirebase() {
+            try {
+                const cfgStr = localStorage.getItem('mmr_firebase_config');
+                if (!cfgStr) return;
+                const cfg = JSON.parse(cfgStr);
+                if (!cfg.databaseURL) return;
+                fbDbUrl = cfg.databaseURL.replace(/\/$/, '');
+                listenFirebaseState();
+                console.log('[MMR] Firebase RTDB connected:', fbDbUrl);
+            } catch(e) { console.error('[MMR] Firebase init error:', e); }
+        }
+
+        function listenFirebaseState() {
+            const es = new EventSource(`${fbDbUrl}/mmr.json`);
+            es.addEventListener('put', handleFbEvent);
+            es.addEventListener('patch', handleFbEvent);
+            es.onerror = () => { es.close(); setTimeout(listenFirebaseState, 5000); };
+        }
+
+        function handleFbEvent(e) {
+            try {
+                const { data } = JSON.parse(e.data);
+                if (!data || typeof data !== 'object') return;
+                // Handle draw commands
+                if (data.cmd && data.cmd.ts > lastFbCmdTs) {
+                    lastFbCmdTs = data.cmd.ts;
+                    if (data.cmd.type === 'START_ROLL') startLotteryRoll();
+                    else if (data.cmd.type === 'STOP_ROLL') stopLotteryRoll(data.cmd.number);
+                    else if (data.cmd.type === 'CONFETTI') triggerConfetti();
+                }
+                // Handle state changes (exclude cmd key)
+                const { cmd, ...stateData } = data;
+                if (Object.keys(stateData).length) updateState(stateData);
+            } catch(err) {}
+        }
+
+        initFirebase();
 
     </script>
 </body>

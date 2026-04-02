@@ -136,6 +136,7 @@
     <div class="header">
         <h1>MMR Remote Control</h1>
         <div style="display: flex; gap: 10px; align-items: center;">
+            <span id="fb-status" style="font-size:0.8rem; color:#94a3b8;">🔴 Firebase: Not configured</span>
             <a href="admin.html" class="btn">⚙️ Admin (Slides)</a>
             <a href="index.html" target="_blank" class="btn btn-primary">Open Display</a>
         </div>
@@ -261,25 +262,55 @@
             }
         };
 
+        // ── Firebase cross-device sync (optional) ─────────
+        let fbDbUrl = '';
+
+        function initFirebase() {
+            try {
+                const cfgStr = localStorage.getItem('mmr_firebase_config');
+                if (!cfgStr) return;
+                const cfg = JSON.parse(cfgStr);
+                if (!cfg.databaseURL) return;
+                fbDbUrl = cfg.databaseURL.replace(/\/$/, '');
+                updateFbStatus(true);
+            } catch(e) { console.error('[MMR Remote] Firebase init error:', e); }
+        }
+
+        function writeFirebase(data) {
+            if (!fbDbUrl) return;
+            fetch(`${fbDbUrl}/mmr.json`, {
+                method: 'PATCH',
+                body: JSON.stringify(data),
+                headers: { 'Content-Type': 'application/json' },
+                cache: 'no-store'
+            }).catch(e => console.warn('[MMR Remote] Firebase write error:', e));
+        }
+
+        function updateFbStatus(connected) {
+            const el = document.getElementById('fb-status');
+            if (!el) return;
+            el.textContent = connected ? '🟢 Firebase: Connected' : '🔴 Firebase: Not configured';
+            el.style.color = connected ? '#22c55e' : '#94a3b8';
+        }
+
         // Initialize
         function init() {
-            const saved = localStorage.getItem('mmr_state_v4');
+            const saved = localStorage.getItem('mmr_state_v5');
             if (saved) {
                 try { state = { ...state, ...JSON.parse(saved) }; } catch(e){}
             }
             
-            
             updateUI();
             broadcast(); // Initial sync when remote opens
             
-            // Format time for input
-            // state.nextDrawTime is now a string like "YYYY-MM-DDTHH:MM" without 'Z'
             document.getElementById('drawTime').value = state.nextDrawTime;
+            initFirebase();
         }
 
         function broadcast() {
-            localStorage.setItem('mmr_state_v4', JSON.stringify(state));
+            localStorage.setItem('mmr_state_v5', JSON.stringify(state));
             bc.postMessage({ type: 'STATE_UPDATE', payload: state });
+            writeFirebase(state);
         }
 
         function updateUI() {
@@ -363,6 +394,7 @@
             
             // Tell display to start rolling animation
             bc.postMessage({ type: 'START_ROLL' });
+            writeFirebase({ cmd: { type: 'START_ROLL', ts: Date.now() } });
             
             // Wait 3 seconds then stop on winner
             setTimeout(() => {
@@ -372,6 +404,7 @@
                 
                 broadcast(); // updates prizes and history
                 bc.postMessage({ type: 'STOP_ROLL', payload: { number: winner } });
+                writeFirebase({ cmd: { type: 'STOP_ROLL', number: winner, ts: Date.now() } });
                 
                 isDrawing = false;
                 document.getElementById('btn-run-draw').disabled = false;
@@ -382,6 +415,7 @@
 
         function triggerConfetti() {
             bc.postMessage({ type: 'CONFETTI' });
+            writeFirebase({ cmd: { type: 'CONFETTI', ts: Date.now() } });
         }
 
 

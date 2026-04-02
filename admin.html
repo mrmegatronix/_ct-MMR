@@ -154,10 +154,14 @@
         <div id="status" class="status"></div>
 
         <div style="margin-top: 2rem;">
-            <label>Slides Sheet (Tab 1)</label>
-            <pre>Title, Subtitle, Type, Duration
-"Time Until Draw", "", "countdown", 30000
-"Tickets on Sale", "Thursdays from 5.30pm", "normal", 30000</pre>
+            <label>Slides Sheet — Columns</label>
+            <pre>Title, Subtitle, Type, Duration, ImageURL
+"Time Until Draw", "", "countdown", 30000, ""
+"Tickets on Sale", "Thursdays from 5.30pm", "normal", 30000, ""
+"Sponsor Slide", "Coasters Tavern", "normal", 30000, "https://example.com/sponsor.jpg"</pre>
+            <p style="font-size:0.75rem; color:var(--text-muted); margin-top:0.5rem;">
+                <strong>ImageURL</strong> (column 5) is optional. Paste a public direct image URL to set a background image for that slide.
+            </p>
 
             <label style="margin-top: 1rem;">Config Sheet (Tab 2)</label>
             <pre>Key, Value
@@ -165,6 +169,43 @@ next_draw_time, 2026-04-09T19:00
 prizes_left, 62
 drawn_numbers, "12, 45, 67"</pre>
         </div>
+    </div>
+
+    <!-- Firebase Config Card -->
+    <div class="card" style="margin-top: 2rem;">
+        <h2>🔥 Cross-Device Remote (Firebase RTDB)</h2>
+        <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1.5rem;">
+            Enables the Remote Control to work across different devices on the same Wi-Fi network.
+            Uses a free Firebase Realtime Database — no ongoing cost for this use case.
+        </p>
+
+        <div class="form-group">
+            <label>Firebase Database URL</label>
+            <input type="text" id="firebase-url" placeholder="https://your-project-default-rtdb.firebaseio.com">
+        </div>
+
+        <button class="btn btn-primary" onclick="saveFirebaseConfig()">💾 Save Firebase Config</button>
+        <div id="firebase-status" class="status"></div>
+
+        <details style="margin-top: 1.5rem; cursor: pointer;">
+            <summary style="color: var(--text-muted); font-size: 0.85rem; user-select: none;">▶ How to set up Firebase RTDB (Free, ~2 minutes)</summary>
+            <ol style="color: var(--text-muted); font-size: 0.8rem; margin-top: 0.75rem; line-height: 2; padding-left: 1.2rem;">
+                <li>Go to <a href="https://console.firebase.google.com" target="_blank" style="color:var(--primary);">console.firebase.google.com</a> and sign in</li>
+                <li>Create or select your project → click <strong>Realtime Database</strong> → <strong>Create Database</strong></li>
+                <li>Choose a region, then start in <em>test mode</em> (or set rules to allow public read/write)</li>
+                <li>Copy the Database URL — it looks like:<br>
+                    <code style="color:#f1f5f9;">https://your-project-default-rtdb.firebaseio.com</code></li>
+                <li>Paste it above and click <strong>Save Firebase Config</strong></li>
+                <li>Reload the Display and Remote pages — they will now sync across devices</li>
+            </ol>
+            <pre style="margin-top:0.75rem;">// Realtime Database Rules (Rules tab in Firebase console)
+{
+  "rules": {
+    ".read": true,
+    ".write": true
+  }
+}</pre>
+        </details>
     </div>
 
     <div class="links">
@@ -236,7 +277,7 @@ drawn_numbers, "12, 45, 67"</pre>
                 });
 
                 // Update local storage
-                const savedState = localStorage.getItem('mmr_state_v4');
+                const savedState = localStorage.getItem('mmr_state_v5');
                 let state = savedState ? JSON.parse(savedState) : {};
                 
                 // Deep merge helper
@@ -246,7 +287,7 @@ drawn_numbers, "12, 45, 67"</pre>
                     state.draw = { ...state.draw, ...updatePayload.draw };
                 }
                 
-                localStorage.setItem('mmr_state_v4', JSON.stringify(state));
+                localStorage.setItem('mmr_state_v5', JSON.stringify(state));
 
                 showStatus('Successfully synced from Google Sheets!', 'success');
             } catch (err) {
@@ -267,7 +308,8 @@ drawn_numbers, "12, 45, 67"</pre>
                     title: clean[0] || 'Untitled',
                     subtitle: clean[1] || '',
                     type: (clean[2] || 'normal').toLowerCase(),
-                    duration: parseInt(clean[3]) || 30000
+                    duration: parseInt(clean[3]) || 30000,
+                    imageUrl: clean[4] || ''
                 };
             }).filter(s => s.title);
         }
@@ -311,6 +353,36 @@ drawn_numbers, "12, 45, 67"</pre>
         }
 
         init();
+
+        // Firebase config save/load
+        function saveFirebaseConfig() {
+            const url = document.getElementById('firebase-url').value.trim();
+            if (!url) {
+                showFirebaseStatus('Please enter a Firebase Database URL.', 'error');
+                return;
+            }
+            localStorage.setItem('mmr_firebase_config', JSON.stringify({ databaseURL: url }));
+            showFirebaseStatus('✅ Saved! Reload the Display and Remote pages to activate cross-device sync.', 'success');
+        }
+
+        function showFirebaseStatus(msg, type) {
+            const el = document.getElementById('firebase-status');
+            el.innerText = msg;
+            el.className = 'status status-' + type;
+            el.style.display = 'block';
+            if (type === 'success') setTimeout(() => el.style.display = 'none', 7000);
+        }
+
+        // Pre-fill Firebase URL if already saved
+        (function loadFirebaseCfg() {
+            const cfgStr = localStorage.getItem('mmr_firebase_config');
+            if (!cfgStr) return;
+            try {
+                const cfg = JSON.parse(cfgStr);
+                document.getElementById('firebase-url').value = cfg.databaseURL || '';
+            } catch(e) {}
+        })();
+
     </script>
 </body>
 </html>
