@@ -153,6 +153,15 @@
         
         <div id="status" class="status"></div>
 
+        <div id="slides-management" style="margin-top: 1.5rem; display: none;">
+            <label>Manage Slide Visibility</label>
+            <div id="slides-list" style="background: var(--bg); border: 1px solid var(--border); border-radius: 0.5rem; padding: 1rem; max-height: 250px; overflow-y: auto;">
+                <!-- Slides injected here -->
+            </div>
+            <button class="btn btn-primary" style="margin-top: 1rem;" onclick="saveDisabledSlides()">💾 Apply Visibility Changes</button>
+            <div id="slide-status" class="status"></div>
+        </div>
+
         <div style="margin-top: 2rem;">
             <label>Slides Sheet — Columns</label>
             <pre>Title, Subtitle, Type, Duration, ImageURL
@@ -228,6 +237,7 @@ drawn_numbers, "12, 45, 67"</pre>
             } else {
                 document.getElementById('slides-url').value = DEFAULT_SLIDES_URL;
             }
+            renderAdminSlides();
         }
 
         async function syncFromSheets() {
@@ -290,10 +300,56 @@ drawn_numbers, "12, 45, 67"</pre>
                 localStorage.setItem('mmr_state_v5', JSON.stringify(state));
 
                 showStatus('Successfully synced from Google Sheets!', 'success');
+                renderAdminSlides();
             } catch (err) {
                 console.error(err);
                 showStatus('Error fetching CSV: ' + err.message, 'error');
             }
+        }
+
+        function renderAdminSlides() {
+            const savedState = localStorage.getItem('mmr_state_v5');
+            if(!savedState) return;
+            const state = JSON.parse(savedState);
+            if(!state.slides) return;
+            
+            const disabled = state.disabledSlides || [];
+            
+            const container = document.getElementById('slides-list');
+            container.innerHTML = state.slides.map((s, i) => `
+                <div style="margin-bottom: 0.8rem; display: flex; align-items: center; gap: 0.5rem;">
+                    <input type="checkbox" id="slide-${i}" value="${s.title.replace(/"/g, '&quot;')}" ${disabled.includes(s.title) ? '' : 'checked'} style="width: auto; margin: 0;">
+                    <label style="display:inline; color: var(--text); margin: 0; font-size: 0.9rem; text-transform: none; font-weight: normal; cursor: pointer;" for="slide-${i}">
+                        <strong>${s.title}</strong> <span style="color:var(--text-muted)">(${s.type})</span>
+                    </label>
+                </div>
+            `).join('');
+            
+            document.getElementById('slides-management').style.display = 'block';
+        }
+
+        function saveDisabledSlides() {
+            const checkboxes = document.querySelectorAll('#slides-list input[type="checkbox"]');
+            const disabled = [];
+            checkboxes.forEach(cb => {
+                if(!cb.checked) disabled.push(cb.value);
+            });
+            
+            const savedState = localStorage.getItem('mmr_state_v5');
+            let state = savedState ? JSON.parse(savedState) : {};
+            state.disabledSlides = disabled;
+            localStorage.setItem('mmr_state_v5', JSON.stringify(state));
+            
+            bc.postMessage({ 
+                type: 'STATE_UPDATE', 
+                payload: { disabledSlides: disabled } 
+            });
+            
+            const el = document.getElementById('slide-status');
+            el.innerText = 'Slide visibility applied to Display!';
+            el.className = 'status status-success';
+            el.style.display = 'block';
+            setTimeout(() => el.style.display = 'none', 3000);
         }
 
         function parseSlidesCSV(text) {

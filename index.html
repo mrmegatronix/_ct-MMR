@@ -181,6 +181,57 @@
             z-index: 1;
         }
 
+        /* Avatar styling */
+        .avatar-container {
+            margin-top: 3rem;
+            position: relative;
+            z-index: 5;
+            display: flex;
+            justify-content: center;
+        }
+        .animated-avatar {
+            width: 380px;
+            height: 380px;
+            object-fit: contain;
+            border-radius: 50%;
+            border: 6px solid var(--primary);
+            box-shadow: 0 0 40px var(--primary-glow), 0 0 80px rgba(0,0,0,0.8);
+            animation: float 4s ease-in-out infinite;
+            background: rgba(0,0,0,0.4);
+            backdrop-filter: blur(10px);
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+        }
+        .speech-bubble {
+            position: absolute;
+            top: -60px;
+            right: -100px;
+            background: white;
+            color: #020617;
+            padding: 1rem 1.5rem;
+            border-radius: 20px;
+            font-weight: 800;
+            font-size: 1.5rem;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            animation: float-bubble 4s ease-in-out infinite;
+            z-index: 10;
+        }
+        .speech-bubble::after {
+            content: '';
+            position: absolute;
+            bottom: -15px;
+            left: 30px;
+            border-width: 15px 15px 0 0;
+            border-style: solid;
+            border-color: white transparent transparent transparent;
+        }
+        @keyframes float-bubble {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+        }
+
         /* Progress Bar */
         #progress-container {
             position: absolute;
@@ -425,7 +476,8 @@
                 { title: "Last Weeks Draw:", subtitle: "62x Meat Trays Valued @ $1225.00", duration: 30000 },
                 { title: "Event made possible by:", subtitle: "Coasters Tavern", duration: 30000 },
                 { title: "Meat Trays supplied by:", subtitle: "Hibbards Butchery", duration: 30000 },
-                { title: "EASTER BONUS PRIZE", subtitle: "auto-entry for all non-winning tickets", duration: 30000 }
+                { title: "EASTER BONUS PRIZE", subtitle: "auto-entry for all non-winning tickets", duration: 30000 },
+                { title: "Thanks for coming!", subtitle: "Enjoy the Meat Raffle!", type: "avatar", duration: 15000 }
             ],
             draw: {
                 isRolling: false,
@@ -530,14 +582,17 @@
         let progressInterval;
 
         function renderSlides(slidesData) {
-            if (slidesData.length === 0) return;
+            const disabledList = state.disabledSlides || [];
+            const visibleSlides = slidesData.filter(s => !disabledList.includes(s.title));
             
+            if (visibleSlides.length === 0) return;
+
             // Render ALL slides to DOM first
-            slidesWrapper.innerHTML = slidesData.map((slide, i) => {
+            slidesWrapper.innerHTML = visibleSlides.map((slide, i) => {
                 const timeHtml = slide.type === 'countdown' ? calculateTimeRemainingHTML() : '';
                 const bgStyle = slide.imageUrl ? `background-image: url('${slide.imageUrl}'); background-size: cover; background-position: center;` : '';
                 return `
-                    <div class="slide ${i === currentSlideIdx ? 'active' : ''}" style="${bgStyle}">
+                    <div class="slide ${i === currentSlideIdx ? 'active' : ''}" style="${bgStyle}" data-duration="${slide.duration}">
                         ${slide.imageUrl ? '<div class="slide-image-overlay"></div>' : ''}
                         <h1>${slide.title}</h1>
                         <h2 class="slide-subtitle">${slide.subtitle}</h2>
@@ -545,11 +600,21 @@
                             ? `<div class="slide-countdown slide-countdown-timer">${timeHtml}</div>` 
                             : ''
                         }
+                        ${slide.type === 'avatar' 
+                            ? `<div class="avatar-container">
+                                 <div class="speech-bubble">I'll see you all on Thursday!</div>
+                                 <img src="avatar.png" class="animated-avatar" alt="Character Avatar">
+                               </div>` 
+                            : ''
+                        }
                     </div>
                 `;
             }).join('');
 
-            startSlideTimer(slidesData[currentSlideIdx].duration);
+            // Safety boundary check
+            if (currentSlideIdx >= visibleSlides.length) currentSlideIdx = 0;
+
+            startSlideTimer(visibleSlides[currentSlideIdx].duration);
         }
 
         function startSlideTimer(duration) {
@@ -573,7 +638,8 @@
                 currentSlideIdx = (currentSlideIdx + 1) % slides.length;
                 slides[currentSlideIdx].classList.add('active');
                 
-                startSlideTimer(state.slides[currentSlideIdx].duration);
+                const nextDur = parseInt(slides[currentSlideIdx].getAttribute('data-duration')) || 30000;
+                startSlideTimer(nextDur);
             }, duration);
         }
 
@@ -608,7 +674,11 @@
                 el.style.zIndex = Math.random() > 0.5 ? 60 : 40;
                 
                 if (symbol === 'LOGO') {
-                    el.innerHTML = '<img src="logo-new.png" style="width: 4rem; height: auto;">';
+                    const img = document.createElement('img');
+                    img.src = 'logo-new.png';
+                    img.style.width = '4rem';
+                    img.style.height = 'auto';
+                    el.appendChild(img);
                 } else {
                     el.innerText = symbol;
                 }
@@ -644,7 +714,12 @@
             el.style.opacity = Math.random() * 0.4 + 0.2; // subtle opacity for background
             
             if (symbol === 'LOGO') {
-                el.innerHTML = '<img src="logo-new.png" style="width: 3rem; height: auto; opacity: 0.8;">';
+                const img = document.createElement('img');
+                img.src = 'logo-new.png';
+                img.style.width = '3rem';
+                img.style.height = 'auto';
+                img.style.opacity = '0.8';
+                el.appendChild(img);
             } else {
                 el.innerText = symbol;
             }
@@ -682,7 +757,7 @@
             const rows = text.split(/\r?\n/).filter(line => line.trim());
             if (rows.length < 2) return [];
 
-            return rows.slice(1).map(line => {
+            const parsed = rows.slice(1).map(line => {
                 const parts = splitCSVLine(line);
                 const clean = parts.map(p => p.replace(/^"|"$/g, ''));
 
@@ -694,6 +769,17 @@
                     imageUrl: clean[4] || ''
                 };
             }).filter(s => s.title);
+
+            // Dynamically inject the avatar slide at the end of the loop
+            parsed.push({
+                title: "Thanks for coming!",
+                subtitle: "Enjoy the Meat Raffle!",
+                type: "avatar",
+                duration: 15000,
+                imageUrl: ""
+            });
+
+            return parsed;
         }
 
         const DEFAULT_SLIDES_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQMXn3GlWIeGLKc3XqYXFSi_ofevUW4JZtptUoDoyzapOQCmoDSdC96QRZf0EXpWQ8CYoJ7YJ5h5Boy/pub?output=csv';
