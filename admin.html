@@ -358,16 +358,18 @@ drawn_numbers, "12, 45, 67"</pre>
 
             const parsed = rows.slice(1).map(line => {
                 const parts = splitCSVLine(line);
-                const clean = parts.map(p => p.replace(/^"|"$/g, ''));
+                const clean = parts.map(p => p.replace(/^"|"$/g, '').trim());
+
+                if (!clean[0]) return null; // Ignore rows with no title
 
                 return {
-                    title: clean[0] || 'Untitled',
+                    title: clean[0],
                     subtitle: clean[1] || '',
                     type: (clean[2] || 'normal').toLowerCase(),
                     duration: parseInt(clean[3]) || 30000,
                     imageUrl: clean[4] || ''
                 };
-            }).filter(s => s.title);
+            }).filter(s => s !== null);
 
             // Avatar is now handled directly via Google Sheets!
             // (Just add a row with type: 'avatar')
