@@ -636,8 +636,8 @@
                         }
                         ${slide.type === 'avatar' 
                             ? `<div class="avatar-container">
-                                 <div class="speech-bubble">I'll see you all on Thursday!</div>
-                                 <img src="avatar.png" class="animated-avatar" alt="Character Avatar">
+                                 ${slide.subtitle ? `<div class="speech-bubble">${slide.subtitle}</div>` : ''}
+                                 <img src="${slide.imageUrl || 'avatar.png'}" class="animated-avatar" alt="Character Avatar">
                                </div>` 
                             : ''
                         }
@@ -823,14 +823,8 @@
                 };
             }).filter(s => s.title);
 
-            // Dynamically inject the avatar slide at the end of the loop
-            parsed.push({
-                title: "Thanks for coming!",
-                subtitle: "Enjoy the Meat Raffle!",
-                type: "avatar",
-                duration: 15000,
-                imageUrl: ""
-            });
+            // Avatar is now handled directly via Google Sheets!
+            // (Just add a row with type: 'avatar')
 
             return parsed;
         }

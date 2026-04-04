@@ -369,14 +369,8 @@ drawn_numbers, "12, 45, 67"</pre>
                 };
             }).filter(s => s.title);
 
-            // Dynamically inject the avatar slide at the end of the loop
-            parsed.push({
-                title: "Thanks for coming!",
-                subtitle: "Enjoy the Meat Raffle!",
-                type: "avatar",
-                duration: 15000,
-                imageUrl: ""
-            });
+            // Avatar is now handled directly via Google Sheets!
+            // (Just add a row with type: 'avatar')
 
             return parsed;
         }
