@@ -263,15 +263,17 @@
         };
 
         // ── Firebase cross-device sync (optional) ─────────
-        let fbDbUrl = '';
+        let fbDbUrl = 'https://ct-mmr-default-rtdb.firebaseio.com';
 
         function initFirebase() {
             try {
                 const cfgStr = localStorage.getItem('mmr_firebase_config');
-                if (!cfgStr) return;
-                const cfg = JSON.parse(cfgStr);
-                if (!cfg.databaseURL) return;
-                fbDbUrl = cfg.databaseURL.replace(/\/$/, '');
+                if (cfgStr) {
+                    const cfg = JSON.parse(cfgStr);
+                    if (cfg.databaseURL) fbDbUrl = cfg.databaseURL;
+                }
+                fbDbUrl = fbDbUrl.replace(/\/$/, '');
+                if (!fbDbUrl) return;
                 updateFbStatus(true);
             } catch(e) { console.error('[MMR Remote] Firebase init error:', e); }
         }

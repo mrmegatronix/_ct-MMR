@@ -356,7 +356,7 @@ drawn_numbers, "12, 45, 67"</pre>
             const rows = text.split(/\r?\n/).filter(line => line.trim());
             if (rows.length < 2) return [];
 
-            return rows.slice(1).map(line => {
+            const parsed = rows.slice(1).map(line => {
                 const parts = splitCSVLine(line);
                 const clean = parts.map(p => p.replace(/^"|"$/g, ''));
 
@@ -368,6 +368,17 @@ drawn_numbers, "12, 45, 67"</pre>
                     imageUrl: clean[4] || ''
                 };
             }).filter(s => s.title);
+
+            // Dynamically inject the avatar slide at the end of the loop
+            parsed.push({
+                title: "Thanks for coming!",
+                subtitle: "Enjoy the Meat Raffle!",
+                type: "avatar",
+                duration: 15000,
+                imageUrl: ""
+            });
+
+            return parsed;
         }
 
         function parseConfigCSV(text) {
@@ -431,12 +442,18 @@ drawn_numbers, "12, 45, 67"</pre>
 
         // Pre-fill Firebase URL if already saved
         (function loadFirebaseCfg() {
+            const defaultUrl = 'https://ct-mmr-default-rtdb.firebaseio.com';
             const cfgStr = localStorage.getItem('mmr_firebase_config');
-            if (!cfgStr) return;
+            if (!cfgStr) {
+                document.getElementById('firebase-url').value = defaultUrl;
+                return;
+            }
             try {
                 const cfg = JSON.parse(cfgStr);
-                document.getElementById('firebase-url').value = cfg.databaseURL || '';
-            } catch(e) {}
+                document.getElementById('firebase-url').value = cfg.databaseURL || defaultUrl;
+            } catch(e) {
+                document.getElementById('firebase-url').value = defaultUrl;
+            }
         })();
 
     </script>
