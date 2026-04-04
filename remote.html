@@ -40,7 +40,13 @@
         }
 
         @media (max-width: 768px) {
-            .grid { grid-template-columns: 1fr; }
+            body { padding: 0.8rem; }
+            .grid { grid-template-columns: 1fr; gap: 1rem; }
+            .header { flex-direction: column; align-items: center; gap: 1rem; }
+            .header > div { flex-direction: column; width: 100%; gap: 0.5rem; }
+            .btn { width: 100%; padding: 1.2rem; font-size: 1.1rem; text-align: center; }
+            .btn-group { flex-direction: column; gap: 0.5rem; width: 100%; }
+            .card { padding: 1.2rem; }
         }
 
         .card {
@@ -128,6 +134,13 @@
             border-radius: 0.5rem;
             display: none;
         }
+
+        @media print {
+            body * { visibility: hidden; }
+            #print-report, #print-report * { visibility: visible; }
+            #print-report { position: absolute; left: 0; top: 0; width: 100%; color: black; background: white; padding: 2rem; }
+            .no-print { display: none !important; }
+        }
         
     </style>
 </head>
@@ -199,7 +212,21 @@
             
         </div>
 
+        <!-- Export Controls -->
+        <div class="card" style="grid-column: 1 / -1; margin-top: 1rem;">
+            <h2>End of Night Reports</h2>
+            <p style="font-size: 0.9rem; color: var(--text-muted); margin-top: -0.5rem; margin-bottom: 1rem;">
+                Finished the raffle? Export a detailed summary of all drawn tickets.
+            </p>
+            <div class="btn-group">
+                <button class="btn" onclick="generateReport('print')">🖨️ Print / Save as PDF</button>
+                <button class="btn" onclick="generateReport('email')">📧 Email Report</button>
+            </div>
+        </div>
+
     </div>
+
+    <div id="print-report" style="display: none; background: white; color: black; padding: 2rem;"></div>
 
     <script>
         const bc = new BroadcastChannel('mmr_sync');
@@ -425,6 +452,59 @@
             const el = document.getElementById('status-display');
             el.style.display = 'block';
             setTimeout(() => el.style.display = 'none', 2000);
+        }
+
+        function generateReportText() {
+            const min = parseInt(document.getElementById('cfg-min').value) || 1;
+            const max = parseInt(document.getElementById('cfg-max').value) || 999;
+            const excludeStr = document.getElementById('cfg-excludes').value;
+            const total = parseInt(document.getElementById('cfg-prizes').value) || 0;
+            const drawn = state.draw.drawnNumbers;
+            const date = new Date().toLocaleDateString();
+
+            return `Monster Meat Raffle Report - ${date}\n` +
+                   `--------------------------------------------------\n` +
+                   `Draw Configuration:\n` +
+                   `Ticket Range: ${min} to ${max}\n` +
+                   `Excluded Numbers: ${excludeStr || 'None'}\n` +
+                   `Total Prizes Initially: ${total + drawn.length}\n` +
+                   `Prizes Remaining: ${state.draw.prizesLeft}\n\n` +
+                   `Winning Ticket Numbers (in order drawn):\n` +
+                   `${drawn.length > 0 ? drawn.join(', ') : 'No tickets drawn yet.'}\n` +
+                   `--------------------------------------------------\n` +
+                   `Report generated securely from local console.`;
+        }
+
+        function generateReport(type) {
+            const text = generateReportText();
+            if (type === 'email') {
+                const subject = encodeURIComponent("Meat Raffle Results - " + new Date().toLocaleDateString());
+                const body = encodeURIComponent(text);
+                window.location.href = `mailto:?subject=${subject}&body=${body}`;
+            } else if (type === 'print') {
+                const prct = document.getElementById('print-report');
+                prct.innerHTML = `
+                    <h1 style="color:black; margin-bottom: 0;">Monster Meat Raffle Report</h1>
+                    <p style="color:#555; margin-top: 0;">Date: ${new Date().toLocaleDateString()}</p>
+                    <hr>
+                    <h3>Draw Configuration</h3>
+                    <ul>
+                        <li><strong>Ticket Range:</strong> ${document.getElementById('cfg-min').value || 1} to ${document.getElementById('cfg-max').value || 999}</li>
+                        <li><strong>Excluded Numbers:</strong> ${document.getElementById('cfg-excludes').value || 'None'}</li>
+                        <li><strong>Total Prizes Initially:</strong> ${(parseInt(document.getElementById('cfg-prizes').value) || 0) + state.draw.drawnNumbers.length}</li>
+                        <li><strong>Prizes Remaining:</strong> ${state.draw.prizesLeft}</li>
+                    </ul>
+                    <h3>Winning Numbers (in order drawn)</h3>
+                    <p style="line-height: 1.8; font-size: 1.2rem;">
+                        ${state.draw.drawnNumbers.length > 0 
+                            ? state.draw.drawnNumbers.map(n => `<span style="display:inline-block; padding: 4px 10px; border: 1px solid #ccc; margin: 4px; border-radius: 4px;"><strong>${n}</strong></span>`).join(' ') 
+                            : 'No tickets drawn yet.'}
+                    </p>
+                `;
+                prct.style.display = 'block';
+                window.print();
+                prct.style.display = 'none';
+            }
         }
 
         init();

@@ -286,16 +286,36 @@
             to { text-shadow: 0 0 50px #fff, 0 0 100px var(--primary), 0 0 150px var(--primary); box-shadow: 0 0 80px var(--primary), inset 0 0 50px var(--primary-glow); transform: scale(1.05); }
         }
         .number-display.rolling {
-            animation: pulse-rapid 0.1s infinite alternate;
+            animation: slot-blur 0.1s infinite alternate;
             color: #ffffff;
-            text-shadow: 0 0 20px rgba(255,255,255,0.5);
-            border-color: rgba(255,255,255,0.2);
-            box-shadow: none;
+            text-shadow: 0 0 20px rgba(255,255,255,0.8);
+            border-color: rgba(255,255,255,0.4);
+            box-shadow: 0 0 30px rgba(255,255,255,0.2);
             transform: scale(1);
         }
-        @keyframes pulse-rapid {
-            from { transform: scale(0.98); }
-            to { transform: scale(1.02); }
+        @keyframes slot-blur {
+            from { transform: scale(0.98) translateY(-8px); filter: blur(2px); }
+            to { transform: scale(1.02) translateY(8px); filter: blur(4px); }
+        }
+
+        .draw-flash-bg::after {
+            content: ''; position: absolute; inset: 0; pointer-events: none;
+            animation: draw-spotlight 0.3s infinite alternate;
+            z-index: 1;
+        }
+        @keyframes draw-spotlight {
+            from { box-shadow: inset 0 0 50px rgba(239, 68, 68, 0.3); background: rgba(239,68,68,0.05); }
+            to { box-shadow: inset 0 0 300px rgba(239, 68, 68, 0.8); background: rgba(239,68,68,0.15); }
+        }
+        
+        .winner-gold-bg::after {
+            content: ''; position: absolute; inset: 0; pointer-events: none;
+            animation: gold-flash 2.5s ease-out forwards;
+            z-index: 1;
+        }
+        @keyframes gold-flash {
+            0% { box-shadow: inset 0 0 500px rgba(255,215,0,0.8); background: rgba(255,215,0,0.4); }
+            100% { box-shadow: inset 0 0 0 rgba(255,215,0,0); background: transparent; }
         }
 
         .drawn-numbers-bar {
@@ -368,7 +388,7 @@
 
         /* --- CONGRATS VIEW --- */
         .congrats-title {
-            font-size: 8.8vmin;
+            font-size: 12vmin;
             font-weight: 900;
             color: white;
             text-shadow: 0 0 30px var(--primary-glow), 0 0 60px var(--primary-glow);
@@ -376,9 +396,10 @@
             text-align: center;
             margin-bottom: 2rem;
             animation: bounce 2s infinite;
+            line-height: 1.1;
         }
         .congrats-subtitle {
-            font-size: 3.3vmin;
+            font-size: 5vmin;
             color: #fff;
             text-shadow: 0 0 15px var(--primary-glow);
             text-align: center;
@@ -440,8 +461,8 @@
 
         <!-- CONGRATS VIEW -->
         <div id="view-congrats" class="view">
-            <div class="congrats-title">Congratulations!</div>
-            <div class="congrats-subtitle">Thank you to all who participated.<br>We hope to see you all next week!</div>
+            <div class="congrats-title">Congratulations<br>to all the winners</div>
+            <div class="congrats-subtitle">Thank you to all who participated.<br>We hope to see you all next Thursday!</div>
         </div>
 
     </div>
@@ -660,6 +681,7 @@
         let rollInterval;
         function startLotteryRoll() {
             lottoNumberEl.classList.add('rolling');
+            document.getElementById('view-draw').classList.add('draw-flash-bg');
             rollInterval = setInterval(() => {
                 lottoNumberEl.innerText = Math.floor(Math.random() * 999) + 1;
             }, 50);
@@ -668,8 +690,26 @@
         function stopLotteryRoll(finalNumber) {
             clearInterval(rollInterval);
             lottoNumberEl.classList.remove('rolling');
+            
+            const drawView = document.getElementById('view-draw');
+            drawView.classList.remove('draw-flash-bg');
+            drawView.classList.add('winner-gold-bg');
+            setTimeout(() => drawView.classList.remove('winner-gold-bg'), 2500);
+            
             lottoNumberEl.innerText = finalNumber;
             triggerConfetti();
+
+            // Announcer Voice
+            if ('speechSynthesis' in window) {
+                // Cancel any currently speaking voices
+                window.speechSynthesis.cancel();
+                const msg = new SpeechSynthesisUtterance("Ticket number " + finalNumber + "!");
+                msg.voiceURI = 'native';
+                msg.volume = 1;
+                msg.rate = 0.9;
+                msg.pitch = 0.8;
+                window.speechSynthesis.speak(msg);
+            }
         }
 
         // Confetti Logic
