@@ -224,6 +224,28 @@
             </div>
         </div>
 
+        <!-- QR Codes Links -->
+        <div class="card no-print" style="grid-column: 1 / -1; margin-top: 1rem;">
+            <h2>Quick Access QR Codes</h2>
+            <p style="font-size: 0.9rem; color: var(--text-muted); margin-top: -0.5rem; margin-bottom: 1rem;">
+                Scan these codes on any smartphone or tablet connected to your network to instantly open the interface!
+            </p>
+            <div style="display: flex; flex-wrap: wrap; gap: 2rem; justify-content: center; align-items: center; text-align: center;">
+                <div>
+                    <h3 style="margin-bottom: 0.5rem; font-size: 1rem;">Main Display</h3>
+                    <img id="qr-display" alt="Display QR Code" style="background: white; padding: 0.5rem; border-radius: 0.5rem; width: 140px; height: 140px;">
+                </div>
+                <div>
+                    <h3 style="margin-bottom: 0.5rem; font-size: 1rem;">Admin Panel</h3>
+                    <img id="qr-admin" alt="Admin QR Code" style="background: white; padding: 0.5rem; border-radius: 0.5rem; width: 140px; height: 140px;">
+                </div>
+                <div>
+                    <h3 style="margin-bottom: 0.5rem; font-size: 1rem;">Remote Control</h3>
+                    <img id="qr-remote" alt="Remote QR Code" style="background: white; padding: 0.5rem; border-radius: 0.5rem; width: 140px; height: 140px;">
+                </div>
+            </div>
+        </div>
+
     </div>
 
     <div id="print-report" style="display: none; background: white; color: black; padding: 2rem;"></div>
@@ -507,7 +529,25 @@
             }
         }
 
+        function generateQRCodes() {
+            // Get the base directory URL of the current page, filtering out any URL parameters
+            const baseUrl = window.location.href.split('?')[0].substring(0, window.location.href.lastIndexOf('/'));
+            
+            const urls = {
+                'qr-display': baseUrl + '/index.html',
+                'qr-admin': baseUrl + '/admin.html',
+                'qr-remote': baseUrl + '/remote.html'
+            };
+
+            for (const [id, url] of Object.entries(urls)) {
+                // Use qrserver.com API to generate images natively without extra libraries
+                const api = `https://api.qrserver.com/v1/create-qr-code/?size=160x160&format=png&color=0f172a&bgcolor=ffffff&data=`;
+                document.getElementById(id).src = api + encodeURIComponent(url);
+            }
+        }
+
         init();
+        generateQRCodes();
     </script>
 </body>
 </html>
