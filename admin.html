@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://docs.google.com https://*.firebaseio.com;">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://*.google.com https://*.googleusercontent.com https://*.firebaseio.com;">
     <title>MMR - Admin Panel</title>
     <style>
         :root {
@@ -485,14 +485,18 @@ drawn_numbers, "12, 45, 67"</pre>
             const disabled = state.disabledSlides || [];
             
             const container = document.getElementById('slides-list');
-            container.innerHTML = state.slides.map((s, i) => `
-                <div style="margin-bottom: 0.8rem; display: flex; align-items: center; gap: 0.5rem;">
-                    <input type="checkbox" id="slide-${i}" value="${s.title.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;')}" ${disabled.includes(s.title) ? '' : 'checked'} style="width: auto; margin: 0;">
-                    <label style="display:inline; color: var(--text); margin: 0; font-size: 0.9rem; text-transform: none; font-weight: normal; cursor: pointer;" for="slide-${i}">
-                        <strong>${sanitize(s.title || '(no title)')}</strong> <span style="color:var(--text-muted)">(${sanitize(s.type || '')})</span>
-                    </label>
-                </div>
-            `).join('');
+            container.innerHTML = state.slides.map((s, i) => {
+                const title = s.title || '';
+                const safeTitle = title.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+                return `
+                    <div style="margin-bottom: 0.8rem; display: flex; align-items: center; gap: 0.5rem;">
+                        <input type="checkbox" id="slide-${i}" value="${safeTitle}" ${disabled.includes(title) ? '' : 'checked'} style="width: auto; margin: 0;">
+                        <label style="display:inline; color: var(--text); margin: 0; font-size: 0.9rem; text-transform: none; font-weight: normal; cursor: pointer;" for="slide-${i}">
+                            <strong>${sanitize(title || '(no title)')}</strong> <span style="color:var(--text-muted)">(${sanitize(s.type || '')})</span>
+                        </label>
+                    </div>
+                `;
+            }).join('');
             
             document.getElementById('slides-management').style.display = 'block';
         }
