@@ -205,6 +205,10 @@
         <div class="form-group">
             <label>Slides CSV URL</label>
             <input type="text" id="slides-url" placeholder="https://docs.google.com/spreadsheets/d/e/.../pub?output=csv">
+            <a id="open-sheet-link" href="#" target="_blank" onclick="return openSheet()"
+               style="display:inline-block; margin-top:0.5rem; font-size:0.8rem; color:var(--primary); text-decoration:none; font-weight:bold;">
+                📊 Open Google Sheet ↗
+            </a>
         </div>
 
         <div class="form-group">
@@ -327,6 +331,15 @@ drawn_numbers, "12, 45, 67"</pre>
                 .replace(/>/g, '&gt;')
                 .replace(/"/g, '&quot;')
                 .replace(/'/g, '&#x27;');
+        }
+
+        function openSheet() {
+            const csvUrl = document.getElementById('slides-url').value.trim();
+            if (!csvUrl) { alert('No Slides CSV URL entered yet.'); return false; }
+            // Convert pub?output=csv  →  pubhtml (viewable in browser)
+            const viewUrl = csvUrl.replace(/[?&]output=csv(&|$)/, '$1').replace(/\/pub(\?.*)?$/, '/pubhtml');
+            window.open(viewUrl, '_blank');
+            return false; // prevent default anchor navigation
         }
 
         // ── PIN Access Control ───────────────────────────────────────────
