@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://docs.google.com https://*.firebaseio.com;">
     <title>MMR - Admin Panel</title>
     <style>
         :root {
@@ -125,9 +126,74 @@
             color: #94a3b8;
             margin-top: 1rem;
         }
+
+        /* ── PIN Access Overlay ── */
+        #pin-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.97);
+            backdrop-filter: blur(20px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+        #pin-modal {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 1.5rem;
+            padding: 3rem;
+            min-width: 320px;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 0 60px rgba(239,68,68,0.15), 0 20px 60px rgba(0,0,0,0.8);
+        }
+        #pin-input {
+            width: 100%;
+            background: var(--bg);
+            border: 2px solid var(--border);
+            color: var(--text);
+            padding: 1rem;
+            border-radius: 0.75rem;
+            font-size: 1.5rem;
+            text-align: center;
+            letter-spacing: 0.4em;
+            box-sizing: border-box;
+            margin-bottom: 1rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        #pin-input:focus { border-color: var(--primary); }
+        #pin-submit {
+            width: 100%;
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 1rem;
+            border-radius: 0.75rem;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        #pin-submit:hover { background: #dc2626; }
+        #pin-error { display: none; color: var(--primary); margin-top: 1rem; font-size: 0.9rem; }
     </style>
 </head>
 <body>
+
+    <!-- PIN Access Overlay -->
+    <div id="pin-overlay">
+        <div id="pin-modal">
+            <div style="font-size: 3rem; margin-bottom: 1rem;">🔐</div>
+            <h2 style="color: #f8fafc; margin: 0 0 0.5rem;">Restricted Access</h2>
+            <p style="color: #94a3b8; margin: 0 0 2rem; font-size: 0.9rem;">Enter PIN to access Admin Panel</p>
+            <input type="password" id="pin-input" maxlength="8" placeholder="Enter PIN" autocomplete="off">
+            <button id="pin-submit" onclick="checkPin()">UNLOCK</button>
+            <div id="pin-error">❌ Incorrect PIN. Try again.</div>
+        </div>
+    </div>
 
     <div class="header">
         <h1>MMR Admin Panel</h1>
@@ -207,14 +273,42 @@ drawn_numbers, "12, 45, 67"</pre>
                 <li>Paste it above and click <strong>Save Firebase Config</strong></li>
                 <li>Reload the Display and Remote pages — they will now sync across devices</li>
             </ol>
-            <pre style="margin-top:0.75rem;">// Realtime Database Rules (Rules tab in Firebase console)
+            <pre style="margin-top:0.75rem;">// Realtime Database Rules — Recommended
+// Scope access to /mmr path only (protects rest of your database)
 {
   "rules": {
-    ".read": true,
-    ".write": true
+    "mmr": {
+      ".read": true,
+      ".write": true
+    },
+    "$other": {
+      ".read": false,
+      ".write": false
+    }
   }
 }</pre>
         </details>
+    </div>
+
+    <!-- Change PIN Card -->
+    <div class="card" style="margin-top: 2rem;">
+        <h2>🔑 Access PIN</h2>
+        <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1.5rem;">
+            Set the PIN required to access Admin and Remote pages.<br>
+            Default PIN is <code style="background: var(--bg); padding: 0.2rem 0.5rem; border-radius: 0.3rem;">1234</code>
+        </p>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="form-group">
+                <label>New PIN</label>
+                <input type="password" id="new-pin" maxlength="8" placeholder="Min. 4 characters" autocomplete="new-password">
+            </div>
+            <div class="form-group">
+                <label>Confirm PIN</label>
+                <input type="password" id="confirm-pin" maxlength="8" placeholder="Re-enter PIN" autocomplete="new-password">
+            </div>
+        </div>
+        <button class="btn btn-primary" onclick="changePin()">💾 Save PIN</button>
+        <div id="pin-change-status" class="status"></div>
     </div>
 
     <div class="links">
@@ -224,6 +318,68 @@ drawn_numbers, "12, 45, 67"</pre>
     </div>
 
     <script>
+        // ── Security Helpers ─────────────────────────────────────────────
+        function sanitize(str) {
+            if (!str) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#x27;');
+        }
+
+        // ── PIN Access Control ───────────────────────────────────────────
+        (function checkAccess() {
+            if (sessionStorage.getItem('mmr_authed') === 'true') {
+                document.getElementById('pin-overlay').style.display = 'none';
+                return;
+            }
+            const pinInput = document.getElementById('pin-input');
+            if (pinInput) {
+                pinInput.addEventListener('keydown', e => { if (e.key === 'Enter') checkPin(); });
+                pinInput.focus();
+            }
+        })();
+
+        function checkPin() {
+            const entered = document.getElementById('pin-input').value;
+            const stored = localStorage.getItem('mmr_pin') || '1234';
+            if (entered === stored) {
+                sessionStorage.setItem('mmr_authed', 'true');
+                document.getElementById('pin-overlay').style.display = 'none';
+            } else {
+                document.getElementById('pin-error').style.display = 'block';
+                document.getElementById('pin-input').value = '';
+                document.getElementById('pin-input').focus();
+            }
+        }
+
+        function changePin() {
+            const newPin = document.getElementById('new-pin').value;
+            const confirmPin = document.getElementById('confirm-pin').value;
+            const el = document.getElementById('pin-change-status');
+            if (!newPin || newPin.length < 4) {
+                el.textContent = 'PIN must be at least 4 characters.';
+                el.className = 'status status-error';
+                el.style.display = 'block';
+                return;
+            }
+            if (newPin !== confirmPin) {
+                el.textContent = 'PINs do not match.';
+                el.className = 'status status-error';
+                el.style.display = 'block';
+                return;
+            }
+            localStorage.setItem('mmr_pin', newPin);
+            el.textContent = '✅ PIN updated! Active immediately on this device.';
+            el.className = 'status status-success';
+            el.style.display = 'block';
+            document.getElementById('new-pin').value = '';
+            document.getElementById('confirm-pin').value = '';
+            setTimeout(() => el.style.display = 'none', 5000);
+        }
+
         const bc = new BroadcastChannel('mmr_sync');
         const STORAGE_KEY = 'mmr_admin_config';
         const DEFAULT_SLIDES_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQMXn3GlWIeGLKc3XqYXFSi_ofevUW4JZtptUoDoyzapOQCmoDSdC96QRZf0EXpWQ8CYoJ7YJ5h5Boy/pub?output=csv';
@@ -303,7 +459,7 @@ drawn_numbers, "12, 45, 67"</pre>
                 renderAdminSlides();
             } catch (err) {
                 console.error(err);
-                showStatus('Error fetching CSV: ' + err.message, 'error');
+                showStatus('Sync failed. Check the CSV URL and network connection.', 'error');
             }
         }
 
@@ -318,9 +474,9 @@ drawn_numbers, "12, 45, 67"</pre>
             const container = document.getElementById('slides-list');
             container.innerHTML = state.slides.map((s, i) => `
                 <div style="margin-bottom: 0.8rem; display: flex; align-items: center; gap: 0.5rem;">
-                    <input type="checkbox" id="slide-${i}" value="${s.title.replace(/"/g, '&quot;')}" ${disabled.includes(s.title) ? '' : 'checked'} style="width: auto; margin: 0;">
+                    <input type="checkbox" id="slide-${i}" value="${s.title.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;')}" ${disabled.includes(s.title) ? '' : 'checked'} style="width: auto; margin: 0;">
                     <label style="display:inline; color: var(--text); margin: 0; font-size: 0.9rem; text-transform: none; font-weight: normal; cursor: pointer;" for="slide-${i}">
-                        <strong>${s.title}</strong> <span style="color:var(--text-muted)">(${s.type})</span>
+                        <strong>${sanitize(s.title || '(no title)')}</strong> <span style="color:var(--text-muted)">(${sanitize(s.type || '')})</span>
                     </label>
                 </div>
             `).join('');
@@ -360,12 +516,13 @@ drawn_numbers, "12, 45, 67"</pre>
                 const parts = splitCSVLine(line);
                 const clean = parts.map(p => p.replace(/^"|"$/g, '').trim());
 
-                if (!clean[0]) return null; // Ignore rows with no title
+                const type = (clean[2] || 'normal').toLowerCase();
+                if (!clean[0] && type !== 'avatar') return null; // Ignore rows with no title (except avatar slides)
 
                 return {
                     title: clean[0],
                     subtitle: clean[1] || '',
-                    type: (clean[2] || 'normal').toLowerCase(),
+                    type: type,
                     duration: parseInt(clean[3]) || 30000,
                     imageUrl: clean[4] || ''
                 };

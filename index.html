@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://docs.google.com https://*.firebaseio.com;">
     <title>Monster Meat Raffle - Display</title>
     <!-- Tailwind CSS for styling (via CDN for simplicity since we removed node_modules, but wait, the user wants pure HTML. Pure CSS is better for no dependencies, or Tailwind CDN) -->
     <!-- Actually, let's use pure CSS to keep it 100% dependency-free and robust. -->
@@ -471,6 +472,22 @@
     <div id="confetti-container" style="position: absolute; inset: 0; pointer-events: none; z-index: 50; overflow: hidden;"></div>
 
     <script>
+        // ── Security Helpers ─────────────────────────────────────────────
+        function sanitize(str) {
+            if (!str) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#x27;');
+        }
+        function safeUrl(url) {
+            if (!url) return '';
+            const u = String(url).trim();
+            return /^https?:\/\//i.test(u) ? u : '';
+        }
+
         function getNZDate() {
             const parts = new Intl.DateTimeFormat('en-US', {
                 timeZone: 'Pacific/Auckland',
@@ -624,20 +641,21 @@
             // Render ALL slides to DOM first
             slidesWrapper.innerHTML = visibleSlides.map((slide, i) => {
                 const timeHtml = slide.type === 'countdown' ? calculateTimeRemainingHTML() : '';
-                const bgStyle = slide.imageUrl ? `background-image: url('${slide.imageUrl}'); background-size: cover; background-position: center;` : '';
+                const safeImg = safeUrl(slide.imageUrl);
+                const bgStyle = safeImg ? `background-image: url('${safeImg}'); background-size: cover; background-position: center;` : '';
                 return `
                     <div class="slide ${i === currentSlideIdx ? 'active' : ''}" style="${bgStyle}" data-duration="${slide.duration}">
-                        ${slide.imageUrl ? '<div class="slide-image-overlay"></div>' : ''}
-                        <h1>${slide.title}</h1>
-                        ${slide.subtitle ? `<h2 class="slide-subtitle">${slide.subtitle}</h2>` : ''}
+                        ${safeImg ? '<div class="slide-image-overlay"></div>' : ''}
+                        ${slide.title ? `<h1>${sanitize(slide.title)}</h1>` : ''}
+                        ${slide.subtitle ? `<h2 class="slide-subtitle">${sanitize(slide.subtitle)}</h2>` : ''}
                         ${slide.type === 'countdown' 
                             ? `<div class="slide-countdown slide-countdown-timer">${timeHtml}</div>` 
                             : ''
                         }
                         ${slide.type === 'avatar' 
                             ? `<div class="avatar-container">
-                                 ${slide.subtitle ? `<div class="speech-bubble">${slide.subtitle}</div>` : ''}
-                                 <img src="${slide.imageUrl || 'avatar.png'}" class="animated-avatar" alt="Character Avatar">
+                                 ${slide.subtitle ? `<div class="speech-bubble">${sanitize(slide.subtitle)}</div>` : ''}
+                                 <img src="${safeImg || 'avatar.png'}" class="animated-avatar" alt="Character Avatar">
                                </div>` 
                             : ''
                         }
@@ -814,7 +832,8 @@
                 const parts = splitCSVLine(line);
                 const clean = parts.map(p => p.replace(/^"|"$/g, '').trim());
 
-                if (!clean[0]) return null; // Ignore rows with no title
+                const type = (clean[2] || 'normal').toLowerCase();
+                if (!clean[0] && type !== 'avatar') return null; // Ignore rows with no title (except avatar slides)
 
                 return {
                     title: clean[0],
