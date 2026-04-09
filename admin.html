@@ -485,15 +485,18 @@ drawn_numbers, "12, 45, 67"</pre>
             
             const disabled = state.disabledSlides || [];
             
-            const container = document.getElementById('slides-list');
             container.innerHTML = state.slides.map((s, i) => {
                 const title = s.title || '';
-                const safeTitle = title.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+                const subtitle = s.subtitle || '';
+                const bubble = s.bubbleText || '';
                 return `
-                    <div style="margin-bottom: 0.8rem; display: flex; align-items: center; gap: 0.5rem;">
-                        <input type="checkbox" id="slide-${i}" value="${safeTitle}" ${disabled.includes(title) ? '' : 'checked'} style="width: auto; margin: 0;">
-                        <label style="display:inline; color: var(--text); margin: 0; font-size: 0.9rem; text-transform: none; font-weight: normal; cursor: pointer;" for="slide-${i}">
-                            <strong>${sanitize(title || '(no title)')}</strong> <span style="color:var(--text-muted)">(${sanitize(s.type || '')})</span>
+                    <div style="margin-bottom: 0.8rem; display: flex; align-items: center; gap: 0.5rem; background: rgba(255,255,255,0.03); padding: 0.5rem; border-radius: 0.4rem;">
+                        <input type="checkbox" id="slide-${i}" value="${title}" ${disabled.includes(title) ? '' : 'checked'} style="width: auto; margin: 0;">
+                        <label style="display:inline; color: var(--text); margin: 0; font-size: 0.85rem; text-transform: none; font-weight: normal; cursor: pointer; flex: 1;" for="slide-${i}">
+                            <strong>${sanitize(title || '(no title)')}</strong> 
+                            <span style="color:var(--text-muted); font-size: 0.75rem;">(${sanitize(s.type || '')})</span>
+                            ${subtitle ? `<div style="font-size: 0.7rem; color: #94a3b8; font-style: italic;">Sub: ${sanitize(subtitle)}</div>` : ''}
+                            ${bubble ? `<div style="font-size: 0.7rem; color: var(--primary); font-weight: bold;">Bubble: ${sanitize(bubble)}</div>` : ''}
                         </label>
                     </div>
                 `;
