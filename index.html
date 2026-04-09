@@ -655,7 +655,7 @@
                         }
                         ${slide.type === 'avatar' 
                             ? `<div class="avatar-container">
-                                 ${slide.subtitle ? `<div class="speech-bubble">${sanitize(slide.subtitle)}</div>` : ''}
+                                 ${(slide.bubbleText || slide.subtitle) ? `<div class="speech-bubble">${sanitize(slide.bubbleText || slide.subtitle)}</div>` : ''}
                                  <img src="${safeImg || 'avatar.png'}" class="animated-avatar" alt="Character Avatar">
                                </div>` 
                             : ''
@@ -841,7 +841,8 @@
                     subtitle: clean[1] || '',
                     type: (clean[2] || 'normal').toLowerCase(),
                     duration: parseInt(clean[3]) || 30000,
-                    imageUrl: clean[4] || ''
+                    imageUrl: clean[4] || '',
+                    bubbleText: clean[5] || ''
                 };
             }).filter(s => s !== null);
 

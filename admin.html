@@ -234,12 +234,13 @@
 
         <div style="margin-top: 2rem;">
             <label>Slides Sheet — Columns</label>
-            <pre>Title, Subtitle, Type, Duration, ImageURL
-"Time Until Draw", "", "countdown", 30000, ""
-"Tickets on Sale", "Thursdays from 5.30pm", "normal", 30000, ""
-"Sponsor Slide", "Coasters Tavern", "normal", 30000, "https://example.com/sponsor.jpg"</pre>
+            <pre>Title, Subtitle, Type, Duration, ImageURL, BubbleText
+"Time Until Draw", "", "countdown", 30000, "", ""
+"Tickets on Sale", "Thursdays from 5.30pm", "normal", 30000, "", ""
+"Sponsor Slide", "Coasters Tavern", "normal", 30000, "https://example.com/sponsor.jpg", ""
+"Avatar Demo", "I am a subtitle", "avatar", 30000, "avatar.png", "I am the speech bubble text!"</pre>
             <p style="font-size:0.75rem; color:var(--text-muted); margin-top:0.5rem;">
-                <strong>ImageURL</strong> (column 5) is optional. Paste a public direct image URL to set a background image for that slide.
+                <strong>ImageURL</strong> (column 5) is optional. <strong>BubbleText</strong> (column 6) is optional and used for avatar speech bubbles.
             </p>
 
             <label style="margin-top: 1rem;">Config Sheet (Tab 2)</label>
@@ -541,7 +542,8 @@ drawn_numbers, "12, 45, 67"</pre>
                     subtitle: clean[1] || '',
                     type: type,
                     duration: parseInt(clean[3]) || 30000,
-                    imageUrl: clean[4] || ''
+                    imageUrl: clean[4] || '',
+                    bubbleText: clean[5] || ''
                 };
             }).filter(s => s !== null);
 
