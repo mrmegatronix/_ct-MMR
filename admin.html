@@ -485,6 +485,7 @@ drawn_numbers, "12, 45, 67"</pre>
             
             const disabled = state.disabledSlides || [];
             
+            const container = document.getElementById('slides-list');
             container.innerHTML = state.slides.map((s, i) => {
                 const title = s.title || '';
                 const subtitle = s.subtitle || '';
@@ -615,11 +616,13 @@ drawn_numbers, "12, 45, 67"</pre>
             if (type === 'success') setTimeout(() => el.style.display = 'none', 7000);
         }
 
-        // Pre-fill Firebase URL if already saved
+        // Pre-fill Firebase URL if already saved, and auto-save default if nothing stored
         (function loadFirebaseCfg() {
             const defaultUrl = 'https://ct-mmr-default-rtdb.firebaseio.com';
             const cfgStr = localStorage.getItem('mmr_firebase_config');
             if (!cfgStr) {
+                // Auto-save the default so index.html and remote.html always find it
+                localStorage.setItem('mmr_firebase_config', JSON.stringify({ databaseURL: defaultUrl }));
                 document.getElementById('firebase-url').value = defaultUrl;
                 return;
             }

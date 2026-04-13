@@ -415,18 +415,21 @@
         };
 
         // ── Firebase cross-device sync (optional) ─────────
-        let fbDbUrl = 'https://ct-mmr-default-rtdb.firebaseio.com';
+        let fbDbUrl = '';
 
         function initFirebase() {
             try {
                 const cfgStr = localStorage.getItem('mmr_firebase_config');
-                if (cfgStr) {
-                    const cfg = JSON.parse(cfgStr);
-                    if (cfg.databaseURL) fbDbUrl = cfg.databaseURL;
+                if (!cfgStr) {
+                    console.log('[MMR Remote] No Firebase config saved — cross-device sync disabled.');
+                    updateFbStatus(false);
+                    return;
                 }
-                fbDbUrl = fbDbUrl.replace(/\/$/, '');
-                if (!fbDbUrl) return;
+                const cfg = JSON.parse(cfgStr);
+                fbDbUrl = (cfg.databaseURL || '').replace(/\/$/, '');
+                if (!fbDbUrl) { updateFbStatus(false); return; }
                 updateFbStatus(true);
+                console.log('[MMR Remote] Firebase connected:', fbDbUrl);
             } catch(e) { console.error('[MMR Remote] Firebase init error:', e); }
         }
 
@@ -455,7 +458,8 @@
             }
             
             updateUI();
-            broadcast(); // Initial sync when remote opens
+            // NOTE: Do NOT broadcast on init — it would overwrite slides that
+            // index.html just freshly synced from Google Sheets.
             
             document.getElementById('drawTime').value = state.nextDrawTime;
             initFirebase();

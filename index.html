@@ -858,56 +858,72 @@
 
         const DEFAULT_SLIDES_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQMXn3GlWIeGLKc3XqYXFSi_ofevUW4JZtptUoDoyzapOQCmoDSdC96QRZf0EXpWQ8CYoJ7YJ5h5Boy/pub?output=csv';
 
+        function getSlidesUrl() {
+            try {
+                const adminCfg = localStorage.getItem('mmr_admin_config');
+                if (adminCfg) {
+                    const cfg = JSON.parse(adminCfg);
+                    if (cfg.slidesUrl) return cfg.slidesUrl;
+                }
+            } catch(e) {}
+            return DEFAULT_SLIDES_URL;
+        }
+
+        async function fetchAndApplySlides() {
+            const slidesUrl = getSlidesUrl();
+            console.log('[MMR] Fetching slides from:', slidesUrl);
+            try {
+                const res = await fetch(slidesUrl + (slidesUrl.includes('?') ? '&' : '?') + 't=' + Date.now(), { cache: 'no-store' });
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                const csv = await res.text();
+                const slides = parseSlidesCSV(csv);
+                if (slides.length > 0) {
+                    console.log('[MMR] Slides synced OK — ' + slides.length + ' slides loaded.');
+                    updateState({ slides: slides });
+                    // Persist only the slides key — don't clobber draw state
+                    const currentStored = localStorage.getItem('mmr_state_v5');
+                    let fullState = currentStored ? JSON.parse(currentStored) : state;
+                    fullState.slides = slides;
+                    localStorage.setItem('mmr_state_v5', JSON.stringify(fullState));
+                } else {
+                    console.warn('[MMR] Slides fetch returned 0 rows — keeping current slides.');
+                }
+            } catch (e) {
+                console.error('[MMR] Slides sync failed:', e);
+            }
+        }
+
         async function init() {
+            // 1. Show stored state immediately (fast first paint)
             const storedState = localStorage.getItem('mmr_state_v5');
             if (storedState) {
                 try { updateState(JSON.parse(storedState)); } catch(e){}
             } else {
-                updateState(state); // trigger initial render with defaults
+                updateState(state);
             }
 
-            // Always fetch fresh slides from Google Sheets (skip cache)
-            let slidesUrl = DEFAULT_SLIDES_URL;
-            const adminCfg = localStorage.getItem('mmr_admin_config');
-            if (adminCfg) {
-                try {
-                    const cfg = JSON.parse(adminCfg);
-                    if (cfg.slidesUrl) slidesUrl = cfg.slidesUrl;
-                } catch(e) {}
-            }
+            // 2. Then immediately pull fresh slides from Sheets
+            await fetchAndApplySlides();
 
-            if (slidesUrl) {
-                try {
-                    const res = await fetch(slidesUrl + (slidesUrl.includes('?') ? '&' : '?') + 't=' + Date.now(), { cache: 'no-store' });
-                    const csv = await res.text();
-                    const slides = parseSlidesCSV(csv);
-                    if (slides.length > 0) {
-                        updateState({ slides: slides });
-                        const currentStored = localStorage.getItem('mmr_state_v5');
-                        let fullState = currentStored ? JSON.parse(currentStored) : state;
-                        fullState.slides = slides;
-                        localStorage.setItem('mmr_state_v5', JSON.stringify(fullState));
-                    }
-                } catch (e) {
-                    console.error("Failed to auto-sync slides:", e);
-                }
-            }
+            // 3. Re-sync every 5 minutes so slides stay current without a page reload
+            setInterval(fetchAndApplySlides, 5 * 60 * 1000);
         }
 
         init();
 
         // ── Firebase cross-device sync (optional) ──────────────────────────
-        let fbDbUrl = 'https://ct-mmr-default-rtdb.firebaseio.com';
+        let fbDbUrl = '';
         let lastFbCmdTs = 0;
 
         function initFirebase() {
             try {
                 const cfgStr = localStorage.getItem('mmr_firebase_config');
-                if (cfgStr) {
-                    const cfg = JSON.parse(cfgStr);
-                    if (cfg.databaseURL) fbDbUrl = cfg.databaseURL;
+                if (!cfgStr) {
+                    console.log('[MMR] No Firebase config saved — cross-device sync disabled. Configure in Admin panel.');
+                    return;
                 }
-                fbDbUrl = fbDbUrl.replace(/\/$/, '');
+                const cfg = JSON.parse(cfgStr);
+                fbDbUrl = (cfg.databaseURL || '').replace(/\/$/, '');
                 if (!fbDbUrl) return;
                 listenFirebaseState();
                 console.log('[MMR] Firebase RTDB connected:', fbDbUrl);
