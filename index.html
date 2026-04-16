@@ -858,19 +858,8 @@
 
         const DEFAULT_SLIDES_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQMXn3GlWIeGLKc3XqYXFSi_ofevUW4JZtptUoDoyzapOQCmoDSdC96QRZf0EXpWQ8CYoJ7YJ5h5Boy/pub?output=csv';
 
-        function getSlidesUrl() {
-            try {
-                const adminCfg = localStorage.getItem('mmr_admin_config');
-                if (adminCfg) {
-                    const cfg = JSON.parse(adminCfg);
-                    if (cfg.slidesUrl) return cfg.slidesUrl;
-                }
-            } catch(e) {}
-            return DEFAULT_SLIDES_URL;
-        }
-
         async function fetchAndApplySlides() {
-            const slidesUrl = getSlidesUrl();
+            const slidesUrl = DEFAULT_SLIDES_URL;
             console.log('[MMR] Fetching slides from:', slidesUrl);
             try {
                 const res = await fetch(slidesUrl + (slidesUrl.includes('?') ? '&' : '?') + 't=' + Date.now(), { cache: 'no-store' });
@@ -912,18 +901,11 @@
         init();
 
         // ── Firebase cross-device sync (optional) ──────────────────────────
-        let fbDbUrl = '';
+        let fbDbUrl = 'https://ct-mmr-default-rtdb.firebaseio.com';
         let lastFbCmdTs = 0;
 
         function initFirebase() {
             try {
-                const cfgStr = localStorage.getItem('mmr_firebase_config');
-                if (!cfgStr) {
-                    console.log('[MMR] No Firebase config saved — cross-device sync disabled. Configure in Admin panel.');
-                    return;
-                }
-                const cfg = JSON.parse(cfgStr);
-                fbDbUrl = (cfg.databaseURL || '').replace(/\/$/, '');
                 if (!fbDbUrl) return;
                 listenFirebaseState();
                 console.log('[MMR] Firebase RTDB connected:', fbDbUrl);

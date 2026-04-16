@@ -200,24 +200,16 @@
     </div>
 
     <div class="card">
-        <h2>Google Sheets Configuration</h2>
-        
-        <div class="form-group">
-            <label>Slides CSV URL</label>
-            <input type="text" id="slides-url" placeholder="https://docs.google.com/spreadsheets/d/e/.../pub?output=csv">
+        <div style="display: flex; justify-content: space-between; align-items: start;">
+            <h2>Google Sheets Synchronization</h2>
             <a id="open-sheet-link" href="#" target="_blank" onclick="return openSheet()"
-               style="display:inline-block; margin-top:0.5rem; font-size:0.8rem; color:var(--primary); text-decoration:none; font-weight:bold;">
+               style="font-size:0.8rem; color:var(--primary); text-decoration:none; font-weight:bold;">
                 📊 Open Google Sheet ↗
             </a>
         </div>
-
-        <div class="form-group">
-            <label>Config CSV URL (Optional)</label>
-            <input type="text" id="config-url" placeholder="https://docs.google.com/spreadsheets/d/e/.../pub?output=csv">
-            <p style="font-size: 0.7rem; color: var(--text-muted); margin-top: 0.5rem;">
-                Optional sheet for: next_draw_time, prizes_left, drawn_numbers
-            </p>
-        </div>
+        <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem;">
+            Data is securely fetched from the hardcoded spreadsheet. Click Sync to pull the latest changes.
+        </p>
 
         <button class="btn btn-primary" onclick="syncFromSheets()">🔄 SYNC EVERYTHING NOW</button>
         
@@ -242,58 +234,9 @@
             <p style="font-size:0.75rem; color:var(--text-muted); margin-top:0.5rem;">
                 <strong>ImageURL</strong> (column 5) is optional. <strong>BubbleText</strong> (column 6) is optional and used for avatar speech bubbles.
             </p>
-
-            <label style="margin-top: 1rem;">Config Sheet (Tab 2)</label>
-            <pre>Key, Value
-next_draw_time, 2026-04-09T19:00
-prizes_left, 62
-drawn_numbers, "12, 45, 67"</pre>
         </div>
     </div>
 
-    <!-- Firebase Config Card -->
-    <div class="card" style="margin-top: 2rem;">
-        <h2>🔥 Cross-Device Remote (Firebase RTDB)</h2>
-        <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1.5rem;">
-            Enables the Remote Control to work across different devices on the same Wi-Fi network.
-            Uses a free Firebase Realtime Database — no ongoing cost for this use case.
-        </p>
-
-        <div class="form-group">
-            <label>Firebase Database URL</label>
-            <input type="text" id="firebase-url" placeholder="https://your-project-default-rtdb.firebaseio.com">
-        </div>
-
-        <button class="btn btn-primary" onclick="saveFirebaseConfig()">💾 Save Firebase Config</button>
-        <div id="firebase-status" class="status"></div>
-
-        <details style="margin-top: 1.5rem; cursor: pointer;">
-            <summary style="color: var(--text-muted); font-size: 0.85rem; user-select: none;">▶ How to set up Firebase RTDB (Free, ~2 minutes)</summary>
-            <ol style="color: var(--text-muted); font-size: 0.8rem; margin-top: 0.75rem; line-height: 2; padding-left: 1.2rem;">
-                <li>Go to <a href="https://console.firebase.google.com" target="_blank" style="color:var(--primary);">console.firebase.google.com</a> and sign in</li>
-                <li>Create or select your project → click <strong>Realtime Database</strong> → <strong>Create Database</strong></li>
-                <li>Choose a region, then start in <em>test mode</em> (or set rules to allow public read/write)</li>
-                <li>Copy the Database URL — it looks like:<br>
-                    <code style="color:#f1f5f9;">https://your-project-default-rtdb.firebaseio.com</code></li>
-                <li>Paste it above and click <strong>Save Firebase Config</strong></li>
-                <li>Reload the Display and Remote pages — they will now sync across devices</li>
-            </ol>
-            <pre style="margin-top:0.75rem;">// Realtime Database Rules — Recommended
-// Scope access to /mmr path only (protects rest of your database)
-{
-  "rules": {
-    "mmr": {
-      ".read": true,
-      ".write": true
-    },
-    "$other": {
-      ".read": false,
-      ".write": false
-    }
-  }
-}</pre>
-        </details>
-    </div>
 
     <!-- Change PIN Card -->
     <div class="card" style="margin-top: 2rem;">
@@ -335,8 +278,7 @@ drawn_numbers, "12, 45, 67"</pre>
         }
 
         function openSheet() {
-            const csvUrl = document.getElementById('slides-url').value.trim();
-            if (!csvUrl) { alert('No Slides CSV URL entered yet.'); return false; }
+            const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQMXn3GlWIeGLKc3XqYXFSi_ofevUW4JZtptUoDoyzapOQCmoDSdC96QRZf0EXpWQ8CYoJ7YJ5h5Boy/pub?output=csv';
             // Convert pub?output=csv  →  pubhtml (viewable in browser)
             const viewUrl = csvUrl.replace(/[?&]output=csv(&|$)/, '$1').replace(/\/pub(\?.*)?$/, '/pubhtml');
             window.open(viewUrl, '_blank');
@@ -395,60 +337,22 @@ drawn_numbers, "12, 45, 67"</pre>
         }
 
         const bc = new BroadcastChannel('mmr_sync');
-        const STORAGE_KEY = 'mmr_admin_config';
         const DEFAULT_SLIDES_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQMXn3GlWIeGLKc3XqYXFSi_ofevUW4JZtptUoDoyzapOQCmoDSdC96QRZf0EXpWQ8CYoJ7YJ5h5Boy/pub?output=csv';
 
         function init() {
-            const saved = localStorage.getItem(STORAGE_KEY);
-            if (saved) {
-                const config = JSON.parse(saved);
-                document.getElementById('slides-url').value = config.slidesUrl || DEFAULT_SLIDES_URL;
-                document.getElementById('config-url').value = config.configUrl || '';
-            } else {
-                document.getElementById('slides-url').value = DEFAULT_SLIDES_URL;
-            }
             renderAdminSlides();
         }
 
         async function syncFromSheets() {
-            const slidesUrl = document.getElementById('slides-url').value.trim();
-            const configUrl = document.getElementById('config-url').value.trim();
-            
-            if (!slidesUrl && !configUrl) {
-                showStatus('Please enter at least one CSV URL.', 'error');
-                return;
-            }
-
-            localStorage.setItem(STORAGE_KEY, JSON.stringify({ 
-                slidesUrl: slidesUrl,
-                configUrl: configUrl
-            }));
-            
+            const slidesUrl = DEFAULT_SLIDES_URL;
             showStatus('Fetching data...', 'success');
             let updatePayload = {};
 
             try {
                 // Fetch Slides
-                if (slidesUrl) {
-                    const res = await fetch(slidesUrl + (slidesUrl.includes('?') ? '&' : '?') + 't=' + Date.now());
-                    const csv = await res.text();
-                    updatePayload.slides = parseSlidesCSV(csv);
-                }
-
-                // Fetch Config
-                if (configUrl) {
-                    const res = await fetch(configUrl + (configUrl.includes('?') ? '&' : '?') + 't=' + Date.now());
-                    const csv = await res.text();
-                    const config = parseConfigCSV(csv);
-                    
-                    if (config.next_draw_time) updatePayload.nextDrawTime = config.next_draw_time;
-                    
-                    updatePayload.draw = {};
-                    if (config.prizes_left) updatePayload.draw.prizesLeft = parseInt(config.prizes_left);
-                    if (config.drawn_numbers) {
-                        updatePayload.draw.drawnNumbers = config.drawn_numbers.split(',').map(n => n.trim()).filter(n => n);
-                    }
-                }
+                const res = await fetch(slidesUrl + (slidesUrl.includes('?') ? '&' : '?') + 't=' + Date.now(), { cache: 'no-store' });
+                const csv = await res.text();
+                updatePayload.slides = parseSlidesCSV(csv);
 
                 // Broadcast updated state
                 bc.postMessage({ 
@@ -462,10 +366,6 @@ drawn_numbers, "12, 45, 67"</pre>
                 
                 // Deep merge helper
                 if (updatePayload.slides) state.slides = updatePayload.slides;
-                if (updatePayload.nextDrawTime) state.nextDrawTime = updatePayload.nextDrawTime;
-                if (updatePayload.draw) {
-                    state.draw = { ...state.draw, ...updatePayload.draw };
-                }
                 
                 localStorage.setItem('mmr_state_v5', JSON.stringify(state));
 
@@ -473,7 +373,7 @@ drawn_numbers, "12, 45, 67"</pre>
                 renderAdminSlides();
             } catch (err) {
                 console.error(err);
-                showStatus('Sync failed. Check the CSV URL and network connection.', 'error');
+                showStatus('Sync failed. Check the network connection.', 'error');
             }
         }
 
@@ -597,42 +497,7 @@ drawn_numbers, "12, 45, 67"</pre>
 
         init();
 
-        // Firebase config save/load
-        function saveFirebaseConfig() {
-            const url = document.getElementById('firebase-url').value.trim();
-            if (!url) {
-                showFirebaseStatus('Please enter a Firebase Database URL.', 'error');
-                return;
-            }
-            localStorage.setItem('mmr_firebase_config', JSON.stringify({ databaseURL: url }));
-            showFirebaseStatus('✅ Saved! Reload the Display and Remote pages to activate cross-device sync.', 'success');
-        }
 
-        function showFirebaseStatus(msg, type) {
-            const el = document.getElementById('firebase-status');
-            el.innerText = msg;
-            el.className = 'status status-' + type;
-            el.style.display = 'block';
-            if (type === 'success') setTimeout(() => el.style.display = 'none', 7000);
-        }
-
-        // Pre-fill Firebase URL if already saved, and auto-save default if nothing stored
-        (function loadFirebaseCfg() {
-            const defaultUrl = 'https://ct-mmr-default-rtdb.firebaseio.com';
-            const cfgStr = localStorage.getItem('mmr_firebase_config');
-            if (!cfgStr) {
-                // Auto-save the default so index.html and remote.html always find it
-                localStorage.setItem('mmr_firebase_config', JSON.stringify({ databaseURL: defaultUrl }));
-                document.getElementById('firebase-url').value = defaultUrl;
-                return;
-            }
-            try {
-                const cfg = JSON.parse(cfgStr);
-                document.getElementById('firebase-url').value = cfg.databaseURL || defaultUrl;
-            } catch(e) {
-                document.getElementById('firebase-url').value = defaultUrl;
-            }
-        })();
 
     </script>
 </body>
