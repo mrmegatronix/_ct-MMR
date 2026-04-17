@@ -3,14 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://*.firebaseio.com https://api.qrserver.com;">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' https://*.firebaseio.com https://api.qrserver.com; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://*.firebaseio.com https://api.qrserver.com;">
     <title>MMR - Remote Control</title>
+    <script src="config.js"></script>
     <style>
         :root {
-            --bg: #0f172a;
+            --bg: var(--cfg-bg-dark, #0f172a);
             --surface: #1e293b;
-            --primary: #ef4444;
-            --text: #f8fafc;
+            --primary: var(--cfg-primary, #ef4444);
+            --text: var(--cfg-text-light, #f8fafc);
             --text-muted: #94a3b8;
             --border: #334155;
         }
@@ -127,14 +128,35 @@
             margin-bottom: 1rem;
         }
 
-        .status {
-            margin-top: 1rem;
-            padding: 1rem;
-            background: rgba(34, 197, 94, 0.1);
-            color: #22c55e;
-            border-radius: 0.5rem;
             display: none;
         }
+
+        .voice-toggle-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--bg);
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+        }
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider {
+            position: absolute; cursor: pointer; inset: 0;
+            background-color: #475569; transition: .4s; border-radius: 24px;
+        }
+        .slider:before {
+            position: absolute; content: ""; height: 16px; width: 16px; 
+            left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%;
+        }
+        input:checked + .slider { background-color: var(--primary); }
+        input:checked + .slider:before { transform: translateX(26px); }
 
         @media print {
             body * { visibility: hidden; }
@@ -213,11 +235,18 @@
     </div>
 
     <div class="header">
-        <h1>MMR Remote Control</h1>
-        <div style="display: flex; gap: 10px; align-items: center;">
+        <h1 id="header-title">MMR Remote</h1>
+        <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap; justify-content: center;">
+            <div class="voice-toggle-container">
+                <span style="font-size: 0.8rem; font-weight: bold;">VOICE</span>
+                <label class="switch">
+                    <input type="checkbox" id="voice-toggle" onchange="toggleVoice()" checked>
+                    <span class="slider"></span>
+                </label>
+            </div>
             <span id="fb-status" style="font-size:0.8rem; color:#94a3b8;">🔴 Firebase: Not configured</span>
-            <a href="admin.html" class="btn">⚙️ Admin (Slides)</a>
-            <a href="index.html" target="_blank" class="btn btn-primary">Open Display</a>
+            <a href="admin.html" class="btn">⚙️ Admin</a>
+            <a href="index.html" target="_blank" class="btn btn-primary">Display</a>
         </div>
     </div>
 
@@ -233,12 +262,19 @@
                 <button class="btn" onclick="setView('congrats')" id="btn-congrats">Congrats</button>
             </div>
 
+            <label>Slide Manual Control</label>
+            <div class="btn-group">
+                <button class="btn" onclick="remoteSlide('prev')">⏮ Prev</button>
+                <button class="btn" onclick="remoteSlide('toggle')" id="btn-play-pause">⏸ Pause</button>
+                <button class="btn" onclick="remoteSlide('next')">Next ⏭</button>
+            </div>
+
             <div class="form-group">
-                <label>Next Draw Time (YYYY-MM-DDTHH:MM)</label>
+                <label>Next Draw Time</label>
                 <input type="datetime-local" id="drawTime" onchange="updateTime()">
             </div>
             
-            <button class="btn" onclick="triggerConfetti()">🎉 Trigger Confetti</button>
+            <button class="btn" style="width: 100%;" onclick="triggerConfetti()">🎉 Trigger Confetti</button>
             <div class="status" id="status-display">Updated Successfully</div>
         </div>
 
@@ -414,8 +450,26 @@
             }
         };
 
+        function toggleVoice() {
+            const voiceOn = document.getElementById('voice-toggle').checked;
+            localStorage.setItem('mmr_voice_on', voiceOn);
+            // Broadcast to other devices
+            bc.postMessage({ type: 'VOICE_TOGGLE', payload: { voiceOn } });
+            writeFirebase({ voiceOn });
+        }
+
+        function remoteSlide(cmd) {
+            bc.postMessage({ type: 'SLIDE_CMD', payload: { cmd } });
+            writeFirebase({ slideCmd: { cmd, ts: Date.now() } });
+            if (cmd === 'toggle') {
+                const btn = document.getElementById('btn-play-pause');
+                const isPaused = btn.innerText.includes('Pause');
+                btn.innerText = isPaused ? '▶ Play' : '⏸ Pause';
+            }
+        }
+
         // ── Firebase cross-device sync (optional) ─────────
-        let fbDbUrl = 'https://ct-mmr-default-rtdb.firebaseio.com';
+        let fbDbUrl = (window.MMR_CONFIG && window.MMR_CONFIG.FIREBASE_DB_URL) || '';
 
         function initFirebase() {
             try {
@@ -444,15 +498,26 @@
 
         // Initialize
         function init() {
+            // Apply Config
+            const cfg = window.MMR_CONFIG;
+            if (cfg) {
+                const root = document.documentElement;
+                if (cfg.COLORS.primary) root.style.setProperty('--cfg-primary', cfg.COLORS.primary);
+                if (cfg.COLORS.bgDark) root.style.setProperty('--cfg-bg-dark', cfg.COLORS.bgDark);
+                if (cfg.COLORS.textLight) root.style.setProperty('--cfg-text-light', cfg.COLORS.textLight);
+                document.getElementById('header-title').innerText = cfg.EVENT_NAME + ' Remote';
+            }
+
             const saved = localStorage.getItem('mmr_state_v5');
             if (saved) {
                 try { state = { ...state, ...JSON.parse(saved) }; } catch(e){}
             }
             
-            updateUI();
-            // NOTE: Do NOT broadcast on init — it would overwrite slides that
-            // index.html just freshly synced from Google Sheets.
+            // Sync voice toggle from storage
+            const voiceOn = localStorage.getItem('mmr_voice_on') !== 'false';
+            document.getElementById('voice-toggle').checked = voiceOn;
             
+            updateUI();
             document.getElementById('drawTime').value = state.nextDrawTime;
             initFirebase();
         }

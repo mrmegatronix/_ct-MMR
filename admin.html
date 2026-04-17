@@ -3,14 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://*.google.com https://*.googleusercontent.com https://*.firebaseio.com;">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' https://*.google.com https://*.googleusercontent.com https://*.firebaseio.com; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://*.google.com https://*.googleusercontent.com https://*.firebaseio.com;">
     <title>MMR - Admin Panel</title>
+    <script src="config.js"></script>
     <style>
         :root {
-            --bg: #0f172a;
+            --bg: var(--cfg-bg-dark, #0f172a);
             --surface: #1e293b;
-            --primary: #ef4444;
-            --text: #f8fafc;
+            --primary: var(--cfg-primary, #ef4444);
+            --text: var(--cfg-text-light, #f8fafc);
             --text-muted: #94a3b8;
             --border: #334155;
         }
@@ -179,6 +180,39 @@
         }
         #pin-submit:hover { background: #dc2626; }
         #pin-error { display: none; color: var(--primary); margin-top: 1rem; font-size: 0.9rem; }
+
+        .voice-toggle-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--bg);
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+        }
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider {
+            position: absolute; cursor: pointer; inset: 0;
+            background-color: #475569; transition: .4s; border-radius: 24px;
+        }
+        .slider:before {
+            position: absolute; content: ""; height: 16px; width: 16px; 
+            left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%;
+        }
+        input:checked + .slider { background-color: var(--primary); }
+        input:checked + .slider:before { transform: translateX(26px); }
+
+        .btn-group {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
     </style>
 </head>
 <body>
@@ -196,7 +230,18 @@
     </div>
 
     <div class="header">
-        <h1>MMR Admin Panel</h1>
+        <h1 id="header-title">MMR Admin</h1>
+        <div style="display: flex; gap: 10px; align-items: center;">
+            <div class="voice-toggle-container">
+                <span style="font-size: 0.8rem; font-weight: bold;">VOICE</span>
+                <label class="switch">
+                    <input type="checkbox" id="voice-toggle" onchange="toggleVoice()" checked>
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <a href="index.html" class="btn">TV Display</a>
+            <a href="remote.html" class="btn btn-primary">Remote Control</a>
+        </div>
     </div>
 
     <div class="card">
@@ -225,15 +270,39 @@
         </div>
 
         <div style="margin-top: 2rem;">
-            <label>Slides Sheet — Columns</label>
-            <pre>Title, Subtitle, Type, Duration, ImageURL, BubbleText
-"Time Until Draw", "", "countdown", 30000, "", ""
-"Tickets on Sale", "Thursdays from 5.30pm", "normal", 30000, "", ""
-"Sponsor Slide", "Coasters Tavern", "normal", 30000, "https://example.com/sponsor.jpg", ""
-"Avatar Demo", "I am a subtitle", "avatar", 30000, "avatar.png", "I am the speech bubble text!"</pre>
+            <label>Slides Sheet — Columns Required</label>
+            <pre>Title, Subtitle, Type, Duration, BackgroundImg, OverlayImg, BubbleText, WinnerPhotos
+"Time Until Draw", "", "countdown", 30000, "", "", "", ""
+"Sponsor", "Coasters Tavern", "normal", 30000, "bg.jpg", "logo.png", "", ""
+"Avatar", "Enjoy!", "avatar", 15000, "office.jpg", "avatar.png", "Hello!", ""
+"Winners", "Recent!", "winners", 20000, "wall.jpg", "", "", "w1.jpg,w2.jpg"</pre>
             <p style="font-size:0.75rem; color:var(--text-muted); margin-top:0.5rem;">
-                <strong>ImageURL</strong> (column 5) is optional. <strong>BubbleText</strong> (column 6) is optional and used for avatar speech bubbles.
+                Columns must exactly match this order. <strong>WinnerPhotos</strong> expects comma-separated URLs.
             </p>
+        </div>
+    </div>
+
+    <!-- Firebase Config Card -->
+    <div class="card" style="margin-top: 2rem;">
+        <h2>🌐 Cross-Device Sync (Firebase)</h2>
+        <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1rem;">
+            Enter your Firebase Realtime Database URL to sync controls across devices on different networks.
+        </p>
+        <div class="form-group">
+            <label>Database URL</label>
+            <input type="text" id="fb-url" placeholder="https://your-project.firebaseio.com">
+        </div>
+        <button class="btn btn-primary" onclick="saveFirebaseConfig()">💾 Save Firebase Config</button>
+        <div id="fb-status" class="status"></div>
+    </div>
+
+    <!-- Manual Slide Control Card -->
+    <div class="card" style="margin-top: 2rem;">
+        <h2>🎮 Slide Navigation</h2>
+        <div class="btn-group">
+            <button class="btn" onclick="remoteSlide('prev')">⏮ Previous</button>
+            <button class="btn" onclick="remoteSlide('toggle')" id="btn-play-pause">⏸ Pause</button>
+            <button class="btn" onclick="remoteSlide('next')">Next ⏭</button>
         </div>
     </div>
 
@@ -278,7 +347,11 @@
         }
 
         function openSheet() {
-            const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQMXn3GlWIeGLKc3XqYXFSi_ofevUW4JZtptUoDoyzapOQCmoDSdC96QRZf0EXpWQ8CYoJ7YJ5h5Boy/pub?output=csv';
+            const csvUrl = (window.MMR_CONFIG && window.MMR_CONFIG.GSHEETS_URL) || '';
+            if (!csvUrl) {
+                alert('No Google Sheets URL configured in config.js');
+                return false;
+            }
             // Convert pub?output=csv  →  pubhtml (viewable in browser)
             const viewUrl = csvUrl.replace(/[?&]output=csv(&|$)/, '$1').replace(/\/pub(\?.*)?$/, '/pubhtml');
             window.open(viewUrl, '_blank');
@@ -337,10 +410,65 @@
         }
 
         const bc = new BroadcastChannel('mmr_sync');
-        const DEFAULT_SLIDES_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQMXn3GlWIeGLKc3XqYXFSi_ofevUW4JZtptUoDoyzapOQCmoDSdC96QRZf0EXpWQ8CYoJ7YJ5h5Boy/pub?output=csv';
+        const DEFAULT_SLIDES_URL = (window.MMR_CONFIG && window.MMR_CONFIG.GSHEETS_URL) || '';
 
         function init() {
+            // Apply Config Visuals
+            const cfg = window.MMR_CONFIG;
+            if (cfg) {
+                const root = document.documentElement;
+                if (cfg.COLORS.primary) root.style.setProperty('--cfg-primary', cfg.COLORS.primary);
+                if (cfg.COLORS.bgDark) root.style.setProperty('--cfg-bg-dark', cfg.COLORS.bgDark);
+                if (cfg.COLORS.textLight) root.style.setProperty('--cfg-text-light', cfg.COLORS.textLight);
+                document.getElementById('header-title').innerText = cfg.EVENT_NAME + ' Admin';
+            }
+
+            // Load stored values
+            const storedUrl = localStorage.getItem('mmr_fb_url') || (cfg && cfg.FIREBASE_DB_URL) || '';
+            document.getElementById('fb-url').value = storedUrl;
+            
+            const voiceOn = localStorage.getItem('mmr_voice_on') !== 'false';
+            document.getElementById('voice-toggle').checked = voiceOn;
+
             renderAdminSlides();
+        }
+
+        function saveFirebaseConfig() {
+            const url = document.getElementById('fb-url').value.trim();
+            localStorage.setItem('mmr_fb_url', url);
+            const el = document.getElementById('fb-status');
+            el.innerText = '✅ Firebase URL saved! Reload display/remote to apply.';
+            el.className = 'status status-success';
+            el.style.display = 'block';
+            setTimeout(() => el.style.display = 'none', 3000);
+        }
+
+        function toggleVoice() {
+            const voiceOn = document.getElementById('voice-toggle').checked;
+            localStorage.setItem('mmr_voice_on', voiceOn);
+            bc.postMessage({ type: 'VOICE_TOGGLE', payload: { voiceOn } });
+            writeFirebase({ voiceOn });
+        }
+
+        function remoteSlide(cmd) {
+            bc.postMessage({ type: 'SLIDE_CMD', payload: { cmd } });
+            writeFirebase({ slideCmd: { cmd, ts: Date.now() } });
+            if (cmd === 'toggle') {
+                const btn = document.getElementById('btn-play-pause');
+                const isPaused = btn.innerText.includes('Pause');
+                btn.innerText = isPaused ? '▶ Play' : '⏸ Pause';
+            }
+        }
+
+        function writeFirebase(data) {
+            const url = localStorage.getItem('mmr_fb_url') || (window.MMR_CONFIG && window.MMR_CONFIG.FIREBASE_DB_URL) || '';
+            if (!url) return;
+            fetch(`${url}/mmr.json`, {
+                method: 'PATCH',
+                body: JSON.stringify(data),
+                headers: { 'Content-Type': 'application/json' },
+                cache: 'no-store'
+            }).catch(e => console.warn('[MMR Admin] Firebase write error:', e));
         }
 
         async function syncFromSheets() {
@@ -446,8 +574,10 @@
                     subtitle: clean[1] || '',
                     type: type,
                     duration: parseInt(clean[3]) || 30000,
-                    imageUrl: clean[4] || '',
-                    bubbleText: clean[5] || ''
+                    backgroundImage: clean[4] || '',
+                    overlayImage: clean[5] || '',
+                    bubbleText: clean[6] || '',
+                    winnerPhotos: clean[7] || ''
                 };
             }).filter(s => s !== null);
 
