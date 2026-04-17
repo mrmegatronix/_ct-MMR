@@ -481,10 +481,11 @@
         }
         /* Stagger the images based on index */
         .winners-carousel img:nth-child(1) { animation-delay: 0s; }
-        .winners-carousel img:nth-child(2) { animation-delay: 2s; }
-        .winners-carousel img:nth-child(3) { animation-delay: 4s; }
-        .winners-carousel img:nth-child(4) { animation-delay: 6s; }
-        .winners-carousel img:nth-child(5) { animation-delay: 8s; }
+        .winners-carousel img:nth-child(2) { animation-delay: 1.5s; }
+        .winners-carousel img:nth-child(3) { animation-delay: 3s; }
+        .winners-carousel img:nth-child(4) { animation-delay: 4.5s; }
+        .winners-carousel img:nth-child(5) { animation-delay: 6s; }
+        .winners-carousel img:nth-child(6) { animation-delay: 7.5s; }
     </style>
 </head>
 <body>
@@ -999,7 +1000,13 @@
                 const res = await fetch(slidesUrl + (slidesUrl.includes('?') ? '&' : '?') + 't=' + Date.now(), { cache: 'no-store' });
                 if (!res.ok) throw new Error('HTTP ' + res.status);
                 const csv = await res.text();
-                const slides = parseSlidesCSV(csv);
+                let slides = parseSlidesCSV(csv);
+
+                // Inject local overrides if defined
+                if (window.MMR_CONFIG && window.MMR_CONFIG.LOCAL_WINNERS_SLIDES) {
+                    slides = [...slides, ...window.MMR_CONFIG.LOCAL_WINNERS_SLIDES];
+                }
+
                 if (slides.length > 0) {
                     console.log('[MMR] Slides synced OK — ' + slides.length + ' slides loaded.');
                     updateState({ slides: slides });
