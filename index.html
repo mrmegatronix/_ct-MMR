@@ -685,6 +685,15 @@
             const nzNow = getNZDate();
             
             const diff = target.getTime() - nzNow.getTime();
+            
+            // If the draw time was more than 2 hours ago, it's definitely over. 
+            // Auto-advance the state to the next Thursday.
+            if (diff < -(2 * 60 * 60 * 1000)) {
+                state.nextDrawTime = getNextThursday7PM();
+                localStorage.setItem('mmr_state_v5', JSON.stringify(state));
+                return '<span>Calculating next draw...</span>';
+            }
+
             if (diff <= 0) return '<span>Starting Now!</span>';
             
             const days = Math.floor(diff / (1000 * 60 * 60 * 24));

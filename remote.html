@@ -515,8 +515,11 @@
                     // Check if saved draw time is in the past
                     if (parsed.nextDrawTime && new Date(parsed.nextDrawTime).getTime() < getNZDate().getTime()) {
                         parsed.nextDrawTime = getNextThursday7PM();
+                        state = { ...state, ...parsed };
+                        broadcast(); // Push the fix to the TV and Firebase immediately
+                    } else {
+                        state = { ...state, ...parsed }; 
                     }
-                    state = { ...state, ...parsed }; 
                 } catch(e){}
             }
             
