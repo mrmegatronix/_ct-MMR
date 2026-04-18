@@ -844,6 +844,7 @@
         // Draw Logic
         let rollInterval;
         function startLotteryRoll() {
+            clearInterval(rollInterval); // Safety: Stop any existing zombie intervals
             lottoNumberEl.classList.add('rolling');
             document.getElementById('view-draw').classList.add('draw-flash-bg');
             rollInterval = setInterval(() => {
