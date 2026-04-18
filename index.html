@@ -1080,6 +1080,11 @@
         }
 
         function handleFbEvent(e) {
+            try {
+                const eventData = JSON.parse(e.data);
+                const data = eventData.data || eventData; // Handle both PUT and PATCH
+                if (!data) return;
+
                 // Handle voice toggle
                 if (data.voiceOn !== undefined) {
                     localStorage.setItem('mmr_voice_on', data.voiceOn);
@@ -1101,7 +1106,9 @@
                 // Handle state changes (exclude control keys)
                 const { cmd, slideCmd, voiceOn, ...stateData } = data;
                 if (Object.keys(stateData).length) updateState(stateData);
-            } catch(err) {}
+            } catch(err) {
+                console.error('[MMR] Firebase event processing error:', err);
+            }
         }
 
         initFirebase();
