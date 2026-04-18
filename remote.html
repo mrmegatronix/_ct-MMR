@@ -510,7 +510,14 @@
 
             const saved = localStorage.getItem('mmr_state_v5');
             if (saved) {
-                try { state = { ...state, ...JSON.parse(saved) }; } catch(e){}
+                try { 
+                    const parsed = JSON.parse(saved);
+                    // Check if saved draw time is in the past
+                    if (parsed.nextDrawTime && new Date(parsed.nextDrawTime).getTime() < getNZDate().getTime()) {
+                        parsed.nextDrawTime = getNextThursday7PM();
+                    }
+                    state = { ...state, ...parsed }; 
+                } catch(e){}
             }
             
             // Sync voice toggle from storage

@@ -1046,7 +1046,14 @@
             // 1. Show stored state immediately
             const storedState = localStorage.getItem('mmr_state_v5');
             if (storedState) {
-                try { updateState(JSON.parse(storedState)); } catch(e){}
+                try { 
+                    const parsed = JSON.parse(storedState);
+                    // Check if saved draw time is in the past
+                    if (parsed.nextDrawTime && new Date(parsed.nextDrawTime).getTime() < getNZDate().getTime()) {
+                        parsed.nextDrawTime = getNextThursday7PM();
+                    }
+                    updateState(parsed); 
+                } catch(e){}
             } else {
                 updateState(state);
             }
