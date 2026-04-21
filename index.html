@@ -776,8 +776,8 @@
                             <img src="${overlayImg}" style="max-width: 80%; max-height: 80%; object-fit: contain;">
                         </div>` : ''}
 
-                        ${slide.title ? `<h1 style="position: relative; z-index: 2;">${sanitize(slide.title)}</h1>` : ''}
-                        ${slide.subtitle ? `<h2 class="slide-subtitle" style="position: relative; z-index: 2;">${sanitize(slide.subtitle)}</h2>` : ''}
+                        ${slide.title ? `<h1 style="position: relative; z-index: 2;">${sanitize(slide.title).replace(/\n/g, '<br>')}</h1>` : ''}
+                        ${slide.subtitle ? `<h2 class="slide-subtitle" style="position: relative; z-index: 2;">${sanitize(slide.subtitle).replace(/\n/g, '<br>')}</h2>` : ''}
                         
                         ${slide.type === 'countdown' 
                             ? `<div class="slide-countdown slide-countdown-timer" style="position: relative; z-index: 2;">${timeHtml}</div>` 
@@ -787,7 +787,7 @@
                         ${slide.type === 'avatar' 
                             ? `<div class="avatar-container" style="position: relative; z-index: 5;">
                                  ${(String(slide.bubbleText || '').trim() || String(slide.subtitle || '').trim()) 
-                                    ? `<div class="speech-bubble">${sanitize(slide.bubbleText || slide.subtitle)}</div>` 
+                                    ? `<div class="speech-bubble">${sanitize(slide.bubbleText || slide.subtitle).replace(/\n/g, '<br>')}</div>` 
                                     : ''}
                                  <img src="${avatarImg || (window.MMR_CONFIG && window.MMR_CONFIG.AVATAR_FALLBACK) || 'avatar.png'}" class="animated-avatar" alt="Character Avatar">
                                </div>` 
@@ -956,49 +956,47 @@
         setInterval(spawnAmbientConfetti, 355); // ambient loop (increasing density by another 50%)
 
         // Initialization and Google Sheets Sync
-        function splitCSVLine(line) {
-            const parts = [];
-            let current = '';
-            let inQuotes = false;
-            for (let i = 0; i < line.length; i++) {
-                const char = line[i];
-                if (char === '"') inQuotes = !inQuotes;
-                else if (char === ',' && !inQuotes) {
-                    parts.push(current.trim());
-                    current = '';
-                } else current += char;
-            }
-            parts.push(current.trim());
-            return parts;
-        }
-
         function parseSlidesCSV(text) {
-            const rows = text.split(/\r?\n/).filter(line => line.trim());
-            if (rows.length < 2) return [];
+            const result = [];
+            let row = [];
+            let col = '';
+            let inQuotes = false;
 
-            const parsed = rows.slice(1).map(line => {
-                const parts = splitCSVLine(line);
-                const clean = parts.map(p => p.replace(/^"|"$/g, '').trim());
+            for (let i = 0; i < text.length; i++) {
+                const char = text[i];
+                const nextChar = text[i + 1];
 
+                if (inQuotes) {
+                    if (char === '"' && nextChar === '"') { col += '"'; i++; }
+                    else if (char === '"') { inQuotes = false; }
+                    else { col += char; }
+                } else {
+                    if (char === '"') { inQuotes = true; }
+                    else if (char === ',') { row.push(col.trim()); col = ''; }
+                    else if (char === '\n' || (char === '\r' && nextChar === '\n')) {
+                        if (char === '\r') i++;
+                        row.push(col.trim());
+                        result.push(row);
+                        row = []; col = '';
+                    } else { col += char; }
+                }
+            }
+            if (col || row.length > 0) { row.push(col.trim()); result.push(row); }
+
+            return result.slice(1).map(clean => {
                 const type = (clean[2] || 'normal').toLowerCase();
-                if (!clean[0] && type !== 'avatar') return null; // Ignore rows with no title (except avatar slides)
-
+                if (!clean[0] && type !== 'avatar') return null;
                 return {
-                    title: clean[0],
+                    title: clean[0] || '',
                     subtitle: clean[1] || '',
-                    type: (clean[2] || 'normal').toLowerCase(),
+                    type: type,
                     duration: parseInt(clean[3]) || 30000,
                     backgroundImage: clean[4] || '',
                     overlayImage: clean[5] || '',
                     bubbleText: clean[6] || '',
-                    winnerPhotos: clean[7] || '' // For carousel
+                    winnerPhotos: clean[7] || ''
                 };
             }).filter(s => s !== null);
-
-            // Avatar is now handled directly via Google Sheets!
-            // (Just add a row with type: 'avatar')
-
-            return parsed;
         }
 
         const DEFAULT_SLIDES_URL = (window.MMR_CONFIG && window.MMR_CONFIG.GSHEETS_URL) || '';
