@@ -33,11 +33,12 @@
         /* Branding Top Left */
         .brand-logo {
             position: absolute;
-            top: 2rem;
-            left: 2rem;
-            width: 165px;
-            z-index: 1000;
+            top: 1rem;
+            left: 1rem;
+            width: 80px;
+            z-index: 200;
             filter: drop-shadow(0 0 20px rgba(0,0,0,0.8));
+            opacity: 0.7;
         }
 
         /* Global Countdown (Hidden as per request, now a slide) */
@@ -80,29 +81,31 @@
             opacity: 0;
             transform: scale(1.05);
             transition: opacity 1.5s ease-in-out, transform 1.5s cubic-bezier(0.4, 0, 0.2, 1);
-            padding: 4rem;
-            padding-top: 25vh; /* heavily push content down to avoid header */
+            padding: 3rem 4rem;
+            padding-top: 22vh; /* push content below fixed title */
+            overflow: hidden;
         }
         .slide.active { opacity: 1; transform: scale(1); }
 
         .slides-fixed-title {
             position: absolute;
-            top: 3vmin;
+            top: 1vmin;
             width: 100%;
             text-align: center;
-            font-size: clamp(3.5rem, 10vw, 8.5rem);
+            font-size: clamp(3rem, 8vw, 7rem);
             font-weight: 900;
-            line-height: 0.9;
+            line-height: 1.1;
             color: #f8fafc;
             text-transform: uppercase;
             letter-spacing: -0.02em;
             text-shadow: 0 0 20px var(--primary-glow), 0 0 40px var(--primary-glow), 0 5px 20px rgba(0,0,0,0.8);
             z-index: 100;
             animation: title-pulse 3s infinite ease-in-out;
+            padding: 0.8rem 1rem;
         }
 
         .slide-subtitle {
-            font-size: clamp(1.2rem, 2.5vw, 2.2rem);
+            font-size: clamp(1.6rem, 3vw, 2.8rem);
             color: var(--primary);
             font-weight: 900;
             text-transform: uppercase;
@@ -162,17 +165,19 @@
         }
 
         .slide h1 {
-            font-size: clamp(3.3rem, 11.88vmin, 10.56rem);
+            font-size: clamp(2.5rem, 8vmin, 6rem);
             font-weight: 900;
             color: var(--primary);
             text-transform: uppercase;
             line-height: 1.1;
             text-shadow: 0 0 10px rgba(255,255,255,0.9), 0 0 25px rgba(255,255,255,0.6), 0 0 40px var(--primary-glow), 0 2px 10px rgba(0,0,0,0.9);
-            margin-bottom: 1.5rem;
+            margin-bottom: 1rem;
             position: relative;
             z-index: 2;
             text-wrap: balance;
-            max-width: 90%;
+            max-width: 95%;
+            overflow-wrap: normal;
+            word-break: keep-all;
         }
         .slide .highlight { 
             color: var(--primary); 
@@ -187,18 +192,19 @@
 
         /* Avatar styling */
         .avatar-container {
-            margin-top: 3rem;
+            margin-top: 1rem;
             position: relative;
             z-index: 5;
             display: flex;
             justify-content: center;
+            max-height: 35vh;
         }
         .animated-avatar {
-            width: 380px;
-            height: 380px;
+            width: clamp(180px, 30vh, 280px);
+            height: clamp(180px, 30vh, 280px);
             object-fit: contain;
             border-radius: 50%;
-            border: 6px solid var(--primary);
+            border: 5px solid var(--primary);
             box-shadow: 0 0 40px var(--primary-glow), 0 0 80px rgba(0,0,0,0.8);
             animation: float 4s ease-in-out infinite;
             background: rgba(0,0,0,0.4);
@@ -469,10 +475,17 @@
         }
 
         /* Winners Carousel */
+        .winners-carousel {
+            max-height: 50vh;
+            overflow: hidden;
+        }
         .winners-carousel img {
             animation: winner-fade 10s infinite;
             opacity: 0;
             position: absolute;
+            max-height: 45vh;
+            width: auto !important;
+            object-fit: contain;
         }
         @keyframes winner-fade {
             0%, 10% { opacity: 0; transform: scale(0.9); }
@@ -926,34 +939,36 @@
             const symbol = symbols[Math.floor(Math.random() * symbols.length)];
             const el = document.createElement('div');
             el.className = 'ambient-confetti';
-            el.style.top = '-100px';
+            el.style.top = '-80px';
             el.style.left = Math.random() * 100 + '%';
-            el.style.fontSize = Math.random() * 2 + 2 + 'rem';
+            el.style.fontSize = (Math.random() * 1 + 2.5) + 'rem'; // Narrower range: 2.5-3.5rem for consistency
             el.style.filter = 'drop-shadow(0 5px 15px rgba(0,0,0,0.3))';
-            el.style.opacity = Math.random() * 0.4 + 0.2; // subtle opacity for background
+            el.style.opacity = (Math.random() * 0.15 + 0.35).toFixed(2); // Tighter range: 0.35-0.50 for uniformity
             
             if (symbol === 'LOGO') {
                 const img = document.createElement('img');
                 img.src = 'logo-new.png';
                 img.style.width = '3rem';
                 img.style.height = 'auto';
-                img.style.opacity = '0.8';
+                img.style.opacity = '0.7';
                 el.appendChild(img);
             } else {
                 el.innerText = symbol;
             }
 
-            const duration = Math.random() * 6.25 + 10; // 25% slower (10 to 16.25 seconds)
+            const duration = Math.random() * 3 + 12; // Tighter range: 12-15s for steadier fall
+            const rotation = Math.random() * 180 + 90; // 90-270deg rotation
+            const drift = (Math.random() - 0.5) * 100; // Horizontal drift for natural feel
             el.style.transition = `transform ${duration}s linear`;
             ambientContainer.appendChild(el);
             
             setTimeout(() => {
-                el.style.transform = `translateY(120vh) rotate(${Math.random() * 360}deg)`;
+                el.style.transform = `translateY(115vh) translateX(${drift}px) rotate(${rotation}deg)`;
             }, 50);
 
             setTimeout(() => el.remove(), duration * 1000 + 100);
         }
-        setInterval(spawnAmbientConfetti, 355); // ambient loop (increasing density by another 50%)
+        setInterval(spawnAmbientConfetti, 500); // Steadier spawn rate for even distribution
 
         // Initialization and Google Sheets Sync
         function parseSlidesCSV(text) {
