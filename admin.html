@@ -393,7 +393,7 @@
 
         // ── PIN Access Control ───────────────────────────────────────────
         (function checkAccess() {
-            if (sessionStorage.getItem('mmr_authed') === 'true') {
+            if (sessionStorage.getItem('mmr_authed') === 'true' || sessionStorage.getItem('matrix_authed') === 'true') {
                 document.getElementById('pin-overlay').style.display = 'none';
                 return;
             }
