@@ -279,7 +279,10 @@
         <div id="status" class="status"></div>
 
         <div id="slides-management" style="margin-top: 1.5rem; display: none;">
-            <label>Manage Slide Visibility</label>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                <label style="margin:0;">Manage Slide Visibility</label>
+                <button class="btn" style="width: auto; padding: 0.2rem 0.8rem; font-size: 0.7rem; background: var(--bg);" onclick="resetVisibility()">RESET ALL</button>
+            </div>
             <div id="slides-list" style="background: var(--bg); border: 1px solid var(--border); border-radius: 0.5rem; padding: 1rem; max-height: 250px; overflow-y: auto;">
                 <!-- Slides injected here -->
             </div>
@@ -534,8 +537,27 @@
                 renderAdminSlides();
             } catch (err) {
                 console.error(err);
-                showStatus('Sync failed. Check the network connection.', 'error');
+                if (window.location.protocol === 'file:') {
+                    showStatus('Sync failed: CORS error detected. You MUST serve this via a local HTTP server (e.g. Live Server).', 'error');
+                } else {
+                    showStatus('Sync failed. Check network or Google Sheet sharing settings.', 'error');
+                }
             }
+        }
+
+        function resetVisibility() {
+            const savedState = localStorage.getItem('mmr_state_v5');
+            let state = savedState ? JSON.parse(savedState) : {};
+            state.disabledSlides = [];
+            localStorage.setItem('mmr_state_v5', JSON.stringify(state));
+            
+            bc.postMessage({ 
+                type: 'STATE_UPDATE', 
+                payload: { disabledSlides: [] } 
+            });
+            
+            showStatus('Visibility reset! All slides are now enabled.', 'success');
+            renderAdminSlides();
         }
 
         function renderAdminSlides() {

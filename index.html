@@ -683,8 +683,9 @@
             prizesCountEl.innerText = state.draw.prizesLeft;
             
             // Only update drawn list if it changed
-            if (drawnListEl.children.length !== state.draw.drawnNumbers.length) {
-                drawnListEl.innerHTML = state.draw.drawnNumbers.map(n => `<span>${n}</span>`).join('');
+            const drawnCount = (state.draw.drawnNumbers || []).length;
+            if (drawnListEl.children.length !== drawnCount) {
+                drawnListEl.innerHTML = (state.draw.drawnNumbers || []).map(n => `<span>${sanitize(n)}</span>`).join('');
             }
 
             // Persist to localStorage
@@ -1001,6 +1002,14 @@
             return result.slice(1).map(clean => {
                 const type = (clean[2] || 'normal').toLowerCase();
                 if (!clean[0] && type !== 'avatar') return null;
+
+                // RUTHLESS TBC/TBA filtering
+                const ruthlessString = [clean[0], clean[1], type, clean[6]].join(' ').toLowerCase();
+                if (ruthlessString.includes('tbc') || ruthlessString.includes('tba') || 
+                    ruthlessString.includes('to be confirmed') || ruthlessString.includes('to be announced')) {
+                    return null;
+                }
+
                 return {
                     title: clean[0] || '',
                     subtitle: clean[1] || '',
