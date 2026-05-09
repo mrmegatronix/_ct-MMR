@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' https://*.firebaseio.com https://api.qrserver.com; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://*.firebaseio.com https://api.qrserver.com;">
+    <title>MMR - Remote Control</title>
+    <script src="config.js"></script>
+    <style>
+        :root {
+            --bg: var(--cfg-bg-dark, #0f172a);
+            --surface: #1e293b;
+            --primary: var(--cfg-primary, #ef4444);
+            --text: var(--cfg-text-light, #f8fafc);
+            --text-muted: #94a3b8;
+            --border: #334155;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: -apple-system, system-ui, sans-serif;
+            margin: 0;
+            padding: 2rem;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 1rem;
+        }
+        
+        .header h1 { margin: 0; color: var(--primary); }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            body { padding: 0.8rem; }
+            .grid { grid-template-columns: 1fr; gap: 1rem; }
+            .header { flex-direction: column; align-items: center; gap: 1rem; }
+            .header > div { flex-direction: column; width: 100%; gap: 0.5rem; }
+            .btn { width: 100%; padding: 1.2rem; font-size: 1.1rem; text-align: center; }
+            .btn-group { flex-direction: column; gap: 0.5rem; width: 100%; }
+            .card { padding: 1.2rem; }
+        }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            padding: 1.5rem;
+        }
+
+        .card h2 {
+            margin-top: 0;
+            font-size: 1.2rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        label {
+            display: block;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            font-weight: bold;
+            margin-bottom: 0.4rem;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            font-family: inherit;
+            box-sizing: border-box;
+        }
+
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .btn {
+            background: var(--surface);
+            color: var(--text);
+            border: 1px solid var(--border);
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+
+        .btn:hover { background: var(--border); }
+        
+        .btn-primary { background: var(--primary); border-color: var(--primary); }
+        .btn-primary:hover { background: #dc2626; }
+        
+        .btn-success { background: #22c55e; border-color: #22c55e; }
+        .btn-success:hover { background: #16a34a; }
+
+        .btn-group {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .slide-edit {
+            border: 1px solid var(--border);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+            display: none;
+        }
+
+        .voice-toggle-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--bg);
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+        }
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider {
+            position: absolute; cursor: pointer; inset: 0;
+            background-color: #475569; transition: .4s; border-radius: 24px;
+        }
+        .slider:before {
+            position: absolute; content: ""; height: 16px; width: 16px; 
+            left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%;
+        }
+        input:checked + .slider { background-color: var(--primary); }
+        input:checked + .slider:before { transform: translateX(26px); }
+
+        @media print {
+            body * { visibility: hidden; }
+            #print-report, #print-report * { visibility: visible; }
+            #print-report { position: absolute; left: 0; top: 0; width: 100%; color: black; background: white; padding: 2rem; }
+            .no-print { display: none !important; }
+        }
+        
+
+        /* ── PIN Access Overlay ── */
+        #pin-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.97);
+            backdrop-filter: blur(20px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+        #pin-modal {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 1.5rem;
+            padding: 3rem;
+            min-width: 320px;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 0 60px rgba(239,68,68,0.15), 0 20px 60px rgba(0,0,0,0.8);
+        }
+        #pin-input-r {
+            width: 100%;
+            background: var(--bg);
+            border: 2px solid var(--border);
+            color: var(--text);
+            padding: 1rem;
+            border-radius: 0.75rem;
+            font-size: 1.5rem;
+            text-align: center;
+            letter-spacing: 0.4em;
+            box-sizing: border-box;
+            margin-bottom: 1rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        #pin-input-r:focus { border-color: var(--primary); }
+        #pin-submit-r {
+            width: 100%;
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 1rem;
+            border-radius: 0.75rem;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        #pin-submit-r:hover { background: #dc2626; }
+        #pin-error-r { display: none; color: var(--primary); margin-top: 1rem; font-size: 0.9rem; }
+    </style>
+</head>
+<body>
+
+    <!-- PIN Access Overlay -->
+    <div id="pin-overlay">
+        <div id="pin-modal">
+            <div style="font-size: 3rem; margin-bottom: 1rem;">🔐</div>
+            <h2 style="color: #f8fafc; margin: 0 0 0.5rem;">Restricted Access</h2>
+            <p style="color: #94a3b8; margin: 0 0 2rem; font-size: 0.9rem;">Enter PIN to access Remote Control</p>
+            <input type="password" id="pin-input-r" maxlength="8" placeholder="Enter PIN" autocomplete="off">
+            <button id="pin-submit-r" onclick="checkPin()">UNLOCK</button>
+            <div id="pin-error-r">❌ Incorrect PIN. Try again.</div>
+        </div>
+    </div>
+
+    <div class="header">
+        <h1 id="header-title">MMR Remote</h1>
+        <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap; justify-content: center;">
+            <div class="voice-toggle-container">
+                <span style="font-size: 0.8rem; font-weight: bold;">VOICE</span>
+                <label class="switch">
+                    <input type="checkbox" id="voice-toggle" onchange="toggleVoice()" checked>
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <span id="fb-status" style="font-size:0.8rem; color:#94a3b8;">🔴 Firebase: Not configured</span>
+            <a href="admin.html" class="btn">⚙️ Admin</a>
+            <a href="index.html" target="_blank" class="btn btn-primary">Display</a>
+        </div>
+    </div>
+
+    <div class="grid">
+        <!-- Display Controls -->
+        <div class="card">
+            <h2>Display Controls</h2>
+            
+            <label>Active View</label>
+            <div class="btn-group">
+                <button class="btn" onclick="setView('slides')" id="btn-slides">Slides</button>
+                <button class="btn" onclick="setView('draw')" id="btn-draw">Draw Mode</button>
+                <button class="btn" onclick="setView('congrats')" id="btn-congrats">Congrats</button>
+            </div>
+
+            <label>Slide Manual Control</label>
+            <div class="btn-group">
+                <button class="btn" onclick="remoteSlide('prev')">⏮ Prev</button>
+                <button class="btn" onclick="remoteSlide('toggle')" id="btn-play-pause">⏸ Pause</button>
+                <button class="btn" onclick="remoteSlide('next')">Next ⏭</button>
+            </div>
+
+            <div class="form-group">
+                <label>Next Draw Time</label>
+                <input type="datetime-local" id="drawTime" onchange="updateTime()">
+            </div>
+            
+            <button class="btn" style="width: 100%;" onclick="triggerConfetti()">🎉 Trigger Confetti</button>
+            <div class="status" id="status-display">Updated Successfully</div>
+        </div>
+
+        <!-- Draw Controls -->
+        <div class="card">
+            <h2>Draw Configuration</h2>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="form-group">
+                    <label>Min Ticket</label>
+                    <input type="number" id="cfg-min" value="1">
+                </div>
+                <div class="form-group">
+                    <label>Max Ticket</label>
+                    <input type="number" id="cfg-max" value="999">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Total Prizes (Starting Amount)</label>
+                <input type="number" id="cfg-prizes" value="62" onchange="updateDrawState()">
+            </div>
+
+            <div class="form-group">
+                <label>Excluded Numbers (comma separated)</label>
+                <input type="text" id="cfg-excludes" placeholder="e.g. 5,12,45">
+            </div>
+
+            <div class="btn-group" style="margin-top: 2rem;">
+                <button class="btn btn-success" onclick="runDraw()" id="btn-run-draw" style="flex: 1; font-size: 1.2rem; padding: 1rem;">🎰 RUN DRAW</button>
+            </div>
+            
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span id="draw-status" style="color: var(--text-muted);">Prizes left: <strong id="lbl-left" style="color:white;">62</strong></span>
+                <button class="btn" onclick="resetDraw()">Reset Draws</button>
+            </div>
+            
+        </div>
+
+        <!-- Export Controls -->
+        <div class="card" style="grid-column: 1 / -1; margin-top: 1rem;">
+            <h2>End of Night Reports</h2>
+            <p style="font-size: 0.9rem; color: var(--text-muted); margin-top: -0.5rem; margin-bottom: 1rem;">
+                Finished the raffle? Export a detailed summary of all drawn tickets.
+            </p>
+            <div class="btn-group">
+                <button class="btn" onclick="generateReport('print')">🖨️ Print / Save as PDF</button>
+                <button class="btn" onclick="generateReport('email')">📧 Email Report</button>
+            </div>
+        </div>
+
+        <!-- QR Codes Links -->
+        <div class="card no-print" style="grid-column: 1 / -1; margin-top: 1rem;">
+            <h2>Quick Access QR Codes</h2>
+            <p style="font-size: 0.9rem; color: var(--text-muted); margin-top: -0.5rem; margin-bottom: 1rem;">
+                Scan these codes on any smartphone or tablet connected to your network to instantly open the interface!
+            </p>
+            <div style="display: flex; flex-wrap: wrap; gap: 2rem; justify-content: center; align-items: center; text-align: center;">
+                <div>
+                    <h3 style="margin-bottom: 0.5rem; font-size: 1rem;">Main Display</h3>
+                    <img id="qr-display" alt="Display QR Code" style="background: white; padding: 0.5rem; border-radius: 0.5rem; width: 140px; height: 140px;">
+                </div>
+                <div>
+                    <h3 style="margin-bottom: 0.5rem; font-size: 1rem;">Admin Panel</h3>
+                    <img id="qr-admin" alt="Admin QR Code" style="background: white; padding: 0.5rem; border-radius: 0.5rem; width: 140px; height: 140px;">
+                </div>
+                <div>
+                    <h3 style="margin-bottom: 0.5rem; font-size: 1rem;">Remote Control</h3>
+                    <img id="qr-remote" alt="Remote QR Code" style="background: white; padding: 0.5rem; border-radius: 0.5rem; width: 140px; height: 140px;">
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div id="print-report" style="display: none; background: white; color: black; padding: 2rem;"></div>
+
+    <script>
+        // ── Security Helpers ─────────────────────────────────────────────
+        function sanitize(str) {
+            if (!str) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#x27;');
+        }
+
+        // ── PIN Access Control ───────────────────────────────────────────
+        (function checkAccess() {
+            if (sessionStorage.getItem('mmr_authed') === 'true') {
+                document.getElementById('pin-overlay').style.display = 'none';
+                return;
+            }
+            const pinInput = document.getElementById('pin-input-r');
+            if (pinInput) {
+                pinInput.addEventListener('keydown', e => { if (e.key === 'Enter') checkPin(); });
+                pinInput.focus();
+            }
+        })();
+
+        function checkPin() {
+            const entered = document.getElementById('pin-input-r').value;
+            const stored = localStorage.getItem('mmr_pin') || '1234';
+            if (entered === stored) {
+                sessionStorage.setItem('mmr_authed', 'true');
+                document.getElementById('pin-overlay').style.display = 'none';
+            } else {
+                document.getElementById('pin-error-r').style.display = 'block';
+                document.getElementById('pin-input-r').value = '';
+                document.getElementById('pin-input-r').focus();
+            }
+        }
+
+        const bc = new BroadcastChannel('mmr_sync');
+        bc.onmessage = (event) => {
+            const data = event.data;
+            if (data.type === 'STATE_UPDATE') {
+                const newState = data.payload;
+                // Deep merge draw object if present
+                if (newState.draw) {
+                    state.draw = { ...state.draw, ...newState.draw };
+                    delete newState.draw;
+                }
+                state = { ...state, ...newState };
+                updateUI();
+            }
+        };
+        
+        function getNZDate() {
+            const parts = new Intl.DateTimeFormat('en-US', {
+                timeZone: 'Pacific/Auckland',
+                year: 'numeric', month: 'numeric', day: 'numeric',
+                hour: 'numeric', minute: 'numeric', second: 'numeric',
+                hourCycle: 'h23'
+            }).formatToParts(new Date());
+            const v = {};
+            parts.forEach(p => v[p.type] = p.value);
+            return new Date(v.year, v.month - 1, v.day, v.hour, v.minute, v.second);
+        }
+
+        function getNextThursday7PM() {
+            const nzDate = getNZDate();
+            let daysUntilThursday = (4 + 7 - nzDate.getDay()) % 7;
+            if (daysUntilThursday === 0 && nzDate.getHours() >= 19) {
+                daysUntilThursday = 7;
+            }
+            nzDate.setDate(nzDate.getDate() + daysUntilThursday);
+            
+            const yr = nzDate.getFullYear();
+            const mo = String(nzDate.getMonth() + 1).padStart(2, '0');
+            const da = String(nzDate.getDate()).padStart(2, '0');
+            return `${yr}-${mo}-${da}T19:00`;
+        }
+
+        let state = {
+            activeView: 'slides',
+            nextDrawTime: getNextThursday7PM(),
+            slides: [
+                { type: "countdown", title: "Time Until Draw", duration: 30000 },
+                { title: "Tickets on Sale", subtitle: "Thursdays from 5.30pm", duration: 30000 },
+                { title: "Ticket Info", subtitle: "$5 per ticket or 5 for $20", duration: 30000 },
+                { title: "Next Draw", subtitle: "62 Trays - $1225 Total Value", duration: 30000 },
+                { title: "Previous Winners", subtitle: "60+ Winners Last Week - $1200+ Value", duration: 30000 },
+                { title: "Proudly Supplied By", subtitle: "<span class='highlight'>Hibbards Butchery</span>", duration: 30000 }
+            ],
+            draw: {
+                isRolling: false,
+                currentNumber: '---',
+                drawnNumbers: [],
+                prizesLeft: 62
+            }
+        };
+
+        function toggleVoice() {
+            const voiceOn = document.getElementById('voice-toggle').checked;
+            localStorage.setItem('mmr_voice_on', voiceOn);
+            // Broadcast to other devices
+            bc.postMessage({ type: 'VOICE_TOGGLE', payload: { voiceOn } });
+            writeFirebase({ voiceOn });
+        }
+
+        function remoteSlide(cmd) {
+            bc.postMessage({ type: 'SLIDE_CMD', payload: { cmd } });
+            writeFirebase({ slideCmd: { cmd, ts: Date.now() } });
+            if (cmd === 'toggle') {
+                const btn = document.getElementById('btn-play-pause');
+                const isPaused = btn.innerText.includes('Pause');
+                btn.innerText = isPaused ? '▶ Play' : '⏸ Pause';
+            }
+        }
+
+        // ── Firebase cross-device sync (optional) ─────────
+        let fbDbUrl = (window.MMR_CONFIG && window.MMR_CONFIG.FIREBASE_DB_URL) || '';
+
+        function initFirebase() {
+            try {
+                if (!fbDbUrl) { updateFbStatus(false); return; }
+                updateFbStatus(true);
+                console.log('[MMR Remote] Firebase connected:', fbDbUrl);
+            } catch(e) { console.error('[MMR Remote] Firebase init error:', e); }
+        }
+
+        function writeFirebase(data) {
+            if (!fbDbUrl) return;
+            fetch(`${fbDbUrl}/mmr.json`, {
+                method: 'PATCH',
+                body: JSON.stringify(data),
+                headers: { 'Content-Type': 'application/json' },
+                cache: 'no-store'
+            }).catch(e => console.warn('[MMR Remote] Firebase write error:', e));
+        }
+
+        function updateFbStatus(connected) {
+            const el = document.getElementById('fb-status');
+            if (!el) return;
+            el.textContent = connected ? '🟢 Firebase: Connected' : '🔴 Firebase: Not configured';
+            el.style.color = connected ? '#22c55e' : '#94a3b8';
+        }
+
+        // Initialize
+        function init() {
+            // Apply Config
+            const cfg = window.MMR_CONFIG;
+            if (cfg) {
+                const root = document.documentElement;
+                if (cfg.COLORS.primary) root.style.setProperty('--cfg-primary', cfg.COLORS.primary);
+                if (cfg.COLORS.bgDark) root.style.setProperty('--cfg-bg-dark', cfg.COLORS.bgDark);
+                if (cfg.COLORS.textLight) root.style.setProperty('--cfg-text-light', cfg.COLORS.textLight);
+                document.getElementById('header-title').innerText = cfg.EVENT_NAME + ' Remote';
+            }
+
+            const saved = localStorage.getItem('mmr_state_v5');
+            if (saved) {
+                try { 
+                    const parsed = JSON.parse(saved);
+                    // Check if saved draw time is in the past
+                    if (parsed.nextDrawTime && new Date(parsed.nextDrawTime).getTime() < getNZDate().getTime()) {
+                        parsed.nextDrawTime = getNextThursday7PM();
+                        state = { ...state, ...parsed };
+                        broadcast(); // Push the fix to the TV and Firebase immediately
+                    } else {
+                        state = { ...state, ...parsed }; 
+                    }
+                } catch(e){}
+            }
+            
+            // Sync voice toggle from storage
+            const voiceOn = localStorage.getItem('mmr_voice_on') !== 'false';
+            document.getElementById('voice-toggle').checked = voiceOn;
+            
+            updateUI();
+            document.getElementById('drawTime').value = state.nextDrawTime;
+            initFirebase();
+        }
+
+        function broadcast() {
+            localStorage.setItem('mmr_state_v5', JSON.stringify(state));
+            bc.postMessage({ type: 'STATE_UPDATE', payload: state });
+            writeFirebase(state);
+        }
+
+        function updateUI() {
+            document.getElementById('btn-slides').style.borderColor = state.activeView === 'slides' ? 'var(--primary)' : 'var(--border)';
+            document.getElementById('btn-draw').style.borderColor = state.activeView === 'draw' ? 'var(--primary)' : 'var(--border)';
+            document.getElementById('btn-congrats').style.borderColor = state.activeView === 'congrats' ? 'var(--primary)' : 'var(--border)';
+            
+            document.getElementById('cfg-prizes').value = state.draw.prizesLeft + state.draw.drawnNumbers.length;
+            document.getElementById('lbl-left').innerText = state.draw.prizesLeft;
+        }
+
+        function setView(view) {
+            state.activeView = view;
+            updateUI();
+            broadcast();
+            showStatus();
+        }
+
+        function updateTime() {
+            const val = document.getElementById('drawTime').value;
+            if (val) {
+                state.nextDrawTime = val;
+                broadcast();
+                showStatus();
+            }
+        }
+
+        function updateDrawState() {
+            const total = parseInt(document.getElementById('cfg-prizes').value) || 10;
+            const drawn = state.draw.drawnNumbers.length;
+            state.draw.prizesLeft = Math.max(0, total - drawn);
+            updateUI();
+            broadcast();
+        }
+
+        function resetDraw() {
+            if(confirm('Are you sure you want to clear all drawn numbers and reset?')) {
+                state.draw.drawnNumbers = [];
+                state.draw.currentNumber = '---';
+                updateDrawState();
+            }
+        }
+
+        // Draw Runner
+        let isDrawing = false;
+        function runDraw() {
+            if (isDrawing || state.draw.prizesLeft <= 0) {
+                if(state.draw.prizesLeft <= 0) alert('No prizes left to draw!');
+                return;
+            }
+
+            const min = parseInt(document.getElementById('cfg-min').value) || 1;
+            const max = parseInt(document.getElementById('cfg-max').value) || 999;
+            const excludeStr = document.getElementById('cfg-excludes').value;
+            const excludes = excludeStr.split(',').map(n => parseInt(n.trim())).filter(n => !isNaN(n));
+            
+            // Available numbers
+            let available = [];
+            for (let i = min; i <= max; i++) {
+                if (!excludes.includes(i) && !state.draw.drawnNumbers.includes(i)) {
+                    available.push(i);
+                }
+            }
+
+            if (available.length === 0) {
+                alert("No valid numbers available to draw! Check ranges/excludes.");
+                return;
+            }
+
+            // Make sure we are in draw view
+            if (state.activeView !== 'draw') {
+                setView('draw');
+            }
+
+            isDrawing = true;
+            document.getElementById('btn-run-draw').disabled = true;
+            document.getElementById('btn-run-draw').innerText = 'ROLLING...';
+
+            // Select number
+            const winner = available[Math.floor(Math.random() * available.length)];
+            
+            // Tell display to start rolling animation
+            bc.postMessage({ type: 'START_ROLL' });
+            writeFirebase({ cmd: { type: 'START_ROLL', ts: Date.now() } });
+            
+            // Wait 3 seconds then stop on winner
+            setTimeout(() => {
+                state.draw.drawnNumbers.unshift(winner); // Add to top
+                state.draw.prizesLeft -= 1;
+                state.draw.currentNumber = winner;
+                
+                broadcast(); // updates prizes and history
+                bc.postMessage({ type: 'STOP_ROLL', payload: { number: winner } });
+                writeFirebase({ cmd: { type: 'STOP_ROLL', number: winner, ts: Date.now() } });
+                
+                isDrawing = false;
+                document.getElementById('btn-run-draw').disabled = false;
+                document.getElementById('btn-run-draw').innerHTML = '🎰 RUN DRAW';
+                updateUI();
+            }, 3000);
+        }
+
+        function triggerConfetti() {
+            bc.postMessage({ type: 'CONFETTI' });
+            writeFirebase({ cmd: { type: 'CONFETTI', ts: Date.now() } });
+        }
+
+
+        function showStatus() {
+            const el = document.getElementById('status-display');
+            el.style.display = 'block';
+            setTimeout(() => el.style.display = 'none', 2000);
+        }
+
+        function generateReportText() {
+            const min = parseInt(document.getElementById('cfg-min').value) || 1;
+            const max = parseInt(document.getElementById('cfg-max').value) || 999;
+            const excludeStr = document.getElementById('cfg-excludes').value;
+            const total = parseInt(document.getElementById('cfg-prizes').value) || 0;
+            const drawn = state.draw.drawnNumbers;
+            const date = new Date().toLocaleDateString();
+
+            return `Monster Meat Raffle Report - ${date}\n` +
+                   `--------------------------------------------------\n` +
+                   `Draw Configuration:\n` +
+                   `Ticket Range: ${min} to ${max}\n` +
+                   `Excluded Numbers: ${excludeStr || 'None'}\n` +
+                   `Total Prizes Initially: ${total + drawn.length}\n` +
+                   `Prizes Remaining: ${state.draw.prizesLeft}\n\n` +
+                   `Winning Ticket Numbers (in order drawn):\n` +
+                   `${drawn.length > 0 ? drawn.join(', ') : 'No tickets drawn yet.'}\n` +
+                   `--------------------------------------------------\n` +
+                   `Report generated securely from local console.`;
+        }
+
+        function generateReport(type) {
+            const text = generateReportText();
+            if (type === 'email') {
+                const subject = encodeURIComponent("Meat Raffle Results - " + new Date().toLocaleDateString());
+                const body = encodeURIComponent(text);
+                window.location.href = `mailto:?subject=${subject}&body=${body}`;
+            } else if (type === 'print') {
+                const prct = document.getElementById('print-report');
+                prct.innerHTML = `
+                    <h1 style="color:black; margin-bottom: 0;">Monster Meat Raffle Report</h1>
+                    <p style="color:#555; margin-top: 0;">Date: ${new Date().toLocaleDateString()}</p>
+                    <hr>
+                    <h3>Draw Configuration</h3>
+                    <ul>
+                        <li><strong>Ticket Range:</strong> ${document.getElementById('cfg-min').value || 1} to ${document.getElementById('cfg-max').value || 999}</li>
+                        <li><strong>Excluded Numbers:</strong> ${document.getElementById('cfg-excludes').value || 'None'}</li>
+                        <li><strong>Total Prizes Initially:</strong> ${(parseInt(document.getElementById('cfg-prizes').value) || 0) + state.draw.drawnNumbers.length}</li>
+                        <li><strong>Prizes Remaining:</strong> ${state.draw.prizesLeft}</li>
+                    </ul>
+                    <h3>Winning Numbers (in order drawn)</h3>
+                    <p style="line-height: 1.8; font-size: 1.2rem;">
+                        ${state.draw.drawnNumbers.length > 0 
+                            ? state.draw.drawnNumbers.map(n => `<span style="display:inline-block; padding: 4px 10px; border: 1px solid #ccc; margin: 4px; border-radius: 4px;"><strong>${sanitize(String(n))}</strong></span>`).join(' ') 
+                            : 'No tickets drawn yet.'}
+                    </p>
+                `;
+                prct.style.display = 'block';
+                window.print();
+                prct.style.display = 'none';
+            }
+        }
+
+        function generateQRCodes() {
+            // Get the base directory URL of the current page, filtering out any URL parameters
+            const baseUrl = window.location.href.split('?')[0].substring(0, window.location.href.lastIndexOf('/'));
+            
+            const urls = {
+                'qr-display': baseUrl + '/index.html',
+                'qr-admin': baseUrl + '/admin.html',
+                'qr-remote': baseUrl + '/remote.html'
+            };
+
+            for (const [id, url] of Object.entries(urls)) {
+                // Use qrserver.com API to generate images natively without extra libraries
+                const api = `https://api.qrserver.com/v1/create-qr-code/?size=160x160&format=png&color=0f172a&bgcolor=ffffff&data=`;
+                document.getElementById(id).src = api + encodeURIComponent(url);
+            }
+        }
+
+        init();
+        generateQRCodes();
+    </script>
+</body>
+</html>
