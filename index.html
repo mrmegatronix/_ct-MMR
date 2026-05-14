@@ -105,12 +105,12 @@
         }
 
         .slide-subtitle {
-            font-size: clamp(1.6rem, 3vw, 2.8rem);
-            color: var(--primary);
+            font-size: clamp(2.2rem, 4.5vw, 4.2rem);
+            color: #FFD700;
             font-weight: 900;
             text-transform: uppercase;
             letter-spacing: 0.1em;
-            text-shadow: 0 0 10px rgba(255,255,255,0.9), 0 0 25px rgba(255,255,255,0.6), 0 0 40px var(--primary-glow), 0 2px 12px rgba(0,0,0,0.95);
+            text-shadow: 0 0 15px var(--primary), 0 0 25px var(--primary-glow), 0 2px 12px rgba(0,0,0,0.95);
             margin-top: 1rem;
             animation: subtitle-pulse 3s infinite ease-in-out;
             text-wrap: balance;
@@ -143,8 +143,8 @@
         }
 
         @keyframes subtitle-pulse {
-            0%, 100% { text-shadow: 0 0 10px rgba(255,255,255,0.9), 0 0 25px rgba(255,255,255,0.6), 0 0 40px var(--primary-glow), 0 2px 12px rgba(0,0,0,0.95); }
-            50% { text-shadow: 0 0 20px rgba(255,255,255,1), 0 0 40px rgba(255,255,255,0.8), 0 0 60px var(--primary), 0 2px 12px rgba(0,0,0,0.95); }
+            0%, 100% { text-shadow: 0 0 15px var(--primary), 0 0 25px var(--primary-glow), 0 2px 12px rgba(0,0,0,0.95); }
+            50% { text-shadow: 0 0 25px var(--primary), 0 0 45px var(--primary), 0 2px 12px rgba(0,0,0,0.95); }
         }
 
         @keyframes colon-flash {
