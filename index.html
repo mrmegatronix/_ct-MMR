@@ -1130,7 +1130,8 @@
             if (storedState) {
                 try { 
                     const parsed = JSON.parse(storedState);
-                    // Check if saved draw time is in the past
+                    // Force-clear slides from storage to ensure fresh fetch from CSV
+                    delete parsed.slides; 
                     if (parsed.nextDrawTime && new Date(parsed.nextDrawTime).getTime() < getNZDate().getTime()) {
                         parsed.nextDrawTime = getNextThursday7PM();
                     }

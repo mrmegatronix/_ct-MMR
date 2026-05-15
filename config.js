@@ -52,20 +52,5 @@ window.MMR_CONFIG = {
     
     // ── LOCAL CONTENT OVERRIDES ─────────────────────────────────────────
     // These slides are appended to those fetched from Google Sheets
-    LOCAL_WINNERS_SLIDES: [
-        {
-            title: "Recently Meat Winners",
-            subtitle: "Proudly supporting our local tavern!",
-            type: "winners",
-            duration: 20000,
-            winnerPhotos: "_winners/671121160_1527990205993631_1560606402684196086_n.jpg, _winners/671307339_1527990229326962_4955696085047281956_n.jpg, _winners/671755739_1527990232660295_3703908239392174146_n.jpg"
-        },
-        {
-            title: "More Happy Winners",
-            subtitle: "Join us every Thursday for your chance to win!",
-            type: "winners",
-            duration: 20000,
-            winnerPhotos: "_winners/672076370_1527990139326971_3901420564382756015_n.jpg, _winners/672378350_1527990122660306_1925883341616935984_n.jpg, _winners/672684609_1527990235993628_3614426172678345369_n.jpg"
-        }
-    ]
+    LOCAL_WINNERS_SLIDES: []
 };
