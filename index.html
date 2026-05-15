@@ -89,19 +89,23 @@
 
         .slides-fixed-title {
             position: absolute;
-            top: 1vmin;
+            top: 0;
+            left: 0;
             width: 100%;
             text-align: center;
-            font-size: clamp(3rem, 8vw, 7rem);
+            font-size: clamp(3rem, 7vw, 6rem);
             font-weight: 900;
             line-height: 1.1;
-            color: #B8860B; /* Dark Gold */
+            color: #FFFFFF;
             text-transform: uppercase;
-            letter-spacing: -0.02em;
-            text-shadow: 0 0 20px rgba(59, 130, 246, 0.8), 0 0 40px rgba(59, 130, 246, 0.6), 0 5px 20px rgba(0,0,0,0.8);
+            letter-spacing: 0.05em;
+            background: linear-gradient(180deg, #B8860B 0%, #8B6508 100%); /* Premium Gold Banner */
+            border-bottom: 4px solid rgba(255, 255, 255, 0.2);
+            text-shadow: 0 0 20px rgba(59, 130, 246, 0.8), 0 0 40px rgba(59, 130, 246, 0.6); /* Blue Glow */
+            box-shadow: 0 10px 50px rgba(59, 130, 246, 0.4); /* Blue Glow spreading down */
             z-index: 100;
             animation: title-pulse 3s infinite ease-in-out;
-            padding: 0.8rem 1rem;
+            padding: 1.2rem 1rem;
         }
 
         .slide-subtitle {
