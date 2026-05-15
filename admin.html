@@ -231,6 +231,17 @@
         }
         @keyframes pipIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         .pip-window iframe { width: 100%; height: 100%; border: none; }
+
+        /* Compact Mode */
+        body.compact { padding: 1rem; }
+        body.compact .header { margin-bottom: 1rem; padding-bottom: 0.5rem; }
+        body.compact h1 { font-size: 1.2rem; }
+        body.compact .card { padding: 1rem; border-radius: 0.5rem; }
+        body.compact .form-group { margin-bottom: 1rem; }
+        body.compact input { padding: 0.5rem; font-size: 0.9rem; }
+        body.compact .btn { padding: 0.5rem 1rem; font-size: 0.85rem; }
+        body.compact .voice-toggle-container { padding: 0.2rem 0.6rem; }
+        body.compact .pip-toggle { display: none; }
     </style>
 </head>
 <body>
@@ -449,6 +460,9 @@
         const DEFAULT_SLIDES_URL = (window.MMR_CONFIG && window.MMR_CONFIG.GSHEETS_URL) || '';
 
         function init() {
+            if (window.location.search.includes('compact=true')) {
+                document.body.classList.add('compact');
+            }
             // Apply Config Visuals
             const cfg = window.MMR_CONFIG;
             if (cfg) {
