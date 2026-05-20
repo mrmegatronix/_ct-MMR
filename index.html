@@ -204,6 +204,9 @@
             display: flex;
             justify-content: center;
             max-height: 35vh;
+            width: fit-content;
+            margin-left: auto;
+            margin-right: auto;
         }
         .animated-avatar {
             width: clamp(180px, 30vh, 280px);
@@ -222,32 +225,38 @@
         }
         .speech-bubble {
             position: absolute;
-            top: -120px;
-            right: -160px;
+            bottom: 110%;
+            left: 50%;
+            transform: translateX(-50%);
             background: white;
             color: var(--primary);
-            padding: 1.5rem 2.5rem;
-            border-radius: 40px;
+            padding: 1.2rem 2.2rem;
+            border-radius: 30px;
             font-weight: 900;
-            font-size: 3rem; /* 2x Bigger */
+            font-size: 2.8rem;
             text-shadow: 0 0 10px rgba(255,255,255,0.8);
             box-shadow: 0 20px 50px rgba(0,0,0,0.6);
             animation: float-bubble 4s ease-in-out infinite;
             z-index: 10;
-            min-width: 300px;
+            min-width: 250px;
+            max-width: 550px;
+            width: max-content;
+            text-align: center;
+            box-sizing: border-box;
         }
         .speech-bubble::after {
             content: '';
             position: absolute;
             bottom: -15px;
-            left: 30px;
-            border-width: 15px 15px 0 0;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 15px 15px 0 15px;
             border-style: solid;
             border-color: white transparent transparent transparent;
         }
         @keyframes float-bubble {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-15px); }
+            0%, 100% { transform: translateX(-50%) translateY(0); }
+            50% { transform: translateX(-50%) translateY(-15px); }
         }
 
         /* Progress Bar */
@@ -654,7 +663,9 @@
         let state = {
             activeView: 'slides',
             nextDrawTime: getNextThursday7PM(),
-            slides: [], // Start empty, rely ONLY on GSheets
+            slides: [
+                { type: "countdown", title: "Time Until Draw", duration: 30000 }
+            ],
             draw: {
                 isRolling: false,
                 currentNumber: '---',
@@ -681,7 +692,9 @@
         bc.onmessage = (event) => {
             const data = event.data;
             if (data.type === 'STATE_UPDATE') {
-                updateState(data.payload);
+                const cleanPayload = { ...data.payload };
+                delete cleanPayload.slides;
+                updateState(cleanPayload);
             }
             if (data.type === 'START_ROLL') {
                 startLotteryRoll();
@@ -697,6 +710,9 @@
             }
             if (data.type === 'SLIDE_CMD') {
                 handleSlideCmd(data.payload.cmd);
+            }
+            if (data.type === 'FORCE_SYNC') {
+                fetchAndApplySlides();
             }
         };
 
@@ -734,8 +750,10 @@
                 drawnListEl.innerHTML = (state.draw.drawnNumbers || []).map(n => `<span>${sanitize(n)}</span>`).join('');
             }
 
-            // Persist to localStorage
-            localStorage.setItem('mmr_state_v5', JSON.stringify(state));
+            // Persist to localStorage (excluding slides)
+            const stateToSave = { ...state };
+            delete stateToSave.slides;
+            localStorage.setItem('mmr_state_v5', JSON.stringify(stateToSave));
         }
 
         // Live Clock logic for dynamic values
@@ -1092,11 +1110,6 @@
                 if (slides.length > 0) {
                     console.log('[MMR] Slides synced OK — ' + slides.length + ' slides loaded.');
                     updateState({ slides: slides });
-                    // Persist only the slides key — don't clobber draw state
-                    const currentStored = localStorage.getItem('mmr_state_v5');
-                    let fullState = currentStored ? JSON.parse(currentStored) : state;
-                    fullState.slides = slides;
-                    localStorage.setItem('mmr_state_v5', JSON.stringify(fullState));
                 } else {
                     console.warn('[MMR] Slides fetch returned 0 rows — keeping current slides.');
                 }
@@ -1192,9 +1205,11 @@
                     if (data.cmd.type === 'START_ROLL') startLotteryRoll();
                     else if (data.cmd.type === 'STOP_ROLL') stopLotteryRoll(data.cmd.number);
                     else if (data.cmd.type === 'CONFETTI') triggerConfetti();
+                    else if (data.cmd.type === 'FORCE_SYNC') fetchAndApplySlides();
                 }
                 // Handle state changes (exclude control keys)
                 const { cmd, slideCmd, voiceOn, ...stateData } = data;
+                if (stateData.slides) delete stateData.slides;
                 if (Object.keys(stateData).length) updateState(stateData);
             } catch(err) {
                 console.error('[MMR] Firebase event processing error:', err);

@@ -459,6 +459,12 @@
         const bc = new BroadcastChannel('mmr_sync');
         const DEFAULT_SLIDES_URL = (window.MMR_CONFIG && window.MMR_CONFIG.GSHEETS_URL) || '';
 
+        // Global State (in-memory only for slides)
+        let state = {
+            slides: [],
+            disabledSlides: []
+        };
+
         function init() {
             if (window.location.search.includes('compact=true')) {
                 document.body.classList.add('compact');
@@ -480,7 +486,32 @@
             const voiceOn = localStorage.getItem('mmr_voice_on') !== 'false';
             document.getElementById('voice-toggle').checked = voiceOn;
 
-            renderAdminSlides();
+            // Load saved state (excluding slides)
+            const savedState = localStorage.getItem('mmr_state_v5');
+            if (savedState) {
+                try {
+                    const parsed = JSON.parse(savedState);
+                    state.disabledSlides = parsed.disabledSlides || [];
+                } catch(e){}
+            }
+
+            // Fetch slides immediately on load (in-memory) to populate the admin visibility checklist
+            fetchSlidesForAdmin();
+        }
+
+        async function fetchSlidesForAdmin() {
+            const slidesUrl = DEFAULT_SLIDES_URL;
+            if (!slidesUrl) return;
+            try {
+                const res = await fetch(slidesUrl + (slidesUrl.includes('?') ? '&' : '?') + 't=' + Date.now(), { cache: 'no-store' });
+                if (res.ok) {
+                    const csv = await res.text();
+                    state.slides = parseSlidesCSV(csv);
+                    renderAdminSlides();
+                }
+            } catch(e) {
+                console.error('[MMR Admin] Failed to fetch slides for checklist:', e);
+            }
         }
 
         function saveFirebaseConfig() {
@@ -524,30 +555,18 @@
         async function syncFromSheets() {
             const slidesUrl = DEFAULT_SLIDES_URL;
             showStatus('Fetching data...', 'success');
-            let updatePayload = {};
 
             try {
-                // Fetch Slides
+                // Fetch Slides in-memory to populate the list in Admin UI
                 const res = await fetch(slidesUrl + (slidesUrl.includes('?') ? '&' : '?') + 't=' + Date.now(), { cache: 'no-store' });
                 const csv = await res.text();
-                updatePayload.slides = parseSlidesCSV(csv);
+                state.slides = parseSlidesCSV(csv);
 
-                // Broadcast updated state
-                bc.postMessage({ 
-                    type: 'STATE_UPDATE', 
-                    payload: updatePayload 
-                });
+                // Tell the Display to fetch fresh slides from GSheets
+                bc.postMessage({ type: 'FORCE_SYNC' });
+                writeFirebase({ cmd: { type: 'FORCE_SYNC', ts: Date.now() } });
 
-                // Update local storage
-                const savedState = localStorage.getItem('mmr_state_v5');
-                let state = savedState ? JSON.parse(savedState) : {};
-                
-                // Deep merge helper
-                if (updatePayload.slides) state.slides = updatePayload.slides;
-                
-                localStorage.setItem('mmr_state_v5', JSON.stringify(state));
-
-                showStatus('Successfully synced from Google Sheets!', 'success');
+                showStatus('Successfully synced and refreshed all displays!', 'success');
                 renderAdminSlides();
             } catch (err) {
                 console.error(err);
@@ -560,25 +579,26 @@
         }
 
         function resetVisibility() {
-            const savedState = localStorage.getItem('mmr_state_v5');
-            let state = savedState ? JSON.parse(savedState) : {};
             state.disabledSlides = [];
-            localStorage.setItem('mmr_state_v5', JSON.stringify(state));
+
+            const savedState = localStorage.getItem('mmr_state_v5');
+            let localState = savedState ? JSON.parse(savedState) : {};
+            localState.disabledSlides = [];
+            delete localState.slides; // Safety check
+            localStorage.setItem('mmr_state_v5', JSON.stringify(localState));
             
             bc.postMessage({ 
                 type: 'STATE_UPDATE', 
                 payload: { disabledSlides: [] } 
             });
+            writeFirebase({ disabledSlides: [] });
             
             showStatus('Visibility reset! All slides are now enabled.', 'success');
             renderAdminSlides();
         }
 
         function renderAdminSlides() {
-            const savedState = localStorage.getItem('mmr_state_v5');
-            if(!savedState) return;
-            const state = JSON.parse(savedState);
-            if(!state.slides) return;
+            if (!state.slides || state.slides.length === 0) return;
             
             const disabled = state.disabledSlides || [];
             
@@ -610,15 +630,19 @@
                 if(!cb.checked) disabled.push(cb.value);
             });
             
-            const savedState = localStorage.getItem('mmr_state_v5');
-            let state = savedState ? JSON.parse(savedState) : {};
             state.disabledSlides = disabled;
-            localStorage.setItem('mmr_state_v5', JSON.stringify(state));
+
+            const savedState = localStorage.getItem('mmr_state_v5');
+            let localState = savedState ? JSON.parse(savedState) : {};
+            localState.disabledSlides = disabled;
+            delete localState.slides; // Safety check
+            localStorage.setItem('mmr_state_v5', JSON.stringify(localState));
             
             bc.postMessage({ 
                 type: 'STATE_UPDATE', 
                 payload: { disabledSlides: disabled } 
             });
+            writeFirebase({ disabledSlides: disabled });
             
             const el = document.getElementById('slide-status');
             el.innerText = 'Slide visibility applied to Display!';

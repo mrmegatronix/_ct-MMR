@@ -435,12 +435,7 @@
             activeView: 'slides',
             nextDrawTime: getNextThursday7PM(),
             slides: [
-                { type: "countdown", title: "Time Until Draw", duration: 30000 },
-                { title: "Tickets on Sale", subtitle: "Thursdays from 5.30pm", duration: 30000 },
-                { title: "Ticket Info", subtitle: "$5 per ticket or 5 for $20", duration: 30000 },
-                { title: "Next Draw", subtitle: "62 Trays - $1225 Total Value", duration: 30000 },
-                { title: "Previous Winners", subtitle: "60+ Winners Last Week - $1200+ Value", duration: 30000 },
-                { title: "Proudly Supplied By", subtitle: "<span class='highlight'>Hibbards Butchery</span>", duration: 30000 }
+                { type: "countdown", title: "Time Until Draw", duration: 30000 }
             ],
             draw: {
                 isRolling: false,
@@ -512,6 +507,7 @@
             if (saved) {
                 try { 
                     const parsed = JSON.parse(saved);
+                    delete parsed.slides; // Never keep slides in remote state
                     // Check if saved draw time is in the past
                     if (parsed.nextDrawTime && new Date(parsed.nextDrawTime).getTime() < getNZDate().getTime()) {
                         parsed.nextDrawTime = getNextThursday7PM();
@@ -533,9 +529,11 @@
         }
 
         function broadcast() {
-            localStorage.setItem('mmr_state_v5', JSON.stringify(state));
-            bc.postMessage({ type: 'STATE_UPDATE', payload: state });
-            writeFirebase(state);
+            const stateToStore = { ...state };
+            delete stateToStore.slides;
+            localStorage.setItem('mmr_state_v5', JSON.stringify(stateToStore));
+            bc.postMessage({ type: 'STATE_UPDATE', payload: stateToStore });
+            writeFirebase(stateToStore);
         }
 
         function updateUI() {
