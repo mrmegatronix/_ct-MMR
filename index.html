@@ -554,6 +554,11 @@
         .winners-carousel img:nth-child(5) { animation-delay: 6s; }
         .winners-carousel img:nth-child(6) { animation-delay: 7.5s; }
     </style>
+    <script>
+        if (window.self !== window.top) {
+            document.write('<style>#progress-bar, #progress-container, .timer-bar, .timer-container, .progress-bar, .progress-container { display: none !important; }</style>');
+        }
+    </script>
 </head>
 <body>
 
