@@ -202,15 +202,16 @@
             position: relative;
             z-index: 5;
             display: flex;
-            justify-content: center;
-            max-height: 35vh;
+            flex-direction: column;
+            align-items: center;
+            gap: 2rem;
             width: fit-content;
             margin-left: auto;
             margin-right: auto;
         }
         .animated-avatar {
-            width: clamp(180px, 30vh, 280px);
-            height: clamp(180px, 30vh, 280px);
+            width: clamp(250px, 45vh, 450px);
+            height: clamp(250px, 45vh, 450px);
             object-fit: contain;
             border-radius: 50%;
             border: 5px solid var(--primary);
@@ -224,10 +225,7 @@
             50% { transform: translateY(-15px); }
         }
         .speech-bubble {
-            position: absolute;
-            bottom: 110%;
-            left: 50%;
-            transform: translateX(-50%);
+            position: relative;
             background: white;
             color: var(--primary);
             padding: 1.2rem 2.2rem;
@@ -255,8 +253,8 @@
             border-color: white transparent transparent transparent;
         }
         @keyframes float-bubble {
-            0%, 100% { transform: translateX(-50%) translateY(0); }
-            50% { transform: translateX(-50%) translateY(-15px); }
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
         }
 
         /* Progress Bar */
