@@ -561,10 +561,6 @@
             0% { transform: translateX(calc(100vw + 500px)); }
             100% { transform: translateX(-500px); }
         }
-        @keyframes wobble-ham {
-            0%, 100% { transform: rotate(-20deg) translateY(0); }
-            50% { transform: rotate(20deg) translateY(-40px); }
-        }
         .ham-container {
             position: absolute;
             display: flex;
@@ -578,9 +574,54 @@
         .ham-container.go-left {
             animation: run-ham-left 6s linear forwards;
         }
-        .ham-wobbler {
-            font-size: 8rem;
+        .meat-costume {
+            position: relative;
+            width: 150px;
+            height: 250px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
             filter: drop-shadow(0 10px 10px rgba(0,0,0,0.5));
+        }
+        .costume-head {
+            font-size: 4.5rem;
+            z-index: 3;
+            margin-bottom: -50px;
+        }
+        .costume-body {
+            font-size: 9rem;
+            z-index: 2;
+            transform: rotate(10deg);
+        }
+        .costume-legs {
+            display: flex;
+            gap: 20px;
+            margin-top: -60px;
+            z-index: 1;
+        }
+        .costume-leg {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transform-origin: top center;
+        }
+        .leg-part {
+            font-size: 3rem;
+            margin-bottom: -15px;
+        }
+        .shoe-part {
+            font-size: 2.5rem;
+        }
+        .leg1 { animation: run-leg1 0.3s ease-in-out infinite alternate; }
+        .leg2 { animation: run-leg2 0.3s ease-in-out infinite alternate; }
+
+        @keyframes run-leg1 {
+            0% { transform: rotate(-40deg) translateY(-10px); }
+            100% { transform: rotate(40deg) translateY(0); }
+        }
+        @keyframes run-leg2 {
+            0% { transform: rotate(40deg) translateY(0); }
+            100% { transform: rotate(-40deg) translateY(-10px); }
         }
     </style>
     <script>
@@ -1264,21 +1305,27 @@
             const goRight = Math.random() > 0.5;
             container.classList.add(goRight ? 'go-right' : 'go-left');
             
-            // Wobble wrappers
-            const w1 = document.createElement('div');
-            w1.className = 'ham-wobbler';
-            w1.style.animation = 'wobble-ham 0.4s ease-in-out infinite';
+            // Generate HTML for costumes
+            const genCostume = (headEmoji, shoeEmoji, scaleX) => `
+                <div class="meat-costume" style="transform: scaleX(${scaleX})">
+                   <div class="costume-head">${headEmoji}</div>
+                   <div class="costume-body">🍖</div>
+                   <div class="costume-legs">
+                       <div class="costume-leg leg1"><div class="leg-part">🦵</div><div class="shoe-part">${shoeEmoji}</div></div>
+                       <div class="costume-leg leg2"><div class="leg-part">🦵</div><div class="shoe-part">${shoeEmoji}</div></div>
+                   </div>
+                </div>
+            `;
             
-            const w2 = document.createElement('div');
-            w2.className = 'ham-wobbler';
-            w2.style.animation = 'wobble-ham 0.35s ease-in-out infinite';
+            // The characters
+            const femaleCostume = genCostume('👱‍♀️', '👟', goRight ? 1 : -1);
+            const maleCostume = genCostume('👨', '👞', goRight ? 1 : -1);
             
-            const innerHtml = goRight ? '<div>🍖</div>' : '<div style="transform: scaleX(-1)">🍖</div>';
-            w1.innerHTML = innerHtml;
-            w2.innerHTML = innerHtml;
+            // Determine who is chasing who
+            const first = Math.random() > 0.5 ? femaleCostume : maleCostume;
+            const second = first === femaleCostume ? maleCostume : femaleCostume;
             
-            container.appendChild(w1);
-            container.appendChild(w2);
+            container.innerHTML = first + second;
             
             document.body.appendChild(container);
             
