@@ -400,7 +400,7 @@
                 return false;
             }
             // Convert pub?output=csv  →  pubhtml (viewable in browser)
-            const viewUrl = csvUrl.replace(/[?&]output=csv(&|$)/, '$1').replace(/\/pub(\?.*)?$/, '/pubhtml');
+            const viewUrl = csvUrl.replace(/[?&]output=csv(&|$)/, '$1').replace(/\/pub\?/, '/pubhtml?').replace(/\/pub$/, '/pubhtml');
             window.open(viewUrl, '_blank');
             return false; // prevent default anchor navigation
         }
