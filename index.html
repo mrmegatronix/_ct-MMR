@@ -198,7 +198,7 @@
 
         /* Avatar styling */
         .avatar-container {
-            margin-top: 1rem;
+            margin-top: 12rem;
             position: relative;
             z-index: 5;
             display: flex;
@@ -551,6 +551,37 @@
         .winners-carousel img:nth-child(4) { animation-delay: 4.5s; }
         .winners-carousel img:nth-child(5) { animation-delay: 6s; }
         .winners-carousel img:nth-child(6) { animation-delay: 7.5s; }
+
+        /* Running Hams */
+        @keyframes run-ham-right {
+            0% { transform: translateX(-500px); }
+            100% { transform: translateX(calc(100vw + 500px)); }
+        }
+        @keyframes run-ham-left {
+            0% { transform: translateX(calc(100vw + 500px)); }
+            100% { transform: translateX(-500px); }
+        }
+        @keyframes wobble-ham {
+            0%, 100% { transform: rotate(-20deg) translateY(0); }
+            50% { transform: rotate(20deg) translateY(-40px); }
+        }
+        .ham-container {
+            position: absolute;
+            display: flex;
+            gap: 150px;
+            pointer-events: none;
+            z-index: 90;
+        }
+        .ham-container.go-right {
+            animation: run-ham-right 6s linear forwards;
+        }
+        .ham-container.go-left {
+            animation: run-ham-left 6s linear forwards;
+        }
+        .ham-wobbler {
+            font-size: 8rem;
+            filter: drop-shadow(0 10px 10px rgba(0,0,0,0.5));
+        }
     </style>
     <script>
         if (window.self !== window.top) {
@@ -1220,6 +1251,56 @@
         }
 
         initFirebase();
+
+        // --- Random Running Hams ---
+        function spawnRunningHams() {
+            const container = document.createElement('div');
+            container.className = 'ham-container';
+            
+            // Random Y position between 10% and 60% from bottom
+            const randomY = Math.floor(Math.random() * 50) + 10;
+            container.style.bottom = randomY + '%';
+            
+            const goRight = Math.random() > 0.5;
+            container.classList.add(goRight ? 'go-right' : 'go-left');
+            
+            // Wobble wrappers
+            const w1 = document.createElement('div');
+            w1.className = 'ham-wobbler';
+            w1.style.animation = 'wobble-ham 0.4s ease-in-out infinite';
+            
+            const w2 = document.createElement('div');
+            w2.className = 'ham-wobbler';
+            w2.style.animation = 'wobble-ham 0.35s ease-in-out infinite';
+            
+            const innerHtml = goRight ? '<div>🍖</div>' : '<div style="transform: scaleX(-1)">🍖</div>';
+            w1.innerHTML = innerHtml;
+            w2.innerHTML = innerHtml;
+            
+            container.appendChild(w1);
+            container.appendChild(w2);
+            
+            document.body.appendChild(container);
+            
+            // Clean up
+            setTimeout(() => {
+                if(container.parentNode) container.parentNode.removeChild(container);
+            }, 6500);
+        }
+
+        function scheduleHams() {
+            // Spawn every 15-40 seconds
+            const nextSpawn = Math.random() * 25000 + 15000;
+            setTimeout(() => {
+                spawnRunningHams();
+                scheduleHams();
+            }, nextSpawn);
+        }
+        
+        // Start ham loop
+        scheduleHams();
+
+
 
     </script>
 
