@@ -1314,8 +1314,8 @@
             container.classList.add(goRight ? 'go-right' : 'go-left');
             
             // Generate HTML for costumes
-            const genCostume = (headHtml, shoeEmoji, scaleX) => `
-                <div class="meat-costume" style="transform: scaleX(${scaleX})">
+            const genCostume = (headHtml, shoeEmoji, scaleX, scaleY = 1) => `
+                <div class="meat-costume" style="transform: scaleX(${scaleX}) scaleY(${scaleY})">
                    <div class="costume-head">${headHtml}</div>
                    <div class="costume-body">🍖</div>
                    <div class="costume-legs">
@@ -1329,8 +1329,8 @@
             const avatarSrc = (window.MMR_CONFIG && window.MMR_CONFIG.AVATAR_FALLBACK) || 'avatar.png';
             const maleHead = `<img src="${avatarSrc}" alt="Male Face">`;
             
-            const femaleCostume = genCostume('👱‍♀️', '👟', goRight ? 1 : -1);
-            const maleCostume = genCostume(maleHead, '👞', goRight ? 1 : -1);
+            const femaleCostume = genCostume('👱‍♀️', '👟', goRight ? 1 : -1, 1);
+            const maleCostume = genCostume(maleHead, '👞', goRight ? 1 : -1, 1.25);
             
             // Determine who is chasing who
             const first = Math.random() > 0.5 ? femaleCostume : maleCostume;
