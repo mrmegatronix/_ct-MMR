@@ -585,8 +585,16 @@
         }
         .costume-head {
             font-size: 4.5rem;
-            z-index: 3;
-            margin-bottom: -50px;
+            z-index: 1;
+            margin-bottom: -75px;
+            display: flex;
+            justify-content: center;
+        }
+        .costume-head img {
+            width: 4.2rem;
+            height: 4.2rem;
+            border-radius: 50%;
+            object-fit: cover;
         }
         .costume-body {
             font-size: 9rem;
@@ -1306,9 +1314,9 @@
             container.classList.add(goRight ? 'go-right' : 'go-left');
             
             // Generate HTML for costumes
-            const genCostume = (headEmoji, shoeEmoji, scaleX) => `
+            const genCostume = (headHtml, shoeEmoji, scaleX) => `
                 <div class="meat-costume" style="transform: scaleX(${scaleX})">
-                   <div class="costume-head">${headEmoji}</div>
+                   <div class="costume-head">${headHtml}</div>
                    <div class="costume-body">🍖</div>
                    <div class="costume-legs">
                        <div class="costume-leg leg1"><div class="leg-part">🦵</div><div class="shoe-part">${shoeEmoji}</div></div>
@@ -1318,8 +1326,11 @@
             `;
             
             // The characters
+            const avatarSrc = (window.MMR_CONFIG && window.MMR_CONFIG.AVATAR_FALLBACK) || 'avatar.png';
+            const maleHead = `<img src="${avatarSrc}" alt="Male Face">`;
+            
             const femaleCostume = genCostume('👱‍♀️', '👟', goRight ? 1 : -1);
-            const maleCostume = genCostume('👨', '👞', goRight ? 1 : -1);
+            const maleCostume = genCostume(maleHead, '👞', goRight ? 1 : -1);
             
             // Determine who is chasing who
             const first = Math.random() > 0.5 ? femaleCostume : maleCostume;
