@@ -1314,8 +1314,8 @@
             container.classList.add(goRight ? 'go-right' : 'go-left');
             
             // Generate HTML for costumes
-            const genCostume = (headHtml, shoeEmoji, scaleX, scaleY = 1) => `
-                <div class="meat-costume" style="transform: scaleX(${scaleX}) scaleY(${scaleY})">
+            const genCostume = (headHtml, shoeEmoji, dir, scale = 1) => `
+                <div class="meat-costume" style="transform: scaleX(${dir * scale}) scaleY(${scale})">
                    <div class="costume-head">${headHtml}</div>
                    <div class="costume-body">🌭</div>
                    <div class="costume-legs">
