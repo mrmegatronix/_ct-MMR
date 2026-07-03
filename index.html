@@ -736,6 +736,35 @@
                 delete newState.draw;
             }
             state = { ...state, ...newState };
+
+            // Intercept and auto-correct activeView if outside congrats window
+            if (state.activeView === 'congrats') {
+                const nzDate = getNZDate();
+                const day = nzDate.getDay();
+                const hour = nzDate.getHours();
+                const targetDay = (window.MMR_CONFIG && window.MMR_CONFIG.TARGET_DAY) ?? 4;
+                
+                let shouldTurnOff = false;
+                if (day === targetDay && hour >= 22) {
+                    shouldTurnOff = true;
+                } else if (day !== targetDay) {
+                    shouldTurnOff = true;
+                } else if (day === targetDay && hour < 18) {
+                    shouldTurnOff = true;
+                }
+                
+                if (shouldTurnOff) {
+                    console.log('[MMR] Auto-corrected activeView from congrats to slides.');
+                    state.activeView = 'slides';
+                    isPaused = false;
+                    const btn = document.getElementById('play-pause-btn');
+                    if (btn) btn.innerText = '⏸';
+                    setTimeout(() => {
+                        bc.postMessage({ type: 'STATE_UPDATE', payload: { activeView: 'slides' } });
+                        writeFirebase({ activeView: 'slides' });
+                    }, 0);
+                }
+            }
             
             // View switching
             Object.keys(views).forEach(k => {
@@ -801,6 +830,32 @@
             const timeHtml = calculateTimeRemainingHTML();
             const dynamicCounters = document.querySelectorAll('.slide-countdown-timer');
             dynamicCounters.forEach(el => el.innerHTML = timeHtml);
+
+            // Turn off congrats screen and resume slides if outside allowed time window
+            if (state.activeView === 'congrats') {
+                const nzDate = getNZDate();
+                const day = nzDate.getDay();
+                const hour = nzDate.getHours();
+                const targetDay = (window.MMR_CONFIG && window.MMR_CONFIG.TARGET_DAY) ?? 4;
+                
+                let shouldTurnOff = false;
+                if (day === targetDay && hour >= 22) {
+                    shouldTurnOff = true;
+                } else if (day !== targetDay) {
+                    shouldTurnOff = true;
+                } else if (day === targetDay && hour < 18) {
+                    shouldTurnOff = true;
+                }
+                
+                if (shouldTurnOff) {
+                    isPaused = false;
+                    const btn = document.getElementById('play-pause-btn');
+                    if (btn) btn.innerText = '⏸';
+                    updateState({ activeView: 'slides' });
+                    bc.postMessage({ type: 'STATE_UPDATE', payload: { activeView: 'slides' } });
+                    writeFirebase({ activeView: 'slides' });
+                }
+            }
         }, 1000);
 
         // Slide logic
@@ -1180,6 +1235,16 @@
                 listenFirebaseState();
                 console.log('[MMR] Firebase RTDB connected:', fbDbUrl);
             } catch(e) { console.error('[MMR] Firebase init error:', e); }
+        }
+
+        function writeFirebase(data) {
+            if (!fbDbUrl) return;
+            fetch(`${fbDbUrl}/mmr.json`, {
+                method: 'PATCH',
+                body: JSON.stringify(data),
+                headers: { 'Content-Type': 'application/json' },
+                cache: 'no-store'
+            }).catch(e => console.warn('[MMR] Firebase write error:', e));
         }
 
         function listenFirebaseState() {

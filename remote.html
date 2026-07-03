@@ -401,7 +401,12 @@
                     delete newState.draw;
                 }
                 state = { ...state, ...newState };
+                const originalView = state.activeView;
+                checkCongratsAutoOff();
                 updateUI();
+                if (state.activeView !== originalView) {
+                    broadcast();
+                }
             }
         };
         
@@ -415,6 +420,18 @@
             const v = {};
             parts.forEach(p => v[p.type] = p.value);
             return new Date(v.year, v.month - 1, v.day, v.hour, v.minute, v.second);
+        }
+
+        function checkCongratsAutoOff() {
+            if (state.activeView === 'congrats') {
+                const nzDate = getNZDate();
+                const day = nzDate.getDay();
+                const hour = nzDate.getHours();
+                const targetDay = (window.MMR_CONFIG && window.MMR_CONFIG.TARGET_DAY) ?? 4;
+                if ((day === targetDay && hour >= 22) || day !== targetDay || (day === targetDay && hour < 18)) {
+                    state.activeView = 'slides';
+                }
+            }
         }
 
         function getNextThursday7PM() {
@@ -523,9 +540,14 @@
             const voiceOn = localStorage.getItem('mmr_voice_on') !== 'false';
             document.getElementById('voice-toggle').checked = voiceOn;
             
+            const originalView = state.activeView;
+            checkCongratsAutoOff();
             updateUI();
             document.getElementById('drawTime').value = state.nextDrawTime;
             initFirebase();
+            if (state.activeView !== originalView) {
+                broadcast();
+            }
         }
 
         function broadcast() {
@@ -547,6 +569,7 @@
 
         function setView(view) {
             state.activeView = view;
+            checkCongratsAutoOff();
             updateUI();
             broadcast();
             showStatus();
