@@ -399,7 +399,7 @@
 
         function checkPin() {
             const entered = document.getElementById('pin-input-r').value;
-            const stored = localStorage.getItem('mmr_pin') || '1234';
+            const stored = localStorage.getItem('mmr_pin') || '5551';
             if (entered === stored) {
                 sessionStorage.setItem('mmr_authed', 'true');
                 document.getElementById('pin-overlay').style.display = 'none';

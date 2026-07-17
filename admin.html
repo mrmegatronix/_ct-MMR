@@ -354,7 +354,7 @@
         <h2>🔑 Access PIN</h2>
         <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1.5rem;">
             Set the PIN required to access Admin and Remote pages.<br>
-            Default PIN is <code style="background: var(--bg); padding: 0.2rem 0.5rem; border-radius: 0.3rem;">1234</code>
+            Default PIN is <code style="background: var(--bg); padding: 0.2rem 0.5rem; border-radius: 0.3rem;">5551</code>
         </p>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
             <div class="form-group">
@@ -430,7 +430,7 @@
 
         function checkPin() {
             const entered = document.getElementById('pin-input').value;
-            const stored = localStorage.getItem('mmr_pin') || '1234';
+            const stored = localStorage.getItem('mmr_pin') || '5551';
             if (entered === stored) {
                 sessionStorage.setItem('mmr_authed', 'true');
                 document.getElementById('pin-overlay').style.display = 'none';
