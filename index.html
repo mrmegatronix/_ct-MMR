@@ -282,6 +282,7 @@
             align-items: center;
             gap: 2rem;
             z-index: 10;
+            transform: translateY(-8vh);
         }
         .draw-title { 
             font-size: 4.4vmin; 
@@ -383,26 +384,26 @@
 
         .prizes-left {
             position: absolute;
-            top: 50%;
-            right: 2rem;
+            top: 40%;
+            right: 3rem;
             transform: translateY(-50%);
-            background: rgba(0, 0, 0, 0.6);
+            background: rgba(0, 0, 0, 0.7);
             backdrop-filter: blur(10px);
-            padding: 1rem 3rem;
-            border-radius: 2rem;
-            border: 2px solid var(--primary);
+            padding: 1.5rem 3.5rem;
+            border-radius: 2.5rem;
+            border: 3px solid var(--primary);
             text-align: center;
-            box-shadow: 0 0 20px var(--primary-glow);
+            box-shadow: 0 0 35px var(--primary-glow);
         }
         .prizes-left .label { 
-            font-size: 1.32rem; 
+            font-size: 2.2rem; 
             color: white; 
             text-transform: uppercase; 
-            font-weight: 700; 
+            font-weight: 900; 
             text-shadow: 0 0 10px var(--primary-glow);
         }
         .prizes-left .value { 
-            font-size: 3.8rem; 
+            font-size: 7.5rem; 
             font-weight: 900; 
             color: white; 
             text-shadow: 0 0 20px #fff, 0 0 40px var(--primary), 0 0 60px var(--primary-glow);
@@ -600,23 +601,23 @@
                 <div class="number-display" id="lottery-number">---</div>
             </div>
 
-            <div class="drawn-numbers-bar" style="max-height: 35vh; bottom: 1.5rem;">
+            <div class="drawn-numbers-bar" style="max-height: 38vh; bottom: 1.5rem;">
                 <div class="drawn-groups-wrapper" style="display: flex; gap: 2rem; width: 100%; justify-content: space-between; box-sizing: border-box;">
                     <div class="drawn-group-column" style="flex: 1; text-align: center;">
-                        <div style="font-size: 1.25rem; color: #f59e0b; font-weight: 700; margin-bottom: 0.5rem; text-transform: uppercase; border-bottom: 1.5px solid rgba(245,158,11,0.3); padding-bottom: 0.2rem; text-shadow: 0 0 10px rgba(245,158,11,0.2);">$100 Packs</div>
-                        <div class="drawn-list" id="drawn-list-100" style="display: flex; flex-wrap: wrap; gap: 0.4rem; justify-content: center; font-size: 1.8rem; font-weight: 700;">
+                        <div style="font-size: 1.8rem; color: #f59e0b; font-weight: 900; margin-bottom: 0.5rem; text-transform: uppercase; border-bottom: 2px solid rgba(245,158,11,0.3); padding-bottom: 0.2rem; text-shadow: 0 0 10px rgba(245,158,11,0.2);">$100 Packs</div>
+                        <div class="drawn-list" id="drawn-list-100" style="display: flex; flex-wrap: wrap; gap: 0.4rem; justify-content: center; font-size: 2.6rem; font-weight: 800;">
                             <!-- $100 numbers -->
                         </div>
                     </div>
                     <div class="drawn-group-column" style="flex: 1; text-align: center;">
-                        <div style="font-size: 1.25rem; color: #3b82f6; font-weight: 700; margin-bottom: 0.5rem; text-transform: uppercase; border-bottom: 1.5px solid rgba(59,130,246,0.3); padding-bottom: 0.2rem; text-shadow: 0 0 10px rgba(59,130,246,0.2);">$50 Packs</div>
-                        <div class="drawn-list" id="drawn-list-50" style="display: flex; flex-wrap: wrap; gap: 0.4rem; justify-content: center; font-size: 1.8rem; font-weight: 700;">
+                        <div style="font-size: 1.8rem; color: #3b82f6; font-weight: 900; margin-bottom: 0.5rem; text-transform: uppercase; border-bottom: 2px solid rgba(59,130,246,0.3); padding-bottom: 0.2rem; text-shadow: 0 0 10px rgba(59,130,246,0.2);">$50 Packs</div>
+                        <div class="drawn-list" id="drawn-list-50" style="display: flex; flex-wrap: wrap; gap: 0.4rem; justify-content: center; font-size: 2.6rem; font-weight: 800;">
                             <!-- $50 numbers -->
                         </div>
                     </div>
                     <div class="drawn-group-column" style="flex: 1; text-align: center;">
-                        <div style="font-size: 1.25rem; color: #10b981; font-weight: 700; margin-bottom: 0.5rem; text-transform: uppercase; border-bottom: 1.5px solid rgba(16,185,129,0.3); padding-bottom: 0.2rem; text-shadow: 0 0 10px rgba(16,185,129,0.2);">$25 Packs</div>
-                        <div class="drawn-list" id="drawn-list-25" style="display: flex; flex-wrap: wrap; gap: 0.4rem; justify-content: center; font-size: 1.8rem; font-weight: 700;">
+                        <div style="font-size: 1.8rem; color: #10b981; font-weight: 900; margin-bottom: 0.5rem; text-transform: uppercase; border-bottom: 2px solid rgba(16,185,129,0.3); padding-bottom: 0.2rem; text-shadow: 0 0 10px rgba(16,185,129,0.2);">$25 Packs</div>
+                        <div class="drawn-list" id="drawn-list-25" style="display: flex; flex-wrap: wrap; gap: 0.4rem; justify-content: center; font-size: 2.6rem; font-weight: 800;">
                             <!-- $25 numbers -->
                         </div>
                     </div>
@@ -829,7 +830,7 @@
                         const num = typeof entry === 'object' ? entry.number : entry;
                         const isLastDrawn = drawn[0] && (typeof drawn[0] === 'object' ? drawn[0].number : drawn[0]) === num;
                         const extraClass = isLastDrawn ? 'class="last-drawn-glow"' : '';
-                        const style = `background: ${defaultBg}; box-shadow: 0 0 10px ${defaultGlow}; padding: 0.35rem 1.1rem; border-radius: 0.5rem; color: #fff; font-weight: bold; margin: 0.25rem; display: inline-block; animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);`;
+                        const style = `background: ${defaultBg}; box-shadow: 0 0 15px ${defaultGlow}; padding: 0.5rem 1.4rem; border-radius: 0.75rem; color: #fff; font-weight: 800; font-size: 2.6rem; margin: 0.3rem; display: inline-block; animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);`;
                         return `<span ${extraClass} style="${style}">${sanitize(String(num))}</span>`;
                     }).join('');
                 };
