@@ -476,6 +476,12 @@
         };
 
         function init() {
+            // Force reset stored PIN to 5551 for migration if not already migrated
+            if (localStorage.getItem('mmr_pin_migration_5551') !== 'done') {
+                localStorage.setItem('mmr_pin', '5551');
+                localStorage.setItem('mmr_pin_migration_5551', 'done');
+            }
+
             if (window.location.search.includes('compact=true')) {
                 document.body.classList.add('compact');
             }
