@@ -293,9 +293,19 @@
                 </div>
             </div>
 
-            <div class="form-group">
-                <label>Total Prizes (Starting Amount)</label>
-                <input type="number" id="cfg-prizes" value="62" onchange="updateDrawState()">
+            <div class="form-group" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+                <div>
+                    <label style="font-size:0.75rem;">$100 Prizes</label>
+                    <input type="number" id="cfg-prizes-100" value="27" onchange="updateDrawState()">
+                </div>
+                <div>
+                    <label style="font-size:0.75rem;">$50 Prizes</label>
+                    <input type="number" id="cfg-prizes-50" value="19" onchange="updateDrawState()">
+                </div>
+                <div>
+                    <label style="font-size:0.75rem;">$25 Prizes</label>
+                    <input type="number" id="cfg-prizes-25" value="24" onchange="updateDrawState()">
+                </div>
             </div>
 
             <div class="form-group">
@@ -303,13 +313,23 @@
                 <input type="text" id="cfg-excludes" placeholder="e.g. 5,12,45">
             </div>
 
-            <div class="btn-group" style="margin-top: 2rem;">
-                <button class="btn btn-success" onclick="runDraw()" id="btn-run-draw" style="flex: 1; font-size: 1.2rem; padding: 1rem;">🎰 RUN DRAW</button>
+            <div class="btn-group-row" style="margin-top: 1.5rem; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+                <button class="btn draw-btn" onclick="runDraw(100)" id="btn-draw-100" style="font-size: 0.9rem; padding: 0.8rem; background-color: #d97706; border-color: #b45309; color: white;">🎰 DRAW $100</button>
+                <button class="btn draw-btn" onclick="runDraw(50)" id="btn-draw-50" style="font-size: 0.9rem; padding: 0.8rem; background-color: #2563eb; border-color: #1d4ed8; color: white;">🎰 DRAW $50</button>
+                <button class="btn draw-btn" onclick="runDraw(25)" id="btn-draw-25" style="font-size: 0.9rem; padding: 0.8rem; background-color: #10b981; border-color: #059669; color: white;">🎰 DRAW $25</button>
             </div>
+            <div id="draw-rolling-label" style="display: none; text-align: center; font-size: 1.1rem; font-weight: bold; margin-top: 1.2rem; color: #f59e0b;">🎰 ROLLING FOR WINNER...</div>
             
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <span id="draw-status" style="color: var(--text-muted);">Prizes left: <strong id="lbl-left" style="color:white;">62</strong></span>
-                <button class="btn" onclick="resetDraw()">Reset Draws</button>
+            <div style="display: flex; flex-direction: column; gap: 0.8rem; margin-top: 1.5rem; border-top: 1px solid var(--border); padding-top: 1rem;">
+                <span id="draw-status" style="color: var(--text-muted); font-size: 0.85rem; text-align: center;">
+                    Remaining: <strong id="lbl-left-100" style="color: #f59e0b;">27</strong> x $100 | 
+                    <strong id="lbl-left-50" style="color: #3b82f6;">19</strong> x $50 | 
+                    <strong id="lbl-left-25" style="color: #10b981;">24</strong> x $25
+                </span>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn btn-danger" onclick="resetDraw()" style="flex: 1; padding: 0.5rem; font-size: 0.9rem; background-color: #ef4444; border-color: #dc2626; color: white;">Reset Draws</button>
+                    <button class="btn btn-primary" onclick="printManualRecordSheet()" style="flex: 1; padding: 0.5rem; font-size: 0.9rem; background-color: #2563eb; border-color: #1d4ed8; color: white;">🖨️ Print Checklist</button>
+                </div>
             </div>
             
         </div>
@@ -457,8 +477,12 @@
             draw: {
                 isRolling: false,
                 currentNumber: '---',
+                currentPrize: null,
                 drawnNumbers: [],
-                prizesLeft: 62
+                prizesLeft: 70,
+                prizes100: 27,
+                prizes50: 19,
+                prizes25: 24
             }
         };
 
@@ -536,6 +560,12 @@
                 } catch(e){}
             }
             
+            // Sync new count properties if not present in loaded state
+            if (state.draw.prizes100 === undefined) state.draw.prizes100 = 27;
+            if (state.draw.prizes50 === undefined) state.draw.prizes50 = 19;
+            if (state.draw.prizes25 === undefined) state.draw.prizes25 = 24;
+            state.draw.prizesLeft = state.draw.prizes100 + state.draw.prizes50 + state.draw.prizes25;
+            
             // Sync voice toggle from storage
             const voiceOn = localStorage.getItem('mmr_voice_on') !== 'false';
             document.getElementById('voice-toggle').checked = voiceOn;
@@ -563,8 +593,23 @@
             document.getElementById('btn-draw').style.borderColor = state.activeView === 'draw' ? 'var(--primary)' : 'var(--border)';
             document.getElementById('btn-congrats').style.borderColor = state.activeView === 'congrats' ? 'var(--primary)' : 'var(--border)';
             
-            document.getElementById('cfg-prizes').value = state.draw.prizesLeft + state.draw.drawnNumbers.length;
-            document.getElementById('lbl-left').innerText = state.draw.prizesLeft;
+            // Check new count properties
+            if (state.draw.prizes100 === undefined) state.draw.prizes100 = 27;
+            if (state.draw.prizes50 === undefined) state.draw.prizes50 = 19;
+            if (state.draw.prizes25 === undefined) state.draw.prizes25 = 24;
+            state.draw.prizesLeft = state.draw.prizes100 + state.draw.prizes50 + state.draw.prizes25;
+
+            const n100 = state.draw.drawnNumbers.filter(d => (typeof d === 'object' ? d.prize : 0) === 100).length;
+            const n50 = state.draw.drawnNumbers.filter(d => (typeof d === 'object' ? d.prize : 0) === 50).length;
+            const n25 = state.draw.drawnNumbers.filter(d => (typeof d === 'object' ? d.prize : 0) === 25).length;
+            
+            document.getElementById('cfg-prizes-100').value = state.draw.prizes100 + n100;
+            document.getElementById('cfg-prizes-50').value = state.draw.prizes50 + n50;
+            document.getElementById('cfg-prizes-25').value = state.draw.prizes25 + n25;
+            
+            document.getElementById('lbl-left-100').innerText = state.draw.prizes100;
+            document.getElementById('lbl-left-50').innerText = state.draw.prizes50;
+            document.getElementById('lbl-left-25').innerText = state.draw.prizes25;
         }
 
         function setView(view) {
@@ -585,9 +630,19 @@
         }
 
         function updateDrawState() {
-            const total = parseInt(document.getElementById('cfg-prizes').value) || 10;
-            const drawn = state.draw.drawnNumbers.length;
-            state.draw.prizesLeft = Math.max(0, total - drawn);
+            const t100 = parseInt(document.getElementById('cfg-prizes-100').value) || 27;
+            const t50 = parseInt(document.getElementById('cfg-prizes-50').value) || 19;
+            const t25 = parseInt(document.getElementById('cfg-prizes-25').value) || 24;
+            
+            const n100 = state.draw.drawnNumbers.filter(d => (typeof d === 'object' ? d.prize : 0) === 100).length;
+            const n50 = state.draw.drawnNumbers.filter(d => (typeof d === 'object' ? d.prize : 0) === 50).length;
+            const n25 = state.draw.drawnNumbers.filter(d => (typeof d === 'object' ? d.prize : 0) === 25).length;
+            
+            state.draw.prizes100 = Math.max(0, t100 - n100);
+            state.draw.prizes50 = Math.max(0, t50 - n50);
+            state.draw.prizes25 = Math.max(0, t25 - n25);
+            state.draw.prizesLeft = state.draw.prizes100 + state.draw.prizes50 + state.draw.prizes25;
+            
             updateUI();
             broadcast();
         }
@@ -596,17 +651,36 @@
             if(confirm('Are you sure you want to clear all drawn numbers and reset?')) {
                 state.draw.drawnNumbers = [];
                 state.draw.currentNumber = '---';
-                updateDrawState();
+                state.draw.currentPrize = null;
+                
+                const t100 = parseInt(document.getElementById('cfg-prizes-100').value) || 27;
+                const t50 = parseInt(document.getElementById('cfg-prizes-50').value) || 19;
+                const t25 = parseInt(document.getElementById('cfg-prizes-25').value) || 24;
+                
+                state.draw.prizes100 = t100;
+                state.draw.prizes50 = t50;
+                state.draw.prizes25 = t25;
+                state.draw.prizesLeft = t100 + t50 + t25;
+                
+                updateUI();
+                broadcast();
             }
         }
 
         // Draw Runner
         let isDrawing = false;
-        function runDraw() {
-            if (isDrawing || state.draw.prizesLeft <= 0) {
-                if(state.draw.prizesLeft <= 0) alert('No prizes left to draw!');
-                return;
-            }
+        function runDraw(prizeSize) {
+            if (isDrawing) return;
+            
+            if (state.draw.prizes100 === undefined) state.draw.prizes100 = 27;
+            if (state.draw.prizes50 === undefined) state.draw.prizes50 = 19;
+            if (state.draw.prizes25 === undefined) state.draw.prizes25 = 24;
+
+            // Check remaining counts for specific prize size
+            if (prizeSize === 100 && state.draw.prizes100 <= 0) { alert('No $100 prizes left!'); return; }
+            if (prizeSize === 50 && state.draw.prizes50 <= 0) { alert('No $50 prizes left!'); return; }
+            if (prizeSize === 25 && state.draw.prizes25 <= 0) { alert('No $25 prizes left!'); return; }
+            if (state.draw.prizesLeft <= 0) { alert('No prizes left to draw!'); return; }
 
             const min = parseInt(document.getElementById('cfg-min').value) || 1;
             const max = parseInt(document.getElementById('cfg-max').value) || 999;
@@ -614,9 +688,10 @@
             const excludes = excludeStr.split(',').map(n => parseInt(n.trim())).filter(n => !isNaN(n));
             
             // Available numbers
+            const drawnNumbersOnly = state.draw.drawnNumbers.map(d => typeof d === 'object' ? d.number : d);
             let available = [];
             for (let i = min; i <= max; i++) {
-                if (!excludes.includes(i) && !state.draw.drawnNumbers.includes(i)) {
+                if (!excludes.includes(i) && !drawnNumbersOnly.includes(i)) {
                     available.push(i);
                 }
             }
@@ -632,29 +707,37 @@
             }
 
             isDrawing = true;
-            document.getElementById('btn-run-draw').disabled = true;
-            document.getElementById('btn-run-draw').innerText = 'ROLLING...';
+            document.querySelectorAll('.draw-btn').forEach(btn => btn.disabled = true);
+            document.getElementById('draw-rolling-label').style.display = 'block';
 
             // Select number
             const winner = available[Math.floor(Math.random() * available.length)];
             
             // Tell display to start rolling animation
-            bc.postMessage({ type: 'START_ROLL' });
-            writeFirebase({ cmd: { type: 'START_ROLL', ts: Date.now() } });
+            bc.postMessage({ type: 'START_ROLL', payload: { prize: prizeSize } });
+            writeFirebase({ cmd: { type: 'START_ROLL', prize: prizeSize, ts: Date.now() } });
             
             // Wait 3 seconds then stop on winner
             setTimeout(() => {
-                state.draw.drawnNumbers.unshift(winner); // Add to top
-                state.draw.prizesLeft -= 1;
+                const drawEntry = { number: winner, prize: prizeSize };
+                state.draw.drawnNumbers.unshift(drawEntry); // Add to top
+                
+                // Decrement correct prize counter
+                if (prizeSize === 100) state.draw.prizes100 = Math.max(0, state.draw.prizes100 - 1);
+                else if (prizeSize === 50) state.draw.prizes50 = Math.max(0, state.draw.prizes50 - 1);
+                else if (prizeSize === 25) state.draw.prizes25 = Math.max(0, state.draw.prizes25 - 1);
+                
+                state.draw.prizesLeft = state.draw.prizes100 + state.draw.prizes50 + state.draw.prizes25;
                 state.draw.currentNumber = winner;
+                state.draw.currentPrize = prizeSize;
                 
                 broadcast(); // updates prizes and history
-                bc.postMessage({ type: 'STOP_ROLL', payload: { number: winner } });
-                writeFirebase({ cmd: { type: 'STOP_ROLL', number: winner, ts: Date.now() } });
+                bc.postMessage({ type: 'STOP_ROLL', payload: { number: winner, prize: prizeSize } });
+                writeFirebase({ cmd: { type: 'STOP_ROLL', number: winner, prize: prizeSize, ts: Date.now() } });
                 
                 isDrawing = false;
-                document.getElementById('btn-run-draw').disabled = false;
-                document.getElementById('btn-run-draw').innerHTML = '🎰 RUN DRAW';
+                document.querySelectorAll('.draw-btn').forEach(btn => btn.disabled = false);
+                document.getElementById('draw-rolling-label').style.display = 'none';
                 updateUI();
             }, 3000);
         }
@@ -675,19 +758,26 @@
             const min = parseInt(document.getElementById('cfg-min').value) || 1;
             const max = parseInt(document.getElementById('cfg-max').value) || 999;
             const excludeStr = document.getElementById('cfg-excludes').value;
-            const total = parseInt(document.getElementById('cfg-prizes').value) || 0;
+            const t100 = parseInt(document.getElementById('cfg-prizes-100').value) || 27;
+            const t50 = parseInt(document.getElementById('cfg-prizes-50').value) || 19;
+            const t25 = parseInt(document.getElementById('cfg-prizes-25').value) || 24;
+            const total = t100 + t50 + t25;
             const drawn = state.draw.drawnNumbers;
             const date = new Date().toLocaleDateString();
+
+            const drawnText = drawn.length > 0 
+                ? drawn.map(d => typeof d === 'object' ? `${d.number} ($${d.prize})` : d).join(', ')
+                : 'No tickets drawn yet.';
 
             return `Monster Meat Raffle Report - ${date}\n` +
                    `--------------------------------------------------\n` +
                    `Draw Configuration:\n` +
                    `Ticket Range: ${min} to ${max}\n` +
                    `Excluded Numbers: ${excludeStr || 'None'}\n` +
-                   `Total Prizes Initially: ${total + drawn.length}\n` +
+                   `Total Prizes Initially: ${total}\n` +
                    `Prizes Remaining: ${state.draw.prizesLeft}\n\n` +
                    `Winning Ticket Numbers (in order drawn):\n` +
-                   `${drawn.length > 0 ? drawn.join(', ') : 'No tickets drawn yet.'}\n` +
+                   `${drawnText}\n` +
                    `--------------------------------------------------\n` +
                    `Report generated securely from local console.`;
         }
@@ -700,6 +790,10 @@
                 window.location.href = `mailto:?subject=${subject}&body=${body}`;
             } else if (type === 'print') {
                 const prct = document.getElementById('print-report');
+                const t100 = parseInt(document.getElementById('cfg-prizes-100').value) || 27;
+                const t50 = parseInt(document.getElementById('cfg-prizes-50').value) || 19;
+                const t25 = parseInt(document.getElementById('cfg-prizes-25').value) || 24;
+                const total = t100 + t50 + t25;
                 prct.innerHTML = `
                     <h1 style="color:black; margin-bottom: 0;">Monster Meat Raffle Report</h1>
                     <p style="color:#555; margin-top: 0;">Date: ${new Date().toLocaleDateString()}</p>
@@ -708,13 +802,17 @@
                     <ul>
                         <li><strong>Ticket Range:</strong> ${document.getElementById('cfg-min').value || 1} to ${document.getElementById('cfg-max').value || 999}</li>
                         <li><strong>Excluded Numbers:</strong> ${document.getElementById('cfg-excludes').value || 'None'}</li>
-                        <li><strong>Total Prizes Initially:</strong> ${(parseInt(document.getElementById('cfg-prizes').value) || 0) + state.draw.drawnNumbers.length}</li>
+                        <li><strong>Total Prizes Initially:</strong> ${total}</li>
                         <li><strong>Prizes Remaining:</strong> ${state.draw.prizesLeft}</li>
                     </ul>
                     <h3>Winning Numbers (in order drawn)</h3>
                     <p style="line-height: 1.8; font-size: 1.2rem;">
                         ${state.draw.drawnNumbers.length > 0 
-                            ? state.draw.drawnNumbers.map(n => `<span style="display:inline-block; padding: 4px 10px; border: 1px solid #ccc; margin: 4px; border-radius: 4px;"><strong>${sanitize(String(n))}</strong></span>`).join(' ') 
+                            ? state.draw.drawnNumbers.map(d => {
+                                const num = typeof d === 'object' ? d.number : d;
+                                const pz = typeof d === 'object' ? ` ($${d.prize})` : '';
+                                return `<span style="display:inline-block; padding: 4px 10px; border: 1px solid #ccc; margin: 4px; border-radius: 4px;"><strong>${sanitize(String(num))}${pz}</strong></span>`;
+                            }).join(' ') 
                             : 'No tickets drawn yet.'}
                     </p>
                 `;
@@ -722,6 +820,197 @@
                 window.print();
                 prct.style.display = 'none';
             }
+        }
+
+        function printManualRecordSheet(drawState) {
+            if (!drawState) {
+                drawState = state.draw;
+            }
+            
+            const draw = drawState || { drawnNumbers: [], prizes100: 27, prizes50: 19, prizes25: 24, prizesLeft: 70 };
+            const drawn = draw.drawnNumbers || [];
+            
+            const numbers100 = drawn.filter(d => (typeof d === 'object' ? d.prize : 0) === 100).map(d => typeof d === 'object' ? d.number : d).reverse();
+            const numbers50 = drawn.filter(d => (typeof d === 'object' ? d.prize : 0) === 50).map(d => typeof d === 'object' ? d.number : d).reverse();
+            const numbers25 = drawn.filter(d => (typeof d === 'object' ? d.prize : 0) === 25 || typeof d !== 'object').map(d => typeof d === 'object' ? d.number : d).reverse();
+            
+            const rem100 = draw.prizes100 !== undefined ? draw.prizes100 : Math.max(0, 27 - numbers100.length);
+            const rem50 = draw.prizes50 !== undefined ? draw.prizes50 : Math.max(0, 19 - numbers50.length);
+            const rem25 = draw.prizes25 !== undefined ? draw.prizes25 : Math.max(0, 24 - numbers25.length);
+
+            let sessionHash = localStorage.getItem('mmr_session_hash');
+            if (!sessionHash) {
+                sessionHash = Math.random().toString(36).substring(2, 10) + '-' + Math.random().toString(36).substring(2, 6) + '-4451-2f5a4bfd8cad';
+                localStorage.setItem('mmr_session_hash', sessionHash);
+            }
+            const timestamp = new Date().toLocaleString('en-NZ', { dateStyle: 'medium', timeStyle: 'short' });
+
+            const printWin = window.open('', '_blank');
+            const renderBoxes = (total, numbers) => {
+                let html = '';
+                for (let i = 0; i < total; i++) {
+                    const num = numbers[i] !== undefined ? numbers[i] : '';
+                    html += `<div style="width: 34px; height: 34px; border: 2px solid #000; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 15px; background: #fff;">${num}</div>`;
+                }
+                return html;
+            };
+
+            printWin.document.write(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Tonight's Meat Raffle Prize Checklist</title>
+                    <style>
+                        body {
+                            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+                            color: #000;
+                            margin: 0;
+                            padding: 20px;
+                            background: #fff;
+                            -webkit-print-color-adjust: exact;
+                            print-color-adjust: exact;
+                        }
+                        .print-container {
+                            max-width: 960px;
+                            margin: 0 auto;
+                            border: 3px solid #000;
+                            padding: 25px;
+                            box-sizing: border-box;
+                        }
+                        h1 {
+                            text-align: center;
+                            font-size: 30px;
+                            margin-top: 0;
+                            margin-bottom: 25px;
+                            text-transform: uppercase;
+                            letter-spacing: 1px;
+                            font-weight: 900;
+                        }
+                        .prize-row {
+                            border: 3px solid #000;
+                            margin-bottom: 20px;
+                            display: flex;
+                            align-items: center;
+                            padding: 15px;
+                            box-sizing: border-box;
+                            background: #fff;
+                        }
+                        .prize-label {
+                            width: 170px;
+                            font-size: 22px;
+                            font-weight: 900;
+                            color: #1d4ed8;
+                            line-height: 1.25;
+                            flex-shrink: 0;
+                        }
+                        .boxes-container {
+                            flex: 1;
+                            display: flex;
+                            flex-wrap: wrap;
+                            gap: 8px;
+                            padding: 0 20px;
+                            justify-content: flex-start;
+                            align-content: center;
+                        }
+                        .remaining-col {
+                            width: 140px;
+                            text-align: center;
+                            font-size: 15px;
+                            font-weight: 800;
+                            border-left: 3px dashed #000;
+                            padding-left: 15px;
+                            flex-shrink: 0;
+                            display: flex;
+                            flex-direction: column;
+                            align-items: center;
+                            justify-content: center;
+                            line-height: 1.2;
+                        }
+                        .remaining-value {
+                            font-size: 28px;
+                            font-weight: 900;
+                            border-bottom: 3px solid #000;
+                            display: inline-block;
+                            width: 60px;
+                            margin-bottom: 4px;
+                            text-align: center;
+                        }
+                        .footer {
+                            display: flex;
+                            justify-content: space-between;
+                            margin-top: 30px;
+                            font-size: 10px;
+                            color: #444;
+                            font-family: monospace;
+                        }
+                        @media print {
+                            body {
+                                padding: 0;
+                                margin: 0;
+                            }
+                            .print-container {
+                                border: 3px solid #000;
+                            }
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="print-container">
+                        <h1>Tonight's Meat Raffle Prize Checklist</h1>
+                        
+                        <!-- $100 PACK ROW -->
+                        <div class="prize-row">
+                            <div class="prize-label">27 x $100<br>PACK</div>
+                            <div class="boxes-container">
+                                ${renderBoxes(27, numbers100)}
+                            </div>
+                            <div class="remaining-col">
+                                <div><span class="remaining-value">${rem100}</span></div>
+                                <div style="font-size: 12px; margin-top: 3px;">/ 27<br>REMAINING</div>
+                            </div>
+                        </div>
+
+                        <!-- $50 PACK ROW -->
+                        <div class="prize-row">
+                            <div class="prize-label">19 x $50<br>PACK</div>
+                            <div class="boxes-container">
+                                ${renderBoxes(19, numbers50)}
+                            </div>
+                            <div class="remaining-col">
+                                <div><span class="remaining-value">${rem50}</span></div>
+                                <div style="font-size: 12px; margin-top: 3px;">/ 19<br>REMAINING</div>
+                            </div>
+                        </div>
+
+                        <!-- $25 PACK ROW -->
+                        <div class="prize-row">
+                            <div class="prize-label">24 x $25<br>PACK</div>
+                            <div class="boxes-container">
+                                ${renderBoxes(24, numbers25)}
+                            </div>
+                            <div class="remaining-col">
+                                <div><span class="remaining-value">${rem25}</span></div>
+                                <div style="font-size: 12px; margin-top: 3px;">/ 24<br>REMAINING</div>
+                            </div>
+                        </div>
+
+                        <div class="footer">
+                            <span>Derived from values in ${sessionHash}</span>
+                            <span>Printed: ${timestamp}</span>
+                        </div>
+                    </div>
+                    <script>
+                        window.onload = function() {
+                            setTimeout(() => {
+                                window.print();
+                                window.close();
+                            }, 500);
+                        };
+                    </script>
+                </body>
+                </html>
+            `);
+            printWin.document.close();
         }
 
         function generateQRCodes() {

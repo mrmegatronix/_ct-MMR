@@ -339,6 +339,16 @@
     </div>
 
 
+    <!-- Checklist Print Card -->
+    <div class="card" style="margin-top: 2rem;">
+        <h2>🖨️ Meat Raffle Record Sheet</h2>
+        <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1.5rem;">
+            Print Tonight's Meat Raffle Prize Checklist for manual tracking.
+        </p>
+        <button class="btn btn-primary" onclick="printManualRecordSheet()" style="width: 100%; padding: 0.8rem; font-size: 1rem; background-color: #2563eb; border-color: #1d4ed8; color: white;">🖨️ Print Checklist</button>
+    </div>
+
+
     <!-- Change PIN Card -->
     <div class="card" style="margin-top: 2rem;">
         <h2>🔑 Access PIN</h2>
@@ -737,6 +747,204 @@
 
         if (localStorage.getItem('mmr_pip_open') === 'true') {
             togglePip(true);
+        }
+
+        function printManualRecordSheet() {
+            let drawState = null;
+            try {
+                const saved = localStorage.getItem('mmr_state_v5');
+                if (saved) {
+                    const parsed = JSON.parse(saved);
+                    drawState = parsed.draw;
+                }
+            } catch(e) {
+                console.warn('[MMR Admin] Failed to parse mmr_state_v5:', e);
+            }
+            
+            const draw = drawState || { drawnNumbers: [], prizes100: 27, prizes50: 19, prizes25: 24, prizesLeft: 70 };
+            const drawn = draw.drawnNumbers || [];
+            
+            const numbers100 = drawn.filter(d => (typeof d === 'object' ? d.prize : 0) === 100).map(d => typeof d === 'object' ? d.number : d).reverse();
+            const numbers50 = drawn.filter(d => (typeof d === 'object' ? d.prize : 0) === 50).map(d => typeof d === 'object' ? d.number : d).reverse();
+            const numbers25 = drawn.filter(d => (typeof d === 'object' ? d.prize : 0) === 25 || typeof d !== 'object').map(d => typeof d === 'object' ? d.number : d).reverse();
+            
+            const rem100 = draw.prizes100 !== undefined ? draw.prizes100 : Math.max(0, 27 - numbers100.length);
+            const rem50 = draw.prizes50 !== undefined ? draw.prizes50 : Math.max(0, 19 - numbers50.length);
+            const rem25 = draw.prizes25 !== undefined ? draw.prizes25 : Math.max(0, 24 - numbers25.length);
+
+            let sessionHash = localStorage.getItem('mmr_session_hash');
+            if (!sessionHash) {
+                sessionHash = Math.random().toString(36).substring(2, 10) + '-' + Math.random().toString(36).substring(2, 6) + '-4451-2f5a4bfd8cad';
+                localStorage.setItem('mmr_session_hash', sessionHash);
+            }
+            const timestamp = new Date().toLocaleString('en-NZ', { dateStyle: 'medium', timeStyle: 'short' });
+
+            const printWin = window.open('', '_blank');
+            const renderBoxes = (total, numbers) => {
+                let html = '';
+                for (let i = 0; i < total; i++) {
+                    const num = numbers[i] !== undefined ? numbers[i] : '';
+                    html += `<div style="width: 34px; height: 34px; border: 2px solid #000; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 15px; background: #fff;">${num}</div>`;
+                }
+                return html;
+            };
+
+            printWin.document.write(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Tonight's Meat Raffle Prize Checklist</title>
+                    <style>
+                        body {
+                            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+                            color: #000;
+                            margin: 0;
+                            padding: 20px;
+                            background: #fff;
+                            -webkit-print-color-adjust: exact;
+                            print-color-adjust: exact;
+                        }
+                        .print-container {
+                            max-width: 960px;
+                            margin: 0 auto;
+                            border: 3px solid #000;
+                            padding: 25px;
+                            box-sizing: border-box;
+                        }
+                        h1 {
+                            text-align: center;
+                            font-size: 30px;
+                            margin-top: 0;
+                            margin-bottom: 25px;
+                            text-transform: uppercase;
+                            letter-spacing: 1px;
+                            font-weight: 900;
+                        }
+                        .prize-row {
+                            border: 3px solid #000;
+                            margin-bottom: 20px;
+                            display: flex;
+                            align-items: center;
+                            padding: 15px;
+                            box-sizing: border-box;
+                            background: #fff;
+                        }
+                        .prize-label {
+                            width: 170px;
+                            font-size: 22px;
+                            font-weight: 900;
+                            color: #1d4ed8;
+                            line-height: 1.25;
+                            flex-shrink: 0;
+                        }
+                        .boxes-container {
+                            flex: 1;
+                            display: flex;
+                            flex-wrap: wrap;
+                            gap: 8px;
+                            padding: 0 20px;
+                            justify-content: flex-start;
+                            align-content: center;
+                        }
+                        .remaining-col {
+                            width: 140px;
+                            text-align: center;
+                            font-size: 15px;
+                            font-weight: 800;
+                            border-left: 3px dashed #000;
+                            padding-left: 15px;
+                            flex-shrink: 0;
+                            display: flex;
+                            flex-direction: column;
+                            align-items: center;
+                            justify-content: center;
+                            line-height: 1.2;
+                        }
+                        .remaining-value {
+                            font-size: 28px;
+                            font-weight: 900;
+                            border-bottom: 3px solid #000;
+                            display: inline-block;
+                            width: 60px;
+                            margin-bottom: 4px;
+                            text-align: center;
+                        }
+                        .footer {
+                            display: flex;
+                            justify-content: space-between;
+                            margin-top: 30px;
+                            font-size: 10px;
+                            color: #444;
+                            font-family: monospace;
+                        }
+                        @media print {
+                            body {
+                                padding: 0;
+                                margin: 0;
+                            }
+                            .print-container {
+                                border: 3px solid #000;
+                            }
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="print-container">
+                        <h1>Tonight's Meat Raffle Prize Checklist</h1>
+                        
+                        <!-- $100 PACK ROW -->
+                        <div class="prize-row">
+                            <div class="prize-label">27 x $100<br>PACK</div>
+                            <div class="boxes-container">
+                                ${renderBoxes(27, numbers100)}
+                            </div>
+                            <div class="remaining-col">
+                                <div><span class="remaining-value">${rem100}</span></div>
+                                <div style="font-size: 12px; margin-top: 3px;">/ 27<br>REMAINING</div>
+                            </div>
+                        </div>
+
+                        <!-- $50 PACK ROW -->
+                        <div class="prize-row">
+                            <div class="prize-label">19 x $50<br>PACK</div>
+                            <div class="boxes-container">
+                                ${renderBoxes(19, numbers50)}
+                            </div>
+                            <div class="remaining-col">
+                                <div><span class="remaining-value">${rem50}</span></div>
+                                <div style="font-size: 12px; margin-top: 3px;">/ 19<br>REMAINING</div>
+                            </div>
+                        </div>
+
+                        <!-- $25 PACK ROW -->
+                        <div class="prize-row">
+                            <div class="prize-label">24 x $25<br>PACK</div>
+                            <div class="boxes-container">
+                                ${renderBoxes(24, numbers25)}
+                            </div>
+                            <div class="remaining-col">
+                                <div><span class="remaining-value">${rem25}</span></div>
+                                <div style="font-size: 12px; margin-top: 3px;">/ 24<br>REMAINING</div>
+                            </div>
+                        </div>
+
+                        <div class="footer">
+                            <span>Derived from values in ${sessionHash}</span>
+                            <span>Printed: ${timestamp}</span>
+                        </div>
+                    </div>
+                    <script>
+                        window.onload = function() {
+                            setTimeout(() => {
+                                window.print();
+                                window.close();
+                            }, 500);
+                        };
+                    </script>
+                </body>
+                </html>
+            `);
+            printWin.document.close();
         }
 
         init();

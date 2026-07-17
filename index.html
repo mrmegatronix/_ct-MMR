@@ -552,8 +552,17 @@
         .winners-carousel img:nth-child(3) { animation-delay: 3s; }
         .winners-carousel img:nth-child(4) { animation-delay: 4.5s; }
         .winners-carousel img:nth-child(5) { animation-delay: 6s; }
-        .winners-carousel img:nth-child(6) { animation-delay: 7.5s; }
-
+        /* Glow highlight for the last ticket drawn */
+        .last-drawn-glow {
+            animation: last-drawn-pulse 1s infinite alternate !important;
+            border: 3.5px solid #fff !important;
+            transform: scale(1.15);
+            z-index: 10;
+        }
+        @keyframes last-drawn-pulse {
+            0% { box-shadow: 0 0 15px #ffd700, 0 0 30px #ffd700 !important; }
+            100% { box-shadow: 0 0 25px #ff5500, 0 0 50px #ff5500 !important; }
+        }
 
     </style>
     <script>
@@ -591,10 +600,26 @@
                 <div class="number-display" id="lottery-number">---</div>
             </div>
 
-            <div class="drawn-numbers-bar">
-                <div class="title">Previously Drawn Numbers</div>
-                <div class="drawn-list" id="drawn-list">
-                    <!-- Numbers go here -->
+            <div class="drawn-numbers-bar" style="max-height: 35vh; bottom: 1.5rem;">
+                <div class="drawn-groups-wrapper" style="display: flex; gap: 2rem; width: 100%; justify-content: space-between; box-sizing: border-box;">
+                    <div class="drawn-group-column" style="flex: 1; text-align: center;">
+                        <div style="font-size: 1.25rem; color: #f59e0b; font-weight: 700; margin-bottom: 0.5rem; text-transform: uppercase; border-bottom: 1.5px solid rgba(245,158,11,0.3); padding-bottom: 0.2rem; text-shadow: 0 0 10px rgba(245,158,11,0.2);">$100 Packs</div>
+                        <div class="drawn-list" id="drawn-list-100" style="display: flex; flex-wrap: wrap; gap: 0.4rem; justify-content: center; font-size: 1.8rem; font-weight: 700;">
+                            <!-- $100 numbers -->
+                        </div>
+                    </div>
+                    <div class="drawn-group-column" style="flex: 1; text-align: center;">
+                        <div style="font-size: 1.25rem; color: #3b82f6; font-weight: 700; margin-bottom: 0.5rem; text-transform: uppercase; border-bottom: 1.5px solid rgba(59,130,246,0.3); padding-bottom: 0.2rem; text-shadow: 0 0 10px rgba(59,130,246,0.2);">$50 Packs</div>
+                        <div class="drawn-list" id="drawn-list-50" style="display: flex; flex-wrap: wrap; gap: 0.4rem; justify-content: center; font-size: 1.8rem; font-weight: 700;">
+                            <!-- $50 numbers -->
+                        </div>
+                    </div>
+                    <div class="drawn-group-column" style="flex: 1; text-align: center;">
+                        <div style="font-size: 1.25rem; color: #10b981; font-weight: 700; margin-bottom: 0.5rem; text-transform: uppercase; border-bottom: 1.5px solid rgba(16,185,129,0.3); padding-bottom: 0.2rem; text-shadow: 0 0 10px rgba(16,185,129,0.2);">$25 Packs</div>
+                        <div class="drawn-list" id="drawn-list-25" style="display: flex; flex-wrap: wrap; gap: 0.4rem; justify-content: center; font-size: 1.8rem; font-weight: 700;">
+                            <!-- $25 numbers -->
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -780,10 +805,38 @@
             // Draw rendering
             prizesCountEl.innerText = state.draw.prizesLeft;
             
-            // Only update drawn list if it changed
-            const drawnCount = (state.draw.drawnNumbers || []).length;
-            if (drawnListEl.children.length !== drawnCount) {
-                drawnListEl.innerHTML = (state.draw.drawnNumbers || []).map(n => `<span>${sanitize(n)}</span>`).join('');
+            // Update countdown slide prize counts if they exist in DOM
+            const c100 = document.getElementById('count-100');
+            const c50 = document.getElementById('count-50');
+            const c25 = document.getElementById('count-25');
+            if (c100) c100.innerText = state.draw.prizes100 !== undefined ? state.draw.prizes100 : 27;
+            if (c50) c50.innerText = state.draw.prizes50 !== undefined ? state.draw.prizes50 : 19;
+            if (c25) c25.innerText = state.draw.prizes25 !== undefined ? state.draw.prizes25 : 24;
+
+            // Render groups of drawn numbers by prize category
+            const drawn = state.draw.drawnNumbers || [];
+            const list100 = document.getElementById('drawn-list-100');
+            const list50 = document.getElementById('drawn-list-50');
+            const list25 = document.getElementById('drawn-list-25');
+            
+            if (list100 && list50 && list25) {
+                const numbers100 = drawn.filter(d => (typeof d === 'object' ? d.prize : 0) === 100);
+                const numbers50 = drawn.filter(d => (typeof d === 'object' ? d.prize : 0) === 50);
+                const numbers25 = drawn.filter(d => (typeof d === 'object' ? d.prize : 0) === 25 || (typeof d !== 'object'));
+                
+                const renderGroupHtml = (groupArray, defaultBg, defaultGlow) => {
+                    return groupArray.map(entry => {
+                        const num = typeof entry === 'object' ? entry.number : entry;
+                        const isLastDrawn = drawn[0] && (typeof drawn[0] === 'object' ? drawn[0].number : drawn[0]) === num;
+                        const extraClass = isLastDrawn ? 'class="last-drawn-glow"' : '';
+                        const style = `background: ${defaultBg}; box-shadow: 0 0 10px ${defaultGlow}; padding: 0.35rem 1.1rem; border-radius: 0.5rem; color: #fff; font-weight: bold; margin: 0.25rem; display: inline-block; animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);`;
+                        return `<span ${extraClass} style="${style}">${sanitize(String(num))}</span>`;
+                    }).join('');
+                };
+                
+                list100.innerHTML = renderGroupHtml(numbers100, '#d97706', 'rgba(217,119,6,0.5)');
+                list50.innerHTML = renderGroupHtml(numbers50, '#2563eb', 'rgba(37,99,235,0.5)');
+                list25.innerHTML = renderGroupHtml(numbers25, '#10b981', 'rgba(16,185,129,0.5)');
             }
 
             // Persist to localStorage (excluding slides)
@@ -924,7 +977,12 @@
                         ${slide.subtitle ? `<h2 class="slide-subtitle" style="position: relative; z-index: 2;">${sanitize(slide.subtitle).replace(/\n/g, '<br>')}</h2>` : ''}
                         
                         ${slide.type === 'countdown' 
-                            ? `<div class="slide-countdown slide-countdown-timer" style="position: relative; z-index: 2;">${timeHtml}</div>` 
+                            ? `<div class="slide-countdown slide-countdown-timer" style="position: relative; z-index: 2;">${timeHtml}</div>
+                               <div class="countdown-prizes-summary" style="position: relative; z-index: 2; margin-top: 2.5rem; display: flex; gap: 3rem; justify-content: center; font-size: 2rem; font-weight: bold; background: rgba(0,0,0,0.7); padding: 1.2rem 2.5rem; border-radius: 1.5rem; border: 1.5px solid rgba(255,255,255,0.15); box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+                                 <span style="color: #f59e0b;">$100: <span id="count-100">${state.draw.prizes100 !== undefined ? state.draw.prizes100 : 27}</span></span>
+                                 <span style="color: #3b82f6;">$50: <span id="count-50">${state.draw.prizes50 !== undefined ? state.draw.prizes50 : 19}</span></span>
+                                 <span style="color: #10b981;">$25: <span id="count-25">${state.draw.prizes25 !== undefined ? state.draw.prizes25 : 24}</span></span>
+                               </div>` 
                             : ''
                         }
                         
