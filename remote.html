@@ -380,7 +380,7 @@
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                 <div class="form-group">
                     <label>Min Ticket</label>
-                    <input type="number" id="cfg-min" value="1212">
+                    <input type="number" id="cfg-min" value="0">
                 </div>
                 <div class="form-group">
                     <label>Max Ticket</label>
@@ -802,7 +802,7 @@
             if (prizeSize === 25 && state.draw.prizes25 <= 0) { alert('No $25 prizes left!'); return; }
             if (prizeSize !== 'bonus' && state.draw.prizesLeft <= 0) { alert('No prizes left to draw!'); return; }
 
-            const min = parseInt(document.getElementById('cfg-min').value) || 1212;
+            const min = parseInt(document.getElementById('cfg-min').value) || 0;
             const max = parseInt(document.getElementById('cfg-max').value) || 5000;
             const excludeStr = document.getElementById('cfg-excludes').value;
             const excludes = excludeStr.split(',').map(n => parseInt(n.trim())).filter(n => !isNaN(n));
@@ -919,7 +919,7 @@
         }
 
         function generateReportText() {
-            const min = parseInt(document.getElementById('cfg-min').value) || 1212;
+            const min = parseInt(document.getElementById('cfg-min').value) || 0;
             const max = parseInt(document.getElementById('cfg-max').value) || 5000;
             const excludeStr = document.getElementById('cfg-excludes').value;
             const t100 = parseInt(document.getElementById('cfg-prizes-100').value) || 27;
@@ -964,7 +964,7 @@
                     <hr>
                     <h3>Draw Configuration</h3>
                     <ul>
-                        <li><strong>Ticket Range:</strong> ${document.getElementById('cfg-min').value || 1212} to ${document.getElementById('cfg-max').value || 5000}</li>
+                        <li><strong>Ticket Range:</strong> ${document.getElementById('cfg-min').value !== '' ? document.getElementById('cfg-min').value : 0} to ${document.getElementById('cfg-max').value || 5000}</li>
                         <li><strong>Excluded Numbers:</strong> ${document.getElementById('cfg-excludes').value || 'None'}</li>
                         <li><strong>Total Prizes Initially:</strong> ${total}</li>
                         <li><strong>Prizes Remaining:</strong> ${state.draw.prizesLeft}</li>

@@ -338,7 +338,7 @@
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
             <div class="form-group">
                 <label>Min Ticket</label>
-                <input type="number" id="cfg-min" value="1212" onchange="updateDrawState()">
+                <input type="number" id="cfg-min" value="0" onchange="updateDrawState()">
             </div>
             <div class="form-group">
                 <label>Max Ticket</label>
@@ -547,7 +547,7 @@
             slides: [],
             lastSlideCmdTs: 0,
             draw: {
-                min: 1212,
+                min: 0,
                 max: 5000,
                 excludes: [],
                 prizes100: 27,
@@ -605,7 +605,7 @@
             }
 
             // Populate form inputs
-            document.getElementById('cfg-min').value = state.draw.min !== undefined ? state.draw.min : 1212;
+            document.getElementById('cfg-min').value = state.draw.min !== undefined ? state.draw.min : 0;
             document.getElementById('cfg-max').value = state.draw.max !== undefined ? state.draw.max : 5000;
             document.getElementById('cfg-prizes-100').value = state.draw.cfgPrizes100 !== undefined ? state.draw.cfgPrizes100 : 27;
             document.getElementById('cfg-prizes-50').value = state.draw.cfgPrizes50 !== undefined ? state.draw.cfgPrizes50 : 19;
@@ -652,7 +652,7 @@
         }
 
         function updateDrawState() {
-            const min = parseInt(document.getElementById('cfg-min').value) || 1212;
+            const min = parseInt(document.getElementById('cfg-min').value) || 0;
             const max = parseInt(document.getElementById('cfg-max').value) || 5000;
             const t100 = parseInt(document.getElementById('cfg-prizes-100').value) || 27;
             const t50 = parseInt(document.getElementById('cfg-prizes-50').value) || 19;
