@@ -815,8 +815,16 @@
             document.querySelectorAll('.draw-btn').forEach(btn => btn.disabled = true);
             document.getElementById('draw-rolling-label').style.display = 'block';
 
-            // Select number
-            const winner = available[Math.floor(Math.random() * available.length)];
+            // Select number cryptographically
+            let winnerIndex = 0;
+            if (window.crypto && window.crypto.getRandomValues) {
+                const array = new Uint32Array(1);
+                window.crypto.getRandomValues(array);
+                winnerIndex = array[0] % available.length;
+            } else {
+                winnerIndex = Math.floor(Math.random() * available.length);
+            }
+            const winner = available[winnerIndex];
             
             // Tell display to start rolling animation
             bc.postMessage({ type: 'START_ROLL', payload: { prize: prizeSize } });
@@ -824,7 +832,13 @@
             
             // Wait 3 seconds then stop on winner
             setTimeout(() => {
-                const drawEntry = { number: winner, prize: prizeSize };
+                const drawEntry = { 
+                    number: winner, 
+                    prize: prizeSize,
+                    timestamp: new Date().toISOString(),
+                    poolSize: available.length,
+                    method: window.crypto && window.crypto.getRandomValues ? 'CSPRNG (Web Cryptography)' : 'PRNG (Math.random)'
+                };
                 state.draw.drawnNumbers.unshift(drawEntry); // Add to top
                 
                 // Decrement correct prize counter

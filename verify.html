@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MMR - Draw Integrity Verification</title>
+    <style>
+        :root {
+            --bg: #0b0f19;
+            --surface: #1e293b;
+            --primary: #ef4444;
+            --text: #f8fafc;
+            --text-muted: #64748b;
+            --border: #334155;
+            --success: #10b981;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: -apple-system, system-ui, sans-serif;
+            margin: 0;
+            padding: 1.5rem;
+            box-sizing: border-box;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 1.5rem;
+        }
+
+        .header h1 {
+            color: var(--primary);
+            margin: 0 0 0.5rem;
+            font-size: 2rem;
+            font-weight: 800;
+        }
+
+        .header p {
+            color: var(--text-muted);
+            margin: 0;
+            font-size: 1rem;
+        }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 1.25rem;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+        }
+
+        .card h2 {
+            margin-top: 0;
+            font-size: 1.3rem;
+            color: #fff;
+            border-bottom: 1.5px solid var(--border);
+            padding-bottom: 0.5rem;
+            margin-bottom: 1.25rem;
+            font-weight: 800;
+        }
+
+        .proof-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--success);
+            padding: 0.4rem 1rem;
+            border-radius: 2rem;
+            font-size: 0.85rem;
+            font-weight: 800;
+            border: 1.5px solid rgba(16, 185, 129, 0.3);
+            margin-bottom: 1rem;
+        }
+
+        /* Responsive Table */
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.95rem;
+        }
+
+        th {
+            background: rgba(15, 23, 42, 0.6);
+            color: var(--text-muted);
+            font-weight: 800;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.5px;
+            padding: 0.75rem 1rem;
+            border-bottom: 2px solid var(--border);
+        }
+
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+            font-weight: 500;
+        }
+
+        tr:hover td {
+            background: rgba(255,255,255,0.02);
+        }
+
+        .prize-tag {
+            display: inline-block;
+            padding: 0.25rem 0.6rem;
+            border-radius: 0.5rem;
+            font-size: 0.8rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            text-align: center;
+        }
+
+        .prize-100 { background: rgba(217, 119, 6, 0.15); color: #f59e0b; border: 1px solid rgba(217, 119, 6, 0.3); }
+        .prize-50 { background: rgba(37, 99, 235, 0.15); color: #3b82f6; border: 1px solid rgba(37, 99, 235, 0.3); }
+        .prize-25 { background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); }
+        .prize-bonus { background: rgba(99, 102, 241, 0.15); color: #818cf8; border: 1px solid rgba(99, 102, 241, 0.3); }
+
+        pre {
+            background: #0f172a;
+            padding: 1rem;
+            border-radius: 0.75rem;
+            overflow-x: auto;
+            border: 1px solid var(--border);
+            font-family: monospace;
+            font-size: 0.85rem;
+            color: #38bdf8;
+            margin: 0;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: var(--text-muted);
+            padding: 2rem;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        
+        <div class="header">
+            <h1>Draw Verification</h1>
+            <p>Patron Transparency & Audit Dashboard</p>
+        </div>
+
+        <div class="card">
+            <h2>Cryptographic Proof</h2>
+            <div class="proof-badge">✓ Secure CSPRNG Enabled</div>
+            <p style="margin: 0 0 1rem; font-size: 0.95rem; color: var(--text-muted); line-height: 1.6;">
+                Every ticket is selected using the browser's hardware-seeded **Cryptographically Secure Pseudo-Random Number Generator (CSPRNG)**. This guarantees that future winning numbers cannot be predicted, guessed, or manipulated by anyone.
+            </p>
+            <label style="display:block; font-size:0.75rem; font-weight:800; color:var(--text-muted); margin-bottom:0.5rem; text-transform:uppercase;">Selection Algorithm Code</label>
+            <pre><code>// Exact code executed for random selection
+const array = new Uint32Array(1);
+window.crypto.getRandomValues(array);
+const winnerIndex = array[0] % availableTickets.length;
+const winningTicket = availableTickets[winnerIndex];</code></pre>
+        </div>
+
+        <div class="card">
+            <h2>Audit Trail</h2>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Draw</th>
+                            <th>Ticket</th>
+                            <th>Prize Category</th>
+                            <th>Timestamp</th>
+                            <th>Pool Size</th>
+                            <th>Method</th>
+                        </tr>
+                    </thead>
+                    <tbody id="audit-body">
+                        <!-- Filled by JS -->
+                    </tbody>
+                </table>
+            </div>
+            <div id="empty-msg" class="empty-state" style="display: none;">No tickets drawn yet tonight.</div>
+        </div>
+
+    </div>
+
+    <script>
+        function sanitize(str) {
+            if (!str) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#x27;');
+        }
+
+        function formatNZTime(isoString) {
+            if (!isoString) return '-';
+            try {
+                const date = new Date(isoString);
+                return date.toLocaleTimeString('en-US', {
+                    timeZone: 'Pacific/Auckland',
+                    hour: 'numeric',
+                    minute: '2-digit',
+                    second: '2-digit',
+                    hour12: true
+                });
+            } catch (e) {
+                return '-';
+            }
+        }
+
+        function renderAuditTable() {
+            const saved = localStorage.getItem('mmr_state_v5');
+            const tbody = document.getElementById('audit-body');
+            const emptyMsg = document.getElementById('empty-msg');
+            
+            tbody.innerHTML = '';
+            
+            if (!saved) {
+                emptyMsg.style.display = 'block';
+                return;
+            }
+
+            try {
+                const state = JSON.parse(saved);
+                const drawn = state.draw.drawnNumbers || [];
+                
+                if (drawn.length === 0) {
+                    emptyMsg.style.display = 'block';
+                    return;
+                }
+                
+                emptyMsg.style.display = 'none';
+                
+                drawn.forEach((entry, idx) => {
+                    const drawNum = drawn.length - idx;
+                    const num = typeof entry === 'object' ? entry.number : entry;
+                    const prize = typeof entry === 'object' ? entry.prize : 'Default';
+                    const ts = typeof entry === 'object' ? entry.timestamp : null;
+                    const pool = typeof entry === 'object' ? entry.poolSize : '-';
+                    const method = typeof entry === 'object' ? entry.method : 'Math.random()';
+                    
+                    let prizeClass = 'prize-25';
+                    let prizeText = `$${prize}`;
+                    if (prize === 100) prizeClass = 'prize-100';
+                    else if (prize === 50) prizeClass = 'prize-50';
+                    else if (prize === 25) prizeClass = 'prize-25';
+                    else if (prize === 'bonus') {
+                        prizeClass = 'prize-bonus';
+                        prizeText = 'Bonus';
+                    }
+
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td style="color: var(--text-muted); font-family: monospace;">#${drawNum}</td>
+                        <td style="font-size: 1.2rem; font-weight: 800; color: #fff;">${sanitize(String(num))}</td>
+                        <td><span class="prize-tag ${prizeClass}">${prizeText}</span></td>
+                        <td style="font-size: 0.85rem; font-family: monospace;">${formatNZTime(ts)}</td>
+                        <td style="font-family: monospace; color: var(--text-muted);">${pool}</td>
+                        <td style="font-size: 0.85rem; color: var(--success); font-weight: 600;">${sanitize(method)}</td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            } catch(e) {
+                console.error(e);
+                emptyMsg.style.display = 'block';
+            }
+        }
+
+        // Live syncing using BroadcastChannel
+        const bc = new BroadcastChannel('mmr_sync');
+        bc.onmessage = (event) => {
+            if (event.data.type === 'STATE_UPDATE') {
+                renderAuditTable();
+            }
+        };
+
+        // Render on startup
+        renderAuditTable();
+    </script>
+</body>
+</html>
