@@ -663,6 +663,47 @@
             <div class="congrats-subtitle">Thank you to all who participated.<br>We hope to see you all next Thursday!</div>
         </div>
 
+        <!-- WINNING NUMBERS VIEW -->
+        <div id="view-winning-numbers" class="view" style="display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 2rem; box-sizing: border-box; text-align: center;">
+            <div class="congrats-title" style="margin-bottom: 2rem; font-size: clamp(2.5rem, 6vmin, 4.5rem); text-shadow: 0 0 30px rgba(255,215,0,0.4); text-transform: uppercase; letter-spacing: 2px;">
+                🏆 Tonight's Winners 🏆
+            </div>
+            <div style="display: flex; gap: 3rem; width: 90%; max-width: 1400px; justify-content: space-between; flex: 1; align-items: stretch; margin-bottom: 2rem;">
+                <!-- $100 Column -->
+                <div style="flex: 1; background: rgba(0,0,0,0.6); border: 2px solid rgba(245,158,11,0.5); border-radius: 1.5rem; padding: 1.5rem; display: flex; flex-direction: column; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+                    <div style="font-size: 1.8rem; color: #f59e0b; font-weight: 900; text-transform: uppercase; border-bottom: 2.5px solid rgba(245,158,11,0.3); padding-bottom: 0.5rem; margin-bottom: 1rem; text-shadow: 0 0 15px rgba(245,158,11,0.3);">
+                        $100 Packs
+                    </div>
+                    <div id="summary-list-100" style="display: flex; flex-wrap: wrap; gap: 0.75rem; justify-content: center; overflow-y: auto; flex: 1; align-content: flex-start; font-size: 2.4rem; font-weight: 800; color: #fff;">
+                        <!-- dynamic -->
+                    </div>
+                </div>
+
+                <!-- $50 Column -->
+                <div style="flex: 1; background: rgba(0,0,0,0.6); border: 2px solid rgba(59,130,246,0.5); border-radius: 1.5rem; padding: 1.5rem; display: flex; flex-direction: column; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+                    <div style="font-size: 1.8rem; color: #3b82f6; font-weight: 900; text-transform: uppercase; border-bottom: 2.5px solid rgba(59,130,246,0.3); padding-bottom: 0.5rem; margin-bottom: 1rem; text-shadow: 0 0 15px rgba(59,130,246,0.3);">
+                        $50 Packs
+                    </div>
+                    <div id="summary-list-50" style="display: flex; flex-wrap: wrap; gap: 0.75rem; justify-content: center; overflow-y: auto; flex: 1; align-content: flex-start; font-size: 2.4rem; font-weight: 800; color: #fff;">
+                        <!-- dynamic -->
+                    </div>
+                </div>
+
+                <!-- $25 Column -->
+                <div style="flex: 1; background: rgba(0,0,0,0.6); border: 2px solid rgba(16,185,129,0.5); border-radius: 1.5rem; padding: 1.5rem; display: flex; flex-direction: column; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+                    <div style="font-size: 1.8rem; color: #10b981; font-weight: 900; text-transform: uppercase; border-bottom: 2.5px solid rgba(16,185,129,0.3); padding-bottom: 0.5rem; margin-bottom: 1rem; text-shadow: 0 0 15px rgba(16,185,129,0.3);">
+                        $25 Packs
+                    </div>
+                    <div id="summary-list-25" style="display: flex; flex-wrap: wrap; gap: 0.75rem; justify-content: center; overflow-y: auto; flex: 1; align-content: flex-start; font-size: 2.4rem; font-weight: 800; color: #fff;">
+                        <!-- dynamic -->
+                    </div>
+                </div>
+            </div>
+            <div style="font-size: 1.1rem; color: #888; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">
+                Scan QR Code at the counter to verify all transactions and cryptography logs.
+            </div>
+        </div>
+
         <!-- Slide Controls Overlay (Only on Display) -->
         <div id="slide-controls-overlay">
             <button class="control-btn" onclick="prevSlide()" title="Previous Slide">⏮</button>
@@ -743,7 +784,8 @@
         const views = {
             slides: document.getElementById('view-slides'),
             draw: document.getElementById('view-draw'),
-            congrats: document.getElementById('view-congrats')
+            congrats: document.getElementById('view-congrats'),
+            'winning-numbers': document.getElementById('view-winning-numbers')
         };
         const slidesWrapper = document.getElementById('slides-wrapper');
         const progressBar = document.getElementById('progress-bar');
@@ -851,18 +893,22 @@
             const list100 = document.getElementById('drawn-list-100');
             const list50 = document.getElementById('drawn-list-50');
             const list25 = document.getElementById('drawn-list-25');
+            const sum100 = document.getElementById('summary-list-100');
+            const sum50 = document.getElementById('summary-list-50');
+            const sum25 = document.getElementById('summary-list-25');
             
             if (list100 && list50 && list25) {
                 const numbers100 = drawn.filter(d => (typeof d === 'object' ? d.prize : 0) === 100);
                 const numbers50 = drawn.filter(d => (typeof d === 'object' ? d.prize : 0) === 50);
                 const numbers25 = drawn.filter(d => (typeof d === 'object' ? d.prize : 0) === 25 || (typeof d !== 'object'));
                 
-                const renderGroupHtml = (groupArray, defaultBg, defaultGlow) => {
+                const renderGroupHtml = (groupArray, defaultBg, defaultGlow, scaleFont = false) => {
                     return groupArray.map(entry => {
                         const num = typeof entry === 'object' ? entry.number : entry;
                         const isLastDrawn = drawn[0] && (typeof drawn[0] === 'object' ? drawn[0].number : drawn[0]) === num;
                         const extraClass = isLastDrawn ? 'class="last-drawn-glow"' : '';
-                        const style = `background: ${defaultBg}; box-shadow: 0 0 15px ${defaultGlow}; padding: 0.5rem 1.4rem; border-radius: 0.75rem; color: #fff; font-weight: 800; font-size: 2.6rem; margin: 0.3rem; display: inline-block; animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);`;
+                        const fontSize = scaleFont ? '2.4rem' : '2.6rem';
+                        const style = `background: ${defaultBg}; box-shadow: 0 0 15px ${defaultGlow}; padding: 0.5rem 1.4rem; border-radius: 0.75rem; color: #fff; font-weight: 800; font-size: ${fontSize}; margin: 0.3rem; display: inline-block; animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);`;
                         return `<span ${extraClass} style="${style}">${sanitize(String(num))}</span>`;
                     }).join('');
                 };
@@ -870,6 +916,12 @@
                 list100.innerHTML = renderGroupHtml(numbers100, '#d97706', 'rgba(217,119,6,0.5)');
                 list50.innerHTML = renderGroupHtml(numbers50, '#2563eb', 'rgba(37,99,235,0.5)');
                 list25.innerHTML = renderGroupHtml(numbers25, '#10b981', 'rgba(16,185,129,0.5)');
+
+                if (sum100 && sum50 && sum25) {
+                    sum100.innerHTML = renderGroupHtml(numbers100, '#d97706', 'rgba(217,119,6,0.5)', true);
+                    sum50.innerHTML = renderGroupHtml(numbers50, '#2563eb', 'rgba(37,99,235,0.5)', true);
+                    sum25.innerHTML = renderGroupHtml(numbers25, '#10b981', 'rgba(16,185,129,0.5)', true);
+                }
             }
 
             // Render last drawn number in slots if not currently rolling
@@ -943,6 +995,30 @@
             const timeHtml = calculateTimeRemainingHTML();
             const dynamicCounters = document.querySelectorAll('.slide-countdown-timer');
             dynamicCounters.forEach(el => el.innerHTML = timeHtml);
+
+            // Post-draw alternating loop: Congrats vs. Winning Numbers
+            if (state.draw && state.draw.drawsFinishedTime) {
+                const elapsed = Date.now() - new Date(state.draw.drawsFinishedTime).getTime();
+                const isTest = window.location.search.includes('testLoop=1');
+                
+                const startDelay = isTest ? 10 * 1000 : 5 * 60 * 1000;
+                const interval = isTest ? 5 * 1000 : 20 * 1000;
+                const totalDuration = isTest ? 30 * 1000 : 59 * 60 * 1000;
+                
+                if (elapsed >= startDelay && elapsed < (startDelay + totalDuration)) {
+                    const cycle = Math.floor((elapsed - startDelay) / interval);
+                    const targetView = (cycle % 2 === 0) ? 'congrats' : 'winning-numbers';
+                    if (state.activeView !== targetView) {
+                        updateState({ activeView: targetView });
+                    }
+                } else if (elapsed >= (startDelay + totalDuration)) {
+                    // Reset finished time and go back to slideshow
+                    state.draw.drawsFinishedTime = null;
+                    updateState({ activeView: 'slides' });
+                    bc.postMessage({ type: 'STATE_UPDATE', payload: { activeView: 'slides', draw: { drawsFinishedTime: null } } });
+                    writeFirebase({ activeView: 'slides', draw: { drawsFinishedTime: null } });
+                }
+            }
 
             // Turn off congrats screen and resume slides if outside allowed time window
             if (state.activeView === 'congrats') {

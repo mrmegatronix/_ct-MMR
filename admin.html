@@ -273,6 +273,20 @@
         </div>
     </div>
 
+    <!-- Verification QR Code -->
+    <div class="card" style="margin-top: 2rem;">
+        <h2>🔍 Public Verification Audit</h2>
+        <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1.5rem;">
+            Patrons can scan this QR code on their phones to view the live, cryptographically-verifiable audit log of tonight's drawn numbers.
+        </p>
+        <div style="text-align: center; padding: 1rem 0;">
+            <img id="qr-verify-admin" alt="Verify QR Code" style="background: white; padding: 0.5rem; border-radius: 0.5rem; width: 140px; height: 140px; border: 1.5px solid var(--border);">
+            <div style="margin-top: 0.75rem; font-size: 0.95rem; font-weight: 700;">
+                <a href="verify.html" target="_blank" style="color: var(--primary); text-decoration: none;">Open Verification Dashboard ↗</a>
+            </div>
+        </div>
+    </div>
+
     <div class="card">
         <div style="display: flex; justify-content: space-between; align-items: start;">
             <h2>Google Sheets Synchronization</h2>
@@ -346,20 +360,6 @@
             Print Tonight's Meat Raffle Prize Checklist for manual tracking.
         </p>
         <button class="btn btn-primary" onclick="printManualRecordSheet()" style="width: 100%; padding: 0.8rem; font-size: 1rem; background-color: #2563eb; border-color: #1d4ed8; color: white;">🖨️ Print Checklist</button>
-    </div>
-
-    <!-- Verification QR Code -->
-    <div class="card" style="margin-top: 2rem;">
-        <h2>🔍 Public Verification Audit</h2>
-        <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1.5rem;">
-            Patrons can scan this QR code on their phones to view the live, cryptographically-verifiable audit log of tonight's drawn numbers.
-        </p>
-        <div style="text-align: center; padding: 1rem 0;">
-            <img id="qr-verify-admin" alt="Verify QR Code" style="background: white; padding: 0.5rem; border-radius: 0.5rem; width: 140px; height: 140px; border: 1.5px solid var(--border);">
-            <div style="margin-top: 0.75rem; font-size: 0.95rem; font-weight: 700;">
-                <a href="verify.html" target="_blank" style="color: var(--primary); text-decoration: none;">Open Verification Dashboard ↗</a>
-            </div>
-        </div>
     </div>
 
     <!-- Change PIN Card -->

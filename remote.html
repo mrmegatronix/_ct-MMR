@@ -300,7 +300,61 @@
     </div>
 
     <div class="grid">
-        <!-- Display Controls -->
+        <!-- Live Draw Board -->
+        <div class="card">
+            <h2>Live Draw Panel</h2>
+            <div id="draw-rolling-label" style="display: none; text-align: center; font-size: 1.2rem; font-weight: bold; margin-bottom: 1.25rem; color: #f59e0b; animation: pulse 1s infinite;">🎰 ROLLING FOR WINNER...</div>
+
+            <div class="draw-grid-row">
+                <!-- $100 PACK -->
+                <div class="draw-action-card" style="border-color: var(--accent-100);">
+                    <div class="draw-action-header">
+                        <span style="color: var(--accent-100);">$100 Packs</span>
+                        <span style="font-size: 0.9rem; color: var(--text);"><span id="lbl-left-100">27</span> Left</span>
+                    </div>
+                    <div class="draw-action-buttons">
+                        <button class="btn draw-btn" onclick="runDraw(100)" id="btn-draw-100" style="background-color: var(--accent-100); border-color: var(--accent-100); color: white;">🎰 DRAW PRIZE</button>
+                        <button class="btn draw-btn" onclick="runRedraw(100)" id="btn-redraw-100" style="background-color: #334155; border-color: #ef4444; color: #ef4444; font-size: 0.85rem;">🔄 REDRAW</button>
+                    </div>
+                </div>
+
+                <!-- $50 PACK -->
+                <div class="draw-action-card" style="border-color: var(--accent-50);">
+                    <div class="draw-action-header">
+                        <span style="color: var(--accent-50);">$50 Packs</span>
+                        <span style="font-size: 0.9rem; color: var(--text);"><span id="lbl-left-50">19</span> Left</span>
+                    </div>
+                    <div class="draw-action-buttons">
+                        <button class="btn draw-btn" onclick="runDraw(50)" id="btn-draw-50" style="background-color: var(--accent-50); border-color: var(--accent-50); color: white;">🎰 DRAW PRIZE</button>
+                        <button class="btn draw-btn" onclick="runRedraw(50)" id="btn-redraw-50" style="background-color: #334155; border-color: #ef4444; color: #ef4444; font-size: 0.85rem;">🔄 REDRAW</button>
+                    </div>
+                </div>
+
+                <!-- $25 PACK -->
+                <div class="draw-action-card" style="border-color: var(--accent-25);">
+                    <div class="draw-action-header">
+                        <span style="color: var(--accent-25);">$25 Packs</span>
+                        <span style="font-size: 0.9rem; color: var(--text);"><span id="lbl-left-25">24</span> Left</span>
+                    </div>
+                    <div class="draw-action-buttons">
+                        <button class="btn draw-btn" onclick="runDraw(25)" id="btn-draw-25" style="background-color: var(--accent-25); border-color: var(--accent-25); color: white;">🎰 DRAW PRIZE</button>
+                        <button class="btn draw-btn" onclick="runRedraw(25)" id="btn-redraw-25" style="background-color: #334155; border-color: #ef4444; color: #ef4444; font-size: 0.85rem;">🔄 REDRAW</button>
+                    </div>
+                </div>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 0.8rem; border-top: 1.5px solid var(--border); padding-top: 1.25rem;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <button class="btn btn-primary draw-btn" onclick="runDraw('bonus')" style="background-color: #6366f1; border-color: #4f46e5; color: white;">🎁 DRAW BONUS</button>
+                    <button class="btn" onclick="triggerConfetti()" style="background-color: #eab308; border-color: #ca8a04; color: black;">🎉 Confetti</button>
+                </div>
+                <button class="btn btn-primary" onclick="printManualRecordSheet()" style="width: 100%; font-size: 1rem; background-color: #2563eb; border-color: #1d4ed8; color: white;">🖨️ Print Checklist Record</button>
+            </div>
+            
+            <div class="status" id="status-display">Updated Successfully</div>
+        </div>
+
+        <!-- Display Controls (Moved below Draw Board) -->
         <div class="card">
             <h2>Display Live Views</h2>
             
@@ -317,60 +371,6 @@
                 <button class="btn" onclick="remoteSlide('toggle')" id="btn-play-pause">⏸ Pause</button>
                 <button class="btn" onclick="remoteSlide('next')">Next ⏭</button>
             </div>
-        </div>
-
-        <!-- Live Draw Board -->
-        <div class="card">
-            <h2>Live Draw Panel</h2>
-            <div id="draw-rolling-label" style="display: none; text-align: center; font-size: 1.2rem; font-weight: bold; margin-bottom: 1.25rem; color: #f59e0b; animation: pulse 1s infinite;">🎰 ROLLING FOR WINNER...</div>
-
-            <div class="draw-grid-row">
-                <!-- $100 PACK -->
-                <div class="draw-action-card" style="border-color: var(--accent-100);">
-                    <div class="draw-action-header">
-                        <span style="color: var(--accent-100);">$100 Packs</span>
-                        <span style="font-size: 0.9rem; color: var(--text);"><span id="lbl-left-100">27</span> Left</span>
-                    </div>
-                    <div class="draw-action-buttons">
-                        <button class="btn draw-btn" onclick="runDraw(100)" id="btn-draw-100" style="background-color: var(--accent-100); border-color: var(--accent-100); color: white;">🎰 DRAW TICKET</button>
-                        <button class="btn draw-btn" onclick="runRedraw(100)" id="btn-redraw-100" style="background-color: #334155; border-color: #ef4444; color: #ef4444; font-size: 0.85rem;">🔄 REDRAW</button>
-                    </div>
-                </div>
-
-                <!-- $50 PACK -->
-                <div class="draw-action-card" style="border-color: var(--accent-50);">
-                    <div class="draw-action-header">
-                        <span style="color: var(--accent-50);">$50 Packs</span>
-                        <span style="font-size: 0.9rem; color: var(--text);"><span id="lbl-left-50">19</span> Left</span>
-                    </div>
-                    <div class="draw-action-buttons">
-                        <button class="btn draw-btn" onclick="runDraw(50)" id="btn-draw-50" style="background-color: var(--accent-50); border-color: var(--accent-50); color: white;">🎰 DRAW TICKET</button>
-                        <button class="btn draw-btn" onclick="runRedraw(50)" id="btn-redraw-50" style="background-color: #334155; border-color: #ef4444; color: #ef4444; font-size: 0.85rem;">🔄 REDRAW</button>
-                    </div>
-                </div>
-
-                <!-- $25 PACK -->
-                <div class="draw-action-card" style="border-color: var(--accent-25);">
-                    <div class="draw-action-header">
-                        <span style="color: var(--accent-25);">$25 Packs</span>
-                        <span style="font-size: 0.9rem; color: var(--text);"><span id="lbl-left-25">24</span> Left</span>
-                    </div>
-                    <div class="draw-action-buttons">
-                        <button class="btn draw-btn" onclick="runDraw(25)" id="btn-draw-25" style="background-color: var(--accent-25); border-color: var(--accent-25); color: white;">🎰 DRAW TICKET</button>
-                        <button class="btn draw-btn" onclick="runRedraw(25)" id="btn-redraw-25" style="background-color: #334155; border-color: #ef4444; color: #ef4444; font-size: 0.85rem;">🔄 REDRAW</button>
-                    </div>
-                </div>
-            </div>
-
-            <div style="display: flex; flex-direction: column; gap: 0.8rem; border-top: 1.5px solid var(--border); padding-top: 1.25rem;">
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                    <button class="btn btn-primary draw-btn" onclick="runDraw('bonus')" style="background-color: #6366f1; border-color: #4f46e5; color: white;">🎁 DRAW BONUS</button>
-                    <button class="btn" onclick="triggerConfetti()" style="background-color: #eab308; border-color: #ca8a04; color: black;">🎉 Confetti</button>
-                </div>
-                <button class="btn btn-primary" onclick="printManualRecordSheet()" style="width: 100%; font-size: 1rem; background-color: #2563eb; border-color: #1d4ed8; color: white;">🖨️ Print Checklist Record</button>
-            </div>
-            
-            <div class="status" id="status-display">Updated Successfully</div>
         </div>
 
         <!-- Draw Configuration (Admin Only, moved to bottom) -->
@@ -748,6 +748,12 @@
             state.draw.prizes25 = Math.max(0, t25 - n25);
             state.draw.prizesLeft = state.draw.prizes100 + state.draw.prizes50 + state.draw.prizes25;
             
+            if (state.draw.prizesLeft === 0 && state.draw.drawnNumbers.length > 0) {
+                state.draw.drawsFinishedTime = state.draw.drawsFinishedTime || new Date().toISOString();
+            } else {
+                state.draw.drawsFinishedTime = null;
+            }
+            
             updateUI();
             broadcast();
         }
@@ -850,6 +856,13 @@
                 state.draw.currentNumber = winner;
                 state.draw.currentPrize = prizeSize;
                 
+                // Track finished time if all prizes are drawn
+                if (state.draw.prizesLeft === 0) {
+                    state.draw.drawsFinishedTime = new Date().toISOString();
+                } else {
+                    state.draw.drawsFinishedTime = null;
+                }
+                
                 broadcast(); // updates prizes and history
                 bc.postMessage({ type: 'STOP_ROLL', payload: { number: winner, prize: prizeSize } });
                 writeFirebase({ cmd: { type: 'STOP_ROLL', number: winner, prize: prizeSize, ts: Date.now() } });
@@ -873,6 +886,7 @@
                     else if (prizeSize === 25) state.draw.prizes25 = Math.max(0, (state.draw.prizes25 || 0) + 1);
                     
                     state.draw.prizesLeft = (state.draw.prizes100 || 0) + (state.draw.prizes50 || 0) + (state.draw.prizes25 || 0);
+                    state.draw.drawsFinishedTime = null;
                     broadcast();
                     updateUI();
                 } else {
