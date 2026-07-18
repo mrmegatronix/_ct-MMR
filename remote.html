@@ -8,62 +8,67 @@
     <script src="config.js"></script>
     <style>
         :root {
-            --bg: var(--cfg-bg-dark, #0f172a);
+            --bg: var(--cfg-bg-dark, #0b0f19);
             --surface: #1e293b;
             --primary: var(--cfg-primary, #ef4444);
             --text: var(--cfg-text-light, #f8fafc);
-            --text-muted: #94a3b8;
+            --text-muted: #64748b;
             --border: #334155;
+            --accent-100: #d97706;
+            --accent-50: #2563eb;
+            --accent-25: #10b981;
         }
 
         body {
             background: var(--bg);
             color: var(--text);
-            font-family: -apple-system, system-ui, sans-serif;
+            font-family: 'Outfit', -apple-system, system-ui, sans-serif;
             margin: 0;
-            padding: 2rem;
+            padding: 1.5rem;
+            box-sizing: border-box;
+            line-height: 1.5;
+        }
+
+        /* Host Mode Hiding */
+        body.role-host .admin-only {
+            display: none !important;
         }
 
         .header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 2rem;
-            border-bottom: 1px solid var(--border);
+            margin-bottom: 1.5rem;
+            border-bottom: 2px solid var(--border);
             padding-bottom: 1rem;
+            gap: 1rem;
         }
         
-        .header h1 { margin: 0; color: var(--primary); }
+        .header h1 { margin: 0; color: var(--primary); font-size: 1.8rem; font-weight: 800; }
 
         .grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 2rem;
-        }
-
-        @media (max-width: 768px) {
-            body { padding: 0.8rem; }
-            .grid { grid-template-columns: 1fr; gap: 1rem; }
-            .header { flex-direction: column; align-items: center; gap: 1rem; }
-            .header > div { flex-direction: column; width: 100%; gap: 0.5rem; }
-            .btn { width: 100%; padding: 1.2rem; font-size: 1.1rem; text-align: center; }
-            .btn-group { flex-direction: column; gap: 0.5rem; width: 100%; }
-            .card { padding: 1.2rem; }
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
         }
 
         .card {
-            background: var(--surface);
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(8px);
             border: 1px solid var(--border);
-            border-radius: 1rem;
-            padding: 1.5rem;
+            border-radius: 1.25rem;
+            padding: 1.25rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.25);
         }
 
         .card h2 {
             margin-top: 0;
-            font-size: 1.2rem;
+            font-size: 1.25rem;
             border-bottom: 1px solid var(--border);
-            padding-bottom: 0.5rem;
-            margin-bottom: 1.5rem;
+            padding-bottom: 0.6rem;
+            margin-bottom: 1.25rem;
+            font-weight: 800;
+            letter-spacing: 0.5px;
         }
 
         .form-group {
@@ -72,22 +77,26 @@
 
         label {
             display: block;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             color: var(--text-muted);
             text-transform: uppercase;
-            font-weight: bold;
+            font-weight: 800;
             margin-bottom: 0.4rem;
+            letter-spacing: 0.5px;
         }
 
         input, textarea, select {
             width: 100%;
-            background: var(--bg);
-            border: 1px solid var(--border);
+            background: #0f172a;
+            border: 1.5px solid var(--border);
             color: var(--text);
-            padding: 0.75rem;
-            border-radius: 0.5rem;
+            padding: 0.85rem;
+            border-radius: 0.75rem;
             font-family: inherit;
             box-sizing: border-box;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: border-color 0.2s;
         }
 
         input:focus, textarea:focus, select:focus {
@@ -96,18 +105,24 @@
         }
 
         .btn {
-            background: var(--surface);
+            background: #334155;
             color: var(--text);
-            border: 1px solid var(--border);
-            padding: 0.75rem 1.5rem;
-            border-radius: 0.5rem;
+            border: 1.5px solid var(--border);
+            padding: 0.9rem 1.25rem;
+            border-radius: 0.75rem;
             cursor: pointer;
-            font-weight: bold;
+            font-weight: 800;
             font-size: 1rem;
             transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            min-height: 48px;
+            box-sizing: border-box;
         }
 
-        .btn:hover { background: var(--border); }
+        .btn:hover { background: #475569; }
         
         .btn-primary { background: var(--primary); border-color: var(--primary); }
         .btn-primary:hover { background: #dc2626; }
@@ -116,47 +131,81 @@
         .btn-success:hover { background: #16a34a; }
 
         .btn-group {
-            display: flex;
-            gap: 1rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .slide-edit {
-            border: 1px solid var(--border);
-            padding: 1rem;
-            border-radius: 0.5rem;
-            margin-bottom: 1rem;
-        }
-
-            display: none;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.5rem;
+            margin-bottom: 1.25rem;
         }
 
         .voice-toggle-container {
             display: flex;
             align-items: center;
-            gap: 10px;
-            background: var(--bg);
-            padding: 0.5rem 1rem;
-            border-radius: 0.5rem;
-            border: 1px solid var(--border);
+            gap: 8px;
+            background: #0f172a;
+            padding: 0.5rem 0.85rem;
+            border-radius: 0.75rem;
+            border: 1.5px solid var(--border);
+            min-height: 48px;
+            box-sizing: border-box;
         }
         .switch {
             position: relative;
             display: inline-block;
-            width: 50px;
-            height: 24px;
+            width: 44px;
+            height: 22px;
         }
         .switch input { opacity: 0; width: 0; height: 0; }
         .slider {
             position: absolute; cursor: pointer; inset: 0;
-            background-color: #475569; transition: .4s; border-radius: 24px;
+            background-color: #475569; transition: .3s; border-radius: 22px;
         }
         .slider:before {
-            position: absolute; content: ""; height: 16px; width: 16px; 
-            left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%;
+            position: absolute; content: ""; height: 14px; width: 14px; 
+            left: 4px; bottom: 4px; background-color: white; transition: .3s; border-radius: 50%;
         }
         input:checked + .slider { background-color: var(--primary); }
-        input:checked + .slider:before { transform: translateX(26px); }
+        input:checked + .slider:before { transform: translateX(22px); }
+
+        /* Theatrical category draw grid for phones */
+        .draw-grid-row {
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .draw-action-card {
+            border: 1.5px solid var(--border);
+            border-radius: 1rem;
+            padding: 1rem;
+            background: rgba(15, 23, 42, 0.4);
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .draw-action-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 800;
+        }
+
+        .draw-action-buttons {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 8px;
+        }
+
+        @media (max-width: 768px) {
+            body { padding: 0.85rem; }
+            .header { flex-direction: column; align-items: stretch; gap: 0.75rem; }
+            .header h1 { text-align: center; }
+            .header > div { flex-direction: column; width: 100%; gap: 0.5rem; }
+            .voice-toggle-container { width: 100%; justify-content: space-between; }
+            .btn { width: 100%; }
+            .btn-group { grid-template-columns: 1fr; gap: 0.5rem; }
+        }
 
         @media print {
             body * { visibility: hidden; }
@@ -164,13 +213,12 @@
             #print-report { position: absolute; left: 0; top: 0; width: 100%; color: black; background: white; padding: 2rem; }
             .no-print { display: none !important; }
         }
-        
 
         /* ── PIN Access Overlay ── */
         #pin-overlay {
             position: fixed;
             inset: 0;
-            background: rgba(15, 23, 42, 0.97);
+            background: rgba(11, 15, 25, 0.98);
             backdrop-filter: blur(20px);
             display: flex;
             align-items: center;
@@ -178,28 +226,28 @@
             z-index: 9999;
         }
         #pin-modal {
-            background: var(--surface);
-            border: 1px solid var(--border);
+            background: #1e293b;
+            border: 2px solid var(--border);
             border-radius: 1.5rem;
-            padding: 3rem;
-            min-width: 320px;
-            max-width: 400px;
+            padding: 2.5rem 2rem;
             width: 90%;
+            max-width: 380px;
             text-align: center;
             box-shadow: 0 0 60px rgba(239,68,68,0.15), 0 20px 60px rgba(0,0,0,0.8);
+            box-sizing: border-box;
         }
         #pin-input-r {
             width: 100%;
-            background: var(--bg);
+            background: #0f172a;
             border: 2px solid var(--border);
             color: var(--text);
             padding: 1rem;
             border-radius: 0.75rem;
-            font-size: 1.5rem;
+            font-size: 1.6rem;
             text-align: center;
             letter-spacing: 0.4em;
             box-sizing: border-box;
-            margin-bottom: 1rem;
+            margin-bottom: 1.25rem;
             outline: none;
             transition: border-color 0.2s;
         }
@@ -211,13 +259,14 @@
             border: none;
             padding: 1rem;
             border-radius: 0.75rem;
-            font-size: 1rem;
-            font-weight: bold;
+            font-size: 1.1rem;
+            font-weight: 800;
             cursor: pointer;
             transition: background 0.2s;
+            min-height: 48px;
         }
         #pin-submit-r:hover { background: #dc2626; }
-        #pin-error-r { display: none; color: var(--primary); margin-top: 1rem; font-size: 0.9rem; }
+        #pin-error-r { display: none; color: var(--primary); margin-top: 1rem; font-weight: 800; font-size: 0.9rem; }
     </style>
 </head>
 <body>
@@ -244,58 +293,104 @@
                     <span class="slider"></span>
                 </label>
             </div>
-            <span id="fb-status" style="font-size:0.8rem; color:#94a3b8;">🔴 Firebase: Not configured</span>
-            <a href="admin.html" class="btn">⚙️ Admin</a>
-            <a href="index.html" target="_blank" class="btn btn-primary">Display</a>
+            <span id="fb-status" style="font-size:0.8rem; color:#64748b;">🔴 Firebase: Not configured</span>
+            <a href="admin.html" class="btn admin-only">⚙️ Admin Panel</a>
+            <a href="index.html" target="_blank" class="btn btn-primary">Display TV ↗</a>
         </div>
     </div>
 
     <div class="grid">
         <!-- Display Controls -->
         <div class="card">
-            <h2>Display Controls</h2>
+            <h2>Display Live Views</h2>
             
-            <label>Active View</label>
+            <label>Change Screen View</label>
             <div class="btn-group">
-                <button class="btn" onclick="setView('slides')" id="btn-slides">Slides</button>
-                <button class="btn" onclick="setView('draw')" id="btn-draw">Draw Mode</button>
-                <button class="btn" onclick="setView('congrats')" id="btn-congrats">Congrats</button>
+                <button class="btn" onclick="setView('slides')" id="btn-slides">📺 Slideshow</button>
+                <button class="btn" onclick="setView('draw')" id="btn-draw">🎯 Draw Screen</button>
+                <button class="btn" onclick="setView('congrats')" id="btn-congrats">🎉 Congrats Page</button>
             </div>
 
-            <label>Slide Manual Control</label>
+            <label>Slideshow Navigation</label>
             <div class="btn-group">
                 <button class="btn" onclick="remoteSlide('prev')">⏮ Prev</button>
                 <button class="btn" onclick="remoteSlide('toggle')" id="btn-play-pause">⏸ Pause</button>
                 <button class="btn" onclick="remoteSlide('next')">Next ⏭</button>
             </div>
+        </div>
 
-            <div class="form-group">
-                <label>Next Draw Time</label>
-                <input type="datetime-local" id="drawTime" onchange="updateTime()">
+        <!-- Live Draw Board -->
+        <div class="card">
+            <h2>Live Draw Panel</h2>
+            <div id="draw-rolling-label" style="display: none; text-align: center; font-size: 1.2rem; font-weight: bold; margin-bottom: 1.25rem; color: #f59e0b; animation: pulse 1s infinite;">🎰 ROLLING FOR WINNER...</div>
+
+            <div class="draw-grid-row">
+                <!-- $100 PACK -->
+                <div class="draw-action-card" style="border-color: var(--accent-100);">
+                    <div class="draw-action-header">
+                        <span style="color: var(--accent-100);">$100 Packs</span>
+                        <span style="font-size: 0.9rem; color: var(--text);"><span id="lbl-left-100">27</span> Left</span>
+                    </div>
+                    <div class="draw-action-buttons">
+                        <button class="btn draw-btn" onclick="runDraw(100)" id="btn-draw-100" style="background-color: var(--accent-100); border-color: var(--accent-100); color: white;">🎰 DRAW TICKET</button>
+                        <button class="btn draw-btn" onclick="runRedraw(100)" id="btn-redraw-100" style="background-color: #334155; border-color: #ef4444; color: #ef4444; font-size: 0.85rem;">🔄 REDRAW</button>
+                    </div>
+                </div>
+
+                <!-- $50 PACK -->
+                <div class="draw-action-card" style="border-color: var(--accent-50);">
+                    <div class="draw-action-header">
+                        <span style="color: var(--accent-50);">$50 Packs</span>
+                        <span style="font-size: 0.9rem; color: var(--text);"><span id="lbl-left-50">19</span> Left</span>
+                    </div>
+                    <div class="draw-action-buttons">
+                        <button class="btn draw-btn" onclick="runDraw(50)" id="btn-draw-50" style="background-color: var(--accent-50); border-color: var(--accent-50); color: white;">🎰 DRAW TICKET</button>
+                        <button class="btn draw-btn" onclick="runRedraw(50)" id="btn-redraw-50" style="background-color: #334155; border-color: #ef4444; color: #ef4444; font-size: 0.85rem;">🔄 REDRAW</button>
+                    </div>
+                </div>
+
+                <!-- $25 PACK -->
+                <div class="draw-action-card" style="border-color: var(--accent-25);">
+                    <div class="draw-action-header">
+                        <span style="color: var(--accent-25);">$25 Packs</span>
+                        <span style="font-size: 0.9rem; color: var(--text);"><span id="lbl-left-25">24</span> Left</span>
+                    </div>
+                    <div class="draw-action-buttons">
+                        <button class="btn draw-btn" onclick="runDraw(25)" id="btn-draw-25" style="background-color: var(--accent-25); border-color: var(--accent-25); color: white;">🎰 DRAW TICKET</button>
+                        <button class="btn draw-btn" onclick="runRedraw(25)" id="btn-redraw-25" style="background-color: #334155; border-color: #ef4444; color: #ef4444; font-size: 0.85rem;">🔄 REDRAW</button>
+                    </div>
+                </div>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 0.8rem; border-top: 1.5px solid var(--border); padding-top: 1.25rem;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <button class="btn btn-primary draw-btn" onclick="runDraw('bonus')" style="background-color: #6366f1; border-color: #4f46e5; color: white;">🎁 DRAW BONUS</button>
+                    <button class="btn" onclick="triggerConfetti()" style="background-color: #eab308; border-color: #ca8a04; color: black;">🎉 Confetti</button>
+                </div>
+                <button class="btn btn-primary" onclick="printManualRecordSheet()" style="width: 100%; font-size: 1rem; background-color: #2563eb; border-color: #1d4ed8; color: white;">🖨️ Print Checklist Record</button>
             </div>
             
-            <button class="btn" style="width: 100%;" onclick="triggerConfetti()">🎉 Trigger Confetti</button>
             <div class="status" id="status-display">Updated Successfully</div>
         </div>
 
-        <!-- Draw Controls -->
-        <div class="card">
-            <h2>Draw Configuration</h2>
+        <!-- Draw Configuration (Admin Only, moved to bottom) -->
+        <div class="card admin-only">
+            <h2>Draw Configuration (Admin Only)</h2>
             
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                 <div class="form-group">
                     <label>Min Ticket</label>
-                    <input type="number" id="cfg-min" value="1">
+                    <input type="number" id="cfg-min" value="1212">
                 </div>
                 <div class="form-group">
                     <label>Max Ticket</label>
-                    <input type="number" id="cfg-max" value="999">
+                    <input type="number" id="cfg-max" value="5000">
                 </div>
             </div>
 
             <div class="form-group" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
                 <div>
-                    <label style="font-size:0.75rem;">$100 Prizes</label>
+                    <label style="font-size:0.75rem;">$100 Packs</label>
                     <input type="number" id="cfg-prizes-100" value="27" onchange="updateDrawState()">
                 </div>
                 <div>
@@ -313,29 +408,16 @@
                 <input type="text" id="cfg-excludes" placeholder="e.g. 5,12,45">
             </div>
 
-            <div class="btn-group-row" style="margin-top: 1.5rem; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
-                <button class="btn draw-btn" onclick="runDraw(100)" id="btn-draw-100" style="font-size: 0.9rem; padding: 0.8rem; background-color: #d97706; border-color: #b45309; color: white;">🎰 DRAW $100</button>
-                <button class="btn draw-btn" onclick="runDraw(50)" id="btn-draw-50" style="font-size: 0.9rem; padding: 0.8rem; background-color: #2563eb; border-color: #1d4ed8; color: white;">🎰 DRAW $50</button>
-                <button class="btn draw-btn" onclick="runDraw(25)" id="btn-draw-25" style="font-size: 0.9rem; padding: 0.8rem; background-color: #10b981; border-color: #059669; color: white;">🎰 DRAW $25</button>
+            <div class="form-group">
+                <label>Next Draw Time</label>
+                <input type="datetime-local" id="drawTime" onchange="updateTime()">
             </div>
-            <div id="draw-rolling-label" style="display: none; text-align: center; font-size: 1.1rem; font-weight: bold; margin-top: 1.2rem; color: #f59e0b;">🎰 ROLLING FOR WINNER...</div>
-            
-            <div style="display: flex; flex-direction: column; gap: 0.8rem; margin-top: 1.5rem; border-top: 1px solid var(--border); padding-top: 1rem;">
-                <span id="draw-status" style="color: var(--text-muted); font-size: 0.85rem; text-align: center;">
-                    Remaining: <strong id="lbl-left-100" style="color: #f59e0b;">27</strong> x $100 | 
-                    <strong id="lbl-left-50" style="color: #3b82f6;">19</strong> x $50 | 
-                    <strong id="lbl-left-25" style="color: #10b981;">24</strong> x $25
-                </span>
-                <div style="display: flex; gap: 10px;">
-                    <button class="btn btn-danger" onclick="resetDraw()" style="flex: 1; padding: 0.5rem; font-size: 0.9rem; background-color: #ef4444; border-color: #dc2626; color: white;">Reset Draws</button>
-                    <button class="btn btn-primary" onclick="printManualRecordSheet()" style="flex: 1; padding: 0.5rem; font-size: 0.9rem; background-color: #2563eb; border-color: #1d4ed8; color: white;">🖨️ Print Checklist</button>
-                </div>
-            </div>
-            
+
+            <button class="btn btn-danger" onclick="resetDraw()" style="width: 100%; margin-top: 1rem; background-color: #ef4444; border-color: #dc2626; color: white;">Reset All Draws</button>
         </div>
 
-        <!-- Export Controls -->
-        <div class="card" style="grid-column: 1 / -1; margin-top: 1rem;">
+        <!-- Export Controls (Admin Only) -->
+        <div class="card admin-only">
             <h2>End of Night Reports</h2>
             <p style="font-size: 0.9rem; color: var(--text-muted); margin-top: -0.5rem; margin-bottom: 1rem;">
                 Finished the raffle? Export a detailed summary of all drawn tickets.
@@ -347,7 +429,7 @@
         </div>
 
         <!-- QR Codes Links -->
-        <div class="card no-print" style="grid-column: 1 / -1; margin-top: 1rem;">
+        <div class="card no-print">
             <h2>Quick Access QR Codes</h2>
             <p style="font-size: 0.9rem; color: var(--text-muted); margin-top: -0.5rem; margin-bottom: 1rem;">
                 Scan these codes on any smartphone or tablet connected to your network to instantly open the interface!
@@ -384,10 +466,20 @@
                 .replace(/'/g, '&#x27;');
         }
 
+        function applyRoleView() {
+            const role = sessionStorage.getItem('mmr_role') || 'admin';
+            if (role === 'host') {
+                document.body.classList.add('role-host');
+            } else {
+                document.body.classList.remove('role-host');
+            }
+        }
+
         // ── PIN Access Control ───────────────────────────────────────────
         (function checkAccess() {
             if (sessionStorage.getItem('mmr_authed') === 'true') {
                 document.getElementById('pin-overlay').style.display = 'none';
+                applyRoleView();
                 return;
             }
             const pinInput = document.getElementById('pin-input-r');
@@ -402,7 +494,14 @@
             const stored = localStorage.getItem('mmr_pin') || '5551';
             if (entered === stored) {
                 sessionStorage.setItem('mmr_authed', 'true');
+                sessionStorage.setItem('mmr_role', 'admin');
                 document.getElementById('pin-overlay').style.display = 'none';
+                applyRoleView();
+            } else if (entered === '9292') {
+                sessionStorage.setItem('mmr_authed', 'true');
+                sessionStorage.setItem('mmr_role', 'host');
+                document.getElementById('pin-overlay').style.display = 'none';
+                applyRoleView();
             } else {
                 document.getElementById('pin-error-r').style.display = 'block';
                 document.getElementById('pin-input-r').value = '';
@@ -682,14 +781,14 @@
             if (state.draw.prizes50 === undefined) state.draw.prizes50 = 19;
             if (state.draw.prizes25 === undefined) state.draw.prizes25 = 24;
 
-            // Check remaining counts for specific prize size
+            // Check remaining counts for specific prize size (skip for bonus)
             if (prizeSize === 100 && state.draw.prizes100 <= 0) { alert('No $100 prizes left!'); return; }
             if (prizeSize === 50 && state.draw.prizes50 <= 0) { alert('No $50 prizes left!'); return; }
             if (prizeSize === 25 && state.draw.prizes25 <= 0) { alert('No $25 prizes left!'); return; }
-            if (state.draw.prizesLeft <= 0) { alert('No prizes left to draw!'); return; }
+            if (prizeSize !== 'bonus' && state.draw.prizesLeft <= 0) { alert('No prizes left to draw!'); return; }
 
-            const min = parseInt(document.getElementById('cfg-min').value) || 1;
-            const max = parseInt(document.getElementById('cfg-max').value) || 999;
+            const min = parseInt(document.getElementById('cfg-min').value) || 1212;
+            const max = parseInt(document.getElementById('cfg-max').value) || 5000;
             const excludeStr = document.getElementById('cfg-excludes').value;
             const excludes = excludeStr.split(',').map(n => parseInt(n.trim())).filter(n => !isNaN(n));
             
@@ -748,6 +847,28 @@
             }, 3000);
         }
 
+        function runRedraw(prizeSize) {
+            if (isDrawing) return;
+            const label = prizeSize === 'bonus' ? 'Bonus' : `$${prizeSize}`;
+            if (confirm(`Are you sure you want to invalidate the last drawn ${label} ticket and redraw a new winner?`)) {
+                const index = state.draw.drawnNumbers.findIndex(d => (typeof d === 'object' ? d.prize : 0) === prizeSize);
+                if (index !== -1) {
+                    state.draw.drawnNumbers.splice(index, 1);
+                    if (prizeSize === 100) state.draw.prizes100 = Math.max(0, (state.draw.prizes100 || 0) + 1);
+                    else if (prizeSize === 50) state.draw.prizes50 = Math.max(0, (state.draw.prizes50 || 0) + 1);
+                    else if (prizeSize === 25) state.draw.prizes25 = Math.max(0, (state.draw.prizes25 || 0) + 1);
+                    
+                    state.draw.prizesLeft = (state.draw.prizes100 || 0) + (state.draw.prizes50 || 0) + (state.draw.prizes25 || 0);
+                    broadcast();
+                    updateUI();
+                } else {
+                    alert(`No drawn tickets found for ${label} category to redraw!`);
+                    return;
+                }
+                runDraw(prizeSize);
+            }
+        }
+
         function triggerConfetti() {
             bc.postMessage({ type: 'CONFETTI' });
             writeFirebase({ cmd: { type: 'CONFETTI', ts: Date.now() } });
@@ -761,8 +882,8 @@
         }
 
         function generateReportText() {
-            const min = parseInt(document.getElementById('cfg-min').value) || 1;
-            const max = parseInt(document.getElementById('cfg-max').value) || 999;
+            const min = parseInt(document.getElementById('cfg-min').value) || 1212;
+            const max = parseInt(document.getElementById('cfg-max').value) || 5000;
             const excludeStr = document.getElementById('cfg-excludes').value;
             const t100 = parseInt(document.getElementById('cfg-prizes-100').value) || 27;
             const t50 = parseInt(document.getElementById('cfg-prizes-50').value) || 19;
@@ -806,7 +927,7 @@
                     <hr>
                     <h3>Draw Configuration</h3>
                     <ul>
-                        <li><strong>Ticket Range:</strong> ${document.getElementById('cfg-min').value || 1} to ${document.getElementById('cfg-max').value || 999}</li>
+                        <li><strong>Ticket Range:</strong> ${document.getElementById('cfg-min').value || 1212} to ${document.getElementById('cfg-max').value || 5000}</li>
                         <li><strong>Excluded Numbers:</strong> ${document.getElementById('cfg-excludes').value || 'None'}</li>
                         <li><strong>Total Prizes Initially:</strong> ${total}</li>
                         <li><strong>Prizes Remaining:</strong> ${state.draw.prizesLeft}</li>

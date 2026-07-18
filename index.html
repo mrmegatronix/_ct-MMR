@@ -292,36 +292,61 @@
             text-shadow: 0 0 15px var(--primary-glow);
         }
         .number-display {
-            font-size: 24vmin;
-            font-weight: 900;
-            color: white;
-            text-shadow: 0 0 30px var(--primary), 0 0 80px var(--primary-glow), 0 0 120px var(--primary);
-            background: rgba(0,0,0,0.6);
-            backdrop-filter: blur(20px);
-            padding: 3vmin 8vmin;
-            border-radius: 4rem;
-            border: 6px solid var(--primary);
-            box-shadow: 0 0 50px var(--primary-glow), inset 0 0 30px var(--primary-glow);
-            min-width: 600px;
+            background: transparent;
+            padding: 0;
+            border-radius: 0;
+            border: none;
+            box-shadow: none;
+            min-width: unset;
             text-align: center;
             line-height: 1;
-            animation: epic-pulse 2s infinite alternate;
+            animation: none;
         }
-        @keyframes epic-pulse {
-            from { text-shadow: 0 0 30px var(--primary), 0 0 80px var(--primary-glow), 0 0 120px var(--primary); box-shadow: 0 0 50px var(--primary-glow), inset 0 0 30px var(--primary-glow); transform: scale(1); }
-            to { text-shadow: 0 0 50px #fff, 0 0 100px var(--primary), 0 0 150px var(--primary); box-shadow: 0 0 80px var(--primary), inset 0 0 50px var(--primary-glow); transform: scale(1.05); }
+
+        /* Slot Machine theatrical styles */
+        .slot-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1.5vmin;
         }
-        .number-display.rolling {
-            animation: slot-blur 0.1s infinite alternate;
-            color: #ffffff;
-            text-shadow: 0 0 20px rgba(255,255,255,0.8);
-            border-color: rgba(255,255,255,0.4);
-            box-shadow: 0 0 30px rgba(255,255,255,0.2);
-            transform: scale(1);
+        .slot-digit {
+            display: inline-block;
+            width: 14vmin;
+            height: 20vmin;
+            line-height: 20vmin;
+            font-size: 16vmin;
+            font-weight: 900;
+            color: white;
+            text-align: center;
+            background: linear-gradient(180deg, #1e293b 0%, #0b0f19 50%, #020617 100%);
+            border: 5px solid var(--primary);
+            border-radius: 2rem;
+            box-shadow: inset 0 0 25px rgba(0,0,0,0.9), 0 10px 20px rgba(0,0,0,0.5);
+            transition: border-color 0.25s, box-shadow 0.25s, transform 0.25s;
+            position: relative;
+            overflow: hidden;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
         }
-        @keyframes slot-blur {
-            from { transform: scale(0.98) translateY(-8px); filter: blur(2px); }
-            to { transform: scale(1.02) translateY(8px); filter: blur(4px); }
+        .slot-digit.rolling {
+            animation: slot-digit-roll 0.08s infinite linear;
+        }
+        @keyframes slot-digit-roll {
+            0% { transform: translateY(-5px); filter: blur(1px); }
+            50% { transform: translateY(5px); filter: blur(2px); }
+            100% { transform: translateY(-5px); filter: blur(1px); }
+        }
+        .slot-digit.locked {
+            border-color: #ffd700;
+            color: #ffd700;
+            text-shadow: 0 0 20px #ffd700, 0 0 40px #f59e0b;
+            box-shadow: inset 0 0 25px rgba(255,215,0,0.3), 0 0 30px rgba(255,215,0,0.5);
+            animation: slot-lock-bounce 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        @keyframes slot-lock-bounce {
+            0% { transform: scale(1.4); filter: brightness(2); }
+            70% { transform: scale(0.9); }
+            100% { transform: scale(1); filter: brightness(1); }
         }
 
         .draw-flash-bg::after {
@@ -597,8 +622,15 @@
             </div>
             
             <div class="lottery-container">
-                <div class="draw-title">Winning Number</div>
-                <div class="number-display" id="lottery-number">---</div>
+                <div class="draw-title" id="draw-view-title">Winning Number</div>
+                <div class="number-display" id="lottery-number">
+                    <div class="slot-container">
+                        <span class="slot-digit" id="slot-3">-</span>
+                        <span class="slot-digit" id="slot-2">-</span>
+                        <span class="slot-digit" id="slot-1">-</span>
+                        <span class="slot-digit" id="slot-0">-</span>
+                    </div>
+                </div>
             </div>
 
             <div class="drawn-numbers-bar" style="max-height: 38vh; bottom: 1.5rem;">
@@ -730,10 +762,10 @@
                 updateState(cleanPayload);
             }
             if (data.type === 'START_ROLL') {
-                startLotteryRoll();
+                startLotteryRoll(data.payload ? data.payload.prize : null);
             }
             if (data.type === 'STOP_ROLL') {
-                stopLotteryRoll(data.payload.number);
+                stopLotteryRoll(data.payload.number, data.payload.prize);
             }
             if (data.type === 'CONFETTI') {
                 triggerConfetti();
@@ -838,6 +870,33 @@
                 list100.innerHTML = renderGroupHtml(numbers100, '#d97706', 'rgba(217,119,6,0.5)');
                 list50.innerHTML = renderGroupHtml(numbers50, '#2563eb', 'rgba(37,99,235,0.5)');
                 list25.innerHTML = renderGroupHtml(numbers25, '#10b981', 'rgba(16,185,129,0.5)');
+            }
+
+            // Render last drawn number in slots if not currently rolling
+            const slotsContainer = document.querySelector('.slot-container');
+            if (slotsContainer && (!rollInterval || slotsContainer.querySelectorAll('.rolling').length === 0)) {
+                const curNum = state.draw.currentNumber || '---';
+                const curPrize = state.draw.currentPrize;
+                const titleEl = document.getElementById('draw-view-title');
+                if (titleEl) {
+                    if (curPrize === 'bonus') {
+                        titleEl.innerText = "BONUS PRIZE DRAW";
+                        titleEl.style.color = "#a5b4fc";
+                    } else {
+                        titleEl.innerText = "Winning Number";
+                        titleEl.style.color = "white";
+                    }
+                }
+                
+                const numStr = String(curNum).padStart(4, '0');
+                let html = '';
+                for (let i = 0; i < numStr.length; i++) {
+                    const char = numStr[i];
+                    const isDash = char === '-';
+                    const cssClass = isDash ? 'slot-digit' : 'slot-digit locked';
+                    html += `<span class="${cssClass}">${char}</span>`;
+                }
+                slotsContainer.innerHTML = html;
             }
 
             // Persist to localStorage (excluding slides)
@@ -1046,39 +1105,107 @@
 
         // Draw Logic
         let rollInterval;
-        function startLotteryRoll() {
-            clearInterval(rollInterval); // Safety: Stop any existing zombie intervals
-            lottoNumberEl.classList.add('rolling');
+        let lockTimeouts = [];
+        
+        function startLotteryRoll(prizeType) {
+            clearInterval(rollInterval);
+            lockTimeouts.forEach(t => clearTimeout(t));
+            lockTimeouts = [];
+            
+            const titleEl = document.getElementById('draw-view-title');
+            if (titleEl) {
+                if (prizeType === 'bonus') {
+                    titleEl.innerText = "BONUS PRIZE DRAW";
+                    titleEl.style.color = "#a5b4fc";
+                } else {
+                    titleEl.innerText = "Winning Number";
+                    titleEl.style.color = "white";
+                }
+            }
+            
             document.getElementById('view-draw').classList.add('draw-flash-bg');
+            
+            // Standard slot digits layout
+            const container = document.querySelector('.slot-container');
+            if (container) {
+                container.innerHTML = `
+                    <span class="slot-digit rolling">-</span>
+                    <span class="slot-digit rolling">-</span>
+                    <span class="slot-digit rolling">-</span>
+                    <span class="slot-digit rolling">-</span>
+                `;
+            }
+            
+            const slots = document.querySelectorAll('.slot-digit');
             rollInterval = setInterval(() => {
-                lottoNumberEl.innerText = Math.floor(Math.random() * 999) + 1;
+                slots.forEach(slot => {
+                    if (slot.classList.contains('rolling')) {
+                        slot.innerText = Math.floor(Math.random() * 10);
+                    }
+                });
             }, 50);
         }
 
-        function stopLotteryRoll(finalNumber) {
+        function stopLotteryRoll(finalNumber, prizeType) {
             clearInterval(rollInterval);
-            lottoNumberEl.classList.remove('rolling');
+            lockTimeouts.forEach(t => clearTimeout(t));
+            lockTimeouts = [];
             
-            const drawView = document.getElementById('view-draw');
-            drawView.classList.remove('draw-flash-bg');
-            drawView.classList.add('winner-gold-bg');
-            setTimeout(() => drawView.classList.remove('winner-gold-bg'), 2500);
-            
-            lottoNumberEl.innerText = finalNumber;
-            triggerConfetti();
-
-            // Announcer Voice - AFTER number is shown
-            const cfg = window.MMR_CONFIG;
-            const voiceOn = localStorage.getItem('mmr_voice_on') !== 'false'; // default on
-            if ('speechSynthesis' in window && voiceOn) {
-                window.speechSynthesis.cancel();
-                const msg = new SpeechSynthesisUtterance("Ticket number " + finalNumber + "!");
-                msg.volume = 1;
-                msg.rate = (cfg && cfg.VOICE_RATE) || 0.9;
-                msg.pitch = (cfg && cfg.VOICE_PITCH) || 0.8;
-                // Use a small delay to ensure the DOM has painted the number
-                setTimeout(() => window.speechSynthesis.speak(msg), 150);
+            const numStr = String(finalNumber).padStart(4, '0');
+            const container = document.querySelector('.slot-container');
+            if (container) {
+                let html = '';
+                for (let i = 0; i < numStr.length; i++) {
+                    html += `<span class="slot-digit rolling">-</span>`;
+                }
+                container.innerHTML = html;
             }
+            
+            const slots = document.querySelectorAll('.slot-digit');
+            
+            rollInterval = setInterval(() => {
+                slots.forEach(slot => {
+                    if (slot.classList.contains('rolling')) {
+                        slot.innerText = Math.floor(Math.random() * 10);
+                    }
+                });
+            }, 50);
+            
+            slots.forEach((slot, index) => {
+                const delay = 800 + index * 600;
+                const t = setTimeout(() => {
+                    slot.classList.remove('rolling');
+                    slot.classList.add('locked');
+                    slot.innerText = numStr[index];
+                    
+                    if (index === slots.length - 1) {
+                        clearInterval(rollInterval);
+                        
+                        const drawView = document.getElementById('view-draw');
+                        drawView.classList.remove('draw-flash-bg');
+                        drawView.classList.add('winner-gold-bg');
+                        setTimeout(() => drawView.classList.remove('winner-gold-bg'), 2500);
+                        
+                        triggerConfetti();
+                        
+                        const cfg = window.MMR_CONFIG;
+                        const voiceOn = localStorage.getItem('mmr_voice_on') !== 'false';
+                        if ('speechSynthesis' in window && voiceOn) {
+                            window.speechSynthesis.cancel();
+                            let label = "Ticket number ";
+                            if (prizeType === 'bonus') {
+                                label = "Bonus prize, ticket number ";
+                            }
+                            const msg = new SpeechSynthesisUtterance(label + finalNumber + "!");
+                            msg.volume = 1;
+                            msg.rate = (cfg && cfg.VOICE_RATE) || 0.9;
+                            msg.pitch = (cfg && cfg.VOICE_PITCH) || 0.8;
+                            setTimeout(() => window.speechSynthesis.speak(msg), 150);
+                        }
+                    }
+                }, delay);
+                lockTimeouts.push(t);
+            });
         }
 
         // Confetti Logic
@@ -1333,8 +1460,8 @@
                 // Handle draw commands
                 if (data.cmd && data.cmd.ts > lastFbCmdTs) {
                     lastFbCmdTs = data.cmd.ts;
-                    if (data.cmd.type === 'START_ROLL') startLotteryRoll();
-                    else if (data.cmd.type === 'STOP_ROLL') stopLotteryRoll(data.cmd.number);
+                    if (data.cmd.type === 'START_ROLL') startLotteryRoll(data.cmd.prize);
+                    else if (data.cmd.type === 'STOP_ROLL') stopLotteryRoll(data.cmd.number, data.cmd.prize);
                     else if (data.cmd.type === 'CONFETTI') triggerConfetti();
                     else if (data.cmd.type === 'FORCE_SYNC') fetchAndApplySlides();
                 }

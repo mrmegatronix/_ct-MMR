@@ -433,7 +433,12 @@
             const stored = localStorage.getItem('mmr_pin') || '5551';
             if (entered === stored) {
                 sessionStorage.setItem('mmr_authed', 'true');
+                sessionStorage.setItem('mmr_role', 'admin');
                 document.getElementById('pin-overlay').style.display = 'none';
+            } else if (entered === '9292') {
+                sessionStorage.setItem('mmr_authed', 'true');
+                sessionStorage.setItem('mmr_role', 'host');
+                window.location.href = 'remote.html';
             } else {
                 document.getElementById('pin-error').style.display = 'block';
                 document.getElementById('pin-input').value = '';
