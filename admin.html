@@ -328,6 +328,53 @@
         </div>
     </div>
 
+    <!-- Draw Configuration -->
+    <div class="card" style="margin-top: 2rem;">
+        <h2>🎰 Draw Configuration & Prizes</h2>
+        <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1.5rem;">
+            Set ticket range bounds, prize packs, excluded numbers, and draw date/time.
+        </p>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+            <div class="form-group">
+                <label>Min Ticket</label>
+                <input type="number" id="cfg-min" value="1212" onchange="updateDrawState()">
+            </div>
+            <div class="form-group">
+                <label>Max Ticket</label>
+                <input type="number" id="cfg-max" value="5000" onchange="updateDrawState()">
+            </div>
+        </div>
+
+        <div class="form-group" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 1rem;">
+            <div>
+                <label style="font-size:0.75rem;">$100 Packs</label>
+                <input type="number" id="cfg-prizes-100" value="27" onchange="updateDrawState()">
+            </div>
+            <div>
+                <label style="font-size:0.75rem;">$50 Prizes</label>
+                <input type="number" id="cfg-prizes-50" value="19" onchange="updateDrawState()">
+            </div>
+            <div>
+                <label style="font-size:0.75rem;">$25 Prizes</label>
+                <input type="number" id="cfg-prizes-25" value="24" onchange="updateDrawState()">
+            </div>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 1rem;">
+            <label>Excluded Numbers (comma separated)</label>
+            <input type="text" id="cfg-excludes" placeholder="e.g. 5,12,45" onchange="updateDrawState()">
+        </div>
+
+        <div class="form-group" style="margin-bottom: 1.5rem;">
+            <label>Next Draw Time</label>
+            <input type="datetime-local" id="drawTime" onchange="updateTime()">
+        </div>
+
+        <button class="btn btn-danger" onclick="resetDraw()" style="width: 100%; background-color: #ef4444; border-color: #dc2626; color: white;">Reset All Draws</button>
+        <div id="draw-config-status" class="status"></div>
+    </div>
+
     <!-- Firebase Config Card -->
     <div class="card" style="margin-top: 2rem;">
         <h2>🌐 Cross-Device Sync (Firebase)</h2>
@@ -494,9 +541,26 @@
         const bc = new BroadcastChannel('mmr_sync');
         const DEFAULT_SLIDES_URL = (window.MMR_CONFIG && window.MMR_CONFIG.GSHEETS_URL) || '';
 
-        // Global State (in-memory only for slides)
+        // Global State
         let state = {
+            activeView: 'slides',
             slides: [],
+            lastSlideCmdTs: 0,
+            draw: {
+                min: 1212,
+                max: 5000,
+                excludes: [],
+                prizes100: 27,
+                prizes50: 19,
+                prizes25: 24,
+                cfgPrizes100: 27,
+                cfgPrizes50: 19,
+                cfgPrizes25: 24,
+                prizesLeft: 70,
+                isRolling: false,
+                currentNumber: '---',
+                drawnNumbers: []
+            },
             disabledSlides: []
         };
 
@@ -532,8 +596,23 @@
             if (savedState) {
                 try {
                     const parsed = JSON.parse(savedState);
+                    state.activeView = parsed.activeView || 'slides';
+                    state.lastSlideCmdTs = parsed.lastSlideCmdTs || 0;
+                    if (parsed.draw) state.draw = { ...state.draw, ...parsed.draw };
                     state.disabledSlides = parsed.disabledSlides || [];
+                    if (parsed.nextDrawTime) state.nextDrawTime = parsed.nextDrawTime;
                 } catch(e){}
+            }
+
+            // Populate form inputs
+            document.getElementById('cfg-min').value = state.draw.min !== undefined ? state.draw.min : 1212;
+            document.getElementById('cfg-max').value = state.draw.max !== undefined ? state.draw.max : 5000;
+            document.getElementById('cfg-prizes-100').value = state.draw.cfgPrizes100 !== undefined ? state.draw.cfgPrizes100 : 27;
+            document.getElementById('cfg-prizes-50').value = state.draw.cfgPrizes50 !== undefined ? state.draw.cfgPrizes50 : 19;
+            document.getElementById('cfg-prizes-25').value = state.draw.cfgPrizes25 !== undefined ? state.draw.cfgPrizes25 : 24;
+            document.getElementById('cfg-excludes').value = (state.draw.excludes || []).join(',');
+            if (state.nextDrawTime) {
+                document.getElementById('drawTime').value = state.nextDrawTime;
             }
 
             // Fetch slides immediately on load (in-memory) to populate the admin visibility checklist
@@ -552,6 +631,90 @@
                 }
             } catch(e) {
                 console.error('[MMR Admin] Failed to fetch slides for checklist:', e);
+            }
+        }
+
+        function broadcast() {
+            const stateToSave = { ...state };
+            delete stateToSave.slides;
+            localStorage.setItem('mmr_state_v5', JSON.stringify(stateToSave));
+            bc.postMessage({ type: 'STATE_UPDATE', payload: stateToSave });
+            writeFirebase(stateToSave);
+            
+            // Temporary success indicator
+            const el = document.getElementById('draw-config-status');
+            if (el) {
+                el.innerText = '✅ Saved & Synced!';
+                el.className = 'status status-success';
+                el.style.display = 'block';
+                setTimeout(() => el.style.display = 'none', 2000);
+            }
+        }
+
+        function updateDrawState() {
+            const min = parseInt(document.getElementById('cfg-min').value) || 1212;
+            const max = parseInt(document.getElementById('cfg-max').value) || 5000;
+            const t100 = parseInt(document.getElementById('cfg-prizes-100').value) || 27;
+            const t50 = parseInt(document.getElementById('cfg-prizes-50').value) || 19;
+            const t25 = parseInt(document.getElementById('cfg-prizes-25').value) || 24;
+            const excludesStr = document.getElementById('cfg-excludes').value || '';
+            
+            const excludes = excludesStr.split(',')
+                .map(s => parseInt(s.trim()))
+                .filter(n => !isNaN(n));
+            
+            const n100 = state.draw.drawnNumbers.filter(d => (typeof d === 'object' ? d.prize : 0) === 100).length;
+            const n50 = state.draw.drawnNumbers.filter(d => (typeof d === 'object' ? d.prize : 0) === 50).length;
+            const n25 = state.draw.drawnNumbers.filter(d => (typeof d === 'object' ? d.prize : 0) === 25).length;
+            
+            state.draw.min = min;
+            state.draw.max = max;
+            state.draw.excludes = excludes;
+            state.draw.cfgPrizes100 = t100;
+            state.draw.cfgPrizes50 = t50;
+            state.draw.cfgPrizes25 = t25;
+            
+            state.draw.prizes100 = Math.max(0, t100 - n100);
+            state.draw.prizes50 = Math.max(0, t50 - n50);
+            state.draw.prizes25 = Math.max(0, t25 - n25);
+            state.draw.prizesLeft = state.draw.prizes100 + state.draw.prizes50 + state.draw.prizes25;
+            
+            if (state.draw.prizesLeft === 0 && state.draw.drawnNumbers.length > 0) {
+                state.draw.drawsFinishedTime = state.draw.drawsFinishedTime || new Date().toISOString();
+            } else {
+                state.draw.drawsFinishedTime = null;
+            }
+            
+            broadcast();
+        }
+
+        function updateTime() {
+            const val = document.getElementById('drawTime').value;
+            if (val) {
+                state.nextDrawTime = val;
+                broadcast();
+            }
+        }
+
+        function resetDraw() {
+            if (confirm('Are you sure you want to clear all drawn numbers and reset?')) {
+                if (confirm('CRITICAL: This will delete all draw history for tonight. Are you absolutely sure?')) {
+                    state.draw.drawnNumbers = [];
+                    state.draw.currentNumber = '---';
+                    state.draw.currentPrize = null;
+                    state.draw.drawsFinishedTime = null;
+                    
+                    const t100 = parseInt(document.getElementById('cfg-prizes-100').value) || 27;
+                    const t50 = parseInt(document.getElementById('cfg-prizes-50').value) || 19;
+                    const t25 = parseInt(document.getElementById('cfg-prizes-25').value) || 24;
+                    
+                    state.draw.prizes100 = t100;
+                    state.draw.prizes50 = t50;
+                    state.draw.prizes25 = t25;
+                    state.draw.prizesLeft = t100 + t50 + t25;
+                    
+                    broadcast();
+                }
             }
         }
 

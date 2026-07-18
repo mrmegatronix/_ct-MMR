@@ -440,10 +440,6 @@
                     <img id="qr-display" alt="Display QR Code" style="background: white; padding: 0.5rem; border-radius: 0.5rem; width: 140px; height: 140px;">
                 </div>
                 <div>
-                    <h3 style="margin-bottom: 0.5rem; font-size: 1rem;">Admin Panel</h3>
-                    <img id="qr-admin" alt="Admin QR Code" style="background: white; padding: 0.5rem; border-radius: 0.5rem; width: 140px; height: 140px;">
-                </div>
-                <div>
                     <h3 style="margin-bottom: 0.5rem; font-size: 1rem;">Remote Control</h3>
                     <img id="qr-remote" alt="Remote QR Code" style="background: white; padding: 0.5rem; border-radius: 0.5rem; width: 140px; height: 140px;">
                 </div>
@@ -722,6 +718,12 @@
             document.getElementById('lbl-left-100').innerText = state.draw.prizes100;
             document.getElementById('lbl-left-50').innerText = state.draw.prizes50;
             document.getElementById('lbl-left-25').innerText = state.draw.prizes25;
+
+            // Sync other configuration fields from state
+            if (state.draw.min !== undefined) document.getElementById('cfg-min').value = state.draw.min;
+            if (state.draw.max !== undefined) document.getElementById('cfg-max').value = state.draw.max;
+            if (state.draw.excludes !== undefined) document.getElementById('cfg-excludes').value = (state.draw.excludes || []).join(',');
+            if (state.nextDrawTime !== undefined) document.getElementById('drawTime').value = state.nextDrawTime;
         }
 
         function setView(view) {
@@ -1181,7 +1183,6 @@
             
             const urls = {
                 'qr-display': baseUrl + '/index.html',
-                'qr-admin': baseUrl + '/admin.html',
                 'qr-remote': baseUrl + '/remote.html'
             };
 

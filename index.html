@@ -709,12 +709,7 @@
             </div>
         </div>
 
-        <!-- Slide Controls Overlay (Only on Display) -->
-        <div id="slide-controls-overlay">
-            <button class="control-btn" onclick="prevSlide()" title="Previous Slide">⏮</button>
-            <button class="control-btn" id="play-pause-btn" onclick="toggleSlidePlay()" title="Play/Pause">⏸</button>
-            <button class="control-btn" onclick="nextSlide()" title="Next Slide">⏭</button>
-        </div>
+
 
     </div>
 
@@ -1491,6 +1486,30 @@
         }
 
         init();
+
+        // ── Screen Wake Lock (Keep Screen On) ──────────────────────────────
+        let wakeLock = null;
+        async function requestWakeLock() {
+            try {
+                if ('wakeLock' in navigator) {
+                    wakeLock = await navigator.wakeLock.request('screen');
+                    console.log('[MMR] Screen Wake Lock acquired.');
+                    wakeLock.addEventListener('release', () => {
+                        console.log('[MMR] Screen Wake Lock released.');
+                    });
+                }
+            } catch (err) {
+                console.warn('[MMR] Screen Wake Lock request failed:', err);
+            }
+        }
+        
+        document.addEventListener('visibilitychange', async () => {
+            if (wakeLock !== null && document.visibilityState === 'visible') {
+                await requestWakeLock();
+            }
+        });
+        
+        requestWakeLock();
 
         // ── Firebase cross-device sync (optional) ──────────────────────────
         let fbDbUrl = (window.MMR_CONFIG && window.MMR_CONFIG.FIREBASE_DB_URL) || '';
