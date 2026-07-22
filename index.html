@@ -829,6 +829,9 @@
             if (cmd === 'toggle') toggleSlidePlay();
         }
 
+        let lastRenderedSlidesJson = '';
+        let lastActiveView = '';
+
         function updateState(newState) {
             // Deep merge draw object if present
             if (newState.draw) {
@@ -872,10 +875,13 @@
                 else views[k].classList.remove('active');
             });
 
-            // Slides rendering
-            if (state.activeView === 'slides') {
+            // Slides rendering (only when data or activeView changes to optimize timer performance)
+            const currentSlidesJson = JSON.stringify(state.slides || []);
+            if (state.activeView === 'slides' && (state.activeView !== lastActiveView || currentSlidesJson !== lastRenderedSlidesJson)) {
                 renderSlides(state.slides);
+                lastRenderedSlidesJson = currentSlidesJson;
             }
+            lastActiveView = state.activeView;
 
             // Draw rendering
             prizesCountEl.innerText = state.draw.prizesLeft;
