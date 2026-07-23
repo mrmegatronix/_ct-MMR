@@ -317,16 +317,18 @@
             line-height: 20vmin;
             font-size: 16vmin;
             font-weight: 900;
+            font-family: 'Outfit', sans-serif;
             color: white;
             text-align: center;
-            background: linear-gradient(180deg, #1e293b 0%, #0b0f19 50%, #020617 100%);
-            border: 5px solid var(--primary);
-            border-radius: 2rem;
-            box-shadow: inset 0 0 25px rgba(0,0,0,0.9), 0 10px 20px rgba(0,0,0,0.5);
+            background: linear-gradient(180deg, #090d16 0%, #020617 100%);
+            border: 6px solid var(--primary);
+            border-radius: 2.5rem;
+            box-shadow: inset 0 0 30px rgba(0,0,0,0.95), 0 15px 30px rgba(0,0,0,0.7), 0 0 20px var(--primary-glow);
             transition: border-color 0.25s, box-shadow 0.25s, transform 0.25s;
             position: relative;
             overflow: hidden;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+            text-shadow: 0 4px 8px rgba(0,0,0,0.9);
+            -webkit-text-stroke: 1px rgba(0,0,0,0.3);
         }
         .slot-digit.rolling {
             animation: slot-digit-roll 0.08s infinite linear;
@@ -337,10 +339,10 @@
             100% { transform: translateY(-5px); filter: blur(1px); }
         }
         .slot-digit.locked {
-            border-color: #ffd700;
-            color: #ffd700;
-            text-shadow: 0 0 20px #ffd700, 0 0 40px #f59e0b;
-            box-shadow: inset 0 0 25px rgba(255,215,0,0.3), 0 0 30px rgba(255,215,0,0.5);
+            border-color: var(--primary);
+            color: #ffffff;
+            text-shadow: 0 0 15px #ffffff, 0 0 30px var(--primary), 0 0 50px var(--primary-glow);
+            box-shadow: inset 0 0 25px rgba(255,255,255,0.2), 0 0 40px var(--primary-glow);
             animation: slot-lock-bounce 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
         @keyframes slot-lock-bounce {
@@ -595,6 +597,28 @@
             }
         }
 
+        /* Dynamic Draw Category Color themes & Background Glows */
+        #view-draw {
+            background: radial-gradient(circle at center, var(--primary-glow) 0%, rgba(2,6,23,0.95) 75%, #020617 100%);
+            transition: background 0.8s ease-in-out;
+        }
+        #view-draw.prize-100 {
+            --primary: #ef4444;
+            --primary-glow: rgba(239, 68, 68, 0.45);
+        }
+        #view-draw.prize-50 {
+            --primary: #3b82f6;
+            --primary-glow: rgba(59, 130, 246, 0.45);
+        }
+        #view-draw.prize-25 {
+            --primary: #10b981;
+            --primary-glow: rgba(16, 185, 129, 0.45);
+        }
+        #view-draw.prize-bonus {
+            --primary: #ffd700;
+            --primary-glow: rgba(255, 215, 0, 0.45);
+        }
+
     </style>
     <script>
         if (window.self !== window.top) {
@@ -641,7 +665,7 @@
             <div class="drawn-numbers-bar" style="max-height: 38vh; bottom: 1.5rem;">
                 <div class="drawn-groups-wrapper" style="display: flex; gap: 2rem; width: 100%; justify-content: space-between; box-sizing: border-box;">
                     <div class="drawn-group-column" style="flex: 1; text-align: center;">
-                        <div style="font-size: 1.8rem; color: #f59e0b; font-weight: 900; margin-bottom: 0.5rem; text-transform: uppercase; border-bottom: 2px solid rgba(245,158,11,0.3); padding-bottom: 0.2rem; text-shadow: 0 0 10px rgba(245,158,11,0.2);">$100 Packs</div>
+                        <div style="font-size: 1.8rem; color: #ef4444; font-weight: 900; margin-bottom: 0.5rem; text-transform: uppercase; border-bottom: 2px solid rgba(239,68,68,0.3); padding-bottom: 0.2rem; text-shadow: 0 0 10px rgba(239,68,68,0.2);">$100 Packs</div>
                         <div class="drawn-list" id="drawn-list-100" style="display: flex; flex-wrap: wrap; gap: 0.4rem; justify-content: center; font-size: 2.6rem; font-weight: 800;">
                             <!-- $100 numbers -->
                         </div>
@@ -675,8 +699,8 @@
             </div>
             <div style="display: flex; gap: 3rem; width: 90%; max-width: 1400px; justify-content: space-between; flex: 1; align-items: stretch; margin-bottom: 2rem;">
                 <!-- $100 Column -->
-                <div style="flex: 1; background: rgba(0,0,0,0.6); border: 2px solid rgba(245,158,11,0.5); border-radius: 1.5rem; padding: 1.5rem; display: flex; flex-direction: column; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
-                    <div style="font-size: 1.8rem; color: #f59e0b; font-weight: 900; text-transform: uppercase; border-bottom: 2.5px solid rgba(245,158,11,0.3); padding-bottom: 0.5rem; margin-bottom: 1rem; text-shadow: 0 0 15px rgba(245,158,11,0.3);">
+                <div style="flex: 1; background: rgba(0,0,0,0.6); border: 2px solid rgba(239,68,68,0.5); border-radius: 1.5rem; padding: 1.5rem; display: flex; flex-direction: column; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+                    <div style="font-size: 1.8rem; color: #ef4444; font-weight: 900; text-transform: uppercase; border-bottom: 2.5px solid rgba(239,68,68,0.3); padding-bottom: 0.5rem; margin-bottom: 1rem; text-shadow: 0 0 15px rgba(239,68,68,0.3);">
                         $100 Packs
                     </div>
                     <div id="summary-list-100" style="display: flex; flex-wrap: wrap; gap: 0.75rem; justify-content: center; overflow-y: auto; flex: 1; align-content: flex-start; font-size: 2.4rem; font-weight: 800; color: #fff;">
@@ -875,6 +899,17 @@
                 else views[k].classList.remove('active');
             });
 
+            // Update draw view color category class
+            const drawView = document.getElementById('view-draw');
+            if (drawView) {
+                drawView.classList.remove('prize-100', 'prize-50', 'prize-25', 'prize-bonus');
+                const curPrize = state.draw.currentPrize;
+                if (curPrize === 100 || curPrize === '100') drawView.classList.add('prize-100');
+                else if (curPrize === 50 || curPrize === '50') drawView.classList.add('prize-50');
+                else if (curPrize === 25 || curPrize === '25') drawView.classList.add('prize-25');
+                else if (curPrize === 'bonus') drawView.classList.add('prize-bonus');
+            }
+
             // Slides rendering (only when data or activeView changes to optimize timer performance)
             const currentSlidesJson = JSON.stringify(state.slides || []);
             if (state.activeView === 'slides' && (state.activeView !== lastActiveView || currentSlidesJson !== lastRenderedSlidesJson)) {
@@ -919,12 +954,12 @@
                     }).join('');
                 };
                 
-                list100.innerHTML = renderGroupHtml(numbers100, '#d97706', 'rgba(217,119,6,0.5)');
+                list100.innerHTML = renderGroupHtml(numbers100, '#ef4444', 'rgba(239,68,68,0.5)');
                 list50.innerHTML = renderGroupHtml(numbers50, '#2563eb', 'rgba(37,99,235,0.5)');
                 list25.innerHTML = renderGroupHtml(numbers25, '#10b981', 'rgba(16,185,129,0.5)');
 
                 if (sum100 && sum50 && sum25) {
-                    sum100.innerHTML = renderGroupHtml(numbers100, '#d97706', 'rgba(217,119,6,0.5)', true);
+                    sum100.innerHTML = renderGroupHtml(numbers100, '#ef4444', 'rgba(239,68,68,0.5)', true);
                     sum50.innerHTML = renderGroupHtml(numbers50, '#2563eb', 'rgba(37,99,235,0.5)', true);
                     sum25.innerHTML = renderGroupHtml(numbers25, '#10b981', 'rgba(16,185,129,0.5)', true);
                 }
