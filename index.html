@@ -632,7 +632,7 @@
             line-height: 1;
         }
         .advert-title {
-            font-size: 6rem !important;
+            font-size: clamp(2.5rem, 6.5vw, 6rem) !important;
             font-weight: 900 !important;
             text-transform: uppercase !important;
             margin: 0 0 1.5rem 0 !important;
@@ -641,15 +641,19 @@
             text-shadow: 0 0 40px var(--title-glow);
             z-index: 2;
             line-height: 1.1 !important;
+            text-align: center !important;
+            max-width: 90% !important;
         }
         .advert-subtitle {
-            font-size: 2.8rem !important;
+            font-size: clamp(1.5rem, 3.8vw, 2.8rem) !important;
             font-weight: bold !important;
             color: #e2e8f0 !important;
             text-shadow: 0 2px 10px rgba(0,0,0,0.8);
             margin: 0 !important;
             z-index: 2;
             letter-spacing: 0.5px !important;
+            text-align: center !important;
+            max-width: 90% !important;
         }
         /* Custom Animated Clock */
         .custom-clock {
@@ -1363,7 +1367,7 @@
                         
                         ${slide.type === 'countdown' 
                             ? `<div class="slide-countdown slide-countdown-timer" style="position: relative; z-index: 2;">${timeHtml}</div>
-                               <div class="countdown-prizes-summary" style="position: relative; z-index: 2; margin-top: 3.5rem; display: flex; gap: 5.5rem; justify-content: center; font-size: 3.8rem; font-weight: bold; background: rgba(0,0,0,0.85); padding: 1.5rem 4rem; border-radius: 2rem; border: 2px solid rgba(255,255,255,0.2); box-shadow: 0 15px 35px rgba(0,0,0,0.6), 0 0 25px rgba(255,255,255,0.05);">
+                               <div class="countdown-prizes-summary" style="position: relative; z-index: 2; margin-top: 3.5rem; display: flex; gap: clamp(1.5rem, 4vw, 5.5rem); justify-content: center; font-size: clamp(1.6rem, 3.8vw, 3.8rem); font-weight: bold; background: rgba(0,0,0,0.85); padding: 1.5rem clamp(1.5rem, 4vw, 4rem); border-radius: 2rem; border: 2px solid rgba(255,255,255,0.2); box-shadow: 0 15px 35px rgba(0,0,0,0.6), 0 0 25px rgba(255,255,255,0.05); max-width: 90%; margin-left: auto; margin-right: auto; box-sizing: border-box;">
                                  <span style="color: #f59e0b; text-shadow: 0 0 15px rgba(245, 158, 11, 0.85), 0 0 30px rgba(245, 158, 11, 0.45);"><span id="count-100">${state.draw.prizes100 !== undefined ? state.draw.prizes100 : 27}</span> x $100</span>
                                  <span style="color: #3b82f6; text-shadow: 0 0 15px rgba(59, 130, 246, 0.85), 0 0 30px rgba(59, 130, 246, 0.45);"><span id="count-50">${state.draw.prizes50 !== undefined ? state.draw.prizes50 : 19}</span> x $50</span>
                                  <span style="color: #10b981; text-shadow: 0 0 15px rgba(16, 185, 129, 0.85), 0 0 30px rgba(16, 185, 129, 0.45);"><span id="count-25">${state.draw.prizes25 !== undefined ? state.draw.prizes25 : 24}</span> x $25</span>
