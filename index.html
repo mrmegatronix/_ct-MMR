@@ -718,6 +718,47 @@
             50% { transform: scale(1.1); filter: drop-shadow(0 0 45px var(--badge-glow)); }
         }
 
+        /* Cinematic Countdown Suspense Mode */
+        body.cinematic-mode #view-container {
+            background: radial-gradient(circle at center, #2d0606 0%, #020617 100%) !important;
+            animation: cinematic-ambient 6s infinite ease-in-out !important;
+        }
+        @keyframes cinematic-ambient {
+            0%, 100% { filter: brightness(1); }
+            50% { filter: brightness(0.65); }
+        }
+        
+        /* Last Minute Ticking Heartbeat */
+        .slide-countdown-timer.last-minute {
+            font-size: clamp(4.5rem, 15vmin, 10.5rem) !important;
+            color: #ef4444 !important;
+            text-shadow: 0 0 25px rgba(239, 68, 68, 0.8), 0 0 50px rgba(239, 68, 68, 0.4);
+            animation: heartbeat-pulse 1s infinite alternate ease-in-out !important;
+        }
+        @keyframes heartbeat-pulse {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.08); }
+        }
+        
+        /* Meat Time Announcement */
+        .meat-time-active {
+            font-size: clamp(2rem, 8vw, 6.5rem);
+            font-weight: 900;
+            color: #f59e0b; /* Gold */
+            text-shadow: 0 0 20px #f59e0b, 0 0 40px #ef4444, 0 10px 20px rgba(0,0,0,0.8);
+            animation: flash-announcement 1.5s infinite alternate ease-in-out;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            display: block;
+            text-align: center;
+            line-height: 1.25;
+            padding: 2rem;
+        }
+        @keyframes flash-announcement {
+            0% { transform: scale(0.95); opacity: 0.9; }
+            100% { transform: scale(1.05); opacity: 1; }
+        }
+
     </style>
     <script>
         if (window.self !== window.top) {
@@ -1124,7 +1165,7 @@
                 return '<span>Calculating next draw...</span>';
             }
 
-            if (diff <= 0) return '<span>Starting Now!</span>';
+            if (diff <= 0) return '<span class="meat-time-active">GET READY... IT\'S ... MEAT TIME!</span>';
             
             const days = Math.floor(diff / (1000 * 60 * 60 * 24));
             const hrs = Math.floor((diff / (1000 * 60 * 60)) % 24);
@@ -1142,10 +1183,41 @@
             return `${hrsDiv}${c}${minDiv}${c}${secDiv}`;
         }
 
+        let hasTriggeredCountdownFireworks = false;
+
         setInterval(() => {
+            const nzNow = getNZDate();
+            const target = state.nextDrawTime ? new Date(state.nextDrawTime) : null;
+            const diff = target ? target.getTime() - nzNow.getTime() : 0;
+
             const timeHtml = calculateTimeRemainingHTML();
             const dynamicCounters = document.querySelectorAll('.slide-countdown-timer');
-            dynamicCounters.forEach(el => el.innerHTML = timeHtml);
+            dynamicCounters.forEach(el => {
+                el.innerHTML = timeHtml;
+                // Add heartbeat pulse in the last minute
+                if (diff > 0 && diff <= 60 * 1000) {
+                    el.classList.add('last-minute');
+                } else {
+                    el.classList.remove('last-minute');
+                }
+            });
+
+            // Toggle cinematic mode on body during the last 10 minutes
+            if (diff > 0 && diff <= 10 * 60 * 1000) {
+                document.body.classList.add('cinematic-mode');
+            } else {
+                document.body.classList.remove('cinematic-mode');
+            }
+
+            // Trigger fireworks when countdown reaches 0 seconds
+            if (diff <= 0 && diff > -(2 * 60 * 60 * 1000)) {
+                if (!hasTriggeredCountdownFireworks) {
+                    triggerFireworks();
+                    hasTriggeredCountdownFireworks = true;
+                }
+            } else {
+                hasTriggeredCountdownFireworks = false;
+            }
 
             // Post-draw alternating loop: Congrats vs. Winning Numbers
             if (state.draw && state.draw.drawsFinishedTime) {
@@ -1584,6 +1656,64 @@
                 }, delay * 1000 + 50);
 
                 setTimeout(() => el.remove(), (duration + delay) * 1000 + 100);
+            }
+        }
+
+        // Fireworks Logic for countdown completion
+        function triggerFireworks() {
+            const container = document.getElementById('confetti-container');
+            if (!container) return;
+            container.innerHTML = '';
+            
+            // Spawn 8 separate fireworks over 6 seconds
+            for (let f = 0; f < 8; f++) {
+                setTimeout(() => {
+                    const centerX = 15 + Math.random() * 70; // 15% to 85% width
+                    const centerY = 20 + Math.random() * 50; // 20% to 70% height
+                    const colors = ['#ef4444', '#f59e0b', '#3b82f6', '#10b981', '#a855f7', '#ec4899', '#ffffff'];
+                    const fireworkColor = colors[Math.floor(Math.random() * colors.length)];
+                    const particles = 24;
+                    
+                    for (let i = 0; i < particles; i++) {
+                        const el = document.createElement('div');
+                        el.style.position = 'absolute';
+                        el.style.left = centerX + '%';
+                        el.style.top = centerY + 'vh';
+                        el.style.width = '12px';
+                        el.style.height = '12px';
+                        el.style.borderRadius = '50%';
+                        el.style.background = fireworkColor;
+                        el.style.boxShadow = `0 0 10px ${fireworkColor}, 0 0 20px ${fireworkColor}`;
+                        el.style.zIndex = '9999';
+                        el.style.transition = 'transform 1.8s cubic-bezier(0.1, 0.8, 0.3, 1), opacity 1.8s ease-out';
+                        
+                        // Add some meat emojis as special particles!
+                        if (i % 4 === 0) {
+                            el.innerText = ['🥩', '🥓', '🍗', '🍖'][Math.floor(Math.random() * 4)];
+                            el.style.background = 'none';
+                            el.style.boxShadow = 'none';
+                            el.style.fontSize = '2.5rem';
+                            el.style.lineHeight = '1';
+                        }
+                        
+                        container.appendChild(el);
+                        
+                        // Calculate explosion trajectory angle and distance
+                        const angle = (i / particles) * 2 * Math.PI + (Math.random() * 0.2 - 0.1);
+                        const distance = 120 + Math.random() * 180; // pixels
+                        const destX = Math.cos(angle) * distance;
+                        const destY = Math.sin(angle) * distance;
+                        
+                        // Trigger CSS animation frame
+                        setTimeout(() => {
+                            el.style.transform = `translate(${destX}px, ${destY}px) scale(0.5)`;
+                            el.style.opacity = '0';
+                        }, 50);
+                        
+                        // Clean up element
+                        setTimeout(() => el.remove(), 2000);
+                    }
+                }, f * 750);
             }
         }
 
