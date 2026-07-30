@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Avatars Waving Animation</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+            font-family: sans-serif;
+        }
+        .container {
+            position: relative;
+            width: 90vw;
+            height: 60vw;
+            max-width: 960px;
+            max-height: 640px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            border-radius: 12px;
+            overflow: hidden;
+            background: #fff;
+        }
+        img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: none;
+        }
+        img.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <img id="frame1" src="file:///home/zeus/.gemini/antigravity/brain/975dc5da-b3d9-43d4-8079-1fc7cce2c96e/joint_wave_frame1_1785375243479.jpg" class="active" alt="Frame 1">
+        <img id="frame2" src="file:///home/zeus/.gemini/antigravity/brain/975dc5da-b3d9-43d4-8079-1fc7cce2c96e/joint_wave_frame2_1785375281952.jpg" alt="Frame 2">
+    </div>
+
+    <script>
+        const img1 = document.getElementById('frame1');
+        const img2 = document.getElementById('frame2');
+        let state = true;
+
+        setInterval(() => {
+            if (state) {
+                img1.classList.remove('active');
+                img2.classList.add('active');
+            } else {
+                img2.classList.remove('active');
+                img1.classList.add('active');
+            }
+            state = !state;
+        }, 250);
+    </script>
+</body>
+</html>
