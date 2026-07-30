@@ -1646,7 +1646,8 @@
 
             return result.slice(1).map(clean => {
                 const type = (clean[2] || 'normal').toLowerCase();
-                if (!clean[0] && type !== 'avatar') return null;
+                if (type === 'avatar') return null; // Ignore Google Sheets avatar slides completely
+                if (!clean[0]) return null;
 
                 // RUTHLESS TBC/TBA filtering
                 const ruthlessString = [clean[0], clean[1], type, clean[6]].join(' ').toLowerCase();
