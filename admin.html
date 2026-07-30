@@ -401,6 +401,16 @@
         </div>
     </div>
 
+    <!-- Display View Mode Card -->
+    <div class="card" style="margin-top: 2rem;">
+        <h2>📺 Display View Mode</h2>
+        <div class="btn-group">
+            <button class="btn" onclick="setView('slides')" id="btn-slides" style="border-width: 2px;">📺 Slideshow</button>
+            <button class="btn" onclick="setView('draw')" id="btn-draw" style="border-width: 2px;">🎯 Draw Screen</button>
+            <button class="btn" onclick="setView('congrats')" id="btn-congrats" style="border-width: 2px;">🎉 Congrats Page</button>
+        </div>
+    </div>
+
 
     <!-- Checklist Print Card -->
     <div class="card" style="margin-top: 2rem;">
@@ -623,6 +633,7 @@
             }
 
             // Fetch slides immediately on load (in-memory) to populate the admin visibility checklist
+            updateViewButtons();
             fetchSlidesForAdmin();
         }
 
@@ -749,6 +760,24 @@
                 const btn = document.getElementById('btn-play-pause');
                 const isPaused = btn.innerText.includes('Pause');
                 btn.innerText = isPaused ? '▶ Play' : '⏸ Pause';
+            }
+        }
+
+        function setView(view) {
+            state.activeView = view;
+            updateViewButtons();
+            bc.postMessage({ type: 'STATE_UPDATE', payload: { activeView: view } });
+            writeFirebase({ activeView: view });
+        }
+
+        function updateViewButtons() {
+            const btnSlides = document.getElementById('btn-slides');
+            const btnDraw = document.getElementById('btn-draw');
+            const btnCongrats = document.getElementById('btn-congrats');
+            if (btnSlides && btnDraw && btnCongrats) {
+                btnSlides.style.borderColor = state.activeView === 'slides' ? 'var(--primary)' : 'var(--border)';
+                btnDraw.style.borderColor = state.activeView === 'draw' ? 'var(--primary)' : 'var(--border)';
+                btnCongrats.style.borderColor = (state.activeView === 'congrats' || state.activeView === 'congrats-video') ? 'var(--primary)' : 'var(--border)';
             }
         }
 
@@ -1153,38 +1182,38 @@
                         <h1>Tonight's Meat Raffle Prize Checklist</h1>
                         
                         <!-- $100 PACK ROW -->
-                        <div class="prize-row">
-                            <div class="prize-label">${total100} x $100<br>PACK</div>
+                        <div class="prize-row" style="border-color: #dc2626; background-color: #fef2f2;">
+                            <div class="prize-label" style="color: #dc2626;">${total100} x $100<br>PACK</div>
                             <div class="boxes-container">
                                 ${renderBoxes(total100, numbers100)}
                             </div>
-                            <div class="remaining-col">
-                                <div><span class="remaining-value">${rem100}</span></div>
-                                <div style="font-size: 12px; margin-top: 3px;">/ ${total100}<br>REMAINING</div>
+                            <div class="remaining-col" style="border-left-color: #dc2626;">
+                                <div><span class="remaining-value" style="border-bottom-color: #dc2626;">${rem100}</span></div>
+                                <div style="font-size: 12px; margin-top: 3px; color: #dc2626;">/ ${total100}<br>REMAINING</div>
                             </div>
                         </div>
 
                         <!-- $50 PACK ROW -->
-                        <div class="prize-row">
-                            <div class="prize-label">${total50} x $50<br>PACK</div>
+                        <div class="prize-row" style="border-color: #1d4ed8; background-color: #eff6ff;">
+                            <div class="prize-label" style="color: #1d4ed8;">${total50} x $50<br>PACK</div>
                             <div class="boxes-container">
                                 ${renderBoxes(total50, numbers50)}
                             </div>
-                            <div class="remaining-col">
-                                <div><span class="remaining-value">${rem50}</span></div>
-                                <div style="font-size: 12px; margin-top: 3px;">/ ${total50}<br>REMAINING</div>
+                            <div class="remaining-col" style="border-left-color: #1d4ed8;">
+                                <div><span class="remaining-value" style="border-bottom-color: #1d4ed8;">${rem50}</span></div>
+                                <div style="font-size: 12px; margin-top: 3px; color: #1d4ed8;">/ ${total50}<br>REMAINING</div>
                             </div>
                         </div>
 
                         <!-- $25 PACK ROW -->
-                        <div class="prize-row">
-                            <div class="prize-label">${total25} x $25<br>PACK</div>
+                        <div class="prize-row" style="border-color: #15803d; background-color: #f0fdf4;">
+                            <div class="prize-label" style="color: #15803d;">${total25} x $25<br>PACK</div>
                             <div class="boxes-container">
                                 ${renderBoxes(total25, numbers25)}
                             </div>
-                            <div class="remaining-col">
-                                <div><span class="remaining-value">${rem25}</span></div>
-                                <div style="font-size: 12px; margin-top: 3px;">/ ${total25}<br>REMAINING</div>
+                            <div class="remaining-col" style="border-left-color: #15803d;">
+                                <div><span class="remaining-value" style="border-bottom-color: #15803d;">${rem25}</span></div>
+                                <div style="font-size: 12px; margin-top: 3px; color: #15803d;">/ ${total25}<br>REMAINING</div>
                             </div>
                         </div>
 

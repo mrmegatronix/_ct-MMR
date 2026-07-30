@@ -552,7 +552,7 @@
         }
 
         function checkCongratsAutoOff() {
-            if (state.activeView === 'congrats') {
+            if (state.activeView === 'congrats' || state.activeView === 'congrats-video') {
                 const nzDate = getNZDate();
                 const day = nzDate.getDay();
                 const hour = nzDate.getHours();
@@ -706,7 +706,7 @@
         function updateUI() {
             document.getElementById('btn-slides').style.borderColor = state.activeView === 'slides' ? 'var(--primary)' : 'var(--border)';
             document.getElementById('btn-draw').style.borderColor = state.activeView === 'draw' ? 'var(--primary)' : 'var(--border)';
-            document.getElementById('btn-congrats').style.borderColor = state.activeView === 'congrats' ? 'var(--primary)' : 'var(--border)';
+            document.getElementById('btn-congrats').style.borderColor = (state.activeView === 'congrats' || state.activeView === 'congrats-video') ? 'var(--primary)' : 'var(--border)';
             
             // Check new count properties
             if (state.draw.prizes100 === undefined) state.draw.prizes100 = 27;
