@@ -1271,7 +1271,7 @@
                         <div class="slide slide-advert ${i === currentSlideIdx ? 'active' : ''}" style="${style}" data-duration="${slide.duration}">
                             <div class="slide-image-overlay"></div>
                             <div class="advert-badge-container">${badge}</div>
-                            <h1 class="advert-title">${sanitize(slide.title)}</h1>
+                            <h1 class="advert-title">${sanitize(slide.title).replace(/ x /gi, ' <span style="text-transform: none;">x</span> ')}</h1>
                             <h2 class="advert-subtitle">${sanitize(slide.subtitle)}</h2>
                         </div>
                     `;
