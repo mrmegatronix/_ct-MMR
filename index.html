@@ -1182,6 +1182,7 @@
 
             const ticketsWording = (day === targetDay) ? "TONIGHT FROM 5:30PM" : (day === (targetDay - 1 + 7) % 7) ? "TOMORROW FROM 5:30PM" : "THURSDAYS FROM 5:30PM";
             const drawWording = (day === targetDay) ? "TONIGHT AT 7:00PM" : (day === (targetDay - 1 + 7) % 7) ? "TOMORROW AT 7:00PM" : "THURSDAYS AT 7:00PM";
+            const poolWording = (day === targetDay) ? "tonight's" : (day === (targetDay - 1 + 7) % 7) ? "tomorrow's" : "Thursday's";
 
             const advertSlides = [
                 {
@@ -1214,7 +1215,7 @@
                 },
                 {
                     title: `TOTAL PRIZE POOL: $${totalPool.toLocaleString('en-NZ', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
-                    subtitle: "🔥 in the next Monster Meat Raffle Draw! 🔥",
+                    subtitle: `🔥 in ${poolWording} Monster Meat Raffle Draw! 🔥`,
                     type: "advert",
                     advertType: "pool",
                     duration: 30000

@@ -46,7 +46,7 @@ Duration: 30 seconds
 6. DYNAMIC ADVERT: TOTAL PRIZE POOL
 Type: advert (pool)
 Title: TOTAL PRIZE POOL: $[Total Pool Value]
-Subtitle: 🔥 in the next Monster Meat Raffle Draw! 🔥
+Subtitle: 🔥 in [tonight's/tomorrow's/Thursday's] Monster Meat Raffle Draw! 🔥
 Duration: 30 seconds
 
 --------------------------------------------------------------------------------
