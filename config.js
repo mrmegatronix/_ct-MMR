@@ -42,7 +42,7 @@ window.MMR_CONFIG = {
     
     // ── ASSETS ──────────────────────────────────────────────────────────
     LOGO_PATH: 'logo-new.png',
-    AVATAR_FALLBACK: 'avatars_waving.jpg',
+    AVATAR_FALLBACK: 'polo_avatar_1775252135374.png',
     CONFETTI_SYMBOLS: ['🥩', '🥓', '🍗', '🍖', 'LOGO'],
     
     // ── FEATURES ────────────────────────────────────────────────────────
@@ -58,7 +58,7 @@ window.MMR_CONFIG = {
             subtitle: "",
             type: "avatar",
             duration: 30000,
-            avatarImage: "avatars_waving.jpg",
+            avatarImage: "polo_avatar_1775252135374.png",
             bubbleText: "Meat you @ Coasters!"
         }
     ]
