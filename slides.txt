@@ -19,7 +19,7 @@ Duration: 30 seconds
 Type: avatar
 Title: [empty]
 BubbleText: Meat you @ Coasters!
-Image: polo_avatar_1775252135374.png
+Image: waving_dark_frame2.jpg
 Duration: 30 seconds
 
 --------------------------------------------------------------------------------
