@@ -54,7 +54,7 @@ window.MMR_CONFIG = {
     // These slides are appended to those fetched from Google Sheets
     LOCAL_WINNERS_SLIDES: [
         {
-            title: "Hello",
+            title: "",
             subtitle: "",
             type: "avatar",
             duration: 30000,

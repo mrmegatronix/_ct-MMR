@@ -17,7 +17,7 @@ Duration: 30 seconds
 --------------------------------------------------------------------------------
 2. WELCOME AVATARS SLIDE (Static - from local-backup.csv)
 Type: avatar
-Title: Hello
+Title: [empty]
 BubbleText: Meat you @ Coasters!
 Image: polo_avatar_1775252135374.png
 Duration: 30 seconds
