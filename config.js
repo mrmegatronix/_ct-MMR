@@ -59,7 +59,7 @@ window.MMR_CONFIG = {
             type: "avatar",
             duration: 30000,
             avatarImage: "avatars_waving.jpg",
-            bubbleText: "Welcome to the Monster Meat Raffle! Good luck tonight! 🥩"
+            bubbleText: "Meat you @ Coasters!"
         }
     ]
 };

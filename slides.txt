@@ -18,7 +18,7 @@ Duration: 30 seconds
 2. WELCOME AVATARS SLIDE (Static - from local-backup.csv)
 Type: avatar
 Title: Hello
-BubbleText: Welcome to the Monster Meat Raffle! Good luck tonight! 🥩
+BubbleText: Meat you @ Coasters!
 Image: avatars_waving.jpg
 Duration: 30 seconds
 
