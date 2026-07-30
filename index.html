@@ -1346,7 +1346,7 @@
                 // Use BackgroundImage if available, otherwise fallback to imageUrl
                 const bgImg = safeUrl(slide.backgroundImage || slide.imageUrl);
                 const overlayImg = safeUrl(slide.overlayImage);
-                const avatarImg = safeUrl(slide.avatarImage || slide.imageUrl); // For avatar type
+                const avatarImg = safeUrl(slide.avatarImage || slide.imageUrl || slide.backgroundImage); // For avatar type
                 
                 const bgStyle = bgImg ? `background-image: url('${bgImg}'); background-size: cover; background-position: center;` : '';
                 
