@@ -360,8 +360,47 @@
             z-index: 1;
         }
         @keyframes draw-spotlight {
-            from { box-shadow: inset 0 0 50px rgba(239, 68, 68, 0.3); background: rgba(239,68,68,0.05); }
-            to { box-shadow: inset 0 0 300px rgba(239, 68, 68, 0.8); background: rgba(239,68,68,0.15); }
+            from { 
+                box-shadow: inset 0 0 50px var(--spotlight-color-low, rgba(239, 68, 68, 0.3)); 
+                background: var(--spotlight-bg-low, rgba(239, 68, 68, 0.05)); 
+            }
+            to { 
+                box-shadow: inset 0 0 300px var(--spotlight-color-high, rgba(239, 68, 68, 0.8)); 
+                background: var(--spotlight-bg-high, rgba(239, 68, 68, 0.15)); 
+            }
+        }
+        
+        #view-draw.prize-100 {
+            --primary: #ef4444;
+            --primary-glow: rgba(239, 68, 68, 0.45);
+            --spotlight-color-low: rgba(239, 68, 68, 0.3);
+            --spotlight-bg-low: rgba(239, 68, 68, 0.05);
+            --spotlight-color-high: rgba(239, 68, 68, 0.8);
+            --spotlight-bg-high: rgba(239, 68, 68, 0.15);
+        }
+        #view-draw.prize-50 {
+            --primary: #3b82f6;
+            --primary-glow: rgba(59, 130, 246, 0.45);
+            --spotlight-color-low: rgba(59, 130, 246, 0.3);
+            --spotlight-bg-low: rgba(59, 130, 246, 0.05);
+            --spotlight-color-high: rgba(59, 130, 246, 0.8);
+            --spotlight-bg-high: rgba(59, 130, 246, 0.15);
+        }
+        #view-draw.prize-25 {
+            --primary: #10b981;
+            --primary-glow: rgba(16, 185, 129, 0.45);
+            --spotlight-color-low: rgba(16, 185, 129, 0.3);
+            --spotlight-bg-low: rgba(16, 185, 129, 0.05);
+            --spotlight-color-high: rgba(16, 185, 129, 0.8);
+            --spotlight-bg-high: rgba(16, 185, 129, 0.15);
+        }
+        #view-draw.prize-bonus {
+            --primary: #ffd700;
+            --primary-glow: rgba(255, 215, 0, 0.45);
+            --spotlight-color-low: rgba(255, 215, 0, 0.3);
+            --spotlight-bg-low: rgba(255, 215, 0, 0.05);
+            --spotlight-color-high: rgba(255, 215, 0, 0.8);
+            --spotlight-bg-high: rgba(255, 215, 0, 0.15);
         }
         
         .winner-gold-bg::after {

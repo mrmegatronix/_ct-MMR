@@ -390,19 +390,24 @@
                 </div>
             </div>
 
-            <div class="form-group" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+            <div class="form-group" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 1rem;">
                 <div>
                     <label style="font-size:0.75rem;">$100 Packs</label>
-                    <input type="number" id="cfg-prizes-100" value="27" onchange="updateDrawState()">
+                    <input type="number" id="cfg-prizes-100" value="0" oninput="updateDrawState()" onchange="updateDrawState()">
                 </div>
                 <div>
                     <label style="font-size:0.75rem;">$50 Prizes</label>
-                    <input type="number" id="cfg-prizes-50" value="19" onchange="updateDrawState()">
+                    <input type="number" id="cfg-prizes-50" value="0" oninput="updateDrawState()" onchange="updateDrawState()">
                 </div>
                 <div>
                     <label style="font-size:0.75rem;">$25 Prizes</label>
-                    <input type="number" id="cfg-prizes-25" value="24" onchange="updateDrawState()">
+                    <input type="number" id="cfg-prizes-25" value="0" oninput="updateDrawState()" onchange="updateDrawState()">
                 </div>
+            </div>
+
+            <div style="background: rgba(0,0,0,0.2); padding: 0.75rem; border-radius: 0.5rem; margin-bottom: 1rem; font-size: 0.85rem; display: flex; justify-content: space-between;">
+                <div>Total Prizes: <span id="prizes-total-count" style="font-weight:bold; color: var(--primary);">0</span></div>
+                <div>Prize Pool Total: <span id="prizes-total-value" style="font-weight:bold; color: var(--primary);">$0</span></div>
             </div>
 
             <div class="form-group">
@@ -709,22 +714,20 @@
             document.getElementById('btn-congrats').style.borderColor = (state.activeView === 'congrats' || state.activeView === 'congrats-video') ? 'var(--primary)' : 'var(--border)';
             
             // Check new count properties
-            if (state.draw.prizes100 === undefined) state.draw.prizes100 = 27;
-            if (state.draw.prizes50 === undefined) state.draw.prizes50 = 19;
-            if (state.draw.prizes25 === undefined) state.draw.prizes25 = 24;
+            if (state.draw.prizes100 === undefined) state.draw.prizes100 = 0;
+            if (state.draw.prizes50 === undefined) state.draw.prizes50 = 0;
+            if (state.draw.prizes25 === undefined) state.draw.prizes25 = 0;
             state.draw.prizesLeft = state.draw.prizes100 + state.draw.prizes50 + state.draw.prizes25;
 
-            const n100 = state.draw.drawnNumbers.filter(d => (typeof d === 'object' ? d.prize : 0) === 100).length;
-            const n50 = state.draw.drawnNumbers.filter(d => (typeof d === 'object' ? d.prize : 0) === 50).length;
-            const n25 = state.draw.drawnNumbers.filter(d => (typeof d === 'object' ? d.prize : 0) === 25).length;
-            
-            document.getElementById('cfg-prizes-100').value = state.draw.prizes100 + n100;
-            document.getElementById('cfg-prizes-50').value = state.draw.prizes50 + n50;
-            document.getElementById('cfg-prizes-25').value = state.draw.prizes25 + n25;
+            document.getElementById('cfg-prizes-100').value = state.draw.cfgPrizes100 !== undefined ? state.draw.cfgPrizes100 : 0;
+            document.getElementById('cfg-prizes-50').value = state.draw.cfgPrizes50 !== undefined ? state.draw.cfgPrizes50 : 0;
+            document.getElementById('cfg-prizes-25').value = state.draw.cfgPrizes25 !== undefined ? state.draw.cfgPrizes25 : 0;
             
             document.getElementById('lbl-left-100').innerText = state.draw.prizes100;
             document.getElementById('lbl-left-50').innerText = state.draw.prizes50;
             document.getElementById('lbl-left-25').innerText = state.draw.prizes25;
+
+            updateTotalsSummary();
 
             // Sync other configuration fields from state
             if (state.draw.min !== undefined) document.getElementById('cfg-min').value = state.draw.min;
@@ -750,10 +753,23 @@
             }
         }
 
+        function updateTotalsSummary() {
+            const t100 = parseInt(document.getElementById('cfg-prizes-100').value) || 0;
+            const t50 = parseInt(document.getElementById('cfg-prizes-50').value) || 0;
+            const t25 = parseInt(document.getElementById('cfg-prizes-25').value) || 0;
+            const totalCount = t100 + t50 + t25;
+            const totalValue = (t100 * 100) + (t50 * 50) + (t25 * 25);
+            
+            const totalCountEl = document.getElementById('prizes-total-count');
+            const totalValueEl = document.getElementById('prizes-total-value');
+            if (totalCountEl) totalCountEl.innerText = totalCount;
+            if (totalValueEl) totalValueEl.innerText = '$' + totalValue.toLocaleString();
+        }
+
         function updateDrawState() {
-            const t100 = parseInt(document.getElementById('cfg-prizes-100').value) || 27;
-            const t50 = parseInt(document.getElementById('cfg-prizes-50').value) || 19;
-            const t25 = parseInt(document.getElementById('cfg-prizes-25').value) || 24;
+            const t100 = parseInt(document.getElementById('cfg-prizes-100').value) || 0;
+            const t50 = parseInt(document.getElementById('cfg-prizes-50').value) || 0;
+            const t25 = parseInt(document.getElementById('cfg-prizes-25').value) || 0;
             
             const n100 = state.draw.drawnNumbers.filter(d => (typeof d === 'object' ? d.prize : 0) === 100).length;
             const n50 = state.draw.drawnNumbers.filter(d => (typeof d === 'object' ? d.prize : 0) === 50).length;
@@ -783,15 +799,19 @@
                 state.draw.drawnNumbers = [];
                 state.draw.currentNumber = '---';
                 state.draw.currentPrize = null;
+                state.draw.drawsFinishedTime = null;
                 
-                const t100 = parseInt(document.getElementById('cfg-prizes-100').value) || 27;
-                const t50 = parseInt(document.getElementById('cfg-prizes-50').value) || 19;
-                const t25 = parseInt(document.getElementById('cfg-prizes-25').value) || 24;
+                document.getElementById('cfg-prizes-100').value = 0;
+                document.getElementById('cfg-prizes-50').value = 0;
+                document.getElementById('cfg-prizes-25').value = 0;
                 
-                state.draw.prizes100 = t100;
-                state.draw.prizes50 = t50;
-                state.draw.prizes25 = t25;
-                state.draw.prizesLeft = t100 + t50 + t25;
+                state.draw.cfgPrizes100 = 0;
+                state.draw.cfgPrizes50 = 0;
+                state.draw.cfgPrizes25 = 0;
+                state.draw.prizes100 = 0;
+                state.draw.prizes50 = 0;
+                state.draw.prizes25 = 0;
+                state.draw.prizesLeft = 0;
                 
                 updateUI();
                 broadcast();
