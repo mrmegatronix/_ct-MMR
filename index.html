@@ -1672,11 +1672,36 @@
 
         async function fetchAndApplySlides() {
             const slidesUrl = DEFAULT_SLIDES_URL;
-            console.log('[MMR] Fetching slides from:', slidesUrl);
-            try {
-                const res = await fetch(slidesUrl + (slidesUrl.includes('?') ? '&' : '?') + 't=' + Date.now(), { cache: 'no-store' });
-                if (!res.ok) throw new Error('HTTP ' + res.status);
-                const csv = await res.text();
+            console.log('[MMR] Fetching slides from:', slidesUrl || 'local-backup.csv');
+            let success = false;
+            let csv = '';
+
+            if (slidesUrl) {
+                try {
+                    const res = await fetch(slidesUrl + (slidesUrl.includes('?') ? '&' : '?') + 't=' + Date.now(), { cache: 'no-store' });
+                    if (res.ok) {
+                        csv = await res.text();
+                        success = true;
+                    }
+                } catch (e) {
+                    console.warn('[MMR] Google Sheets fetch failed, falling back to local-backup.csv:', e);
+                }
+            }
+
+            if (!success) {
+                try {
+                    const res = await fetch('local-backup.csv?t=' + Date.now(), { cache: 'no-store' });
+                    if (res.ok) {
+                        csv = await res.text();
+                        success = true;
+                        console.log('[MMR] Loaded slides from local-backup.csv');
+                    }
+                } catch (e) {
+                    console.error('[MMR] Failed to load local-backup.csv:', e);
+                }
+            }
+
+            if (success && csv) {
                 let slides = parseSlidesCSV(csv);
 
                 // Inject local overrides if defined
@@ -1688,10 +1713,8 @@
                     console.log('[MMR] Slides synced OK — ' + slides.length + ' slides loaded.');
                     updateState({ slides: slides });
                 } else {
-                    console.warn('[MMR] Slides fetch returned 0 rows — keeping current slides.');
+                    console.warn('[MMR] Slides parse returned 0 rows — keeping current slides.');
                 }
-            } catch (e) {
-                console.error('[MMR] Slides sync failed:', e);
             }
         }
 

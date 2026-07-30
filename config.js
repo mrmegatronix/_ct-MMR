@@ -42,7 +42,7 @@ window.MMR_CONFIG = {
     
     // ── ASSETS ──────────────────────────────────────────────────────────
     LOGO_PATH: 'logo-new.png',
-    AVATAR_FALLBACK: 'avatar.png',
+    AVATAR_FALLBACK: 'avatars_waving.jpg',
     CONFETTI_SYMBOLS: ['🥩', '🥓', '🍗', '🍖', 'LOGO'],
     
     // ── FEATURES ────────────────────────────────────────────────────────
