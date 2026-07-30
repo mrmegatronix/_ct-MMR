@@ -52,5 +52,14 @@ window.MMR_CONFIG = {
     
     // ── LOCAL CONTENT OVERRIDES ─────────────────────────────────────────
     // These slides are appended to those fetched from Google Sheets
-    LOCAL_WINNERS_SLIDES: []
+    LOCAL_WINNERS_SLIDES: [
+        {
+            title: "Hello",
+            subtitle: "",
+            type: "avatar",
+            duration: 30000,
+            avatarImage: "avatars_waving.jpg",
+            bubbleText: "Welcome to the Monster Meat Raffle! Good luck tonight! 🥩"
+        }
+    ]
 };
