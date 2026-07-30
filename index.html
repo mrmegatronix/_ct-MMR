@@ -1176,6 +1176,13 @@
             const totalPrizes = t100 + t50 + t25;
             const totalPool = (t100 * 100) + (t50 * 50) + (t25 * 25);
             
+            const nzDate = getNZDate();
+            const day = nzDate.getDay();
+            const targetDay = (window.MMR_CONFIG && window.MMR_CONFIG.TARGET_DAY) ?? 4;
+
+            const ticketsWording = (day === targetDay) ? "TONIGHT FROM 5:30PM" : (day === (targetDay - 1 + 7) % 7) ? "TOMORROW FROM 5:30PM" : "THURSDAYS FROM 5:30PM";
+            const drawWording = (day === targetDay) ? "TONIGHT AT 7:00PM" : (day === (targetDay - 1 + 7) % 7) ? "TOMORROW AT 7:00PM" : "THURSDAYS AT 7:00PM";
+
             const advertSlides = [
                 {
                     title: `${t100} x $100 TRAYS`,
@@ -1211,6 +1218,20 @@
                     type: "advert",
                     advertType: "pool",
                     duration: 10000
+                },
+                {
+                    title: `TICKETS ON SALE`,
+                    subtitle: `🎟️ ${ticketsWording} 🎟️`,
+                    type: "advert",
+                    advertType: "tickets",
+                    duration: 10000
+                },
+                {
+                    title: `MONSTER MEAT RAFFLE`,
+                    subtitle: `🔥 DRAW STARTS ${drawWording} 🔥`,
+                    type: "advert",
+                    advertType: "draw_time",
+                    duration: 10000
                 }
             ];
 
@@ -1238,6 +1259,12 @@
                     } else if (slide.advertType === 'pool') {
                         style = `background: radial-gradient(circle at center, #4c1d95 0%, #020617 100%); --badge-glow: rgba(168, 85, 247, 0.6); --title-glow: rgba(168, 85, 247, 0.4);`;
                         badge = '💰';
+                    } else if (slide.advertType === 'tickets') {
+                        style = `background: radial-gradient(circle at center, #1e1b4b 0%, #030712 100%); --badge-glow: rgba(99, 102, 241, 0.6); --title-glow: rgba(99, 102, 241, 0.4);`;
+                        badge = '🎟️';
+                    } else if (slide.advertType === 'draw_time') {
+                        style = `background: radial-gradient(circle at center, #451a03 0%, #030712 100%); --badge-glow: rgba(249, 115, 22, 0.6); --title-glow: rgba(249, 115, 22, 0.4);`;
+                        badge = '⏱️';
                     }
                     
                     return `
