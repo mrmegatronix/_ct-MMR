@@ -3,7 +3,8 @@ MONSTER MEAT RAFFLE SLIDES TEXT
 ================================================================================
 
 Below is the text for all current slides (including dynamic raffle advert slides).
-You can edit the static slides by modifying the CSV file "local-backup.csv" directly.
+Static backup slides (slides 2, 3, 4, 5, 6) have been removed since they are replaced
+by dynamic ones. You can edit the static slides by modifying "local-backup.csv".
 
 --------------------------------------------------------------------------------
 1. COUNTDOWN SLIDE (Dynamic)
@@ -14,86 +15,51 @@ Summary Pill: [Live counts: X x $100, Y x $50, Z x $25]
 Duration: 30 seconds
 
 --------------------------------------------------------------------------------
-2. TICKETS INFO SLIDE (Static - from local-backup.csv)
-Type: normal
-Title: Tickets Go On Sale:
-Subtitle: Thursdays from 5.30pm
-Duration: 30 seconds
-
---------------------------------------------------------------------------------
-3. TICKET PRICING SLIDE (Static - from local-backup.csv)
-Type: normal
-Title: Tickets:
-Subtitle: 1x for $5 or 5x for $20
-Duration: 30 seconds
-
---------------------------------------------------------------------------------
-4. NEXT PRIZE POOL SLIDE (Static - from local-backup.csv)
-Type: normal
-Title: Next Prize Pool:
-Subtitle: $1600+
-Duration: 30 seconds
-
---------------------------------------------------------------------------------
-5. LAST PRIZE POOL SLIDE (Static - from local-backup.csv)
-Type: normal
-Title: Last Prize Pool:
-Subtitle: Our BIGGEST meat raffle yet… a massive $2060 worth of meat was won! 🥩🍖
-Duration: 30 seconds
-
---------------------------------------------------------------------------------
-6. AVATAR WELCOME SLIDE (Static - from local-backup.csv)
-Type: avatar
-Title: Hello
-BubbleText: Meat you here Thursday Nite!
-Duration: 30 seconds
-
---------------------------------------------------------------------------------
-7. DYNAMIC ADVERT: $100 TRAYS
+2. DYNAMIC ADVERT: $100 TRAYS
 Type: advert (p100)
-Title: [Count] x $100 TRAYS
-Subtitle: 🥩 Premium Assorted Meat Trays up for grabs tonight! 🥩
-Duration: 10 seconds
+Title: [Count] x $100
+Subtitle: 🥩 Premium Assorted Meat Trays to be won!! 🥩
+Duration: 30 seconds
 
 --------------------------------------------------------------------------------
-8. DYNAMIC ADVERT: $50 TRAYS
+3. DYNAMIC ADVERT: $50 TRAYS
 Type: advert (p50)
 Title: [Count] x $50 TRAYS
-Subtitle: 🍗 Premium Assorted Meat Trays to be won! 🍗
-Duration: 10 seconds
+Subtitle: 🍗 Premium Assorted Meat Trays to be won!! 🍗
+Duration: 30 seconds
 
 --------------------------------------------------------------------------------
-9. DYNAMIC ADVERT: $25 TRAYS
+4. DYNAMIC ADVERT: $25 TRAYS
 Type: advert (p25)
 Title: [Count] x $25 TRAYS
-Subtitle: 🥓 Premium Assorted Meat Trays tonight! 🥓
-Duration: 10 seconds
+Subtitle: 🥓 Premium Assorted Meat Trays to be won!! 🥓
+Duration: 30 seconds
 
 --------------------------------------------------------------------------------
-10. DYNAMIC ADVERT: TOTAL TRAYS
+5. DYNAMIC ADVERT: TOTAL TRAYS
 Type: advert (total)
-Title: TOTAL PRIZES: [Total Count] TRAYS
-Subtitle: 🍖 Premium Assorted Meat Trays up for grabs! 🍖
-Duration: 10 seconds
+Title: TOTAL PRIZES: [Total Count]
+Subtitle: 🍖 Premium Assorted Meat Trays must be won!! 🍖
+Duration: 30 seconds
 
 --------------------------------------------------------------------------------
-11. DYNAMIC ADVERT: TOTAL PRIZE POOL
+6. DYNAMIC ADVERT: TOTAL PRIZE POOL
 Type: advert (pool)
 Title: TOTAL PRIZE POOL: $[Total Pool Value]
-Subtitle: 🔥 Monster Meat Raffle weekly on Thursdays! 🔥
-Duration: 10 seconds
+Subtitle: 🔥 in the next Monster Meat Raffle Draw! 🔥
+Duration: 30 seconds
 
 --------------------------------------------------------------------------------
-12. DYNAMIC ADVERT: TICKETS ON SALE TIME
+7. DYNAMIC ADVERT: TICKETS ON SALE TIME
 Type: advert (tickets)
 Title: TICKETS ON SALE
 Subtitle: 🎟️ [TONIGHT/TOMORROW/THURSDAYS] FROM 5:30PM 🎟️
-Duration: 10 seconds
+Duration: 30 seconds
 
 --------------------------------------------------------------------------------
-13. DYNAMIC ADVERT: DRAW START TIME
+8. DYNAMIC ADVERT: DRAW START TIME
 Type: advert (draw_time)
 Title: MONSTER MEAT RAFFLE
 Subtitle: 🔥 DRAW STARTS [TONIGHT/TOMORROW/THURSDAYS] AT 7:00PM 🔥
-Duration: 10 seconds
+Duration: 30 seconds
 ================================================================================
