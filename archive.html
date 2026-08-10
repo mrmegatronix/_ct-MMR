@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Archive - Monster Meat Raffle</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body { background-color: var(--bg-dark); color: white; font-family: system-ui, -apple-system, sans-serif; padding: 2rem; }
+        .archive-card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 1rem; padding: 2rem; margin-bottom: 2rem; }
+        h1 { color: var(--primary); text-align: center; margin-bottom: 3rem; }
+        .draw-section { margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.1); }
+        .numbers-list { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem; }
+        .number-badge { background: #333; padding: 0.3rem 0.8rem; border-radius: 0.5rem; font-weight: bold; }
+        .prize-100 { background: #ef4444; }
+        .prize-50 { background: #2563eb; }
+        .prize-25 { background: #10b981; }
+        .prize-bonus { background: #ffd700; color: black; }
+        .financials { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1rem; background: rgba(0,0,0,0.3); padding: 1rem; border-radius: 0.5rem; }
+    </style>
+</head>
+<body>
+    <h1>📚 Raffle Archive History</h1>
+    <div id="archive-container">
+        <p style="text-align:center;">Loading archive data from Firebase...</p>
+    </div>
+
+    <script src="config.js"></script>
+    <script>
+        async function loadArchive() {
+            try {
+                const url = window.MMR_CONFIG.FIREBASE_DB_URL + '/mmr_archive.json';
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                const container = document.getElementById('archive-container');
+                container.innerHTML = '';
+                
+                if (!data) {
+                    container.innerHTML = '<p style="text-align:center;">No archived draws found.</p>';
+                    return;
+                }
+                
+                // Sort by key (timestamp) descending
+                const keys = Object.keys(data).sort((a,b) => b.localeCompare(a));
+                
+                keys.forEach(key => {
+                    const week = data[key];
+                    const date = new Date(Number(key));
+                    
+                    const card = document.createElement('div');
+                    card.className = 'archive-card';
+                    
+                    let html = `<h2>Week of ${date.toLocaleDateString()}</h2>`;
+                    
+                    // Render Thursday
+                    if (week.thursday) {
+                        html += `<div class="draw-section">
+                            <h3 style="color:#60a5fa;">Thursday Draw</h3>
+                            <p>Manual Draw: ${week.thursday.manualDraw ? 'Yes' : 'No'}</p>`;
+                            
+                        if (week.thursday.drawnNumbers && week.thursday.drawnNumbers.length > 0) {
+                            html += `<div class="numbers-list">`;
+                            week.thursday.drawnNumbers.forEach(d => {
+                                const num = typeof d === 'object' ? d.number : d;
+                                const prize = typeof d === 'object' ? d.prize : 25;
+                                const redrawn = typeof d === 'object' ? d.redrawn : false;
+                                let pClass = prize == 100 ? 'prize-100' : (prize == 50 ? 'prize-50' : 'prize-25');
+                                if (prize === 'bonus') pClass = 'prize-bonus';
+                                const style = redrawn ? 'text-decoration: line-through; opacity:0.5;' : '';
+                                html += `<span class="number-badge ${pClass}" style="${style}">${num}</span>`;
+                            });
+                            html += `</div>`;
+                        }
+                        
+                        // Thursday Financials (if saved)
+                        if (week.financials && week.financials.thursday) {
+                            html += `<div class="financials">
+                                <div>Cash: $${week.financials.thursday.cash || 0}</div>
+                                <div>Eftpos: $${week.financials.thursday.eftpos || 0}</div>
+                                <div>Singles: ${week.financials.thursday.singles || 0}</div>
+                                <div>Strips: ${week.financials.thursday.strips || 0}</div>
+                            </div>`;
+                        }
+                        html += `</div>`;
+                    }
+                    
+                    // Render Sunday
+                    if (week.sunday && week.sunday.enabled) {
+                        html += `<div class="draw-section">
+                            <h3 style="color:#fbbf24;">Sunday Draw (Rob's Bonus Box)</h3>
+                            <p>Manual Draw: ${week.sunday.manualDraw ? 'Yes' : 'No'}</p>`;
+                            
+                        if (week.sunday.drawnNumbers && week.sunday.drawnNumbers.length > 0) {
+                            html += `<div class="numbers-list">`;
+                            week.sunday.drawnNumbers.forEach(d => {
+                                const num = typeof d === 'object' ? d.number : d;
+                                const redrawn = typeof d === 'object' ? d.redrawn : false;
+                                const style = redrawn ? 'text-decoration: line-through; opacity:0.5;' : '';
+                                html += `<span class="number-badge prize-bonus" style="${style}">${num}</span>`;
+                            });
+                            html += `</div>`;
+                        }
+                        
+                        // Sunday Financials (if saved)
+                        if (week.financials && week.financials.sunday) {
+                            html += `<div class="financials">
+                                <div>Cash: $${week.financials.sunday.cash || 0}</div>
+                                <div>Eftpos: $${week.financials.sunday.eftpos || 0}</div>
+                                <div>Tickets: ${week.financials.sunday.singles || 0}</div>
+                            </div>`;
+                        }
+                        html += `</div>`;
+                    }
+                    
+                    card.innerHTML = html;
+                    container.appendChild(card);
+                });
+                
+            } catch (err) {
+                console.error(err);
+                document.getElementById('archive-container').innerHTML = '<p style="color:red; text-align:center;">Failed to load archive.</p>';
+            }
+        }
+        
+        loadArchive();
+    </script>
+</body>
+</html>

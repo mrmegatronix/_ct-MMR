@@ -386,6 +386,85 @@
         <div id="draw-config-status" class="status"></div>
     </div>
 
+    
+    <!-- Financial Data & Print -->
+    <div class="card" style="margin-top: 2rem; background: linear-gradient(to right, #1e293b, #0f172a); border: 2px solid #3b82f6;">
+        <h2>💵 Financial & Print Controls</h2>
+        <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1.5rem;">
+            Enter financial figures for the week to generate the printable financial summary sheet.
+        </p>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+            <!-- Thursday Financials -->
+            <div style="background: rgba(255,255,255,0.05); padding: 1rem; border-radius: 0.5rem;">
+                <h3 style="color: #60a5fa; margin-top: 0;">Thursday Draw</h3>
+                <div class="form-group">
+                    <label>Total Cash Received</label>
+                    <input type="number" id="fin-thu-cash" placeholder="e.g. 500" onchange="saveFinancials()">
+                </div>
+                <div class="form-group">
+                    <label>Total Eftpos Received</label>
+                    <input type="number" id="fin-thu-eftpos" placeholder="e.g. 1200" onchange="saveFinancials()">
+                </div>
+                <div class="form-group">
+                    <label>Single Tickets Sold ($5)</label>
+                    <input type="number" id="fin-thu-singles" placeholder="0" onchange="saveFinancials()">
+                </div>
+                <div class="form-group">
+                    <label>Strips Sold ($20 for 5)</label>
+                    <input type="number" id="fin-thu-strips" placeholder="0" onchange="saveFinancials()">
+                </div>
+            </div>
+
+            <!-- Sunday Financials -->
+            <div style="background: rgba(255,255,255,0.05); padding: 1rem; border-radius: 0.5rem;">
+                <h3 style="color: #fbbf24; margin-top: 0;">Sunday (Rob's) Draw</h3>
+                <div class="form-group">
+                    <label>Total Cash Received</label>
+                    <input type="number" id="fin-sun-cash" placeholder="0" onchange="saveFinancials()">
+                </div>
+                <div class="form-group">
+                    <label>Total Eftpos Received</label>
+                    <input type="number" id="fin-sun-eftpos" placeholder="0" onchange="saveFinancials()">
+                </div>
+                <div class="form-group">
+                    <label>Tickets Sold ($5)</label>
+                    <input type="number" id="fin-sun-singles" placeholder="0" onchange="saveFinancials()">
+                </div>
+            </div>
+        </div>
+        
+        <div style="margin-top: 1.5rem; display: flex; gap: 1rem;">
+            <button class="btn btn-primary" onclick="printChecklist()" style="flex:1;">🖨️ Print Checklist</button>
+            <button class="btn btn-primary" onclick="printFinancialSheet()" style="flex:1; background-color: #10b981; border-color: #059669;">🖨️ Print Financials</button>
+            <button class="btn btn-primary" onclick="printDrawResults()" style="flex:1; background-color: #8b5cf6; border-color: #7c3aed;">🖨️ Print Results</button>
+            <button class="btn btn-primary" onclick="printAllPages()" style="flex:1; background-color: #ef4444; border-color: #dc2626;">🖨️ Print ALL</button>
+        </div>
+    </div>
+    
+    <!-- QR Codes -->
+    <div class="card" style="margin-top: 2rem;">
+        <h2>📱 Quick Access QR Codes</h2>
+        <div style="display: flex; justify-content: space-between; gap: 1rem; margin-top: 1rem;">
+            <div style="text-align: center; flex: 1;">
+                <div id="qr-display" style="background: white; padding: 0.5rem; display: inline-block; border-radius: 0.5rem; min-width: 120px; min-height: 120px;"></div>
+                <div style="margin-top: 0.5rem; font-size: 0.8rem;">TV Display</div>
+            </div>
+            <div style="text-align: center; flex: 1;">
+                <div id="qr-remote" style="background: white; padding: 0.5rem; display: inline-block; border-radius: 0.5rem; min-width: 120px; min-height: 120px;"></div>
+                <div style="margin-top: 0.5rem; font-size: 0.8rem;">Remote App</div>
+            </div>
+            <div style="text-align: center; flex: 1;">
+                <div id="qr-admin" style="background: white; padding: 0.5rem; display: inline-block; border-radius: 0.5rem; min-width: 120px; min-height: 120px;"></div>
+                <div style="margin-top: 0.5rem; font-size: 0.8rem;">Admin Portal</div>
+            </div>
+            <div style="text-align: center; flex: 1;">
+                <div id="qr-archive" style="background: white; padding: 0.5rem; display: inline-block; border-radius: 0.5rem; min-width: 120px; min-height: 120px;"></div>
+                <div style="margin-top: 0.5rem; font-size: 0.8rem;">Archive List</div>
+            </div>
+        </div>
+    </div>
+
     <!-- Firebase Config Card -->
     <div class="card" style="margin-top: 2rem;">
         <h2>🌐 Cross-Device Sync (Firebase)</h2>
@@ -1451,7 +1530,180 @@
                             }, 500);
                         };
                     <\/script>
-                </body>
+                
+    <!-- Financials & Print Logic -->
+    <script>
+        function saveFinancials() {
+            const financials = {
+                thursday: {
+                    cash: Number(document.getElementById('fin-thu-cash').value) || 0,
+                    eftpos: Number(document.getElementById('fin-thu-eftpos').value) || 0,
+                    singles: Number(document.getElementById('fin-thu-singles').value) || 0,
+                    strips: Number(document.getElementById('fin-thu-strips').value) || 0
+                },
+                sunday: {
+                    cash: Number(document.getElementById('fin-sun-cash').value) || 0,
+                    eftpos: Number(document.getElementById('fin-sun-eftpos').value) || 0,
+                    singles: Number(document.getElementById('fin-sun-singles').value) || 0
+                }
+            };
+            
+            // Save to state
+            if (!state.financials) state.financials = {};
+            state.financials = financials;
+            writeFirebase({ financials: financials });
+        }
+        
+        // Listen to state updates to populate inputs if someone else changes them
+        const originalUpdateState = updateState;
+        updateState = function(newState) {
+            originalUpdateState(newState);
+            if (newState.financials) {
+                if (document.getElementById('fin-thu-cash').value == '') document.getElementById('fin-thu-cash').value = newState.financials.thursday?.cash || '';
+                if (document.getElementById('fin-thu-eftpos').value == '') document.getElementById('fin-thu-eftpos').value = newState.financials.thursday?.eftpos || '';
+                if (document.getElementById('fin-thu-singles').value == '') document.getElementById('fin-thu-singles').value = newState.financials.thursday?.singles || '';
+                if (document.getElementById('fin-thu-strips').value == '') document.getElementById('fin-thu-strips').value = newState.financials.thursday?.strips || '';
+                
+                if (document.getElementById('fin-sun-cash').value == '') document.getElementById('fin-sun-cash').value = newState.financials.sunday?.cash || '';
+                if (document.getElementById('fin-sun-eftpos').value == '') document.getElementById('fin-sun-eftpos').value = newState.financials.sunday?.eftpos || '';
+                if (document.getElementById('fin-sun-singles').value == '') document.getElementById('fin-sun-singles').value = newState.financials.sunday?.singles || '';
+            }
+        };
+
+        function getFinancialHTML() {
+            const f = state.financials || { thursday: {}, sunday: {} };
+            const t = f.thursday || {};
+            const s = f.sunday || {};
+            
+            const tExpected = (t.singles * 5) + (t.strips * 20);
+            const tActual = t.cash + t.eftpos;
+            const tDiff = tActual - tExpected;
+            
+            const sExpected = (s.singles * 5);
+            const sActual = s.cash + s.eftpos;
+            const sDiff = sActual - sExpected;
+            
+            const gExpected = tExpected + sExpected;
+            const gActual = tActual + sActual;
+            const gDiff = gActual - gExpected;
+            
+            return `
+                <div style="font-family: sans-serif; padding: 20px; max-width: 800px; margin: 0 auto; page-break-after: always;">
+                    <h1 style="text-align:center; border-bottom: 2px solid #333; padding-bottom: 10px;">Weekly Financial Summary</h1>
+                    
+                    <h2 style="background: #eee; padding: 10px;">Section 1: Thursday Draw</h2>
+                    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+                        <tr><td style="padding: 5px; border-bottom:1px solid #ccc;">Singles Sold ($5)</td><td style="text-align:right;">${t.singles || 0}</td></tr>
+                        <tr><td style="padding: 5px; border-bottom:1px solid #ccc;">Strips Sold ($20)</td><td style="text-align:right;">${t.strips || 0}</td></tr>
+                        <tr><td style="padding: 5px; border-bottom:1px solid #ccc;"><strong>Expected Revenue</strong></td><td style="text-align:right;"><strong>$${tExpected.toFixed(2)}</strong></td></tr>
+                        <tr><td style="padding: 5px; border-bottom:1px solid #ccc;">Cash Received</td><td style="text-align:right;">$${(t.cash||0).toFixed(2)}</td></tr>
+                        <tr><td style="padding: 5px; border-bottom:1px solid #ccc;">Eftpos Received</td><td style="text-align:right;">$${(t.eftpos||0).toFixed(2)}</td></tr>
+                        <tr><td style="padding: 5px; border-bottom:1px solid #ccc;"><strong>Actual Revenue</strong></td><td style="text-align:right;"><strong>$${tActual.toFixed(2)}</strong></td></tr>
+                        <tr><td style="padding: 5px; border-bottom:1px solid #ccc; color: ${tDiff < 0 ? 'red' : 'green'};"><strong>Discrepancy</strong></td><td style="text-align:right; color: ${tDiff < 0 ? 'red' : 'green'};"><strong>$${tDiff.toFixed(2)}</strong></td></tr>
+                    </table>
+
+                    <h2 style="background: #eee; padding: 10px;">Section 2: Sunday (Rob's) Draw</h2>
+                    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+                        <tr><td style="padding: 5px; border-bottom:1px solid #ccc;">Tickets Sold ($5)</td><td style="text-align:right;">${s.singles || 0}</td></tr>
+                        <tr><td style="padding: 5px; border-bottom:1px solid #ccc;"><strong>Expected Revenue</strong></td><td style="text-align:right;"><strong>$${sExpected.toFixed(2)}</strong></td></tr>
+                        <tr><td style="padding: 5px; border-bottom:1px solid #ccc;">Cash Received</td><td style="text-align:right;">$${(s.cash||0).toFixed(2)}</td></tr>
+                        <tr><td style="padding: 5px; border-bottom:1px solid #ccc;">Eftpos Received</td><td style="text-align:right;">$${(s.eftpos||0).toFixed(2)}</td></tr>
+                        <tr><td style="padding: 5px; border-bottom:1px solid #ccc;"><strong>Actual Revenue</strong></td><td style="text-align:right;"><strong>$${sActual.toFixed(2)}</strong></td></tr>
+                        <tr><td style="padding: 5px; border-bottom:1px solid #ccc; color: ${sDiff < 0 ? 'red' : 'green'};"><strong>Discrepancy</strong></td><td style="text-align:right; color: ${sDiff < 0 ? 'red' : 'green'};"><strong>$${sDiff.toFixed(2)}</strong></td></tr>
+                    </table>
+
+                    <h2 style="background: #333; color: white; padding: 10px;">Section 3: Grand Totals</h2>
+                    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+                        <tr><td style="padding: 5px; border-bottom:1px solid #ccc;"><strong>Total Expected</strong></td><td style="text-align:right;"><strong>$${gExpected.toFixed(2)}</strong></td></tr>
+                        <tr><td style="padding: 5px; border-bottom:1px solid #ccc;"><strong>Total Actual</strong></td><td style="text-align:right;"><strong>$${gActual.toFixed(2)}</strong></td></tr>
+                        <tr><td style="padding: 5px; border-bottom:1px solid #ccc; font-size:1.2em; color: ${gDiff < 0 ? 'red' : 'green'};"><strong>Total Discrepancy</strong></td><td style="text-align:right; font-size:1.2em; color: ${gDiff < 0 ? 'red' : 'green'};"><strong>$${gDiff.toFixed(2)}</strong></td></tr>
+                    </table>
+                </div>
+            `;
+        }
+
+        function getChecklistHTML() {
+            let html = `<div style="font-family: sans-serif; padding: 20px; max-width: 800px; margin: 0 auto; page-break-after: always;">`;
+            html += `<h1 style="text-align:center;">Raffle Checklist</h1>`;
+            html += `<h2>Thursday Prizes</h2><ul>`;
+            html += `<li>[ ] $100 Packs: ${state.draw.thursday?.cfgPrizes100 || 0}</li>`;
+            html += `<li>[ ] $50 Prizes: ${state.draw.thursday?.cfgPrizes50 || 0}</li>`;
+            html += `<li>[ ] $25 Prizes: ${state.draw.thursday?.cfgPrizes25 || 0}</li></ul>`;
+            
+            if (state.draw.sunday?.enabled) {
+                html += `<h2>Sunday Prizes</h2><ul>`;
+                html += `<li>[ ] Vouchers ($${state.draw.sunday.cfgVouchersValue}): ${state.draw.sunday.cfgVouchersCount || 0}</li>`;
+                html += `<li>[ ] Meat Trays: ${state.draw.sunday.cfgPrizes100 || 0}</li></ul>`;
+            }
+            html += `</div>`;
+            return html;
+        }
+
+        function getResultsHTML() {
+            let html = `<div style="font-family: sans-serif; padding: 20px; max-width: 800px; margin: 0 auto; page-break-after: always;">`;
+            html += `<h1 style="text-align:center;">Draw Results</h1>`;
+            
+            html += `<h2>Thursday Winners</h2>`;
+            const tDrawn = state.draw.thursday?.drawnNumbers || [];
+            if (tDrawn.length === 0) html += `<p>No numbers drawn.</p>`;
+            else {
+                html += `<ul style="columns: 3;">`;
+                [...tDrawn].reverse().forEach(d => {
+                    const n = typeof d === 'object' ? d.number : d;
+                    const p = typeof d === 'object' ? d.prize : '';
+                    const r = typeof d === 'object' && d.redrawn ? '(REDRAWN)' : '';
+                    html += `<li>${r ? `<s>Ticket ${n} - $${p}</s>` : `Ticket ${n} - $${p}`}</li>`;
+                });
+                html += `</ul>`;
+            }
+
+            if (state.draw.sunday?.enabled) {
+                html += `<h2>Sunday Winners</h2>`;
+                const sDrawn = state.draw.sunday?.drawnNumbers || [];
+                if (sDrawn.length === 0) html += `<p>No numbers drawn.</p>`;
+                else {
+                    html += `<ul style="columns: 3;">`;
+                    [...sDrawn].reverse().forEach(d => {
+                        const n = typeof d === 'object' ? d.number : d;
+                        const r = typeof d === 'object' && d.redrawn ? '(REDRAWN)' : '';
+                        html += `<li>${r ? `<s>Ticket ${n}</s>` : `Ticket ${n}`}</li>`;
+                    });
+                    html += `</ul>`;
+                }
+            }
+            html += `</div>`;
+            return html;
+        }
+
+        function printHTML(content) {
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write('<html><head><title>Print Report</title></head><body>');
+            printWindow.document.write(content);
+            printWindow.document.write('</body></html>');
+            printWindow.document.close();
+            setTimeout(() => {
+                printWindow.print();
+            }, 500);
+        }
+
+        function printFinancialSheet() { printHTML(getFinancialHTML()); }
+        function printChecklist() { printHTML(getChecklistHTML()); }
+        function printDrawResults() { printHTML(getResultsHTML()); }
+        function printAllPages() { printHTML(getChecklistHTML() + getFinancialHTML() + getResultsHTML()); }
+        
+        // Generate QR Codes
+        setTimeout(() => {
+            const baseUrl = window.location.origin + window.location.pathname.replace('admin.html', '');
+            if (typeof QRCode !== 'undefined') {
+                new QRCode(document.getElementById("qr-display"), { text: baseUrl + "index.html", width: 120, height: 120 });
+                new QRCode(document.getElementById("qr-remote"), { text: baseUrl + "remote.html", width: 120, height: 120 });
+                new QRCode(document.getElementById("qr-admin"), { text: baseUrl + "admin.html", width: 120, height: 120 });
+                new QRCode(document.getElementById("qr-archive"), { text: baseUrl + "archive.html", width: 120, height: 120 });
+            }
+        }, 1000);
+    </script>
+</body>
+
                 </html>
             `);
             printWin.document.close();
@@ -1473,5 +1725,178 @@
 
 
     </script>
+
+    <!-- Financials & Print Logic -->
+    <script>
+        function saveFinancials() {
+            const financials = {
+                thursday: {
+                    cash: Number(document.getElementById('fin-thu-cash').value) || 0,
+                    eftpos: Number(document.getElementById('fin-thu-eftpos').value) || 0,
+                    singles: Number(document.getElementById('fin-thu-singles').value) || 0,
+                    strips: Number(document.getElementById('fin-thu-strips').value) || 0
+                },
+                sunday: {
+                    cash: Number(document.getElementById('fin-sun-cash').value) || 0,
+                    eftpos: Number(document.getElementById('fin-sun-eftpos').value) || 0,
+                    singles: Number(document.getElementById('fin-sun-singles').value) || 0
+                }
+            };
+            
+            // Save to state
+            if (!state.financials) state.financials = {};
+            state.financials = financials;
+            writeFirebase({ financials: financials });
+        }
+        
+        // Listen to state updates to populate inputs if someone else changes them
+        const originalUpdateState = updateState;
+        updateState = function(newState) {
+            originalUpdateState(newState);
+            if (newState.financials) {
+                if (document.getElementById('fin-thu-cash').value == '') document.getElementById('fin-thu-cash').value = newState.financials.thursday?.cash || '';
+                if (document.getElementById('fin-thu-eftpos').value == '') document.getElementById('fin-thu-eftpos').value = newState.financials.thursday?.eftpos || '';
+                if (document.getElementById('fin-thu-singles').value == '') document.getElementById('fin-thu-singles').value = newState.financials.thursday?.singles || '';
+                if (document.getElementById('fin-thu-strips').value == '') document.getElementById('fin-thu-strips').value = newState.financials.thursday?.strips || '';
+                
+                if (document.getElementById('fin-sun-cash').value == '') document.getElementById('fin-sun-cash').value = newState.financials.sunday?.cash || '';
+                if (document.getElementById('fin-sun-eftpos').value == '') document.getElementById('fin-sun-eftpos').value = newState.financials.sunday?.eftpos || '';
+                if (document.getElementById('fin-sun-singles').value == '') document.getElementById('fin-sun-singles').value = newState.financials.sunday?.singles || '';
+            }
+        };
+
+        function getFinancialHTML() {
+            const f = state.financials || { thursday: {}, sunday: {} };
+            const t = f.thursday || {};
+            const s = f.sunday || {};
+            
+            const tExpected = (t.singles * 5) + (t.strips * 20);
+            const tActual = t.cash + t.eftpos;
+            const tDiff = tActual - tExpected;
+            
+            const sExpected = (s.singles * 5);
+            const sActual = s.cash + s.eftpos;
+            const sDiff = sActual - sExpected;
+            
+            const gExpected = tExpected + sExpected;
+            const gActual = tActual + sActual;
+            const gDiff = gActual - gExpected;
+            
+            return `
+                <div style="font-family: sans-serif; padding: 20px; max-width: 800px; margin: 0 auto; page-break-after: always;">
+                    <h1 style="text-align:center; border-bottom: 2px solid #333; padding-bottom: 10px;">Weekly Financial Summary</h1>
+                    
+                    <h2 style="background: #eee; padding: 10px;">Section 1: Thursday Draw</h2>
+                    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+                        <tr><td style="padding: 5px; border-bottom:1px solid #ccc;">Singles Sold ($5)</td><td style="text-align:right;">${t.singles || 0}</td></tr>
+                        <tr><td style="padding: 5px; border-bottom:1px solid #ccc;">Strips Sold ($20)</td><td style="text-align:right;">${t.strips || 0}</td></tr>
+                        <tr><td style="padding: 5px; border-bottom:1px solid #ccc;"><strong>Expected Revenue</strong></td><td style="text-align:right;"><strong>$${tExpected.toFixed(2)}</strong></td></tr>
+                        <tr><td style="padding: 5px; border-bottom:1px solid #ccc;">Cash Received</td><td style="text-align:right;">$${(t.cash||0).toFixed(2)}</td></tr>
+                        <tr><td style="padding: 5px; border-bottom:1px solid #ccc;">Eftpos Received</td><td style="text-align:right;">$${(t.eftpos||0).toFixed(2)}</td></tr>
+                        <tr><td style="padding: 5px; border-bottom:1px solid #ccc;"><strong>Actual Revenue</strong></td><td style="text-align:right;"><strong>$${tActual.toFixed(2)}</strong></td></tr>
+                        <tr><td style="padding: 5px; border-bottom:1px solid #ccc; color: ${tDiff < 0 ? 'red' : 'green'};"><strong>Discrepancy</strong></td><td style="text-align:right; color: ${tDiff < 0 ? 'red' : 'green'};"><strong>$${tDiff.toFixed(2)}</strong></td></tr>
+                    </table>
+
+                    <h2 style="background: #eee; padding: 10px;">Section 2: Sunday (Rob's) Draw</h2>
+                    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+                        <tr><td style="padding: 5px; border-bottom:1px solid #ccc;">Tickets Sold ($5)</td><td style="text-align:right;">${s.singles || 0}</td></tr>
+                        <tr><td style="padding: 5px; border-bottom:1px solid #ccc;"><strong>Expected Revenue</strong></td><td style="text-align:right;"><strong>$${sExpected.toFixed(2)}</strong></td></tr>
+                        <tr><td style="padding: 5px; border-bottom:1px solid #ccc;">Cash Received</td><td style="text-align:right;">$${(s.cash||0).toFixed(2)}</td></tr>
+                        <tr><td style="padding: 5px; border-bottom:1px solid #ccc;">Eftpos Received</td><td style="text-align:right;">$${(s.eftpos||0).toFixed(2)}</td></tr>
+                        <tr><td style="padding: 5px; border-bottom:1px solid #ccc;"><strong>Actual Revenue</strong></td><td style="text-align:right;"><strong>$${sActual.toFixed(2)}</strong></td></tr>
+                        <tr><td style="padding: 5px; border-bottom:1px solid #ccc; color: ${sDiff < 0 ? 'red' : 'green'};"><strong>Discrepancy</strong></td><td style="text-align:right; color: ${sDiff < 0 ? 'red' : 'green'};"><strong>$${sDiff.toFixed(2)}</strong></td></tr>
+                    </table>
+
+                    <h2 style="background: #333; color: white; padding: 10px;">Section 3: Grand Totals</h2>
+                    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+                        <tr><td style="padding: 5px; border-bottom:1px solid #ccc;"><strong>Total Expected</strong></td><td style="text-align:right;"><strong>$${gExpected.toFixed(2)}</strong></td></tr>
+                        <tr><td style="padding: 5px; border-bottom:1px solid #ccc;"><strong>Total Actual</strong></td><td style="text-align:right;"><strong>$${gActual.toFixed(2)}</strong></td></tr>
+                        <tr><td style="padding: 5px; border-bottom:1px solid #ccc; font-size:1.2em; color: ${gDiff < 0 ? 'red' : 'green'};"><strong>Total Discrepancy</strong></td><td style="text-align:right; font-size:1.2em; color: ${gDiff < 0 ? 'red' : 'green'};"><strong>$${gDiff.toFixed(2)}</strong></td></tr>
+                    </table>
+                </div>
+            `;
+        }
+
+        function getChecklistHTML() {
+            let html = `<div style="font-family: sans-serif; padding: 20px; max-width: 800px; margin: 0 auto; page-break-after: always;">`;
+            html += `<h1 style="text-align:center;">Raffle Checklist</h1>`;
+            html += `<h2>Thursday Prizes</h2><ul>`;
+            html += `<li>[ ] $100 Packs: ${state.draw.thursday?.cfgPrizes100 || 0}</li>`;
+            html += `<li>[ ] $50 Prizes: ${state.draw.thursday?.cfgPrizes50 || 0}</li>`;
+            html += `<li>[ ] $25 Prizes: ${state.draw.thursday?.cfgPrizes25 || 0}</li></ul>`;
+            
+            if (state.draw.sunday?.enabled) {
+                html += `<h2>Sunday Prizes</h2><ul>`;
+                html += `<li>[ ] Vouchers ($${state.draw.sunday.cfgVouchersValue}): ${state.draw.sunday.cfgVouchersCount || 0}</li>`;
+                html += `<li>[ ] Meat Trays: ${state.draw.sunday.cfgPrizes100 || 0}</li></ul>`;
+            }
+            html += `</div>`;
+            return html;
+        }
+
+        function getResultsHTML() {
+            let html = `<div style="font-family: sans-serif; padding: 20px; max-width: 800px; margin: 0 auto; page-break-after: always;">`;
+            html += `<h1 style="text-align:center;">Draw Results</h1>`;
+            
+            html += `<h2>Thursday Winners</h2>`;
+            const tDrawn = state.draw.thursday?.drawnNumbers || [];
+            if (tDrawn.length === 0) html += `<p>No numbers drawn.</p>`;
+            else {
+                html += `<ul style="columns: 3;">`;
+                [...tDrawn].reverse().forEach(d => {
+                    const n = typeof d === 'object' ? d.number : d;
+                    const p = typeof d === 'object' ? d.prize : '';
+                    const r = typeof d === 'object' && d.redrawn ? '(REDRAWN)' : '';
+                    html += `<li>${r ? `<s>Ticket ${n} - $${p}</s>` : `Ticket ${n} - $${p}`}</li>`;
+                });
+                html += `</ul>`;
+            }
+
+            if (state.draw.sunday?.enabled) {
+                html += `<h2>Sunday Winners</h2>`;
+                const sDrawn = state.draw.sunday?.drawnNumbers || [];
+                if (sDrawn.length === 0) html += `<p>No numbers drawn.</p>`;
+                else {
+                    html += `<ul style="columns: 3;">`;
+                    [...sDrawn].reverse().forEach(d => {
+                        const n = typeof d === 'object' ? d.number : d;
+                        const r = typeof d === 'object' && d.redrawn ? '(REDRAWN)' : '';
+                        html += `<li>${r ? `<s>Ticket ${n}</s>` : `Ticket ${n}`}</li>`;
+                    });
+                    html += `</ul>`;
+                }
+            }
+            html += `</div>`;
+            return html;
+        }
+
+        function printHTML(content) {
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write('<html><head><title>Print Report</title></head><body>');
+            printWindow.document.write(content);
+            printWindow.document.write('</body></html>');
+            printWindow.document.close();
+            setTimeout(() => {
+                printWindow.print();
+            }, 500);
+        }
+
+        function printFinancialSheet() { printHTML(getFinancialHTML()); }
+        function printChecklist() { printHTML(getChecklistHTML()); }
+        function printDrawResults() { printHTML(getResultsHTML()); }
+        function printAllPages() { printHTML(getChecklistHTML() + getFinancialHTML() + getResultsHTML()); }
+        
+        // Generate QR Codes
+        setTimeout(() => {
+            const baseUrl = window.location.origin + window.location.pathname.replace('admin.html', '');
+            if (typeof QRCode !== 'undefined') {
+                new QRCode(document.getElementById("qr-display"), { text: baseUrl + "index.html", width: 120, height: 120 });
+                new QRCode(document.getElementById("qr-remote"), { text: baseUrl + "remote.html", width: 120, height: 120 });
+                new QRCode(document.getElementById("qr-admin"), { text: baseUrl + "admin.html", width: 120, height: 120 });
+                new QRCode(document.getElementById("qr-archive"), { text: baseUrl + "archive.html", width: 120, height: 120 });
+            }
+        }, 1000);
+    </script>
 </body>
+
 </html>

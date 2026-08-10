@@ -895,44 +895,30 @@
             <div class="congrats-title">Congratulations<br>to all the winners</div>
             <div class="congrats-subtitle">Thank you to all who participated.<br>We hope to see you all next Thursday!</div>
         </div>
-
+        
+        <!-- ROBS ADVERT VIEW -->
+        <div id="view-robs-advert" class="view" style="display: flex; flex-direction: column; justify-content: center; align-items: center; background: radial-gradient(circle at center, #1e3a8a, #020617);">
+            <div class="congrats-title" style="font-size: clamp(3rem, 8vmin, 6rem); color: #60a5fa; text-shadow: 0 0 40px rgba(96,165,250,0.6);">
+                ROB'S BONUS BOX
+            </div>
+            <div class="congrats-subtitle" style="font-size: 2.5rem; margin-top: 2rem; color: white;">
+                Sunday 5PM
+            </div>
+            <div id="robs-prizes-list" style="display: flex; flex-direction: column; gap: 2rem; margin-top: 4rem; font-size: 3rem; font-weight: 800; color: #fbbf24; text-shadow: 0 0 20px rgba(251,191,36,0.5);">
+                <!-- Dynamic -->
+            </div>
+        </div>
         <!-- WINNING NUMBERS VIEW -->
         <div id="view-winning-numbers" class="view" style="display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 2rem; box-sizing: border-box; text-align: center;">
             <div class="congrats-title" style="margin-bottom: 2rem; font-size: clamp(2.5rem, 6vmin, 4.5rem); text-shadow: 0 0 30px rgba(255,215,0,0.4); text-transform: uppercase; letter-spacing: 2px;">
                 🏆 Tonight's Winners 🏆
             </div>
-            <div style="display: flex; gap: 3rem; width: 90%; max-width: 1400px; justify-content: space-between; flex: 1; align-items: stretch; margin-bottom: 2rem;">
-                <!-- $100 Column -->
-                <div style="flex: 1; background: rgba(0,0,0,0.6); border: 2px solid rgba(239,68,68,0.5); border-radius: 1.5rem; padding: 1.5rem; display: flex; flex-direction: column; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
-                    <div style="font-size: 1.8rem; color: #ef4444; font-weight: 900; text-transform: uppercase; border-bottom: 2.5px solid rgba(239,68,68,0.3); padding-bottom: 0.5rem; margin-bottom: 1rem; text-shadow: 0 0 15px rgba(239,68,68,0.3);">
-                        $100 Packs
-                    </div>
-                    <div id="summary-list-100" style="display: flex; flex-wrap: wrap; gap: 0.75rem; justify-content: center; overflow-y: auto; flex: 1; align-content: flex-start; font-size: 2.4rem; font-weight: 800; color: #fff;">
-                        <!-- dynamic -->
-                    </div>
-                </div>
-
-                <!-- $50 Column -->
-                <div style="flex: 1; background: rgba(0,0,0,0.6); border: 2px solid rgba(59,130,246,0.5); border-radius: 1.5rem; padding: 1.5rem; display: flex; flex-direction: column; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
-                    <div style="font-size: 1.8rem; color: #3b82f6; font-weight: 900; text-transform: uppercase; border-bottom: 2.5px solid rgba(59,130,246,0.3); padding-bottom: 0.5rem; margin-bottom: 1rem; text-shadow: 0 0 15px rgba(59,130,246,0.3);">
-                        $50 Packs
-                    </div>
-                    <div id="summary-list-50" style="display: flex; flex-wrap: wrap; gap: 0.75rem; justify-content: center; overflow-y: auto; flex: 1; align-content: flex-start; font-size: 2.4rem; font-weight: 800; color: #fff;">
-                        <!-- dynamic -->
-                    </div>
-                </div>
-
-                <!-- $25 Column -->
-                <div style="flex: 1; background: rgba(0,0,0,0.6); border: 2px solid rgba(16,185,129,0.5); border-radius: 1.5rem; padding: 1.5rem; display: flex; flex-direction: column; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
-                    <div style="font-size: 1.8rem; color: #10b981; font-weight: 900; text-transform: uppercase; border-bottom: 2.5px solid rgba(16,185,129,0.3); padding-bottom: 0.5rem; margin-bottom: 1rem; text-shadow: 0 0 15px rgba(16,185,129,0.3);">
-                        $25 Packs
-                    </div>
-                    <div id="summary-list-25" style="display: flex; flex-wrap: wrap; gap: 0.75rem; justify-content: center; overflow-y: auto; flex: 1; align-content: flex-start; font-size: 2.4rem; font-weight: 800; color: #fff;">
-                        <!-- dynamic -->
-                    </div>
+            <div style="display: flex; width: 95%; max-width: 1600px; flex: 1; justify-content: center; align-items: flex-start; margin-bottom: 2rem;">
+                <div id="winning-horizontal-list" style="display: flex; flex-wrap: wrap; justify-content: flex-start; align-items: center; align-content: flex-start; width: 100%; height: 100%; overflow-y: auto; padding: 2rem;">
+                    <!-- dynamic -->
                 </div>
             </div>
-            <div style="font-size: 1.1rem; color: #888; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">
+            <div style="font-size: 1.1rem; color: #888; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 2rem;">
                 Scan QR Code at the counter to verify all transactions and cryptography logs.
             </div>
         <!-- CONGRATS VIDEO VIEW -->
@@ -1152,19 +1138,34 @@
             }
             lastActiveView = state.activeView;
 
+            // Active Event State parsing
+            const activeEventName = state.draw.activeEvent || 'thursday';
+            const activeDrawData = state.draw[activeEventName] || state.draw.thursday || state.draw;
+            const isSunday = activeEventName === 'sunday';
+
             // Draw rendering
-            prizesCountEl.innerText = state.draw.prizesLeft;
+            prizesCountEl.innerText = activeDrawData.prizesLeft !== undefined ? activeDrawData.prizesLeft : state.draw.prizesLeft;
             
             // Update countdown slide prize counts if they exist in DOM
             const c100 = document.getElementById('count-100');
             const c50 = document.getElementById('count-50');
             const c25 = document.getElementById('count-25');
-            if (c100) c100.innerText = state.draw.prizes100 !== undefined ? state.draw.prizes100 : 27;
-            if (c50) c50.innerText = state.draw.prizes50 !== undefined ? state.draw.prizes50 : 19;
-            if (c25) c25.innerText = state.draw.prizes25 !== undefined ? state.draw.prizes25 : 24;
+            // Hide 0 counts for slides
+            if (c100) {
+                if (activeDrawData.prizes100 === 0) c100.parentElement.style.display = 'none';
+                else { c100.parentElement.style.display = 'block'; c100.innerText = activeDrawData.prizes100; }
+            }
+            if (c50) {
+                if (activeDrawData.prizes50 === 0) c50.parentElement.style.display = 'none';
+                else { c50.parentElement.style.display = 'block'; c50.innerText = activeDrawData.prizes50; }
+            }
+            if (c25) {
+                if (activeDrawData.prizes25 === 0) c25.parentElement.style.display = 'none';
+                else { c25.parentElement.style.display = 'block'; c25.innerText = activeDrawData.prizes25; }
+            }
 
-            // Render drawn numbers chronologically (first drawn to last drawn) in horizontal bar
-            const drawn = state.draw.drawnNumbers || [];
+            // Render drawn numbers chronologically (first drawn to last drawn) with line connectors
+            const drawn = activeDrawData.drawnNumbers || [];
             
             // If reels are spinning, hide the currently rolling number (drawn[0])
             let displayDrawn = [...drawn];
@@ -1175,57 +1176,76 @@
             // Reverse to get chronological order (first drawn to last drawn)
             const chronological = [...displayDrawn].reverse();
             
+            const renderDrawnNumberLine = (entry, i, arr, scale = 1.0) => {
+                const num = typeof entry === 'object' ? entry.number : entry;
+                const prize = typeof entry === 'object' ? entry.prize : 25;
+                const redrawn = typeof entry === 'object' ? entry.redrawn : false;
+                
+                let bg = '#10b981';
+                let glow = 'rgba(16,185,129,0.5)';
+                let prizeLabel = isSunday ? '$' + prize : '$' + prize + ' Pack';
+                if (prize === 100 || prize === '100') {
+                    bg = '#ef4444';
+                    glow = 'rgba(239,68,68,0.5)';
+                } else if (prize === 50 || prize === '50') {
+                    bg = '#2563eb';
+                    glow = 'rgba(37,99,235,0.5)';
+                } else if (prize === 'bonus') {
+                    bg = '#ffd700';
+                    glow = 'rgba(255,215,0,0.5)';
+                    prizeLabel = 'BONUS';
+                } else if (prize === 'meat') {
+                    bg = '#f97316';
+                    glow = 'rgba(249,115,22,0.5)';
+                    prizeLabel = 'Meat Tray';
+                } else if (prize === 'voucher') {
+                    bg = '#8b5cf6';
+                    glow = 'rgba(139,92,246,0.5)';
+                    prizeLabel = 'Voucher';
+                }
+                
+                const isLastDrawn = drawn[0] && (typeof drawn[0] === 'object' ? drawn[0].number : drawn[0]) === num;
+                const extraClass = isLastDrawn && !redrawn ? 'class="last-drawn-glow"' : '';
+                
+                let style = `background: ${bg}; box-shadow: 0 0 15px ${glow}; padding: 0.5rem 1.4rem; border-radius: 0.75rem; color: #fff; font-weight: 800; font-size: ${2.6 * scale}rem; position: relative; z-index: 2; animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.1; min-width: ${5 * scale}rem;`;
+                
+                if (redrawn) {
+                    style += `opacity: 0.4; filter: grayscale(100%); text-decoration: line-through; text-decoration-color: #ff0000; text-decoration-thickness: 3px;`;
+                }
+
+                // Connector line logic
+                const hasNext = i < arr.length - 1;
+                const lineHtml = hasNext ? `<div style="width: 2rem; height: 4px; background: rgba(255,255,255,0.2); margin-top: ${1.5 * scale}rem; z-index: 1;"></div>` : '';
+
+                return `
+                    <div style="display: flex; align-items: flex-start; margin-bottom: 1rem;">
+                        <div ${extraClass} style="${style}">
+                            <span>${sanitize(String(num))}</span>
+                            <span style="font-size: ${0.8 * scale}rem; font-weight: 600; opacity: 0.8; text-transform: uppercase;">${prizeLabel}</span>
+                        </div>
+                        ${lineHtml}
+                    </div>`;
+            };
+
             const horizontalList = document.getElementById('drawn-horizontal-list');
             if (horizontalList) {
-                const renderDrawnNumber = (entry) => {
-                    const num = typeof entry === 'object' ? entry.number : entry;
-                    const prize = typeof entry === 'object' ? entry.prize : 25;
-                    
-                    let bg = '#10b981';
-                    let glow = 'rgba(16,185,129,0.5)';
-                    if (prize === 100 || prize === '100') {
-                        bg = '#ef4444';
-                        glow = 'rgba(239,68,68,0.5)';
-                    } else if (prize === 50 || prize === '50') {
-                        bg = '#2563eb';
-                        glow = 'rgba(37,99,235,0.5)';
-                    } else if (prize === 'bonus') {
-                        bg = '#ffd700';
-                        glow = 'rgba(255,215,0,0.5)';
-                    }
-                    
-                    const isLastDrawn = drawn[0] && (typeof drawn[0] === 'object' ? drawn[0].number : drawn[0]) === num;
-                    const extraClass = isLastDrawn ? 'class="last-drawn-glow"' : '';
-                    
-                    const style = `background: ${bg}; box-shadow: 0 0 15px ${glow}; padding: 0.5rem 1.4rem; border-radius: 0.75rem; color: #fff; font-weight: 800; font-size: 2.6rem; margin: 0.3rem; display: inline-block; animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);`;
-                    return `<span ${extraClass} style="${style}">${sanitize(String(num))}</span>`;
-                };
-                horizontalList.innerHTML = chronological.map(renderDrawnNumber).join('');
+                horizontalList.innerHTML = chronological.map((e, i, a) => renderDrawnNumberLine(e, i, a, 1.0)).join('');
             }
             
-            // Update congrats summary columns
-            const sum100 = document.getElementById('summary-list-100');
-            const sum50 = document.getElementById('summary-list-50');
-            const sum25 = document.getElementById('summary-list-25');
-            
-            if (sum100 && sum50 && sum25) {
-                const numbers100 = drawn.filter(d => (typeof d === 'object' ? d.prize : 0) === 100);
-                const numbers50 = drawn.filter(d => (typeof d === 'object' ? d.prize : 0) === 50);
-                const numbers25 = drawn.filter(d => (typeof d === 'object' ? d.prize : 0) === 25 || (typeof d !== 'object'));
-                
-                const renderGroupHtml = (groupArray, defaultBg, defaultGlow) => {
-                    return groupArray.map(entry => {
-                        const num = typeof entry === 'object' ? entry.number : entry;
-                        const isLastDrawn = drawn[0] && (typeof drawn[0] === 'object' ? drawn[0].number : drawn[0]) === num;
-                        const extraClass = isLastDrawn ? 'class="last-drawn-glow"' : '';
-                        const style = `background: ${defaultBg}; box-shadow: 0 0 15px ${defaultGlow}; padding: 0.5rem 1.4rem; border-radius: 0.75rem; color: #fff; font-weight: 800; font-size: 2.4rem; margin: 0.3rem; display: inline-block; animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);`;
-                        return `<span ${extraClass} style="${style}">${sanitize(String(num))}</span>`;
-                    }).join('');
-                };
-                
-                sum100.innerHTML = renderGroupHtml(numbers100, '#ef4444', 'rgba(239,68,68,0.5)');
-                sum50.innerHTML = renderGroupHtml(numbers50, '#2563eb', 'rgba(37,99,235,0.5)');
-                sum25.innerHTML = renderGroupHtml(numbers25, '#10b981', 'rgba(16,185,129,0.5)');
+            // Populate winning numbers view exactly the same, but bigger
+            const winningList = document.getElementById('winning-horizontal-list');
+            if (winningList) {
+                winningList.innerHTML = chronological.map((e, i, a) => renderDrawnNumberLine(e, i, a, 1.3)).join('');
+            }
+
+            // Update Robs Advert
+            const robsPrizes = document.getElementById('robs-prizes-list');
+            if (robsPrizes && state.draw.sunday) {
+                let p = [];
+                if (state.draw.sunday.cfgVouchersCount > 0) p.push(`<div>${state.draw.sunday.cfgVouchersCount}x $${state.draw.sunday.cfgVouchersValue} Vouchers</div>`);
+                if (state.draw.sunday.cfgPrizes100 > 0) p.push(`<div>${state.draw.sunday.cfgPrizes100}x $100 Meat Trays</div>`);
+                if (state.draw.sunday.cfgPrizes50 > 0) p.push(`<div>${state.draw.sunday.cfgPrizes50}x $50 Meat Trays</div>`);
+                robsPrizes.innerHTML = p.join('');
             }
 
             // Render last drawn number in slots if not currently rolling
@@ -1349,88 +1369,27 @@
                 congratsStartTime = null;
             }
 
-            // Post-draw alternating loop: Congrats vs. Winning Numbers
-            if (state.draw && state.draw.drawsFinishedTime) {
-                const elapsed = Date.now() - new Date(state.draw.drawsFinishedTime).getTime();
-                const isTest = window.location.search.includes('testLoop=1');
-                
-                const startDelay = isTest ? 10 * 1000 : 5 * 60 * 1000;
-                const interval = isTest ? 5 * 1000 : 20 * 1000;
-                const totalDuration = isTest ? 30 * 1000 : 59 * 60 * 1000;
-                
-                if (elapsed >= startDelay && elapsed < (startDelay + totalDuration)) {
-                    const cycle = Math.floor((elapsed - startDelay) / interval);
-                    const targetView = (cycle % 2 === 0) ? 'congrats' : 'winning-numbers';
-                    if (state.activeView !== targetView) {
-                        updateState({ activeView: targetView });
+            // Post-draw alternating loop: Congrats -> Robs Info (if enabled) -> Winning Numbers (unless manual)
+            if (state.activeView === 'congrats' || state.activeView === 'winning-numbers' || state.activeView === 'view-robs-advert') {
+                if (!postDrawLoopInterval) {
+                    let steps = ['congrats'];
+                    if (state.draw.sunday && state.draw.sunday.enabled) {
+                        steps.push('view-robs-advert');
                     }
-                } else if (elapsed >= (startDelay + totalDuration)) {
-                    // Reset finished time and go back to slideshow
-                    state.draw.drawsFinishedTime = null;
-                    updateState({ activeView: 'slides' });
-                    bc.postMessage({ type: 'STATE_UPDATE', payload: { activeView: 'slides', draw: { drawsFinishedTime: null } } });
-                    writeFirebase({ activeView: 'slides', draw: { drawsFinishedTime: null } });
+                    const activeDrawData = state.draw[state.draw.activeEvent || 'thursday'] || {};
+                    if (!activeDrawData.manualDraw) {
+                        steps.push('winning-numbers');
+                    }
+                    
+                    let currentStepIdx = steps.indexOf(state.activeView) !== -1 ? steps.indexOf(state.activeView) : 0;
+                    
+                    postDrawLoopInterval = setInterval(() => {
+                        currentStepIdx = (currentStepIdx + 1) % steps.length;
+                        const nextView = steps[currentStepIdx];
+                        bc.postMessage({ type: 'STATE_UPDATE', payload: { activeView: nextView } });
+                        writeFirebase({ activeView: nextView });
+                    }, 10000); // Switch every 10 seconds
                 }
-            }
-
-            // Turn off congrats screen and resume slides if outside allowed time window
-            if (state.activeView === 'congrats') {
-                const nzDate = getNZDate();
-                const day = nzDate.getDay();
-                const hour = nzDate.getHours();
-                const targetDay = (window.MMR_CONFIG && window.MMR_CONFIG.TARGET_DAY) ?? 4;
-                
-                let shouldTurnOff = false;
-                if (day === targetDay && hour >= 22) {
-                    shouldTurnOff = true;
-                } else if (day !== targetDay) {
-                    shouldTurnOff = true;
-                } else if (day === targetDay && hour < 18) {
-                    shouldTurnOff = true;
-                }
-                
-                if (shouldTurnOff) {
-                    isPaused = false;
-                    const btn = document.getElementById('play-pause-btn');
-                    if (btn) btn.innerText = '⏸';
-                    updateState({ activeView: 'slides' });
-                    bc.postMessage({ type: 'STATE_UPDATE', payload: { activeView: 'slides' } });
-                    writeFirebase({ activeView: 'slides' });
-                }
-            }
-        }, 1000);
-
-        // Slide logic
-        let currentSlideIdx = 0;
-        let isPaused = false;
-        let slideInterval;
-        let progressInterval;
-
-        function nextSlide() {
-            const slides = document.querySelectorAll('.slide');
-            if(slides.length === 0) return;
-            slides[currentSlideIdx].classList.remove('active');
-            currentSlideIdx = (currentSlideIdx + 1) % slides.length;
-            slides[currentSlideIdx].classList.add('active');
-            startSlideTimer(parseInt(slides[currentSlideIdx].getAttribute('data-duration')) || 30000);
-        }
-
-        function prevSlide() {
-            const slides = document.querySelectorAll('.slide');
-            if(slides.length === 0) return;
-            slides[currentSlideIdx].classList.remove('active');
-            currentSlideIdx = (currentSlideIdx + slides.length - 1) % slides.length;
-            slides[currentSlideIdx].classList.add('active');
-            startSlideTimer(parseInt(slides[currentSlideIdx].getAttribute('data-duration')) || 30000);
-        }
-
-        function toggleSlidePlay() {
-            isPaused = !isPaused;
-            const btn = document.getElementById('play-pause-btn');
-            btn.innerText = isPaused ? '▶' : '⏸';
-            if (isPaused) {
-                clearInterval(slideInterval);
-                clearInterval(progressInterval);
             } else {
                 const slides = document.querySelectorAll('.slide');
                 if(slides.length > 0) startSlideTimer(parseInt(slides[currentSlideIdx].getAttribute('data-duration')) || 30000);
