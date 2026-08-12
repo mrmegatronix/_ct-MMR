@@ -909,7 +909,7 @@
             </div>
         </div>
         <!-- WINNING NUMBERS VIEW -->
-        <div id="view-winning-numbers" class="view" style="display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 2rem; box-sizing: border-box; text-align: center;">
+        <div id="view-winning-numbers" class="view" style="display: flex; flex-direction: column; justify-content: flex-start; align-items: center; padding: 2rem; padding-top: 15rem; box-sizing: border-box; text-align: center;">
             <div class="congrats-title" style="margin-bottom: 2rem; font-size: clamp(2.5rem, 6vmin, 4.5rem); text-shadow: 0 0 30px rgba(255,215,0,0.4); text-transform: uppercase; letter-spacing: 2px;">
                 🏆 Tonight's Winners 🏆
             </div>
@@ -1064,6 +1064,7 @@
 
         let lastRenderedSlidesJson = '';
         let lastActiveView = '';
+        let postDrawLoopInterval = null;
 
         function updateState(newState) {
             // Deep merge draw object if present
@@ -1390,6 +1391,71 @@
                         writeFirebase({ activeView: nextView });
                     }, 10000); // Switch every 10 seconds
                 }
+            } else {
+                if (typeof postDrawLoopInterval !== 'undefined' && postDrawLoopInterval) {
+                    clearInterval(postDrawLoopInterval);
+                    postDrawLoopInterval = null;
+                }
+            }
+
+            // Turn off congrats screen and resume slides if outside allowed time window
+            if (state.activeView === 'congrats') {
+                const nzDate = getNZDate();
+                const day = nzDate.getDay();
+                const hour = nzDate.getHours();
+                const targetDay = (window.MMR_CONFIG && window.MMR_CONFIG.TARGET_DAY) ?? 4;
+                
+                let shouldTurnOff = false;
+                if (day === targetDay && hour >= 22) {
+                    shouldTurnOff = true;
+                } else if (day !== targetDay) {
+                    shouldTurnOff = true;
+                } else if (day === targetDay && hour < 18) {
+                    shouldTurnOff = true;
+                }
+                
+                if (shouldTurnOff) {
+                    isPaused = false;
+                    const btn = document.getElementById('play-pause-btn');
+                    if (btn) btn.innerText = '⏸';
+                    updateState({ activeView: 'slides' });
+                    bc.postMessage({ type: 'STATE_UPDATE', payload: { activeView: 'slides' } });
+                    writeFirebase({ activeView: 'slides' });
+                }
+            }
+        }, 1000);
+
+        // Slide logic
+        let currentSlideIdx = 0;
+        let isPaused = false;
+        let slideInterval;
+        let progressInterval;
+
+        function nextSlide() {
+            const slides = document.querySelectorAll('.slide');
+            if(slides.length === 0) return;
+            slides[currentSlideIdx].classList.remove('active');
+            currentSlideIdx = (currentSlideIdx + 1) % slides.length;
+            slides[currentSlideIdx].classList.add('active');
+            startSlideTimer(parseInt(slides[currentSlideIdx].getAttribute('data-duration')) || 30000);
+        }
+
+        function prevSlide() {
+            const slides = document.querySelectorAll('.slide');
+            if(slides.length === 0) return;
+            slides[currentSlideIdx].classList.remove('active');
+            currentSlideIdx = (currentSlideIdx + slides.length - 1) % slides.length;
+            slides[currentSlideIdx].classList.add('active');
+            startSlideTimer(parseInt(slides[currentSlideIdx].getAttribute('data-duration')) || 30000);
+        }
+
+        function toggleSlidePlay() {
+            isPaused = !isPaused;
+            const btn = document.getElementById('play-pause-btn');
+            btn.innerText = isPaused ? '▶' : '⏸';
+            if (isPaused) {
+                clearInterval(slideInterval);
+                clearInterval(progressInterval);
             } else {
                 const slides = document.querySelectorAll('.slide');
                 if(slides.length > 0) startSlideTimer(parseInt(slides[currentSlideIdx].getAttribute('data-duration')) || 30000);
