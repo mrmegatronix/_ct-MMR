@@ -626,7 +626,7 @@
                 localStorage.setItem('mmr_pin_migration_5551', 'done');
             }
 
-            const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '192.168.1.97';
+            const isLocal = false;
             if (isLocal) {
                 sessionStorage.setItem('mmr_authed', 'true');
                 sessionStorage.setItem('mmr_role', 'admin');
