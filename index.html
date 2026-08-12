@@ -1146,10 +1146,10 @@
 
             // Check total configured prizes
             const activeEvtData = (state.draw && state.draw[state.draw.activeEvent]) || {};
-            const c100 = activeEvtData.cfgPrizes100 !== undefined ? activeEvtData.cfgPrizes100 : 0;
-            const c50 = activeEvtData.cfgPrizes50 !== undefined ? activeEvtData.cfgPrizes50 : 0;
-            const c25 = activeEvtData.cfgPrizes25 !== undefined ? activeEvtData.cfgPrizes25 : 0;
-            const hasPrizes = (c100 + c50 + c25) > 0;
+            const cfgPrizes100 = activeEvtData.cfgPrizes100 !== undefined ? activeEvtData.cfgPrizes100 : 0;
+            const cfgPrizes50 = activeEvtData.cfgPrizes50 !== undefined ? activeEvtData.cfgPrizes50 : 0;
+            const cfgPrizes25 = activeEvtData.cfgPrizes25 !== undefined ? activeEvtData.cfgPrizes25 : 0;
+            const hasPrizes = (cfgPrizes100 + cfgPrizes50 + cfgPrizes25) > 0;
 
             // Intercept and auto-correct activeView if outside congrats window (only when prizes > 0)
             if (hasPrizes && (state.activeView === 'congrats' || state.activeView === 'congrats-video')) {
