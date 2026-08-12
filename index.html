@@ -1483,9 +1483,9 @@
             const disabledList = state.disabledSlides || [];
             const visibleSlides = slidesData.filter(s => !disabledList.includes(s.title));
             
-            const t100 = (state.draw[state.draw.activeEvent]||{}).cfgPrizes100 !== undefined ? (state.draw[state.draw.activeEvent]||{}).cfgPrizes100 : 27;
-            const t50 = (state.draw[state.draw.activeEvent]||{}).cfgPrizes50 !== undefined ? (state.draw[state.draw.activeEvent]||{}).cfgPrizes50 : 19;
-            const t25 = (state.draw[state.draw.activeEvent]||{}).cfgPrizes25 !== undefined ? (state.draw[state.draw.activeEvent]||{}).cfgPrizes25 : 24;
+            const t100 = (state.draw[state.draw.activeEvent]||{}).cfgPrizes100 !== undefined ? (state.draw[state.draw.activeEvent]||{}).cfgPrizes100 : 0;
+            const t50 = (state.draw[state.draw.activeEvent]||{}).cfgPrizes50 !== undefined ? (state.draw[state.draw.activeEvent]||{}).cfgPrizes50 : 0;
+            const t25 = (state.draw[state.draw.activeEvent]||{}).cfgPrizes25 !== undefined ? (state.draw[state.draw.activeEvent]||{}).cfgPrizes25 : 0;
             const totalPrizes = t100 + t50 + t25;
             const totalPool = (t100 * 100) + (t50 * 50) + (t25 * 25);
             
@@ -1622,9 +1622,9 @@
                         ${slide.type === 'countdown' 
                             ? `<div class="slide-countdown slide-countdown-timer" style="position: relative; z-index: 2;">${timeHtml}</div>
                                <div class="countdown-prizes-summary" style="position: relative; z-index: 2; margin-top: 3.5rem; display: flex; gap: clamp(1.5rem, 4vw, 5.5rem); justify-content: center; font-size: clamp(1.6rem, 3.8vw, 3.8rem); font-weight: bold; background: rgba(0,0,0,0.85); padding: 1.5rem clamp(1.5rem, 4vw, 4rem); border-radius: 2rem; border: 2px solid rgba(255,255,255,0.2); box-shadow: 0 15px 35px rgba(0,0,0,0.6), 0 0 25px rgba(255,255,255,0.05); max-width: 90%; margin-left: auto; margin-right: auto; box-sizing: border-box;">
-                                 <span style="color: #ef4444; text-shadow: 0 0 15px rgba(239, 68, 68, 0.85), 0 0 30px rgba(239, 68, 68, 0.45);"><span id="count-100">${state.draw.prizes100 !== undefined ? state.draw.prizes100 : 27}</span> x $100</span>
-                                 <span style="color: #3b82f6; text-shadow: 0 0 15px rgba(59, 130, 246, 0.85), 0 0 30px rgba(59, 130, 246, 0.45);"><span id="count-50">${state.draw.prizes50 !== undefined ? state.draw.prizes50 : 19}</span> x $50</span>
-                                 <span style="color: #10b981; text-shadow: 0 0 15px rgba(16, 185, 129, 0.85), 0 0 30px rgba(16, 185, 129, 0.45);"><span id="count-25">${state.draw.prizes25 !== undefined ? state.draw.prizes25 : 24}</span> x $25</span>
+                                 <span style="color: #ef4444; text-shadow: 0 0 15px rgba(239, 68, 68, 0.85), 0 0 30px rgba(239, 68, 68, 0.45);"><span id="count-100">${state.draw.prizes100 !== undefined ? state.draw.prizes100 : 0}</span> x $100</span>
+                                 <span style="color: #3b82f6; text-shadow: 0 0 15px rgba(59, 130, 246, 0.85), 0 0 30px rgba(59, 130, 246, 0.45);"><span id="count-50">${state.draw.prizes50 !== undefined ? state.draw.prizes50 : 0}</span> x $50</span>
+                                 <span style="color: #10b981; text-shadow: 0 0 15px rgba(16, 185, 129, 0.85), 0 0 30px rgba(16, 185, 129, 0.45);"><span id="count-25">${state.draw.prizes25 !== undefined ? state.draw.prizes25 : 0}</span> x $25</span>
                                </div>` 
                             : ''
                         }

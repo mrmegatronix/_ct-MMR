@@ -598,13 +598,13 @@
                 min: 0,
                 max: 5000,
                 excludes: [],
-                prizes100: 27,
-                prizes50: 19,
-                prizes25: 24,
-                cfgPrizes100: 27,
-                cfgPrizes50: 19,
-                cfgPrizes25: 24,
-                prizesLeft: 70,
+                prizes100: 0,
+                prizes50: 0,
+                prizes25: 0,
+                cfgPrizes100: 0,
+                cfgPrizes50: 0,
+                cfgPrizes25: 0,
+                prizesLeft: 0,
                 isRolling: false,
                 currentNumber: '---',
                 drawnNumbers: []
@@ -1127,16 +1127,16 @@
                 console.warn('[MMR Admin] Failed to parse mmr_state_v5:', e);
             }
             
-            const draw = drawState || { drawnNumbers: [], prizes100: 27, prizes50: 19, prizes25: 24, prizesLeft: 70 };
+            const draw = drawState || { drawnNumbers: [], prizes100: 0, prizes50: 0, prizes25: 0, prizesLeft: 0 };
             const drawn = draw.drawnNumbers || [];
             
             const numbers100 = drawn.filter(d => (typeof d === 'object' ? d.prize : 0) === 100).map(d => typeof d === 'object' ? d.number : d).reverse();
             const numbers50 = drawn.filter(d => (typeof d === 'object' ? d.prize : 0) === 50).map(d => typeof d === 'object' ? d.number : d).reverse();
             const numbers25 = drawn.filter(d => (typeof d === 'object' ? d.prize : 0) === 25 || typeof d !== 'object').map(d => typeof d === 'object' ? d.number : d).reverse();
             
-            const total100 = draw.cfgPrizes100 !== undefined ? draw.cfgPrizes100 : 27;
-            const total50 = draw.cfgPrizes50 !== undefined ? draw.cfgPrizes50 : 19;
-            const total25 = draw.cfgPrizes25 !== undefined ? draw.cfgPrizes25 : 24;
+            const total100 = draw.cfgPrizes100 !== undefined ? draw.cfgPrizes100 : 0;
+            const total50 = draw.cfgPrizes50 !== undefined ? draw.cfgPrizes50 : 0;
+            const total25 = draw.cfgPrizes25 !== undefined ? draw.cfgPrizes25 : 0;
 
             const rem100 = draw.prizes100 !== undefined ? draw.prizes100 : Math.max(0, total100 - numbers100.length);
             const rem50 = draw.prizes50 !== undefined ? draw.prizes50 : Math.max(0, total50 - numbers50.length);

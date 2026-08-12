@@ -305,7 +305,7 @@
                 <div class="draw-action-card" style="border-color: var(--accent-100);">
                     <div class="draw-action-header">
                         <span style="color: var(--accent-100);">$100 Packs</span>
-                        <span style="font-size: 0.9rem; color: var(--text);"><span id="lbl-left-100">27</span> Left</span>
+                        <span style="font-size: 0.9rem; color: var(--text);"><span id="lbl-left-100">0</span> Left</span>
                     </div>
                     <div class="draw-action-buttons">
                         <button class="btn draw-btn" onclick="runRedraw(100)" id="btn-redraw-100" style="background-color: #334155; border-color: #ef4444; color: #ef4444; font-size: 0.85rem;">🔄 REDRAW</button>
@@ -317,7 +317,7 @@
                 <div class="draw-action-card" style="border-color: var(--accent-50);">
                     <div class="draw-action-header">
                         <span style="color: var(--accent-50);">$50 Packs</span>
-                        <span style="font-size: 0.9rem; color: var(--text);"><span id="lbl-left-50">19</span> Left</span>
+                        <span style="font-size: 0.9rem; color: var(--text);"><span id="lbl-left-50">0</span> Left</span>
                     </div>
                     <div class="draw-action-buttons">
                         <button class="btn draw-btn" onclick="runRedraw(50)" id="btn-redraw-50" style="background-color: #334155; border-color: #ef4444; color: #ef4444; font-size: 0.85rem;">🔄 REDRAW</button>
@@ -329,7 +329,7 @@
                 <div class="draw-action-card" style="border-color: var(--accent-25);">
                     <div class="draw-action-header">
                         <span style="color: var(--accent-25);">$25 Packs</span>
-                        <span style="font-size: 0.9rem; color: var(--text);"><span id="lbl-left-25">24</span> Left</span>
+                        <span style="font-size: 0.9rem; color: var(--text);"><span id="lbl-left-25">0</span> Left</span>
                     </div>
                     <div class="draw-action-buttons">
                         <button class="btn draw-btn" onclick="runRedraw(25)" id="btn-redraw-25" style="background-color: #334155; border-color: #ef4444; color: #ef4444; font-size: 0.85rem;">🔄 REDRAW</button>
@@ -623,13 +623,13 @@
                 thursday: {
                     manualDraw: false,
                     drawnNumbers: [],
-                    prizesLeft: 70,
-                    prizes100: 27,
-                    prizes50: 19,
-                    prizes25: 24,
-                    cfgPrizes100: 27,
-                    cfgPrizes50: 19,
-                    cfgPrizes25: 24,
+                    prizesLeft: 0,
+                    prizes100: 0,
+                    prizes50: 0,
+                    prizes25: 0,
+                    cfgPrizes100: 0,
+                    cfgPrizes50: 0,
+                    cfgPrizes25: 0,
                 },
                 sunday: {
                     enabled: false,
@@ -734,9 +734,9 @@
             const thu = state.draw.thursday;
             const sun = state.draw.sunday;
 
-            if (thu.prizes100 === undefined) thu.prizes100 = 27;
-            if (thu.prizes50 === undefined) thu.prizes50 = 19;
-            if (thu.prizes25 === undefined) thu.prizes25 = 24;
+            if (thu.prizes100 === undefined) thu.prizes100 = 0;
+            if (thu.prizes50 === undefined) thu.prizes50 = 0;
+            if (thu.prizes25 === undefined) thu.prizes25 = 0;
             thu.prizesLeft = thu.prizes100 + thu.prizes50 + thu.prizes25;
 
             if (sun.prizes100 === undefined) sun.prizes100 = 0;
@@ -868,13 +868,13 @@
                     thursday: {
                         manualDraw: false,
                         drawnNumbers: [],
-                        prizesLeft: 70,
-                        prizes100: 27,
-                        prizes50: 19,
-                        prizes25: 24,
-                        cfgPrizes100: 27,
-                        cfgPrizes50: 19,
-                        cfgPrizes25: 24,
+                        prizesLeft: 0,
+                        prizes100: 0,
+                        prizes50: 0,
+                        prizes25: 0,
+                        cfgPrizes100: 0,
+                        cfgPrizes50: 0,
+                        cfgPrizes25: 0,
                     },
                     sunday: {
                         enabled: false,
@@ -894,9 +894,9 @@
                     }
                 };
                 
-                document.getElementById('cfg-prizes-100').value = 27;
-                document.getElementById('cfg-prizes-50').value = 19;
-                document.getElementById('cfg-prizes-25').value = 24;
+                document.getElementById('cfg-prizes-100').value = 0;
+                document.getElementById('cfg-prizes-50').value = 0;
+                document.getElementById('cfg-prizes-25').value = 0;
                 if(document.getElementById('cfg-sunday-enabled')) document.getElementById('cfg-sunday-enabled').checked = false;
                 
                 updateUI();
@@ -911,9 +911,9 @@
             if (isDrawing) return;
             
             const evt = state.draw[state.draw.activeEvent];
-            if (evt.prizes100 === undefined) evt.prizes100 = 27;
-            if (evt.prizes50 === undefined) evt.prizes50 = 19;
-            if (evt.prizes25 === undefined) evt.prizes25 = 24;
+            if (evt.prizes100 === undefined) evt.prizes100 = 0;
+            if (evt.prizes50 === undefined) evt.prizes50 = 0;
+            if (evt.prizes25 === undefined) evt.prizes25 = 0;
 
             if (prizeSize === 100 && evt.prizes100 <= 0) { alert('No $100 prizes left!'); return; }
             if (prizeSize === 50 && evt.prizes50 <= 0) { alert('No $50 prizes left!'); return; }
@@ -1041,9 +1041,9 @@
             const min = parseInt(document.getElementById('cfg-min').value) || 0;
             const max = parseInt(document.getElementById('cfg-max').value) || 5000;
             const excludeStr = document.getElementById('cfg-excludes').value;
-            const t100 = parseInt(document.getElementById('cfg-prizes-100').value) || 27;
-            const t50 = parseInt(document.getElementById('cfg-prizes-50').value) || 19;
-            const t25 = parseInt(document.getElementById('cfg-prizes-25').value) || 24;
+            const t100 = parseInt(document.getElementById('cfg-prizes-100').value) || 0;
+            const t50 = parseInt(document.getElementById('cfg-prizes-50').value) || 0;
+            const t25 = parseInt(document.getElementById('cfg-prizes-25').value) || 0;
             const total = t100 + t50 + t25;
             const evt = state.draw[state.draw.activeEvent];
             const drawn = evt.drawnNumbers;
@@ -1074,9 +1074,9 @@
                 window.location.href = `mailto:?subject=${subject}&body=${body}`;
             } else if (type === 'print') {
                 const prct = document.getElementById('print-report');
-                const t100 = parseInt(document.getElementById('cfg-prizes-100').value) || 27;
-                const t50 = parseInt(document.getElementById('cfg-prizes-50').value) || 19;
-                const t25 = parseInt(document.getElementById('cfg-prizes-25').value) || 24;
+                const t100 = parseInt(document.getElementById('cfg-prizes-100').value) || 0;
+                const t50 = parseInt(document.getElementById('cfg-prizes-50').value) || 0;
+                const t25 = parseInt(document.getElementById('cfg-prizes-25').value) || 0;
                 const total = t100 + t50 + t25;
                 prct.innerHTML = `
                     <h1 style="color:black; margin-bottom: 0;">Monster Meat Raffle Report</h1>
@@ -1111,16 +1111,16 @@
                 drawState = state.draw[state.draw.activeEvent];
             }
             
-            const draw = drawState || { drawnNumbers: [], prizes100: 27, prizes50: 19, prizes25: 24, prizesLeft: 70 };
+            const draw = drawState || { drawnNumbers: [], prizes100: 0, prizes50: 0, prizes25: 0, prizesLeft: 0 };
             const drawn = draw.drawnNumbers || [];
             
             const numbers100 = drawn.filter(d => (typeof d === 'object' ? d.prize : 0) === 100).map(d => typeof d === 'object' ? d.number : d).reverse();
             const numbers50 = drawn.filter(d => (typeof d === 'object' ? d.prize : 0) === 50).map(d => typeof d === 'object' ? d.number : d).reverse();
             const numbers25 = drawn.filter(d => (typeof d === 'object' ? d.prize : 0) === 25 || typeof d !== 'object').map(d => typeof d === 'object' ? d.number : d).reverse();
             
-            const total100 = draw.cfgPrizes100 !== undefined ? draw.cfgPrizes100 : (document.getElementById('cfg-prizes-100') ? parseInt(document.getElementById('cfg-prizes-100').value) || 27 : 27);
-            const total50 = draw.cfgPrizes50 !== undefined ? draw.cfgPrizes50 : (document.getElementById('cfg-prizes-50') ? parseInt(document.getElementById('cfg-prizes-50').value) || 19 : 19);
-            const total25 = draw.cfgPrizes25 !== undefined ? draw.cfgPrizes25 : (document.getElementById('cfg-prizes-25') ? parseInt(document.getElementById('cfg-prizes-25').value) || 24 : 24);
+            const total100 = draw.cfgPrizes100 !== undefined ? draw.cfgPrizes100 : (document.getElementById('cfg-prizes-100') ? parseInt(document.getElementById('cfg-prizes-100').value) || 0 : 27);
+            const total50 = draw.cfgPrizes50 !== undefined ? draw.cfgPrizes50 : (document.getElementById('cfg-prizes-50') ? parseInt(document.getElementById('cfg-prizes-50').value) || 0 : 19);
+            const total25 = draw.cfgPrizes25 !== undefined ? draw.cfgPrizes25 : (document.getElementById('cfg-prizes-25') ? parseInt(document.getElementById('cfg-prizes-25').value) || 0 : 24);
 
             const rem100 = draw.prizes100 !== undefined ? draw.prizes100 : Math.max(0, total100 - numbers100.length);
             const rem50 = draw.prizes50 !== undefined ? draw.prizes50 : Math.max(0, total50 - numbers50.length);
