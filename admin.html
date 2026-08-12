@@ -265,7 +265,7 @@
     </style>
 </head>
 <body>
-    <div id="global-status-bar" style="background: var(--primary); color: white; text-align: center; padding: 0.5rem; font-weight: bold; position: sticky; top: 0; z-index: 1000; display: none;"></div>
+    <div id="global-status-bar" style="background: #10b981; color: white; text-align: center; padding: 0.5rem; font-weight: bold; position: sticky; top: 0; z-index: 1000;">✅ Ready</div>
 
     <!-- PIN Access Overlay -->
     <div id="pin-overlay">
@@ -288,7 +288,7 @@
                 <button type="button" class="pin-btn" onclick="appendPin('0')">0</button>
                 <button type="button" class="pin-btn" onclick="backspacePin()">⌫</button>
             </div>
-            <button id="pin-submit" onclick="checkPin()">🔓 UNLOCK</button>
+
             <div id="pin-error">❌ Incorrect PIN. Try again.</div>
         </div>
     </div>
@@ -404,6 +404,7 @@
                 <div><label style="font-size:0.75rem;">Thursday Vouchers Count</label><input type="number" id="cfg-thu-vouchers-count" value="0" oninput="updateDrawState()" onchange="updateDrawState()"></div>
                 <div><label style="font-size:0.75rem;">Thursday Voucher Value ($)</label><input type="number" id="cfg-thu-vouchers-value" value="0" oninput="updateDrawState()" onchange="updateDrawState()"></div>
             </div>
+            <button class="btn" onclick="updateThursdayConfig()" style="background-color: #1e40af; color: white; border: none; width: 100%; margin-bottom: 0.5rem;">💾 Update Thursday Config</button>
             <button class="btn" id="btn-confirm-thu" onclick="confirmThursday()" style="background-color: #3b82f6; color: white; border: none; width: 100%;">Confirm Thursday Draw</button>
         </div>
 
@@ -441,10 +442,11 @@
                 <div><label style="font-size:0.75rem;">Sunday Vouchers Count</label><input type="number" id="cfg-sun-vouchers-count" value="0" oninput="updateDrawState()" onchange="updateDrawState()"></div>
                 <div><label style="font-size:0.75rem;">Sunday Voucher Value ($)</label><input type="number" id="cfg-sun-vouchers-value" value="0" oninput="updateDrawState()" onchange="updateDrawState()"></div>
             </div>
+            <button class="btn" onclick="updateSundayConfig()" style="background-color: #991b1b; color: white; border: none; width: 100%; margin-bottom: 0.5rem;">💾 Update Sunday Config</button>
             <button class="btn" id="btn-confirm-sun" onclick="confirmSunday()" style="background-color: #ef4444; color: white; border: none; width: 100%;">Confirm Sunday Draw / End Week</button>
         </div>
 
-        <button class="btn btn-primary" onclick="forceUpdateConfig()" style="width: 100%; margin-bottom: 1rem; background-color: #10b981; border-color: #059669;">Update / Save Config</button>
+
 
         <div style="background: rgba(0,0,0,0.2); padding: 0.75rem; border-radius: 0.5rem; margin-bottom: 1rem; font-size: 0.85rem; display: flex; justify-content: space-between; margin-top: 1rem;">
             <div>Total Prizes: <span id="prizes-total-count" style="font-weight:bold; color: var(--primary);">0</span></div>
@@ -460,14 +462,70 @@
             </div>
         </div>
         
-        <div style="margin-top: 1.5rem; display: flex; gap: 1rem;">
-            <button class="btn btn-primary" onclick="printBlank()" style="flex:1;">🖨️ Print Blank</button>
-            <button class="btn btn-primary" onclick="printChecklist()" style="flex:1;">🖨️ Print Checklist</button>
-            <button class="btn btn-primary" onclick="printFinancialSheet()" style="flex:1; background-color: #10b981; border-color: #059669;">🖨️ Print Financials</button>
-            <button class="btn btn-primary" onclick="printAllPages()" style="flex:1; background-color: #ef4444; border-color: #dc2626;">🖨️ Print ALL</button>
-        </div>
     </div>
     
+    <!-- Financial Entry -->
+    <div class="card" style="margin-top: 2rem;">
+        <h2>💰 Financial Entry</h2>
+        <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1rem;">
+            Enter cash and EFTPOS totals for each draw day. Grand totals auto-calculate.
+        </p>
+
+        <!-- Thursday Financials -->
+        <div style="background: rgba(59, 130, 246, 0.1); border: 1px solid #3b82f6; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem;">
+            <h3 style="margin-top: 0; color: #3b82f6;">Thursday Financials</h3>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 0.5rem;">
+                <div class="form-group"><label>Cash Received ($)</label><input type="number" id="fin-thu-cash" value="0" step="0.01" oninput="calcFinancials()"></div>
+                <div class="form-group"><label>EFTPOS Received ($)</label><input type="number" id="fin-thu-eftpos" value="0" step="0.01" oninput="calcFinancials()"></div>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="form-group"><label>Tickets Sold</label><input type="number" id="fin-thu-tickets" value="0" oninput="calcFinancials()"></div>
+                <div class="form-group"><label>Thursday Total</label><input type="text" id="fin-thu-total" value="$0.00" readonly style="background: #0d1526; font-weight: bold; color: #3b82f6;"></div>
+            </div>
+        </div>
+
+        <!-- Sunday Financials -->
+        <div style="background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem;">
+            <h3 style="margin-top: 0; color: #ef4444;">Sunday Financials</h3>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 0.5rem;">
+                <div class="form-group"><label>Cash Received ($)</label><input type="number" id="fin-sun-cash" value="0" step="0.01" oninput="calcFinancials()"></div>
+                <div class="form-group"><label>EFTPOS Received ($)</label><input type="number" id="fin-sun-eftpos" value="0" step="0.01" oninput="calcFinancials()"></div>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="form-group"><label>Tickets Sold</label><input type="number" id="fin-sun-tickets" value="0" oninput="calcFinancials()"></div>
+                <div class="form-group"><label>Sunday Total</label><input type="text" id="fin-sun-total" value="$0.00" readonly style="background: #0d1526; font-weight: bold; color: #ef4444;"></div>
+            </div>
+        </div>
+
+        <!-- Grand Totals -->
+        <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid #10b981; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem;">
+            <h3 style="margin-top: 0; color: #10b981;">Grand Totals</h3>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">
+                <div class="form-group"><label>Total Cash</label><input type="text" id="fin-total-cash" value="$0.00" readonly style="background: #0d1526; font-weight: bold; color: #10b981;"></div>
+                <div class="form-group"><label>Total EFTPOS</label><input type="text" id="fin-total-eftpos" value="$0.00" readonly style="background: #0d1526; font-weight: bold; color: #10b981;"></div>
+                <div class="form-group"><label>Combined Total</label><input type="text" id="fin-grand-total" value="$0.00" readonly style="background: #0d1526; font-weight: bold; color: #10b981; font-size: 1.1rem;"></div>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 0.5rem;">
+                <div class="form-group"><label>Total Tickets</label><input type="text" id="fin-total-tickets" value="0" readonly style="background: #0d1526; font-weight: bold; color: #10b981;"></div>
+                <div class="form-group"><label>Notes</label><input type="text" id="fin-notes" placeholder="Optional notes"></div>
+            </div>
+        </div>
+
+        <button class="btn btn-primary" onclick="saveFinancials()" style="width: 100%; background-color: #10b981; border-color: #059669;">💾 Save Financials</button>
+    </div>
+
+    <!-- End of Week & Print Actions -->
+    <div class="card" style="margin-top: 2rem;">
+        <h2>📋 End of Week & Print</h2>
+        <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
+            <button class="btn btn-primary" onclick="printBlank()" style="flex:1;">🖨️ Blank</button>
+            <button class="btn btn-primary" onclick="printChecklist()" style="flex:1;">🖨️ Checklist</button>
+            <button class="btn btn-primary" onclick="printFinancialSheet()" style="flex:1; background-color: #10b981; border-color: #059669;">🖨️ Financials</button>
+            <button class="btn btn-primary" onclick="printAllPages()" style="flex:1; background-color: #ef4444; border-color: #dc2626;">🖨️ ALL</button>
+        </div>
+        <button class="btn btn-danger" onclick="archiveDraws()" style="width: 100%; background-color: #ef4444; border-color: #dc2626; color: white;">⚠️ Confirm End of Week Draws</button>
+    </div>
+
     <!-- QR Codes -->
     <div class="card" style="margin-top: 2rem;">
         <h2>📱 Quick Access QR Codes</h2>
@@ -475,18 +533,22 @@
             <div style="text-align: center; flex: 1;">
                 <img id="qr-display" alt="TV Display QR" style="background: white; padding: 0.5rem; display: inline-block; border-radius: 0.5rem; width: 120px; height: 120px; border: 1.5px solid var(--border);">
                 <div style="margin-top: 0.5rem; font-size: 0.8rem;">TV Display</div>
+                <a id="link-display" href="#" target="_blank" style="color: var(--primary); font-size: 0.7rem;">Open ↗</a>
             </div>
             <div style="text-align: center; flex: 1;">
                 <img id="qr-remote" alt="Remote App QR" style="background: white; padding: 0.5rem; display: inline-block; border-radius: 0.5rem; width: 120px; height: 120px; border: 1.5px solid var(--border);">
                 <div style="margin-top: 0.5rem; font-size: 0.8rem;">Remote App</div>
+                <a id="link-remote" href="#" target="_blank" style="color: var(--primary); font-size: 0.7rem;">Open ↗</a>
             </div>
             <div style="text-align: center; flex: 1;">
                 <img id="qr-admin" alt="Admin Portal QR" style="background: white; padding: 0.5rem; display: inline-block; border-radius: 0.5rem; width: 120px; height: 120px; border: 1.5px solid var(--border);">
                 <div style="margin-top: 0.5rem; font-size: 0.8rem;">Admin Portal</div>
+                <a id="link-admin" href="#" target="_blank" style="color: var(--primary); font-size: 0.7rem;">Open ↗</a>
             </div>
             <div style="text-align: center; flex: 1;">
                 <img id="qr-archive" alt="Archive List QR" style="background: white; padding: 0.5rem; display: inline-block; border-radius: 0.5rem; width: 120px; height: 120px; border: 1.5px solid var(--border);">
                 <div style="margin-top: 0.5rem; font-size: 0.8rem;">Archive List</div>
+                <a id="link-archive" href="#" target="_blank" style="color: var(--primary); font-size: 0.7rem;">Open ↗</a>
             </div>
         </div>
     </div>
@@ -609,6 +671,9 @@
             const el = document.getElementById('pin-input');
             if (el.value.length < parseInt(el.getAttribute('maxlength'))) {
                 el.value += digit;
+            }
+            if (el.value.length >= 4) {
+                setTimeout(() => checkPin(), 150);
             }
         }
         function clearPin() {
@@ -907,6 +972,72 @@
         function forceUpdateConfig() {
             updateDrawState();
             showGlobalStatus('Configuration Saved & Synced!', 'green');
+        }
+
+        function updateThursdayConfig() {
+            updateDrawState();
+            showGlobalStatus('Thursday Config Updated!', 'blue');
+        }
+
+        function updateSundayConfig() {
+            updateDrawState();
+            showGlobalStatus('Sunday Config Updated!', 'red');
+        }
+
+        function calcFinancials() {
+            const thuCash = parseFloat(document.getElementById('fin-thu-cash').value) || 0;
+            const thuEftpos = parseFloat(document.getElementById('fin-thu-eftpos').value) || 0;
+            const thuTickets = parseInt(document.getElementById('fin-thu-tickets').value) || 0;
+            const sunCash = parseFloat(document.getElementById('fin-sun-cash').value) || 0;
+            const sunEftpos = parseFloat(document.getElementById('fin-sun-eftpos').value) || 0;
+            const sunTickets = parseInt(document.getElementById('fin-sun-tickets').value) || 0;
+
+            document.getElementById('fin-thu-total').value = '$' + (thuCash + thuEftpos).toFixed(2);
+            document.getElementById('fin-sun-total').value = '$' + (sunCash + sunEftpos).toFixed(2);
+            document.getElementById('fin-total-cash').value = '$' + (thuCash + sunCash).toFixed(2);
+            document.getElementById('fin-total-eftpos').value = '$' + (thuEftpos + sunEftpos).toFixed(2);
+            document.getElementById('fin-grand-total').value = '$' + (thuCash + thuEftpos + sunCash + sunEftpos).toFixed(2);
+            document.getElementById('fin-total-tickets').value = thuTickets + sunTickets;
+        }
+
+        function saveFinancials() {
+            const data = {
+                thursday: {
+                    cash: parseFloat(document.getElementById('fin-thu-cash').value) || 0,
+                    eftpos: parseFloat(document.getElementById('fin-thu-eftpos').value) || 0,
+                    tickets: parseInt(document.getElementById('fin-thu-tickets').value) || 0
+                },
+                sunday: {
+                    cash: parseFloat(document.getElementById('fin-sun-cash').value) || 0,
+                    eftpos: parseFloat(document.getElementById('fin-sun-eftpos').value) || 0,
+                    tickets: parseInt(document.getElementById('fin-sun-tickets').value) || 0
+                },
+                notes: document.getElementById('fin-notes').value,
+                savedAt: new Date().toISOString()
+            };
+            localStorage.setItem('mmr_financials', JSON.stringify(data));
+            showGlobalStatus('Financials Saved!', 'green');
+        }
+
+        function loadFinancials() {
+            try {
+                const saved = localStorage.getItem('mmr_financials');
+                if (saved) {
+                    const data = JSON.parse(saved);
+                    if (data.thursday) {
+                        document.getElementById('fin-thu-cash').value = data.thursday.cash || 0;
+                        document.getElementById('fin-thu-eftpos').value = data.thursday.eftpos || 0;
+                        document.getElementById('fin-thu-tickets').value = data.thursday.tickets || 0;
+                    }
+                    if (data.sunday) {
+                        document.getElementById('fin-sun-cash').value = data.sunday.cash || 0;
+                        document.getElementById('fin-sun-eftpos').value = data.sunday.eftpos || 0;
+                        document.getElementById('fin-sun-tickets').value = data.sunday.tickets || 0;
+                    }
+                    if (data.notes) document.getElementById('fin-notes').value = data.notes;
+                    calcFinancials();
+                }
+            } catch(e) {}
         }
 
         function confirmThursday() {
@@ -1461,15 +1592,33 @@
                 <div class="print-page">
                     <h1>Monster Meat Raffle — Empty Financial Sheet</h1>
                     <div class="form-grid"><div style="grid-column:span 2;"><strong>Raffle Date:</strong> ${printedDate}</div></div>
+                    
+                    <h3 style="background:#dbeafe; color:#1e40af; border-left:4px solid #2563eb; padding:6px 10px; margin:15px 0 5px 0;">THURSDAY RAFFLE</h3>
                     <table class="financial-table"><thead><tr><th>Sales Description</th><th>Recorded Value</th><th>Notes</th></tr></thead><tbody>
                         <tr><td class="bold">Start Ticket Number</td><td><div class="input-placeholder"></div></td><td></td></tr>
                         <tr><td class="bold">End Ticket Number</td><td><div class="input-placeholder"></div></td><td></td></tr>
                         <tr><td class="bold">Total Tickets Sold</td><td><div class="input-placeholder"></div></td><td></td></tr>
-                        <tr><td class="bold">Expected Revenue</td><td><div class="input-placeholder"></div></td><td></td></tr>
                         <tr><td class="bold">EFTPOS Total</td><td><div class="input-placeholder"></div></td><td></td></tr>
                         <tr><td class="bold">Cash Total</td><td><div class="input-placeholder"></div></td><td></td></tr>
-                        <tr><td class="bold">Actual Revenue</td><td><div class="input-placeholder"></div></td><td></td></tr>
-                        <tr><td class="bold">Variance</td><td><div class="input-placeholder"></div></td><td></td></tr>
+                        <tr><td class="bold">Thursday Total Revenue</td><td><div class="input-placeholder"></div></td><td></td></tr>
+                    </tbody></table>
+
+                    <h3 style="background:#fee2e2; color:#991b1b; border-left:4px solid #ef4444; padding:6px 10px; margin:15px 0 5px 0;">SUNDAY RAFFLE</h3>
+                    <table class="financial-table"><thead><tr><th>Sales Description</th><th>Recorded Value</th><th>Notes</th></tr></thead><tbody>
+                        <tr><td class="bold">Start Ticket Number</td><td><div class="input-placeholder"></div></td><td></td></tr>
+                        <tr><td class="bold">End Ticket Number</td><td><div class="input-placeholder"></div></td><td></td></tr>
+                        <tr><td class="bold">Total Tickets Sold</td><td><div class="input-placeholder"></div></td><td></td></tr>
+                        <tr><td class="bold">EFTPOS Total</td><td><div class="input-placeholder"></div></td><td></td></tr>
+                        <tr><td class="bold">Cash Total</td><td><div class="input-placeholder"></div></td><td></td></tr>
+                        <tr><td class="bold">Sunday Total Revenue</td><td><div class="input-placeholder"></div></td><td></td></tr>
+                    </tbody></table>
+
+                    <h3 style="background:#dcfce7; color:#166534; border-left:4px solid #10b981; padding:6px 10px; margin:15px 0 5px 0;">WEEKLY TOTALS</h3>
+                    <table class="financial-table"><thead><tr><th>Sales Description</th><th>Recorded Value</th><th>Notes</th></tr></thead><tbody>
+                        <tr><td class="bold">Total Weekly Tickets</td><td><div class="input-placeholder"></div></td><td></td></tr>
+                        <tr><td class="bold">Total Weekly EFTPOS</td><td><div class="input-placeholder"></div></td><td></td></tr>
+                        <tr><td class="bold">Total Weekly Cash</td><td><div class="input-placeholder"></div></td><td></td></tr>
+                        <tr><td class="bold">Grand Total Revenue</td><td><div class="input-placeholder"></div></td><td></td></tr>
                     </tbody></table>
                 </div>
             `;
@@ -1492,9 +1641,22 @@
                     <table class="financial-table">
                         <thead><tr><th>Day</th><th>Cash</th><th>EFTPOS</th><th>Total</th></tr></thead>
                         <tbody>
-                            <tr><td>Thursday</td><td>$${thuCash.toFixed(2)}</td><td>$${thuEftpos.toFixed(2)}</td><td class="bold">$${thuTotal.toFixed(2)}</td></tr>
-                            <tr><td>Sunday</td><td>$${sunCash.toFixed(2)}</td><td>$${sunEftpos.toFixed(2)}</td><td class="bold">$${sunTotal.toFixed(2)}</td></tr>
-                            <tr><td colspan="3" class="text-right bold">GRAND TOTAL</td><td class="bold">$${grandTotal.toFixed(2)}</td></tr>
+                            <tr style="background:#eff6ff;">
+                                <td class="bold" style="border-left:4px solid #2563eb; color:#1e40af;">Thursday</td>
+                                <td>$${thuCash.toFixed(2)}</td>
+                                <td>$${thuEftpos.toFixed(2)}</td>
+                                <td class="bold">$${thuTotal.toFixed(2)}</td>
+                            </tr>
+                            <tr style="background:#fef2f2;">
+                                <td class="bold" style="border-left:4px solid #ef4444; color:#991b1b;">Sunday</td>
+                                <td>$${sunCash.toFixed(2)}</td>
+                                <td>$${sunEftpos.toFixed(2)}</td>
+                                <td class="bold">$${sunTotal.toFixed(2)}</td>
+                            </tr>
+                            <tr style="background:#f0fdf4;">
+                                <td colspan="3" class="text-right bold" style="border-left:4px solid #10b981; color:#166534;">GRAND TOTAL</td>
+                                <td class="bold" style="color:#166534;">$${grandTotal.toFixed(2)}</td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
@@ -1587,6 +1749,7 @@
         document.addEventListener('DOMContentLoaded', () => {
             init();
             generateQRCodes();
+            loadFinancials();
             
             document.addEventListener('click', (e) => {
                 const btn = e.target.closest('button');
