@@ -272,6 +272,7 @@
     </style>
 </head>
 <body>
+    <div id="global-status-bar" style="background: var(--primary); color: white; text-align: center; padding: 0.5rem; font-weight: bold; position: sticky; top: 0; z-index: 1000; display: none;"></div>
 
     <!-- PIN Access Overlay -->
     <div id="pin-overlay">
@@ -289,7 +290,6 @@
         <h1 id="header-title">MMR Remote</h1>
         <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap; justify-content: center;">
             <span id="fb-status" style="font-size:0.8rem; color:#64748b;">🔴 Firebase: Not configured</span>
-            <a href="admin.html" class="btn admin-only">⚙️ Admin Panel</a>
             <a href="index.html" target="_blank" class="btn btn-primary">Display TV ↗</a>
         </div>
     </div>
@@ -340,7 +340,7 @@
 
             <div style="display: flex; flex-direction: column; gap: 0.8rem; border-top: 1.5px solid var(--border); padding-top: 1.25rem;">
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                    <button class="btn btn-primary draw-btn" onclick="runDraw('bonus')" style="background-color: #6366f1; border-color: #4f46e5; color: white;">🎁 DRAW BONUS</button>
+                    <button class="btn draw-btn" onclick="runRedraw(\'bonus\')" style="background-color: #334155; border-color: #ef4444; color: #ef4444; font-size: 0.85rem;">🔄 REDRAW BONUS</button>\n                    <button class="btn btn-primary draw-btn" onclick="runDraw('bonus')" style="background-color: #6366f1; border-color: #4f46e5; color: white;">🎁 DRAW BONUS</button>
                     <button class="btn" onclick="triggerConfetti()" style="background-color: #eab308; border-color: #ca8a04; color: black;">🎉 Confetti</button>
                 </div>
                 <button class="btn btn-primary" onclick="printManualRecordSheet()" style="width: 100%; font-size: 1rem; background-color: #2563eb; border-color: #1d4ed8; color: white;">🖨️ Print Checklist Record</button>
@@ -355,88 +355,81 @@
         <div class="card">
             <h2>Draw Configuration</h2>
             
-            <h3 style="margin-top: 1rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem;">Thursday Draw</h3>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                <div class="form-group">
-                    <label>Min Ticket</label>
-                    <input type="number" id="cfg-thu-min" value="0">
+            <!-- Thursday Config -->
+            <div style="background: rgba(59, 130, 246, 0.1); border: 1px solid #3b82f6; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1.5rem;">
+                <h3 style="margin-top: 0; color: #3b82f6; display: flex; justify-content: space-between;">
+                    Thursday Draw
+                    <div>
+                        <label style="display:inline; margin-right: 10px;">Enable</label>
+                        <input type="checkbox" id="cfg-thu-enabled" style="width: auto;" onchange="updateDrawState()">
+                        <label style="display:inline; margin-left: 10px; margin-right: 10px;">Manual Draw</label>
+                        <input type="checkbox" id="cfg-thu-manual" style="width: auto;" onchange="updateDrawState()">
+                    </div>
+                </h3>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 0.5rem;">
+                    <div class="form-group">
+                        <label>Min Ticket</label>
+                        <input type="number" id="cfg-thu-min" value="0">
+                    </div>
+                    <div class="form-group">
+                        <label>Max Ticket</label>
+                        <input type="number" id="cfg-thu-max" max="10000" value="5000">
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label>Max Ticket</label>
-                    <input type="number" id="cfg-thu-max" value="5000">
+                <div class="form-group" style="margin-bottom: 0.5rem;">
+                    <label>Excluded Numbers</label>
+                    <input type="text" id="cfg-thu-excludes" placeholder="e.g. 5,12,45">
                 </div>
-            </div>
-            <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 1rem;"><label>Manual Draw</label><input type="checkbox" id="cfg-thu-manual" style="width:auto; transform: scale(1.5); margin-left: 10px;" onchange="updateDrawState()"></div>
-            <div class="form-group" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 1rem;">
-                <div>
-                    <label style="font-size:0.75rem;">$100 Packs</label>
-                    <input type="number" id="cfg-thu-prizes-100" value="0" oninput="updateDrawState()" onchange="updateDrawState()">
+                <div class="form-group" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 0.5rem;">
+                    <div><label style="font-size:0.75rem;">$100 Packs</label><input type="number" id="cfg-thu-prizes-100" value="0"></div>
+                    <div><label style="font-size:0.75rem;">$50 Prizes</label><input type="number" id="cfg-thu-prizes-50" value="0"></div>
+                    <div><label style="font-size:0.75rem;">$25 Prizes</label><input type="number" id="cfg-thu-prizes-25" value="0"></div>
                 </div>
-                <div>
-                    <label style="font-size:0.75rem;">$50 Prizes</label>
-                    <input type="number" id="cfg-thu-prizes-50" value="0" oninput="updateDrawState()" onchange="updateDrawState()">
+                <div class="form-group" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 1rem;">
+                    <div><label style="font-size:0.75rem;">Vouchers Count</label><input type="number" id="cfg-thu-vouchers-count" value="0"></div>
+                    <div><label style="font-size:0.75rem;">Voucher Value ($)</label><input type="number" id="cfg-thu-vouchers-value" value="0"></div>
                 </div>
-                <div>
-                    <label style="font-size:0.75rem;">$25 Prizes</label>
-                    <input type="number" id="cfg-thu-prizes-25" value="0" oninput="updateDrawState()" onchange="updateDrawState()">
-                </div>
-            </div>
-
-            <div style="background: rgba(0,0,0,0.2); padding: 0.75rem; border-radius: 0.5rem; margin-bottom: 1rem; font-size: 0.85rem; display: flex; justify-content: space-between;">
-                <div>Total Prizes: <span id="prizes-total-count" style="font-weight:bold; color: var(--primary);">0</span></div>
-                <div>Prize Pool Total: <span id="prizes-total-value" style="font-weight:bold; color: var(--primary);">$0</span></div>
-            </div>
-
-            <h3 style="margin-top: 1.5rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem;">Sunday - Rob's Bonus Box</h3>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                <div class="form-group">
-                    <label>Min Ticket</label>
-                    <input type="number" id="cfg-sun-min" value="0">
-                </div>
-                <div class="form-group">
-                    <label>Max Ticket</label>
-                    <input type="number" id="cfg-sun-max" value="5000">
-                </div>
-            </div>
-            <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 1rem;">
-                <label>Enable Sunday Draw</label>
-                <input type="checkbox" id="cfg-sun-enabled" style="width:auto; transform: scale(1.5); margin-left: 10px;" onchange="updateDrawState()">
-                <label style="margin-left:20px;">Manual Draw</label><input type="checkbox" id="cfg-sun-manual" style="width:auto; transform: scale(1.5); margin-left: 10px;" onchange="updateDrawState()">
-            </div>
-            <div class="form-group" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 1rem;">
-                <div>
-                    <label style="font-size:0.75rem;">$100 Packs</label>
-                    <input type="number" id="cfg-sun-prizes-100" value="0" oninput="updateDrawState()" onchange="updateDrawState()">
-                </div>
-                <div>
-                    <label style="font-size:0.75rem;">$50 Prizes</label>
-                    <input type="number" id="cfg-sun-prizes-50" value="0" oninput="updateDrawState()" onchange="updateDrawState()">
-                </div>
-                <div>
-                    <label style="font-size:0.75rem;">$25 Prizes</label>
-                    <input type="number" id="cfg-sun-prizes-25" value="0" oninput="updateDrawState()" onchange="updateDrawState()">
-                </div>
-            </div>
-            <div class="form-group" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 1rem;">
-                <div>
-                    <label style="font-size:0.75rem;">Sunday Vouchers Count</label>
-                    <input type="number" id="cfg-sun-vouchers-count" value="0" oninput="updateDrawState()" onchange="updateDrawState()">
-                </div>
-                <div>
-                    <label style="font-size:0.75rem;">Sunday Voucher Value ($)</label>
-                    <input type="number" id="cfg-sun-vouchers-value" value="0" oninput="updateDrawState()" onchange="updateDrawState()">
-                </div>
-            </div>
-            <div style="background: rgba(0,0,0,0.2); padding: 0.75rem; border-radius: 0.5rem; margin-bottom: 1rem; font-size: 0.85rem; display: flex; justify-content: space-between;">
-                <div>Total Prizes: <span id="sunday-prizes-total-count" style="font-weight:bold; color: var(--primary);">0</span></div>
-                <div>Prize Pool Total: <span id="sunday-prizes-total-value" style="font-weight:bold; color: var(--primary);">$0</span></div>
+                <button class="btn" id="btn-confirm-thu" onclick="confirmThursday()" style="background-color: #3b82f6; color: white; border: none; width: 100%;">Confirm Thursday Draw</button>
             </div>
 
-
-            <div class="form-group">
-                <label>Excluded Numbers (comma separated)</label>
-                <input type="text" id="cfg-excludes" placeholder="e.g. 5,12,45">
+            <!-- Sunday Config -->
+            <div style="background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1.5rem;">
+                <h3 style="margin-top: 0; color: #ef4444; display: flex; justify-content: space-between;">
+                    Sunday Draw
+                    <div>
+                        <label style="display:inline; margin-right: 10px;">Enable</label>
+                        <input type="checkbox" id="cfg-sun-enabled" style="width: auto;" onchange="updateDrawState()">
+                        <label style="display:inline; margin-left: 10px; margin-right: 10px;">Manual Draw</label>
+                        <input type="checkbox" id="cfg-sun-manual" style="width: auto;" onchange="updateDrawState()">
+                    </div>
+                </h3>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 0.5rem;">
+                    <div class="form-group">
+                        <label>Min Ticket</label>
+                        <input type="number" id="cfg-sun-min" value="0">
+                    </div>
+                    <div class="form-group">
+                        <label>Max Ticket</label>
+                        <input type="number" id="cfg-sun-max" max="10000" value="5000">
+                    </div>
+                </div>
+                <div class="form-group" style="margin-bottom: 0.5rem;">
+                    <label>Excluded Numbers</label>
+                    <input type="text" id="cfg-sun-excludes" placeholder="e.g. 5,12,45">
+                </div>
+                <div class="form-group" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 0.5rem;">
+                    <div><label style="font-size:0.75rem;">$100 Packs</label><input type="number" id="cfg-sun-prizes-100" value="0"></div>
+                    <div><label style="font-size:0.75rem;">$50 Prizes</label><input type="number" id="cfg-sun-prizes-50" value="0"></div>
+                    <div><label style="font-size:0.75rem;">$25 Prizes</label><input type="number" id="cfg-sun-prizes-25" value="0"></div>
+                </div>
+                <div class="form-group" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 1rem;">
+                    <div><label style="font-size:0.75rem;">Vouchers Count</label><input type="number" id="cfg-sun-vouchers-count" value="0"></div>
+                    <div><label style="font-size:0.75rem;">Voucher Value ($)</label><input type="number" id="cfg-sun-vouchers-value" value="0"></div>
+                </div>
+                <button class="btn" id="btn-confirm-sun" onclick="confirmSunday()" style="background-color: #ef4444; color: white; border: none; width: 100%;">Confirm Sunday Draw / End Week</button>
             </div>
+
+            <button class="btn btn-primary" onclick="forceUpdateConfig()" style="width: 100%; margin-bottom: 1rem; background-color: #10b981; border-color: #059669;">Update / Save Config</button>
 
             <div class="form-group">
                 <label>Next Draw Time</label>
@@ -597,6 +590,7 @@
                 state = { ...state, ...newState };
                 const originalView = state.activeView;
                 checkCongratsAutoOff();
+            updateViewButtons();
                 updateUI();
                 if (state.activeView !== originalView) {
                     broadcast();
@@ -803,9 +797,22 @@
             if (state.nextDrawTime !== undefined) document.getElementById('drawTime').value = state.nextDrawTime;
         }
 
+        function updateViewButtons() {
+            const btnSlides = document.getElementById("btn-slides");
+            const btnDraw = document.getElementById("btn-draw");
+            const btnCongrats = document.getElementById("btn-congrats");
+            if (btnSlides && btnDraw && btnCongrats) {
+                btnSlides.style.borderColor = state.activeView === "slides" ? "var(--primary)" : "var(--border)";
+                btnDraw.style.borderColor = state.activeView === "draw" ? "var(--primary)" : "var(--border)";
+                btnCongrats.style.borderColor = (state.activeView === "congrats" || state.activeView === "congrats-video") ? "var(--primary)" : "var(--border)";
+            }
+        }
+
         function setView(view) {
             state.activeView = view;
+            updateViewButtons();
             checkCongratsAutoOff();
+            updateViewButtons();
             updateUI();
             broadcast();
             showStatus();
@@ -825,13 +832,22 @@
 
             thu.min = parseInt(document.getElementById('cfg-thu-min').value) || 0;
             thu.max = parseInt(document.getElementById('cfg-thu-max').value) || 5000;
+            const thuExcludesStr = document.getElementById('cfg-thu-excludes').value || '';
+            thu.excludes = thuExcludesStr.split(',').map(n => parseInt(n.trim())).filter(n => !isNaN(n));
+            thu.excludesStr = thuExcludesStr;
             thu.cfgPrizes100 = parseInt(document.getElementById('cfg-thu-prizes-100').value) || 0;
             thu.cfgPrizes50 = parseInt(document.getElementById('cfg-thu-prizes-50').value) || 0;
             thu.cfgPrizes25 = parseInt(document.getElementById('cfg-thu-prizes-25').value) || 0;
+            thu.cfgVouchersCount = parseInt(document.getElementById('cfg-thu-vouchers-count').value) || 0;
+            thu.cfgVouchersValue = parseInt(document.getElementById('cfg-thu-vouchers-value').value) || 0;
             thu.manualDraw = document.getElementById('cfg-thu-manual').checked;
+            thu.enabled = document.getElementById('cfg-thu-enabled').checked;
 
             sun.min = parseInt(document.getElementById('cfg-sun-min').value) || 0;
             sun.max = parseInt(document.getElementById('cfg-sun-max').value) || 5000;
+            const sunExcludesStr = document.getElementById('cfg-sun-excludes').value || '';
+            sun.excludes = sunExcludesStr.split(',').map(n => parseInt(n.trim())).filter(n => !isNaN(n));
+            sun.excludesStr = sunExcludesStr;
             sun.cfgPrizes100 = parseInt(document.getElementById('cfg-sun-prizes-100').value) || 0;
             sun.cfgPrizes50 = parseInt(document.getElementById('cfg-sun-prizes-50').value) || 0;
             sun.cfgPrizes25 = parseInt(document.getElementById('cfg-sun-prizes-25').value) || 0;
@@ -870,11 +886,41 @@
                 sun.drawsFinishedTime = null;
             }
 
-            // Sync the activeEvent prizes to avoid inconsistency if other code relies on it
-            const activeEvt = state.draw[state.draw.activeEvent];
-
             updateUI();
             broadcast();
+            showGlobalStatus('Config Updated Locally', 'blue');
+        }
+
+        function showGlobalStatus(msg, color) {
+            const bar = document.getElementById('global-status-bar');
+            if (bar) {
+                bar.innerText = msg;
+                bar.style.backgroundColor = color === 'blue' ? '#3b82f6' : (color === 'red' ? '#ef4444' : '#10b981');
+                bar.style.display = 'block';
+                setTimeout(() => bar.style.display = 'none', 3000);
+            }
+        }
+
+        function forceUpdateConfig() {
+            updateDrawState();
+            showGlobalStatus('Configuration Saved & Synced!', 'green');
+        }
+
+        function confirmThursday() {
+            state.draw.activeEvent = 'sunday';
+            ['thu-enabled', 'thu-manual', 'thu-min', 'thu-max', 'thu-excludes', 'thu-prizes-100', 'thu-prizes-50', 'thu-prizes-25', 'thu-vouchers-count', 'thu-vouchers-value'].forEach(id => {
+                const el = document.getElementById('cfg-' + id);
+                if(el) el.disabled = true;
+            });
+            document.getElementById('btn-confirm-thu').disabled = true;
+            document.getElementById('btn-confirm-thu').innerText = 'Thursday Locked';
+            broadcast();
+            showGlobalStatus('Thursday Draw Confirmed & Locked!', 'blue');
+        }
+
+        function confirmSunday() {
+            archiveDraws();
+            showGlobalStatus('Week Ended!', 'red');
         }
 
         
@@ -1342,6 +1388,7 @@
                     </style>
                 </head>
                 <body>
+    <div id="global-status-bar" style="background: var(--primary); color: white; text-align: center; padding: 0.5rem; font-weight: bold; position: sticky; top: 0; z-index: 1000; display: none;"></div>
                     <div class="print-container">
                         <h1>Tonight's Meat Raffle Prize Checklist</h1>
                         
@@ -1539,8 +1586,10 @@
             }
         }
 
-        init();
-        generateQRCodes();
+        document.addEventListener('DOMContentLoaded', () => {
+            init();
+            generateQRCodes();
+        });
     </script>
 </body>
 </html>
