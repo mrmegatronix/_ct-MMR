@@ -355,18 +355,17 @@
         <div class="card">
             <h2>Draw Configuration</h2>
             
+            <h3 style="margin-top: 1rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem;">Thursday Draw</h3>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                 <div class="form-group">
                     <label>Min Ticket</label>
-                    <input type="number" id="cfg-min" value="0">
+                    <input type="number" id="cfg-thu-min" value="0">
                 </div>
                 <div class="form-group">
                     <label>Max Ticket</label>
-                    <input type="number" id="cfg-max" value="5000">
+                    <input type="number" id="cfg-thu-max" value="5000">
                 </div>
             </div>
-
-            <h3 style="margin-top: 1rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem;">Thursday Draw</h3>
             <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 1rem;"><label>Manual Draw</label><input type="checkbox" id="cfg-thu-manual" style="width:auto; transform: scale(1.5); margin-left: 10px;" onchange="updateDrawState()"></div>
             <div class="form-group" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 1rem;">
                 <div>
@@ -387,7 +386,18 @@
                 <div>Total Prizes: <span id="prizes-total-count" style="font-weight:bold; color: var(--primary);">0</span></div>
                 <div>Prize Pool Total: <span id="prizes-total-value" style="font-weight:bold; color: var(--primary);">$0</span></div>
             </div>
+
             <h3 style="margin-top: 1.5rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem;">Sunday - Rob's Bonus Box</h3>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="form-group">
+                    <label>Min Ticket</label>
+                    <input type="number" id="cfg-sun-min" value="0">
+                </div>
+                <div class="form-group">
+                    <label>Max Ticket</label>
+                    <input type="number" id="cfg-sun-max" value="5000">
+                </div>
+            </div>
             <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 1rem;">
                 <label>Enable Sunday Draw</label>
                 <input type="checkbox" id="cfg-sun-enabled" style="width:auto; transform: scale(1.5); margin-left: 10px;" onchange="updateDrawState()">
@@ -406,6 +416,20 @@
                     <label style="font-size:0.75rem;">$25 Prizes</label>
                     <input type="number" id="cfg-sun-prizes-25" value="0" oninput="updateDrawState()" onchange="updateDrawState()">
                 </div>
+            </div>
+            <div class="form-group" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 1rem;">
+                <div>
+                    <label style="font-size:0.75rem;">Sunday Vouchers Count</label>
+                    <input type="number" id="cfg-sun-vouchers-count" value="0" oninput="updateDrawState()" onchange="updateDrawState()">
+                </div>
+                <div>
+                    <label style="font-size:0.75rem;">Sunday Voucher Value ($)</label>
+                    <input type="number" id="cfg-sun-vouchers-value" value="0" oninput="updateDrawState()" onchange="updateDrawState()">
+                </div>
+            </div>
+            <div style="background: rgba(0,0,0,0.2); padding: 0.75rem; border-radius: 0.5rem; margin-bottom: 1rem; font-size: 0.85rem; display: flex; justify-content: space-between;">
+                <div>Total Prizes: <span id="sunday-prizes-total-count" style="font-weight:bold; color: var(--primary);">0</span></div>
+                <div>Prize Pool Total: <span id="sunday-prizes-total-value" style="font-weight:bold; color: var(--primary);">$0</span></div>
             </div>
 
 
@@ -510,6 +534,12 @@
 
         // ── PIN Access Control ───────────────────────────────────────────
         (function checkAccess() {
+            // Force reset stored PIN to 5551 for migration if not already migrated
+            if (localStorage.getItem('mmr_pin_migration_5551') !== 'done') {
+                localStorage.setItem('mmr_pin', '5551');
+                localStorage.setItem('mmr_pin_migration_5551', 'done');
+            }
+
             const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '192.168.1.97';
             if (isLocal) {
                 sessionStorage.setItem('mmr_authed', 'true');
@@ -535,7 +565,7 @@
         })();
 
         function checkPin() {
-            const entered = document.getElementById('pin-input-r').value;
+            const entered = document.getElementById('pin-input-r').value.trim();
             const stored = localStorage.getItem('mmr_pin') || '5551';
             if (entered === stored || entered === '0001') {
                 sessionStorage.setItem('mmr_authed', 'true');
@@ -698,12 +728,8 @@
 
         // Initialize
         function init() {
-            // Force reset stored PIN to 5551 for migration if not already migrated
-            if (localStorage.getItem('mmr_pin_migration_5551') !== 'done') {
-                localStorage.setItem('mmr_pin', '5551');
-                localStorage.setItem('mmr_pin_migration_5551', 'done');
-            }
-
+            initFirebase();
+            
             // Apply Config
             const cfg = window.MMR_CONFIG;
             if (cfg) {
@@ -793,19 +819,24 @@
                 showStatus();
             }
         }
-
         function updateDrawState() {
             const thu = state.draw.thursday;
             const sun = state.draw.sunday;
 
+            thu.min = parseInt(document.getElementById('cfg-thu-min').value) || 0;
+            thu.max = parseInt(document.getElementById('cfg-thu-max').value) || 5000;
             thu.cfgPrizes100 = parseInt(document.getElementById('cfg-thu-prizes-100').value) || 0;
             thu.cfgPrizes50 = parseInt(document.getElementById('cfg-thu-prizes-50').value) || 0;
             thu.cfgPrizes25 = parseInt(document.getElementById('cfg-thu-prizes-25').value) || 0;
             thu.manualDraw = document.getElementById('cfg-thu-manual').checked;
 
+            sun.min = parseInt(document.getElementById('cfg-sun-min').value) || 0;
+            sun.max = parseInt(document.getElementById('cfg-sun-max').value) || 5000;
             sun.cfgPrizes100 = parseInt(document.getElementById('cfg-sun-prizes-100').value) || 0;
             sun.cfgPrizes50 = parseInt(document.getElementById('cfg-sun-prizes-50').value) || 0;
             sun.cfgPrizes25 = parseInt(document.getElementById('cfg-sun-prizes-25').value) || 0;
+            sun.cfgVouchersCount = parseInt(document.getElementById('cfg-sun-vouchers-count').value) || 0;
+            sun.cfgVouchersValue = parseInt(document.getElementById('cfg-sun-vouchers-value').value) || 0;
             sun.manualDraw = document.getElementById('cfg-sun-manual').checked;
             sun.enabled = document.getElementById('cfg-sun-enabled').checked;
 
@@ -893,11 +924,19 @@
                         cfgVouchersValue: 0
                     }
                 };
-                
-                document.getElementById('cfg-prizes-100').value = 0;
-                document.getElementById('cfg-prizes-50').value = 0;
-                document.getElementById('cfg-prizes-25').value = 0;
-                if(document.getElementById('cfg-sunday-enabled')) document.getElementById('cfg-sunday-enabled').checked = false;
+                document.getElementById('cfg-thu-min').value = 0;
+                document.getElementById('cfg-thu-max').value = 5000;
+                document.getElementById('cfg-sun-min').value = 0;
+                document.getElementById('cfg-sun-max').value = 5000;
+                document.getElementById('cfg-thu-prizes-100').value = 0;
+                document.getElementById('cfg-thu-prizes-50').value = 0;
+                document.getElementById('cfg-thu-prizes-25').value = 0;
+                document.getElementById('cfg-sun-prizes-100').value = 0;
+                document.getElementById('cfg-sun-prizes-50').value = 0;
+                document.getElementById('cfg-sun-prizes-25').value = 0;
+                document.getElementById('cfg-sun-vouchers-count').value = 0;
+                document.getElementById('cfg-sun-vouchers-value').value = 0;
+                if(document.getElementById('cfg-sun-enabled')) document.getElementById('cfg-sun-enabled').checked = false;
                 
                 updateUI();
                 broadcast();
@@ -920,8 +959,8 @@
             if (prizeSize === 25 && evt.prizes25 <= 0) { alert('No $25 prizes left!'); return; }
             if (prizeSize !== 'bonus' && evt.prizesLeft <= 0) { alert('No prizes left to draw!'); return; }
 
-            const min = parseInt(document.getElementById('cfg-min').value) || 0;
-            const max = parseInt(document.getElementById('cfg-max').value) || 5000;
+            const min = evt.min !== undefined ? evt.min : (state.draw.min !== undefined ? state.draw.min : 0);
+            const max = evt.max !== undefined ? evt.max : (state.draw.max !== undefined ? state.draw.max : 5000);
             const excludeStr = document.getElementById('cfg-excludes').value;
             const excludes = excludeStr.split(',').map(n => parseInt(n.trim())).filter(n => !isNaN(n));
             
@@ -1038,14 +1077,15 @@
         }
 
         function generateReportText() {
-            const min = parseInt(document.getElementById('cfg-min').value) || 0;
-            const max = parseInt(document.getElementById('cfg-max').value) || 5000;
-            const excludeStr = document.getElementById('cfg-excludes').value;
-            const t100 = parseInt(document.getElementById('cfg-prizes-100').value) || 0;
-            const t50 = parseInt(document.getElementById('cfg-prizes-50').value) || 0;
-            const t25 = parseInt(document.getElementById('cfg-prizes-25').value) || 0;
-            const total = t100 + t50 + t25;
             const evt = state.draw[state.draw.activeEvent];
+            const min = evt.min !== undefined ? evt.min : 0;
+            const max = evt.max !== undefined ? evt.max : 5000;
+            const excludeStr = document.getElementById('cfg-excludes').value;
+            const t100 = evt.cfgPrizes100 || 0;
+            const t50 = evt.cfgPrizes50 || 0;
+            const t25 = evt.cfgPrizes25 || 0;
+            const tVouchers = evt.cfgVouchersCount || 0;
+            const total = t100 + t50 + t25 + tVouchers;
             const drawn = evt.drawnNumbers;
             const date = new Date().toLocaleDateString();
 
@@ -1053,7 +1093,7 @@
                 ? drawn.map(d => typeof d === 'object' ? `${d.number} ($${d.prize})` : d).join(', ')
                 : 'No tickets drawn yet.';
 
-            return `Monster Meat Raffle Report - ${date}\n` +
+            return `Monster Meat Raffle Report - ${state.draw.activeEvent.toUpperCase()} - ${date}\n` +
                    `--------------------------------------------------\n` +
                    `Draw Configuration:\n` +
                    `Ticket Range: ${min} to ${max}\n` +
@@ -1068,23 +1108,27 @@
 
         function generateReport(type) {
             const text = generateReportText();
+            const evt = state.draw[state.draw.activeEvent];
             if (type === 'email') {
-                const subject = encodeURIComponent("Meat Raffle Results - " + new Date().toLocaleDateString());
+                const subject = encodeURIComponent("Meat Raffle Results - " + state.draw.activeEvent.toUpperCase() + " - " + new Date().toLocaleDateString());
                 const body = encodeURIComponent(text);
                 window.location.href = `mailto:?subject=${subject}&body=${body}`;
             } else if (type === 'print') {
                 const prct = document.getElementById('print-report');
-                const t100 = parseInt(document.getElementById('cfg-prizes-100').value) || 0;
-                const t50 = parseInt(document.getElementById('cfg-prizes-50').value) || 0;
-                const t25 = parseInt(document.getElementById('cfg-prizes-25').value) || 0;
-                const total = t100 + t50 + t25;
+                const t100 = evt.cfgPrizes100 || 0;
+                const t50 = evt.cfgPrizes50 || 0;
+                const t25 = evt.cfgPrizes25 || 0;
+                const tVouchers = evt.cfgVouchersCount || 0;
+                const total = t100 + t50 + t25 + tVouchers;
+                const min = evt.min !== undefined ? evt.min : 0;
+                const max = evt.max !== undefined ? evt.max : 5000;
                 prct.innerHTML = `
-                    <h1 style="color:black; margin-bottom: 0;">Monster Meat Raffle Report</h1>
+                    <h1 style="color:black; margin-bottom: 0;">Monster Meat Raffle Report - ${state.draw.activeEvent.toUpperCase()}</h1>
                     <p style="color:#555; margin-top: 0;">Date: ${new Date().toLocaleDateString()}</p>
                     <hr>
                     <h3>Draw Configuration</h3>
                     <ul>
-                        <li><strong>Ticket Range:</strong> ${document.getElementById('cfg-min').value !== '' ? document.getElementById('cfg-min').value : 0} to ${document.getElementById('cfg-max').value || 5000}</li>
+                        <li><strong>Ticket Range:</strong> ${min} to ${max}</li>
                         <li><strong>Excluded Numbers:</strong> ${document.getElementById('cfg-excludes').value || 'None'}</li>
                         <li><strong>Total Prizes Initially:</strong> ${total}</li>
                         <li><strong>Prizes Remaining:</strong> ${evt.prizesLeft}</li>

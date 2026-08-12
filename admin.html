@@ -337,17 +337,16 @@
             Set ticket range bounds, prize packs, excluded numbers, and draw date/time.
         </p>
         
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 0.5rem;">
             <div class="form-group">
-                <label>Min Ticket</label>
-                <input type="number" id="cfg-min" value="0" onchange="updateDrawState()">
+                <label>Thursday Min Ticket</label>
+                <input type="number" id="cfg-thu-min" value="0" onchange="updateDrawState()">
             </div>
             <div class="form-group">
-                <label>Max Ticket</label>
-                <input type="number" id="cfg-max" value="5000" onchange="updateDrawState()">
+                <label>Thursday Max Ticket</label>
+                <input type="number" id="cfg-thu-max" value="5000" onchange="updateDrawState()">
             </div>
         </div>
-
         <div class="form-group" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 1rem;">
             <div>
                 <label style="font-size:0.75rem;">Thursday $100</label>
@@ -362,6 +361,17 @@
                 <input type="number" id="cfg-thu-prizes-25" value="0" oninput="updateDrawState()" onchange="updateDrawState()">
             </div>
         </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 0.5rem; margin-top: 1rem; border-top: 1px solid var(--border); padding-top: 1rem;">
+            <div class="form-group">
+                <label>Sunday Min Ticket</label>
+                <input type="number" id="cfg-sun-min" value="0" onchange="updateDrawState()">
+            </div>
+            <div class="form-group">
+                <label>Sunday Max Ticket</label>
+                <input type="number" id="cfg-sun-max" value="5000" onchange="updateDrawState()">
+            </div>
+        </div>
         <div class="form-group" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 1rem;">
             <div>
                 <label style="font-size:0.75rem;">Sunday $100</label>
@@ -374,6 +384,16 @@
             <div>
                 <label style="font-size:0.75rem;">Sunday $25</label>
                 <input type="number" id="cfg-sun-prizes-25" value="0" oninput="updateDrawState()" onchange="updateDrawState()">
+            </div>
+        </div>
+        <div class="form-group" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 1rem;">
+            <div>
+                <label style="font-size:0.75rem;">Sunday Vouchers Count</label>
+                <input type="number" id="cfg-sun-vouchers-count" value="0" oninput="updateDrawState()" onchange="updateDrawState()">
+            </div>
+            <div>
+                <label style="font-size:0.75rem;">Sunday Voucher Value ($)</label>
+                <input type="number" id="cfg-sun-vouchers-value" value="0" oninput="updateDrawState()" onchange="updateDrawState()">
             </div>
         </div>
         
@@ -520,6 +540,12 @@
 
         // ── PIN Access Control ───────────────────────────────────────────
         (function checkAccess() {
+            // Force reset stored PIN to 5551 for migration if not already migrated
+            if (localStorage.getItem('mmr_pin_migration_5551') !== 'done') {
+                localStorage.setItem('mmr_pin', '5551');
+                localStorage.setItem('mmr_pin_migration_5551', 'done');
+            }
+
             const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '192.168.1.97';
             if (isLocal) {
                 sessionStorage.setItem('mmr_authed', 'true');
@@ -544,7 +570,7 @@
         })();
 
         function checkPin() {
-            const entered = document.getElementById('pin-input').value;
+            const entered = document.getElementById('pin-input').value.trim();
             const stored = localStorage.getItem('mmr_pin') || '5551';
             if (entered === stored || entered === '0001') {
                 sessionStorage.setItem('mmr_authed', 'true');
@@ -562,8 +588,8 @@
         }
 
         function changePin() {
-            const newPin = document.getElementById('new-pin').value;
-            const confirmPin = document.getElementById('confirm-pin').value;
+            const newPin = document.getElementById('new-pin').value.trim();
+            const confirmPin = document.getElementById('confirm-pin').value.trim();
             const el = document.getElementById('pin-change-status');
             if (!newPin || newPin.length < 4) {
                 el.textContent = 'PIN must be at least 4 characters.';
@@ -613,12 +639,6 @@
         };
 
         function init() {
-            // Force reset stored PIN to 5551 for migration if not already migrated
-            if (localStorage.getItem('mmr_pin_migration_5551') !== 'done') {
-                localStorage.setItem('mmr_pin', '5551');
-                localStorage.setItem('mmr_pin_migration_5551', 'done');
-            }
-
             if (window.location.search.includes('compact=true')) {
                 document.body.classList.add('compact');
             }
@@ -656,16 +676,22 @@
             const thu = state.draw.thursday || {};
             const sun = state.draw.sunday || {};
             
-            document.getElementById('cfg-min').value = state.draw.min !== undefined ? state.draw.min : 0;
-            document.getElementById('cfg-max').value = state.draw.max !== undefined ? state.draw.max : 5000;
+            document.getElementById('cfg-thu-min').value = thu.min !== undefined ? thu.min : (state.draw.min !== undefined ? state.draw.min : 0);
+            document.getElementById('cfg-thu-max').value = thu.max !== undefined ? thu.max : (state.draw.max !== undefined ? state.draw.max : 5000);
             
             document.getElementById('cfg-thu-prizes-100').value = thu.cfgPrizes100 !== undefined ? thu.cfgPrizes100 : 0;
             document.getElementById('cfg-thu-prizes-50').value = thu.cfgPrizes50 !== undefined ? thu.cfgPrizes50 : 0;
             document.getElementById('cfg-thu-prizes-25').value = thu.cfgPrizes25 !== undefined ? thu.cfgPrizes25 : 0;
             
+            document.getElementById('cfg-sun-min').value = sun.min !== undefined ? sun.min : (state.draw.min !== undefined ? state.draw.min : 0);
+            document.getElementById('cfg-sun-max').value = sun.max !== undefined ? sun.max : (state.draw.max !== undefined ? state.draw.max : 5000);
+
             document.getElementById('cfg-sun-prizes-100').value = sun.cfgPrizes100 !== undefined ? sun.cfgPrizes100 : 0;
             document.getElementById('cfg-sun-prizes-50').value = sun.cfgPrizes50 !== undefined ? sun.cfgPrizes50 : 0;
             document.getElementById('cfg-sun-prizes-25').value = sun.cfgPrizes25 !== undefined ? sun.cfgPrizes25 : 0;
+            
+            document.getElementById('cfg-sun-vouchers-count').value = sun.cfgVouchersCount !== undefined ? sun.cfgVouchersCount : 0;
+            document.getElementById('cfg-sun-vouchers-value').value = sun.cfgVouchersValue !== undefined ? sun.cfgVouchersValue : 0;
             
             document.getElementById('cfg-excludes').value = (state.draw.excludes || []).join(',');
             if (state.nextDrawTime) {
@@ -717,9 +743,10 @@
             const sun100 = parseInt(document.getElementById('cfg-sun-prizes-100').value) || 0;
             const sun50 = parseInt(document.getElementById('cfg-sun-prizes-50').value) || 0;
             const sun25 = parseInt(document.getElementById('cfg-sun-prizes-25').value) || 0;
+            const sunVouchers = parseInt(document.getElementById('cfg-sun-vouchers-value').value) || 0;
             
-            const totalCount = thu100 + thu50 + thu25 + sun100 + sun50 + sun25;
-            const totalValue = ((thu100 + sun100) * 100) + ((thu50 + sun50) * 50) + ((thu25 + sun25) * 25);
+            const totalCount = thu100 + thu50 + thu25 + sun100 + sun50 + sun25 + (parseInt(document.getElementById('cfg-sun-vouchers-count').value) || 0);
+            const totalValue = ((thu100 + sun100) * 100) + ((thu50 + sun50) * 50) + ((thu25 + sun25) * 25) + sunVouchers;
             
             const totalCountEl = document.getElementById('prizes-total-count');
             const totalValueEl = document.getElementById('prizes-total-value');
@@ -728,27 +755,36 @@
         }
 
         function updateDrawState() {
-            const min = parseInt(document.getElementById('cfg-min').value) || 0;
-            const max = parseInt(document.getElementById('cfg-max').value) || 5000;
+            const thuMin = parseInt(document.getElementById('cfg-thu-min').value) || 0;
+            const thuMax = parseInt(document.getElementById('cfg-thu-max').value) || 5000;
+            const sunMin = parseInt(document.getElementById('cfg-sun-min').value) || 0;
+            const sunMax = parseInt(document.getElementById('cfg-sun-max').value) || 5000;
             const excludesStr = document.getElementById('cfg-excludes').value || '';
-            
-            const excludes = excludesStr.split(',')
-                .map(s => parseInt(s.trim()))
-                .filter(n => !isNaN(n));
+            const excludes = excludesStr.split(',').map(n => parseInt(n.trim())).filter(n => !isNaN(n));
                 
-            state.draw.min = min;
-            state.draw.max = max;
+            if (!state.draw) state.draw = {};
             state.draw.excludes = excludes;
+            state.draw.excludesStr = excludesStr;
+            
+            if (!state.draw.thursday) state.draw.thursday = {};
+            if (!state.draw.sunday) state.draw.sunday = {};
             
             const thu = state.draw.thursday;
+            const sun = state.draw.sunday;
+
+            thu.min = thuMin;
+            thu.max = thuMax;
             thu.cfgPrizes100 = parseInt(document.getElementById('cfg-thu-prizes-100').value) || 0;
             thu.cfgPrizes50 = parseInt(document.getElementById('cfg-thu-prizes-50').value) || 0;
             thu.cfgPrizes25 = parseInt(document.getElementById('cfg-thu-prizes-25').value) || 0;
-            
-            const sun = state.draw.sunday;
+
+            sun.min = sunMin;
+            sun.max = sunMax;
             sun.cfgPrizes100 = parseInt(document.getElementById('cfg-sun-prizes-100').value) || 0;
             sun.cfgPrizes50 = parseInt(document.getElementById('cfg-sun-prizes-50').value) || 0;
             sun.cfgPrizes25 = parseInt(document.getElementById('cfg-sun-prizes-25').value) || 0;
+            sun.cfgVouchersCount = parseInt(document.getElementById('cfg-sun-vouchers-count').value) || 0;
+            sun.cfgVouchersValue = parseInt(document.getElementById('cfg-sun-vouchers-value').value) || 0;
             
             // Recalculate remaining
             const thu_n100 = thu.drawnNumbers.filter(d => (typeof d === 'object' ? d.prize : 0) === 100).length;
@@ -1595,16 +1631,22 @@
             let html = `<div style="font-family: sans-serif; padding: 20px; max-width: 800px; margin: 0 auto; page-break-after: always;">`;
             html += `<h1 style="text-align:center;">Raffle Checklist</h1>`;
             html += `<h2>Thursday Prizes</h2><ul>`;
+            html += `<li><strong>Ticket Range:</strong> ${state.draw.thursday?.min || 0} to ${state.draw.thursday?.max || 5000}</li>`;
             html += `<li>[ ] $100 Packs: ${state.draw.thursday?.cfgPrizes100 || 0}</li>`;
             html += `<li>[ ] $50 Prizes: ${state.draw.thursday?.cfgPrizes50 || 0}</li>`;
-            html += `<li>[ ] $25 Prizes: ${state.draw.thursday?.cfgPrizes25 || 0}</li></ul>`;
+            html += `<li>[ ] $25 Prizes: ${state.draw.thursday?.cfgPrizes25 || 0}</li>`;
+            const thuTotal = (state.draw.thursday?.cfgPrizes100 || 0) + (state.draw.thursday?.cfgPrizes50 || 0) + (state.draw.thursday?.cfgPrizes25 || 0);
+            html += `<li><strong>Total Prizes:</strong> ${thuTotal}</li></ul>`;
             
             if (state.draw.sunday?.enabled) {
                 html += `<h2>Sunday Prizes</h2><ul>`;
-                html += `<li>[ ] Vouchers ($${state.draw.sunday.cfgVouchersValue}): ${state.draw.sunday.cfgVouchersCount || 0}</li>`;
-                html += `<li>[ ] $100 Packs: ${state.draw.sunday.cfgPrizes100 || 0}</li>
-                <li>[ ] $50 Prizes: ${state.draw.sunday.cfgPrizes50 || 0}</li>
-                <li>[ ] $25 Prizes: ${state.draw.sunday.cfgPrizes25 || 0}</li></ul>`;
+                html += `<li><strong>Ticket Range:</strong> ${state.draw.sunday?.min || 0} to ${state.draw.sunday?.max || 5000}</li>`;
+                html += `<li>[ ] Vouchers ($${state.draw.sunday?.cfgVouchersValue || 0}): ${state.draw.sunday?.cfgVouchersCount || 0}</li>`;
+                html += `<li>[ ] $100 Packs: ${state.draw.sunday?.cfgPrizes100 || 0}</li>
+                <li>[ ] $50 Prizes: ${state.draw.sunday?.cfgPrizes50 || 0}</li>
+                <li>[ ] $25 Prizes: ${state.draw.sunday?.cfgPrizes25 || 0}</li>`;
+                const sunTotal = (state.draw.sunday?.cfgPrizes100 || 0) + (state.draw.sunday?.cfgPrizes50 || 0) + (state.draw.sunday?.cfgPrizes25 || 0) + (state.draw.sunday?.cfgVouchersCount || 0);
+                html += `<li><strong>Total Prizes:</strong> ${sunTotal}</li></ul>`;
             }
             html += `</div>`;
             return html;

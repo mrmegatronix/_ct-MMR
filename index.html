@@ -90,9 +90,7 @@
         .slide.active { opacity: 1; transform: scale(1); }
 
         .slides-fixed-title {
-            position: absolute;
-            top: 0;
-            left: 0;
+            position: relative;
             width: 100%;
             text-align: center;
             font-size: clamp(3rem, 7vw, 6rem);
@@ -266,15 +264,15 @@
             bottom: 0;
             left: 0;
             width: 100%;
-            height: 15px;
+            height: var(--cfg-progress-bar-height, 12px);
             background: transparent;
             z-index: 100;
         }
         #progress-bar {
             height: 100%;
             width: 0%;
-            background: linear-gradient(90deg, #f59e0b, #fff);
-            box-shadow: 0 0 25px rgba(245, 158, 11, 0.6);
+            background: linear-gradient(90deg, var(--primary), #fff);
+            box-shadow: 0 0 25px var(--primary-glow);
             transition: width 0.1s linear;
         }
 
@@ -604,24 +602,19 @@
             overflow: hidden;
         }
         .winners-carousel img {
-            animation: winner-fade 10s infinite;
             opacity: 0;
             position: absolute;
             max-height: 45vh;
             width: auto !important;
             object-fit: contain;
+            transition: opacity 1s ease-in-out, transform 1s ease-in-out;
+            transform: scale(0.95);
         }
-        @keyframes winner-fade {
-            0%, 10% { opacity: 0; transform: scale(0.9); }
-            15%, 85% { opacity: 1; transform: scale(1); }
-            90%, 100% { opacity: 0; transform: scale(1.1); }
+        .winners-carousel img.active {
+            opacity: 1;
+            transform: scale(1);
+            z-index: 2;
         }
-        /* Stagger the images based on index */
-        .winners-carousel img:nth-child(1) { animation-delay: 0s; }
-        .winners-carousel img:nth-child(2) { animation-delay: 1.5s; }
-        .winners-carousel img:nth-child(3) { animation-delay: 3s; }
-        .winners-carousel img:nth-child(4) { animation-delay: 4.5s; }
-        .winners-carousel img:nth-child(5) { animation-delay: 6s; }
         /* Glow highlight for the last ticket drawn */
         .last-drawn-glow {
             animation: last-drawn-pulse 1s infinite alternate !important;
@@ -852,15 +845,15 @@
     <img src="logo-new.png" alt="Logo" class="brand-logo" id="logo">
 
     <div id="view-container">
-        
-        <div class="slides-fixed-title" id="fixed-title-main"></div>
 
         <!-- SLIDES VIEW -->
-        <div id="view-slides" class="view active">
+        <div id="view-slides" class="view active" style="flex-direction: column; justify-content: flex-start; padding-top: 0;">
             <!-- Ambient Slides Confetti -->
             <div id="ambient-confetti-container" style="position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: 5;"></div>
             
-            <div id="slides-wrapper"></div>
+            <div class="slides-fixed-title" id="fixed-title-main">MONSTER MEAT RAFFLE</div>
+            
+            <div id="slides-wrapper" style="width: 100%; flex: 1; position: relative;"></div>
             <div id="progress-container"><div id="progress-bar"></div></div>
         </div>
 
@@ -1008,6 +1001,8 @@
         // State
         let slotsRolling = false;
         let congratsStartTime = null;
+        let currentSlideIdx = 0;
+        let isPaused = false;
         let state = {
             activeView: 'slides',
             nextDrawTime: getNextThursday7PM(),
@@ -1072,6 +1067,71 @@
             if (cmd === 'toggle') toggleSlidePlay();
         }
 
+        function nextSlide() {
+            const slides = document.querySelectorAll('.slide');
+            if (slides.length === 0) return;
+            slides[currentSlideIdx].classList.remove('active');
+            currentSlideIdx = (currentSlideIdx + 1) % slides.length;
+            slides[currentSlideIdx].classList.add('active');
+            playActiveCarousel();
+            const nextDur = parseInt(slides[currentSlideIdx].getAttribute('data-duration')) || 30000;
+            startSlideTimer(nextDur);
+        }
+
+        function prevSlide() {
+            const slides = document.querySelectorAll('.slide');
+            if (slides.length === 0) return;
+            slides[currentSlideIdx].classList.remove('active');
+            currentSlideIdx = (currentSlideIdx - 1 + slides.length) % slides.length;
+            slides[currentSlideIdx].classList.add('active');
+            playActiveCarousel();
+            const nextDur = parseInt(slides[currentSlideIdx].getAttribute('data-duration')) || 30000;
+            startSlideTimer(nextDur);
+        }
+
+        function toggleSlidePlay() {
+            isPaused = !isPaused;
+            const btn = document.getElementById('play-pause-btn');
+            if (btn) {
+                btn.innerText = isPaused ? '▶' : '⏸';
+            }
+            const slides = document.querySelectorAll('.slide');
+            if (slides.length === 0) return;
+            const nextDur = parseInt(slides[currentSlideIdx].getAttribute('data-duration')) || 30000;
+            startSlideTimer(nextDur);
+        }
+
+        let winnersInterval = null;
+        function playActiveCarousel() {
+            clearInterval(winnersInterval);
+            const activeSlide = document.querySelector('.slide.active');
+            if (!activeSlide) return;
+            
+            const carousel = activeSlide.querySelector('.winners-carousel');
+            if (!carousel) return;
+            
+            const imgs = carousel.querySelectorAll('img');
+            if (imgs.length <= 1) {
+                if (imgs.length === 1) imgs[0].classList.add('active');
+                return;
+            }
+            
+            let activeIdx = 0;
+            imgs.forEach((img, i) => {
+                if (i === 0) img.classList.add('active');
+                else img.classList.remove('active');
+            });
+            
+            const slideDur = parseInt(activeSlide.getAttribute('data-duration')) || 30000;
+            const rotateInterval = Math.max(2500, Math.min(5000, slideDur / imgs.length));
+            
+            winnersInterval = setInterval(() => {
+                imgs[activeIdx].classList.remove('active');
+                activeIdx = (activeIdx + 1) % imgs.length;
+                imgs[activeIdx].classList.add('active');
+            }, rotateInterval);
+        }
+
         let lastRenderedSlidesJson = '';
         let lastActiveView = '';
         let postDrawLoopInterval = null;
@@ -1084,8 +1144,15 @@
             }
             state = { ...state, ...newState };
 
-            // Intercept and auto-correct activeView if outside congrats window
-            if (state.activeView === 'congrats' || state.activeView === 'congrats-video') {
+            // Check total configured prizes
+            const activeEvtData = (state.draw && state.draw[state.draw.activeEvent]) || {};
+            const c100 = activeEvtData.cfgPrizes100 !== undefined ? activeEvtData.cfgPrizes100 : 0;
+            const c50 = activeEvtData.cfgPrizes50 !== undefined ? activeEvtData.cfgPrizes50 : 0;
+            const c25 = activeEvtData.cfgPrizes25 !== undefined ? activeEvtData.cfgPrizes25 : 0;
+            const hasPrizes = (c100 + c50 + c25) > 0;
+
+            // Intercept and auto-correct activeView if outside congrats window (only when prizes > 0)
+            if (hasPrizes && (state.activeView === 'congrats' || state.activeView === 'congrats-video')) {
                 const nzDate = getNZDate();
                 const day = nzDate.getDay();
                 const hour = nzDate.getHours();
@@ -1443,41 +1510,8 @@
         }, 1000);
 
         // Slide logic
-        let currentSlideIdx = 0;
-        let isPaused = false;
         let slideInterval;
         let progressInterval;
-
-        function nextSlide() {
-            const slides = document.querySelectorAll('.slide');
-            if(slides.length === 0) return;
-            slides[currentSlideIdx].classList.remove('active');
-            currentSlideIdx = (currentSlideIdx + 1) % slides.length;
-            slides[currentSlideIdx].classList.add('active');
-            startSlideTimer(parseInt(slides[currentSlideIdx].getAttribute('data-duration')) || 30000);
-        }
-
-        function prevSlide() {
-            const slides = document.querySelectorAll('.slide');
-            if(slides.length === 0) return;
-            slides[currentSlideIdx].classList.remove('active');
-            currentSlideIdx = (currentSlideIdx + slides.length - 1) % slides.length;
-            slides[currentSlideIdx].classList.add('active');
-            startSlideTimer(parseInt(slides[currentSlideIdx].getAttribute('data-duration')) || 30000);
-        }
-
-        function toggleSlidePlay() {
-            isPaused = !isPaused;
-            const btn = document.getElementById('play-pause-btn');
-            btn.innerText = isPaused ? '▶' : '⏸';
-            if (isPaused) {
-                clearInterval(slideInterval);
-                clearInterval(progressInterval);
-            } else {
-                const slides = document.querySelectorAll('.slide');
-                if(slides.length > 0) startSlideTimer(parseInt(slides[currentSlideIdx].getAttribute('data-duration')) || 30000);
-            }
-        }
 
         function renderSlides(slidesData) {
             const disabledList = state.disabledSlides || [];
@@ -1497,57 +1531,64 @@
             const drawWording = (day === targetDay) ? "TONIGHT AT 7:00PM" : (day === (targetDay - 1 + 7) % 7) ? "TOMORROW AT 7:00PM" : "THURSDAYS AT 7:00PM";
             const poolWording = (day === targetDay) ? "tonight's" : (day === (targetDay - 1 + 7) % 7) ? "tomorrow's" : "Thursday's";
 
-            const advertSlides = [
-                {
+            const advertSlides = [];
+            if (t100 > 0) {
+                advertSlides.push({
                     title: `${t100} x $100`,
                     subtitle: "🥩 Premium Assorted Meat Trays to be won!! 🥩",
                     type: "advert",
                     advertType: "p100",
                     duration: 30000
-                },
-                {
+                });
+            }
+            if (t50 > 0) {
+                advertSlides.push({
                     title: `${t50} x $50 TRAYS`,
                     subtitle: "🍗 Premium Assorted Meat Trays to be won!! 🍗",
                     type: "advert",
                     advertType: "p50",
                     duration: 30000
-                },
-                {
+                });
+            }
+            if (t25 > 0) {
+                advertSlides.push({
                     title: `${t25} x $25 TRAYS`,
                     subtitle: "🥓 Premium Assorted Meat Trays to be won!! 🥓",
                     type: "advert",
                     advertType: "p25",
                     duration: 30000
-                },
-                {
+                });
+            }
+            if (totalPrizes > 0) {
+                advertSlides.push({
                     title: `TOTAL PRIZES: ${totalPrizes}`,
                     subtitle: "🍖 Premium Assorted Meat Trays must be won!! 🍖",
                     type: "advert",
                     advertType: "total",
                     duration: 30000
-                },
-                {
+                });
+                advertSlides.push({
                     title: `TOTAL PRIZE POOL: $${totalPool.toLocaleString('en-NZ', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
                     subtitle: `🔥 in ${poolWording} Monster Meat Raffle Draw! 🔥`,
                     type: "advert",
                     advertType: "pool",
                     duration: 30000
-                },
-                {
-                    title: `TICKETS ON SALE`,
-                    subtitle: `🎟️ ${ticketsWording} 🎟️`,
-                    type: "advert",
-                    advertType: "tickets",
-                    duration: 30000
-                },
-                {
-                    title: `MONSTER MEAT RAFFLE`,
-                    subtitle: `🔥 DRAW STARTS ${drawWording} 🔥`,
-                    type: "advert",
-                    advertType: "draw_time",
-                    duration: 30000
-                }
-            ];
+                });
+            }
+            advertSlides.push({
+                title: `TICKETS ON SALE`,
+                subtitle: `🎟️ ${ticketsWording} 🎟️`,
+                type: "advert",
+                advertType: "tickets",
+                duration: 30000
+            });
+            advertSlides.push({
+                title: `MONSTER MEAT RAFFLE`,
+                subtitle: `🔥 DRAW STARTS ${drawWording} 🔥`,
+                type: "advert",
+                advertType: "draw_time",
+                duration: 30000
+            });
 
             const finalSlides = [...visibleSlides, ...advertSlides];
 
@@ -1602,9 +1643,9 @@
                 const timeHtml = slide.type === 'countdown' ? calculateTimeRemainingHTML() : '';
                 
                 // Use BackgroundImage if available, otherwise fallback to imageUrl
-                const bgImg = safeUrl(slide.backgroundImage || slide.imageUrl);
+                const bgImg = safeUrl((slide.type !== 'avatar' && slide.backgroundImage) || slide.imageUrl);
                 const overlayImg = safeUrl(slide.overlayImage);
-                const avatarImg = safeUrl(slide.avatarImage || slide.imageUrl || slide.backgroundImage); // For avatar type
+                const avatarImg = safeUrl(slide.avatarImage || (slide.type === 'avatar' && slide.backgroundImage) || slide.imageUrl); // For avatar type
                 
                 const bgStyle = bgImg ? `background-image: url('${bgImg}'); background-size: cover; background-position: center;` : '';
                 
@@ -1642,7 +1683,7 @@
                         ${slide.type === 'winners' 
                             ? `<div class="winners-carousel" style="position: relative; z-index: 3; width: 100%; height: 400px; display: flex; justify-content: center; align-items: center;">
                                  ${(slide.winnerPhotos || '').split(',').map(url => url.trim()).filter(url => url).map((url, idx) => `
-                                    <img src="${safeUrl(url)}" style="width: 500px; height: 500px; object-fit: cover; border-radius: 2rem; border: 8px solid var(--primary); box-shadow: 0 0 50px var(--primary-glow); animation-delay: ${idx * 2}s;">
+                                    <img src="${safeUrl(url)}" style="border-radius: 2rem; border: 8px solid var(--primary); box-shadow: 0 0 50px var(--primary-glow);">
                                  `).join('')}
                                </div>` 
                             : ''
@@ -1655,6 +1696,7 @@
             if (currentSlideIdx >= finalSlides.length) currentSlideIdx = 0;
 
             startSlideTimer(finalSlides[currentSlideIdx].duration);
+            playActiveCarousel();
         }
 
         function startSlideTimer(duration) {
@@ -1960,27 +2002,50 @@
             }
             if (col || row.length > 0) { row.push(col.trim()); result.push(row); }
 
-            return result.slice(1).map(clean => {
-                const type = (clean[2] || 'normal').toLowerCase();
-                if (type === 'avatar') return null; // Ignore Google Sheets avatar slides completely
-                if (!clean[0]) return null;
+            if (result.length < 2) return [];
 
-                // RUTHLESS TBC/TBA filtering
-                const ruthlessString = [clean[0], clean[1], type, clean[6]].join(' ').toLowerCase();
+            const header = result[0].map(h => h.toLowerCase().trim());
+            const idxTitle = header.indexOf('title');
+            const idxSubtitle = header.indexOf('subtitle');
+            const idxType = header.indexOf('type');
+            const idxDuration = header.indexOf('duration');
+            
+            let idxBg = header.indexOf('backgroundimage');
+            if (idxBg === -1) idxBg = header.indexOf('backgroundimg');
+            
+            let idxOverlay = header.indexOf('overlayimage');
+            if (idxOverlay === -1) idxOverlay = header.indexOf('overlayimg');
+            
+            const idxBubble = header.indexOf('bubbletext');
+            const idxWinnerPhotos = header.indexOf('winnerphotos');
+
+            return result.slice(1).map(clean => {
+                const type = (idxType !== -1 ? clean[idxType] : 'normal').toLowerCase();
+                const title = idxTitle !== -1 ? clean[idxTitle] : '';
+                const subtitle = idxSubtitle !== -1 ? clean[idxSubtitle] : '';
+                const durationVal = idxDuration !== -1 ? parseInt(clean[idxDuration]) : 30000;
+                const bgImage = idxBg !== -1 ? clean[idxBg] : '';
+                const overlayImage = idxOverlay !== -1 ? clean[idxOverlay] : '';
+                const bubbleText = idxBubble !== -1 ? clean[idxBubble] : '';
+                const winnerPhotos = idxWinnerPhotos !== -1 ? clean[idxWinnerPhotos] : '';
+
+                if (!title && !subtitle && !bubbleText && !winnerPhotos) return null;
+
+                const ruthlessString = [title, subtitle, type, bubbleText].join(' ').toLowerCase();
                 if (ruthlessString.includes('tbc') || ruthlessString.includes('tba') || 
                     ruthlessString.includes('to be confirmed') || ruthlessString.includes('to be announced')) {
                     return null;
                 }
 
                 return {
-                    title: clean[0] || '',
-                    subtitle: clean[1] || '',
-                    type: type,
-                    duration: parseInt(clean[3]) || 30000,
-                    backgroundImage: clean[4] || '',
-                    overlayImage: clean[5] || '',
-                    bubbleText: clean[6] || '',
-                    winnerPhotos: clean[7] || ''
+                    title: title || '',
+                    subtitle: subtitle || '',
+                    type: type || 'normal',
+                    duration: durationVal || 30000,
+                    backgroundImage: bgImage || '',
+                    overlayImage: overlayImage || '',
+                    bubbleText: bubbleText || '',
+                    winnerPhotos: winnerPhotos || ''
                 };
             }).filter(s => s !== null);
         }
@@ -2021,11 +2086,6 @@
             if (success && csv) {
                 let slides = parseSlidesCSV(csv);
 
-                // Inject local overrides if defined
-                if (window.MMR_CONFIG && window.MMR_CONFIG.LOCAL_WINNERS_SLIDES) {
-                    slides = [...slides, ...window.MMR_CONFIG.LOCAL_WINNERS_SLIDES];
-                }
-
                 if (slides.length > 0) {
                     console.log('[MMR] Slides synced OK — ' + slides.length + ' slides loaded.');
                     updateState({ slides: slides });
@@ -2045,6 +2105,7 @@
                 if (cfg.COLORS.bgDark) root.style.setProperty('--cfg-bg-dark', cfg.COLORS.bgDark);
                 if (cfg.COLORS.bgGrad) root.style.setProperty('--cfg-bg-grad', cfg.COLORS.bgGrad);
                 if (cfg.COLORS.textLight) root.style.setProperty('--cfg-text-light', cfg.COLORS.textLight);
+                if (cfg.PROGRESS_BAR_HEIGHT) root.style.setProperty('--cfg-progress-bar-height', cfg.PROGRESS_BAR_HEIGHT);
                 
                 const fixedTitle = document.getElementById('fixed-title-main');
                 if (fixedTitle) {
