@@ -252,7 +252,27 @@
             margin-bottom: 1.25rem;
             outline: none;
             transition: border-color 0.2s;
+            pointer-events: none;
         }
+        .pin-pad {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.5rem;
+            margin-bottom: 1.25rem;
+        }
+        .pin-btn {
+            background: #0f172a;
+            color: var(--text);
+            border: 1.5px solid var(--border);
+            padding: 1rem;
+            font-size: 1.25rem;
+            border-radius: 0.75rem;
+            cursor: pointer;
+            transition: background 0.2s;
+            font-family: inherit;
+            font-weight: 800;
+        }
+        .pin-btn:hover { background: var(--border); }
         #pin-input-r:focus { border-color: var(--primary); }
         #pin-submit-r {
             width: 100%;
@@ -280,8 +300,22 @@
             <div style="font-size: 3rem; margin-bottom: 1rem;">🔐</div>
             <h2 style="color: #f8fafc; margin: 0 0 0.5rem;">Restricted Access</h2>
             <p style="color: #94a3b8; margin: 0 0 2rem; font-size: 0.9rem;">Enter PIN to access Remote Control</p>
-            <input type="password" id="pin-input-r" maxlength="8" placeholder="Enter PIN" autocomplete="off">
-            <button id="pin-submit-r" onclick="checkPin()">UNLOCK</button>
+            <input type="password" id="pin-input-r" maxlength="8" placeholder="Enter PIN" autocomplete="off" readonly>
+            <div class="pin-pad">
+                <button type="button" class="pin-btn" onclick="appendPin('1')">1</button>
+                <button type="button" class="pin-btn" onclick="appendPin('2')">2</button>
+                <button type="button" class="pin-btn" onclick="appendPin('3')">3</button>
+                <button type="button" class="pin-btn" onclick="appendPin('4')">4</button>
+                <button type="button" class="pin-btn" onclick="appendPin('5')">5</button>
+                <button type="button" class="pin-btn" onclick="appendPin('6')">6</button>
+                <button type="button" class="pin-btn" onclick="appendPin('7')">7</button>
+                <button type="button" class="pin-btn" onclick="appendPin('8')">8</button>
+                <button type="button" class="pin-btn" onclick="appendPin('9')">9</button>
+                <button type="button" class="pin-btn" onclick="clearPin()">C</button>
+                <button type="button" class="pin-btn" onclick="appendPin('0')">0</button>
+                <button type="button" class="pin-btn" onclick="backspacePin()">⌫</button>
+            </div>
+            <button id="pin-submit-r" onclick="checkPin()">🔓 UNLOCK</button>
             <div id="pin-error-r">❌ Incorrect PIN. Try again.</div>
         </div>
     </div>
@@ -340,10 +374,16 @@
 
             <div style="display: flex; flex-direction: column; gap: 0.8rem; border-top: 1.5px solid var(--border); padding-top: 1.25rem;">
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                    <button class="btn draw-btn" onclick="runRedraw(\'bonus\')" style="background-color: #334155; border-color: #ef4444; color: #ef4444; font-size: 0.85rem;">🔄 REDRAW BONUS</button>\n                    <button class="btn btn-primary draw-btn" onclick="runDraw('bonus')" style="background-color: #6366f1; border-color: #4f46e5; color: white;">🎁 DRAW BONUS</button>
+                    <button class="btn draw-btn" onclick="runRedraw('bonus')" style="background-color: #334155; border-color: #ef4444; color: #ef4444; font-size: 0.85rem;">🔄 REDRAW BONUS</button>
+                    <button class="btn btn-primary draw-btn" onclick="runDraw('bonus')" style="background-color: #6366f1; border-color: #4f46e5; color: white;">🎁 DRAW BONUS</button>
                     <button class="btn" onclick="triggerConfetti()" style="background-color: #eab308; border-color: #ca8a04; color: black;">🎉 Confetti</button>
                 </div>
-                <button class="btn btn-primary" onclick="printManualRecordSheet()" style="width: 100%; font-size: 1rem; background-color: #2563eb; border-color: #1d4ed8; color: white;">🖨️ Print Checklist Record</button>
+                <div style="display: flex; gap: 0.5rem;">
+                    <button class="btn btn-primary" onclick="printBlank()" style="flex:1; padding: 0.5rem;">🖨️ Blank</button>
+                    <button class="btn btn-primary" onclick="printChecklist()" style="flex:1; padding: 0.5rem;">🖨️ Checklist</button>
+                    <button class="btn btn-primary" onclick="printFinancialSheet()" style="flex:1; background-color: #10b981; border-color: #059669; padding: 0.5rem;">🖨️ Financials</button>
+                    <button class="btn btn-primary" onclick="printAllPages()" style="flex:1; background-color: #ef4444; border-color: #dc2626; padding: 0.5rem;">🖨️ ALL</button>
+                </div>
             </div>
             
             <div class="status" id="status-display">Updated Successfully</div>
@@ -526,6 +566,20 @@
         }
 
         // ── PIN Access Control ───────────────────────────────────────────
+        function appendPin(digit) {
+            const el = document.getElementById('pin-input-r');
+            if (el.value.length < parseInt(el.getAttribute('maxlength'))) {
+                el.value += digit;
+            }
+        }
+        function clearPin() {
+            document.getElementById('pin-input-r').value = '';
+        }
+        function backspacePin() {
+            const el = document.getElementById('pin-input-r');
+            el.value = el.value.slice(0, -1);
+        }
+
         (function checkAccess() {
             // Force reset stored PIN to 5551 for migration if not already migrated
             if (localStorage.getItem('mmr_pin_migration_5551') !== 'done') {
@@ -542,18 +596,6 @@
                 document.getElementById('pin-overlay').style.display = 'none';
                 applyRoleView();
                 return;
-            }
-            const pinInput = document.getElementById('pin-input-r');
-            if (pinInput) {
-                pinInput.addEventListener('keydown', e => { if (e.key === 'Enter') checkPin(); });
-                pinInput.addEventListener('input', () => {
-                    const entered = pinInput.value;
-                    const stored = localStorage.getItem('mmr_pin') || '5551';
-                    if (entered === stored || entered === '0001' || entered === '9292') {
-                        checkPin();
-                    }
-                });
-                pinInput.focus();
             }
         })();
 
@@ -791,9 +833,18 @@
             document.getElementById('cfg-sun-prizes-25').disabled = isSundayFinished;
 
 
-            if (state.draw.min !== undefined) document.getElementById('cfg-min').value = state.draw.min;
-            if (state.draw.max !== undefined) document.getElementById('cfg-max').value = state.draw.max;
-            if (state.draw.excludes !== undefined) document.getElementById('cfg-excludes').value = (state.draw.excludes || []).join(',');
+            document.getElementById('cfg-thu-min').value = thu.min !== undefined ? thu.min : 0;
+            document.getElementById('cfg-thu-max').value = thu.max !== undefined ? thu.max : 5000;
+            document.getElementById('cfg-thu-excludes').value = (thu.excludes || []).join(',');
+            document.getElementById('cfg-thu-vouchers-count').value = thu.cfgVouchersCount !== undefined ? thu.cfgVouchersCount : 0;
+            document.getElementById('cfg-thu-vouchers-value').value = thu.cfgVouchersValue !== undefined ? thu.cfgVouchersValue : 0;
+            document.getElementById('cfg-thu-enabled').checked = !!thu.enabled;
+
+            document.getElementById('cfg-sun-min').value = sun.min !== undefined ? sun.min : 0;
+            document.getElementById('cfg-sun-max').value = sun.max !== undefined ? sun.max : 5000;
+            document.getElementById('cfg-sun-excludes').value = (sun.excludes || []).join(',');
+            document.getElementById('cfg-sun-vouchers-count').value = sun.cfgVouchersCount !== undefined ? sun.cfgVouchersCount : 0;
+            document.getElementById('cfg-sun-vouchers-value').value = sun.cfgVouchersValue !== undefined ? sun.cfgVouchersValue : 0;
             if (state.nextDrawTime !== undefined) document.getElementById('drawTime').value = state.nextDrawTime;
         }
 
@@ -1007,7 +1058,8 @@
 
             const min = evt.min !== undefined ? evt.min : (state.draw.min !== undefined ? state.draw.min : 0);
             const max = evt.max !== undefined ? evt.max : (state.draw.max !== undefined ? state.draw.max : 5000);
-            const excludeStr = document.getElementById('cfg-excludes').value;
+            const isSunday = state.draw.activeEvent === 'sunday';
+            const excludeStr = document.getElementById(isSunday ? 'cfg-sun-excludes' : 'cfg-thu-excludes').value;
             const excludes = excludeStr.split(',').map(n => parseInt(n.trim())).filter(n => !isNaN(n));
             
             // Available numbers
@@ -1126,7 +1178,8 @@
             const evt = state.draw[state.draw.activeEvent];
             const min = evt.min !== undefined ? evt.min : 0;
             const max = evt.max !== undefined ? evt.max : 5000;
-            const excludeStr = document.getElementById('cfg-excludes').value;
+            const isSunday = state.draw.activeEvent === 'sunday';
+            const excludeStr = document.getElementById(isSunday ? 'cfg-sun-excludes' : 'cfg-thu-excludes').value;
             const t100 = evt.cfgPrizes100 || 0;
             const t50 = evt.cfgPrizes50 || 0;
             const t25 = evt.cfgPrizes25 || 0;
@@ -1168,6 +1221,8 @@
                 const total = t100 + t50 + t25 + tVouchers;
                 const min = evt.min !== undefined ? evt.min : 0;
                 const max = evt.max !== undefined ? evt.max : 5000;
+                const isSunday = state.draw.activeEvent === 'sunday';
+                const excludeStr = document.getElementById(isSunday ? 'cfg-sun-excludes' : 'cfg-thu-excludes').value;
                 prct.innerHTML = `
                     <h1 style="color:black; margin-bottom: 0;">Monster Meat Raffle Report - ${state.draw.activeEvent.toUpperCase()}</h1>
                     <p style="color:#555; margin-top: 0;">Date: ${new Date().toLocaleDateString()}</p>
@@ -1175,7 +1230,7 @@
                     <h3>Draw Configuration</h3>
                     <ul>
                         <li><strong>Ticket Range:</strong> ${min} to ${max}</li>
-                        <li><strong>Excluded Numbers:</strong> ${document.getElementById('cfg-excludes').value || 'None'}</li>
+                        <li><strong>Excluded Numbers:</strong> ${excludeStr || 'None'}</li>
                         <li><strong>Total Prizes Initially:</strong> ${total}</li>
                         <li><strong>Prizes Remaining:</strong> ${evt.prizesLeft}</li>
                     </ul>
@@ -1196,370 +1251,164 @@
             }
         }
 
-        function printManualRecordSheet(drawState) {
-                        if (!drawState) {
-                drawState = state.draw[state.draw.activeEvent];
-            }
-            
-            const draw = drawState || { drawnNumbers: [], prizes100: 0, prizes50: 0, prizes25: 0, prizesLeft: 0 };
+        function getDrawStateData() {
+            let drawState = null;
+            try {
+                const saved = localStorage.getItem('mmr_state_v5');
+                if (saved) drawState = JSON.parse(saved).draw;
+            } catch(e) {}
+            return drawState || { drawnNumbers: [], cfgPrizes100: 0, cfgPrizes50: 0, cfgPrizes25: 0, prizes100: 0, prizes50: 0, prizes25: 0, prizesLeft: 0 };
+        }
+
+        function getFinancialsData() {
+            let fins = null;
+            try {
+                const saved = localStorage.getItem('mmr_state_v5');
+                if (saved) fins = JSON.parse(saved).financials;
+            } catch(e) {}
+            if (!fins) fins = { thursday: {cash:0, eftpos:0, singles:0, strips:0}, sunday: {cash:0, eftpos:0, singles:0} };
+            return fins;
+        }
+
+        function buildChecklistHTML() {
+            const draw = getDrawStateData();
             const drawn = draw.drawnNumbers || [];
-            
             const numbers100 = drawn.filter(d => (typeof d === 'object' ? d.prize : 0) === 100).map(d => typeof d === 'object' ? d.number : d).reverse();
             const numbers50 = drawn.filter(d => (typeof d === 'object' ? d.prize : 0) === 50).map(d => typeof d === 'object' ? d.number : d).reverse();
             const numbers25 = drawn.filter(d => (typeof d === 'object' ? d.prize : 0) === 25 || typeof d !== 'object').map(d => typeof d === 'object' ? d.number : d).reverse();
-            
-            const total100 = draw.cfgPrizes100 !== undefined ? draw.cfgPrizes100 : (document.getElementById('cfg-prizes-100') ? parseInt(document.getElementById('cfg-prizes-100').value) || 0 : 27);
-            const total50 = draw.cfgPrizes50 !== undefined ? draw.cfgPrizes50 : (document.getElementById('cfg-prizes-50') ? parseInt(document.getElementById('cfg-prizes-50').value) || 0 : 19);
-            const total25 = draw.cfgPrizes25 !== undefined ? draw.cfgPrizes25 : (document.getElementById('cfg-prizes-25') ? parseInt(document.getElementById('cfg-prizes-25').value) || 0 : 24);
-
+            const total100 = draw.cfgPrizes100 || 0;
+            const total50 = draw.cfgPrizes50 || 0;
+            const total25 = draw.cfgPrizes25 || 0;
             const rem100 = draw.prizes100 !== undefined ? draw.prizes100 : Math.max(0, total100 - numbers100.length);
             const rem50 = draw.prizes50 !== undefined ? draw.prizes50 : Math.max(0, total50 - numbers50.length);
             const rem25 = draw.prizes25 !== undefined ? draw.prizes25 : Math.max(0, total25 - numbers25.length);
-
-            let sessionHash = localStorage.getItem('mmr_session_hash');
-            if (!sessionHash) {
-                sessionHash = Math.random().toString(36).substring(2, 10) + '-' + Math.random().toString(36).substring(2, 6) + '-4451-2f5a4bfd8cad';
-                localStorage.setItem('mmr_session_hash', sessionHash);
-            }
+            let sessionHash = localStorage.getItem('mmr_session_hash') || (Math.random().toString(36).substring(2, 10));
             const timestamp = new Date().toLocaleString('en-NZ', { dateStyle: 'medium', timeStyle: 'short' });
-            const printedDate = new Date().toLocaleDateString('en-NZ', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-
-            const printWin = window.open('', '_blank');
             const renderBoxes = (total, numbers) => {
                 let html = '';
-                for (let i = 0; i < total; i++) {
-                    const num = numbers[i] !== undefined ? numbers[i] : '';
-                    html += `<div style="width: 48px; height: 48px; border: 2.5px solid #000; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 20px; background: #fff;">${num}</div>`;
-                }
+                for (let i = 0; i < total; i++) html += `<div style="width: 56px; height: 56px; border: 3px solid #000; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 24px; background: #fff; margin-bottom: 4px;">${numbers[i] !== undefined ? numbers[i] : ''}</div>`;
                 return html;
             };
+            return `
+                <div class="landscape print-page">
+                    <h1>Tonight's Meat Raffle Prize Checklist</h1>
+                    <div class="prize-row" style="background:#fef2f2;"><div>${total100} x $100<br>PACK</div><div class="boxes-container">${renderBoxes(total100, numbers100)}</div><div class="remaining-col"><div>${rem100}</div>REMAINING</div></div>
+                    <div class="prize-row" style="background:#eff6ff;"><div>${total50} x $50<br>PACK</div><div class="boxes-container">${renderBoxes(total50, numbers50)}</div><div class="remaining-col"><div>${rem50}</div>REMAINING</div></div>
+                    <div class="prize-row" style="background:#f0fdf4;"><div>${total25} x $25<br>PACK</div><div class="boxes-container">${renderBoxes(total25, numbers25)}</div><div class="remaining-col"><div>${rem25}</div>REMAINING</div></div>
+                    <div class="footer"><span>${sessionHash}</span><span>${timestamp}</span></div>
+                </div>
+            `;
+        }
 
-            printWin.document.write(`
-                <!DOCTYPE html>
-                <html>
-                <head>
-                    <title>Tonight's Meat Raffle Prize Checklist & Financials</title>
-                    <style>
-                        body {
-                            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-                            color: #000;
-                            margin: 0;
-                            padding: 20px;
-                            background: #fff;
-                            -webkit-print-color-adjust: exact;
-                            print-color-adjust: exact;
-                        }
-                        .print-container {
-                            max-width: 960px;
-                            margin: 0 auto;
-                            border: 3px solid #000;
-                            padding: 25px;
-                            box-sizing: border-box;
-                        }
-                        h1 {
-                            text-align: center;
-                            font-size: 30px;
-                            margin-top: 0;
-                            margin-bottom: 25px;
-                            text-transform: uppercase;
-                            letter-spacing: 1px;
-                            font-weight: 900;
-                        }
-                        .prize-row {
-                            border: 3px solid #000;
-                            margin-bottom: 20px;
-                            display: flex;
-                            align-items: center;
-                            padding: 15px;
-                            box-sizing: border-box;
-                            background: #fff;
-                        }
-                        .prize-label {
-                            width: 170px;
-                            font-size: 22px;
-                            font-weight: 900;
-                            color: #1d4ed8;
-                            line-height: 1.25;
-                            flex-shrink: 0;
-                        }
-                        .boxes-container {
-                            flex: 1;
-                            display: flex;
-                            flex-wrap: wrap;
-                            gap: 8px;
-                            padding: 0 20px;
-                            justify-content: flex-start;
-                            align-content: center;
-                        }
-                        .remaining-col {
-                            width: 140px;
-                            text-align: center;
-                            font-size: 15px;
-                            font-weight: 800;
-                            border-left: 3px dashed #000;
-                            padding-left: 15px;
-                            flex-shrink: 0;
-                            display: flex;
-                            flex-direction: column;
-                            align-items: center;
-                            justify-content: center;
-                            line-height: 1.2;
-                        }
-                        .remaining-value {
-                            font-size: 28px;
-                            font-weight: 900;
-                            border-bottom: 3px solid #000;
-                            display: inline-block;
-                            width: 60px;
-                            margin-bottom: 4px;
-                            text-align: center;
-                        }
-                        .footer {
-                            display: flex;
-                            justify-content: space-between;
-                            margin-top: 30px;
-                            font-size: 10px;
-                            color: #444;
-                            font-family: monospace;
-                        }
-                        .page-break {
-                            page-break-before: always;
-                            break-before: page;
-                            margin-top: 40px;
-                        }
-                        .form-grid {
-                            display: grid;
-                            grid-template-columns: repeat(2, 1fr);
-                            gap: 15px;
-                            margin-bottom: 20px;
-                        }
-                        .form-group {
-                            border: 2px solid #000;
-                            padding: 8px 12px;
-                            background: #fff;
-                        }
-                        .form-group label {
-                            display: block;
-                            font-size: 11px;
-                            font-weight: 800;
-                            text-transform: uppercase;
-                            margin-bottom: 5px;
-                            color: #000;
-                        }
-                        .form-group .input-placeholder {
-                            border-bottom: 1.5px solid #000;
-                            height: 20px;
-                            margin-top: 5px;
-                        }
-                        .financial-table {
-                            width: 100%;
-                            border-collapse: collapse;
-                            margin-bottom: 20px;
-                        }
-                        .financial-table th, .financial-table td {
-                            border: 2px solid #000;
-                            padding: 10px;
-                            text-align: left;
-                            font-size: 13px;
-                        }
-                        .financial-table th {
-                            background: #f3f4f6;
-                            font-weight: 800;
-                            text-transform: uppercase;
-                        }
-                        .text-right {
-                            text-align: right !important;
-                        }
-                        .bold {
-                            font-weight: 800;
-                        }
-                        @media print {
-                            body {
-                                padding: 0;
-                                margin: 0;
-                            }
-                            .print-container {
-                                border: 3px solid #000;
-                            }
-                            .page-break {
-                                margin-top: 0;
-                            }
-                        }
-                    </style>
-                </head>
-                <body>
-    <div id="global-status-bar" style="background: var(--primary); color: white; text-align: center; padding: 0.5rem; font-weight: bold; position: sticky; top: 0; z-index: 1000; display: none;"></div>
-                    <div class="print-container">
-                        <h1>Tonight's Meat Raffle Prize Checklist</h1>
-                        
-                        <!-- $100 PACK ROW -->
-                        <div class="prize-row">
-                            <div class="prize-label">${total100} x $100<br>PACK</div>
-                            <div class="boxes-container">
-                                ${renderBoxes(total100, numbers100)}
-                            </div>
-                            <div class="remaining-col">
-                                <div><span class="remaining-value">${rem100}</span></div>
-                                <div style="font-size: 12px; margin-top: 3px;">/ ${total100}<br>REMAINING</div>
-                            </div>
-                        </div>
+        function buildBlankFinancialsHTML() {
+            const printedDate = new Date().toLocaleDateString('en-NZ', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+            return `
+                <div class="print-page">
+                    <h1>Monster Meat Raffle — Empty Financial Sheet</h1>
+                    <div class="form-grid"><div style="grid-column:span 2;"><strong>Raffle Date:</strong> ${printedDate}</div></div>
+                    <table class="financial-table"><thead><tr><th>Sales Description</th><th>Recorded Value</th><th>Notes</th></tr></thead><tbody>
+                        <tr><td class="bold">Start Ticket Number</td><td><div class="input-placeholder"></div></td><td></td></tr>
+                        <tr><td class="bold">End Ticket Number</td><td><div class="input-placeholder"></div></td><td></td></tr>
+                        <tr><td class="bold">Total Tickets Sold</td><td><div class="input-placeholder"></div></td><td></td></tr>
+                        <tr><td class="bold">Expected Revenue</td><td><div class="input-placeholder"></div></td><td></td></tr>
+                        <tr><td class="bold">EFTPOS Total</td><td><div class="input-placeholder"></div></td><td></td></tr>
+                        <tr><td class="bold">Cash Total</td><td><div class="input-placeholder"></div></td><td></td></tr>
+                        <tr><td class="bold">Actual Revenue</td><td><div class="input-placeholder"></div></td><td></td></tr>
+                        <tr><td class="bold">Variance</td><td><div class="input-placeholder"></div></td><td></td></tr>
+                    </tbody></table>
+                </div>
+            `;
+        }
 
-                        <!-- $50 PACK ROW -->
-                        <div class="prize-row">
-                            <div class="prize-label">${total50} x $50<br>PACK</div>
-                            <div class="boxes-container">
-                                ${renderBoxes(total50, numbers50)}
-                            </div>
-                            <div class="remaining-col">
-                                <div><span class="remaining-value">${rem50}</span></div>
-                                <div style="font-size: 12px; margin-top: 3px;">/ ${total50}<br>REMAINING</div>
-                            </div>
-                        </div>
+        function buildFinancialSheetHTML() {
+            const fins = getFinancialsData();
+            const thuCash = fins.thursday?.cash || 0;
+            const thuEftpos = fins.thursday?.eftpos || 0;
+            const thuTotal = thuCash + thuEftpos;
+            const sunCash = fins.sunday?.cash || 0;
+            const sunEftpos = fins.sunday?.eftpos || 0;
+            const sunTotal = sunCash + sunEftpos;
+            const grandTotal = thuTotal + sunTotal;
+            const printedDate = new Date().toLocaleDateString('en-NZ', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+            return `
+                <div class="print-page">
+                    <h1>Weekly Financial Summary</h1>
+                    <div class="form-grid"><div style="grid-column:span 2;"><strong>Week of:</strong> ${printedDate}</div></div>
+                    <table class="financial-table">
+                        <thead><tr><th>Day</th><th>Cash</th><th>EFTPOS</th><th>Total</th></tr></thead>
+                        <tbody>
+                            <tr><td>Thursday</td><td>$${thuCash.toFixed(2)}</td><td>$${thuEftpos.toFixed(2)}</td><td class="bold">$${thuTotal.toFixed(2)}</td></tr>
+                            <tr><td>Sunday</td><td>$${sunCash.toFixed(2)}</td><td>$${sunEftpos.toFixed(2)}</td><td class="bold">$${sunTotal.toFixed(2)}</td></tr>
+                            <tr><td colspan="3" class="text-right bold">GRAND TOTAL</td><td class="bold">$${grandTotal.toFixed(2)}</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
 
-                        <!-- $25 PACK ROW -->
-                        <div class="prize-row">
-                            <div class="prize-label">${total25} x $25<br>PACK</div>
-                            <div class="boxes-container">
-                                ${renderBoxes(total25, numbers25)}
-                            </div>
-                            <div class="remaining-col">
-                                <div><span class="remaining-value">${rem25}</span></div>
-                                <div style="font-size: 12px; margin-top: 3px;">/ ${total25}<br>REMAINING</div>
-                            </div>
-                        </div>
+        function buildDrawResultsHTML() {
+            const draw = getDrawStateData();
+            const drawn = draw.drawnNumbers || [];
+            let rows = drawn.map((d, i) => {
+                const num = typeof d === 'object' ? d.number : d;
+                const p = typeof d === 'object' ? d.prize : 25;
+                return `<tr><td>${i+1}</td><td>${num}</td><td>$${p} Pack</td></tr>`;
+            }).join('');
+            if (rows === '') rows = '<tr><td colspan="3">No results yet.</td></tr>';
+            return `
+                <div class="print-page">
+                    <h1>Draw Results</h1>
+                    <table class="financial-table">
+                        <thead><tr><th>Draw #</th><th>Ticket Number</th><th>Prize</th></tr></thead>
+                        <tbody>${rows}</tbody>
+                    </table>
+                </div>
+            `;
+        }
 
-                        <div class="footer">
-                            <span>Derived from values in ${sessionHash}</span>
-                            <span>Printed: ${timestamp}</span>
-                        </div>
-                    </div>
+        function printBlank() { printHTML(buildBlankFinancialsHTML()); }
+        function printChecklist() { printHTML(buildChecklistHTML()); }
+        function printFinancialSheet() { printHTML(buildFinancialSheetHTML()); }
+        function printAllPages() {
+            printHTML(
+                buildChecklistHTML() + 
+                '<div style="page-break-before: always;"></div>' + 
+                buildFinancialSheetHTML() + 
+                '<div style="page-break-before: always;"></div>' + 
+                buildDrawResultsHTML()
+            );
+        }
 
-                    <div class="print-container page-break">
-                        <h1>Monster Meat Raffle — Financial & Host Summary</h1>
-                        
-                        <div class="form-grid">
-                            <div class="form-group" style="grid-column: span 2;">
-                                <label>Raffle Date</label>
-                                <div style="font-size: 15px; font-weight: bold; display: flex; justify-content: space-between;">
-                                    <span>${printedDate}</span>
-                                    <span style="color: #666; font-size: 11px; font-weight: normal;">Alternative Date: ___________________________</span>
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label>Ticket Seller (Name)</label>
-                                <div class="input-placeholder"></div>
-                            </div>
-                            <div class="form-group">
-                                <label>Draw Host 1 (Name)</label>
-                                <div class="input-placeholder"></div>
-                            </div>
-                            <div class="form-group" style="grid-column: span 2;">
-                                <label>Draw Host 2 (Name)</label>
-                                <div class="input-placeholder"></div>
-                            </div>
-                        </div>
-
-                        <h2 style="font-size: 18px; font-weight: 900; text-transform: uppercase; margin: 20px 0 10px 0; border-bottom: 2px solid #000; padding-bottom: 4px;">Raffle Sales & Reconciliation</h2>
-                        <table class="financial-table">
-                            <thead>
-                                <tr>
-                                    <th>Sales Description</th>
-                                    <th style="width: 250px;">Recorded Value</th>
-                                    <th>Notes / Reconciliation</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td class="bold">Start Ticket Number</td>
-                                    <td><div class="input-placeholder" style="margin: 0;"></div></td>
-                                    <td style="font-size: 11px; color: #555;">First ticket number sold</td>
-                                </tr>
-                                <tr>
-                                    <td class="bold">End Ticket Number</td>
-                                    <td><div class="input-placeholder" style="margin: 0;"></div></td>
-                                    <td style="font-size: 11px; color: #555;">Last ticket number sold</td>
-                                </tr>
-                                <tr>
-                                    <td class="bold">Total Tickets Sold</td>
-                                    <td><div class="input-placeholder" style="margin: 0;"></div></td>
-                                    <td style="font-size: 11px; color: #555;">(End - Start) + 1</td>
-                                </tr>
-                                <tr>
-                                    <td class="bold">Expected Sales Revenue</td>
-                                    <td><div class="input-placeholder" style="margin: 0;"></div></td>
-                                    <td style="font-size: 11px; color: #555;">Total Tickets Sold x Ticket Price</td>
-                                </tr>
-                                <tr>
-                                    <td class="bold">EFTPOS Total</td>
-                                    <td><div class="input-placeholder" style="margin: 0;"></div></td>
-                                    <td style="font-size: 11px; color: #555;">Sum of EFTPOS receipts</td>
-                                </tr>
-                                <tr>
-                                    <td class="bold">Cash Total</td>
-                                    <td><div class="input-placeholder" style="margin: 0;"></div></td>
-                                    <td style="font-size: 11px; color: #555;">Total cash collected in drawer</td>
-                                </tr>
-                                <tr>
-                                    <td class="bold">Actual Revenue Collected</td>
-                                    <td><div class="input-placeholder" style="margin: 0;"></div></td>
-                                    <td style="font-size: 11px; color: #555;">EFTPOS Total + Cash Total</td>
-                                </tr>
-                                <tr>
-                                    <td class="bold">Variance (Over / Short)</td>
-                                    <td><div class="input-placeholder" style="margin: 0;"></div></td>
-                                    <td style="font-size: 11px; color: #555;">Actual Revenue - Expected Revenue</td>
-                                </tr>
-                            </tbody>
-                        </table>
-
-                        <h2 style="font-size: 18px; font-weight: 900; text-transform: uppercase; margin: 20px 0 10px 0; border-bottom: 2px solid #000; padding-bottom: 4px;">Configured Prize Package Summary</h2>
-                        <table class="financial-table">
-                            <thead>
-                                <tr>
-                                    <th>Prize Type / Tier</th>
-                                    <th class="text-right">Quantity</th>
-                                    <th class="text-right">Unit Value</th>
-                                    <th class="text-right">Total Subtotal</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>$100 Assorted Meat Trays</td>
-                                    <td class="text-right bold">${total100}</td>
-                                    <td class="text-right">$100.00</td>
-                                    <td class="text-right bold">$${(total100 * 100).toLocaleString('en-NZ', { minimumFractionDigits: 2 })}</td>
-                                </tr>
-                                <tr>
-                                    <td>$50 Assorted Meat Trays</td>
-                                    <td class="text-right bold">${total50}</td>
-                                    <td class="text-right">$50.00</td>
-                                    <td class="text-right bold">$${(total50 * 50).toLocaleString('en-NZ', { minimumFractionDigits: 2 })}</td>
-                                </tr>
-                                <tr>
-                                    <td>$25 Assorted Meat Trays</td>
-                                    <td class="text-right bold">${total25}</td>
-                                    <td class="text-right">$25.00</td>
-                                    <td class="text-right bold">$${(total25 * 25).toLocaleString('en-NZ', { minimumFractionDigits: 2 })}</td>
-                                </tr>
-                                <tr style="background: #f9fafb;">
-                                    <td class="bold">TOTAL TONIGHT</td>
-                                    <td class="text-right bold" style="border-top: 3px double #000;">${total100 + total50 + total25} Trays</td>
-                                    <td class="text-right">---</td>
-                                    <td class="text-right bold" style="border-top: 3px double #000; font-size: 15px; color: #1d4ed8;">$${((total100 * 100) + (total50 * 50) + (total25 * 25)).toLocaleString('en-NZ', { minimumFractionDigits: 2 })}</td>
-                                </tr>
-                            </tbody>
-                        </table>
-
-                        <div class="footer">
-                            <span>Derived from values in ${sessionHash}</span>
-                            <span>Printed: ${timestamp}</span>
-                        </div>
-                    </div>
-
-                    <script>
-                        window.onload = function() {
-                            setTimeout(() => {
-                                window.print();
+        function printHTML(content) {
+            const win = window.open('', '_blank');
+            win.document.write(`
+                <html><head>
+                <style>
+                    @page { size: A4 portrait; margin: 1cm; } 
+                    @media print { 
+                        body { -webkit-print-color-adjust: exact; margin: 0; padding: 0; } 
+                        .landscape { @page { size: A4 landscape; margin: 1cm; } } 
+                        .print-page { padding: 20px; font-family: sans-serif; }
+                    }
+                    body{font-family:sans-serif; margin:20px; print-color-adjust:exact;}
+                    .prize-row{border:3px solid #000; margin-bottom:15px; display:flex; padding:10px;}
+                    .prize-label{width:170px; font-weight:900;}
+                    .boxes-container{flex:1; display:flex; flex-wrap:wrap; gap:8px;}
+                    .remaining-col{width:140px; text-align:center; border-left:3px dashed #000; padding-left:15px;}
+                    .form-grid{display:grid; grid-template-columns:1fr 1fr; gap:15px; margin-bottom: 20px;}
+                    .input-placeholder{border-bottom:2px solid #000; height:20px;}
+                    .financial-table{width:100%; border-collapse:collapse;}
+                    th,td{border:2px solid #000; padding:10px; text-align:left;}
+                    .text-right{text-align:right;}
+                    .bold{font-weight:bold;}
+                    .footer{margin-top:20px; font-family:monospace; font-size:10px; display:flex; justify-content:space-between;}
+                </style>
+                </head><body>` + content + `
+                <script>window.onload=()=>{setTimeout(()=>{window.print();window.close();}, 500);}<\\/script>
+                </body></html>
+            `);
+            win.document.close();
+        }                            window.print();
                                 window.close();
                             }, 500);
                         };
@@ -1589,6 +1438,16 @@
         document.addEventListener('DOMContentLoaded', () => {
             init();
             generateQRCodes();
+            
+            document.addEventListener('click', (e) => {
+                const btn = e.target.closest('button');
+                if (btn && !btn.closest('#pin-modal')) {
+                    const text = btn.innerText.trim();
+                    if (text && typeof showGlobalStatus === 'function') {
+                        showGlobalStatus(text + ' Clicked', 'blue');
+                    }
+                }
+            });
         });
     </script>
 </body>
