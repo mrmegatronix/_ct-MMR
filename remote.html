@@ -168,45 +168,79 @@
         input:checked + .slider { background-color: var(--primary); }
         input:checked + .slider:before { transform: translateX(22px); }
 
-        /* Theatrical category draw grid for phones */
-        .draw-grid-row {
+        /* Mobile-Optimized Draw Control Panel */
+        .draw-control-container {
             display: flex;
             flex-direction: column;
-            gap: 1.25rem;
-            margin-bottom: 1.5rem;
+            gap: 0.5rem;
         }
-
-        .draw-action-card {
+        .draw-control-row {
+            background: rgba(15, 23, 42, 0.6);
             border: 1.5px solid var(--border);
-            border-radius: 1rem;
-            padding: 1rem;
-            background: rgba(15, 23, 42, 0.4);
+            border-radius: 0.75rem;
+            padding: 0.45rem 0.65rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+        }
+        .draw-control-info {
             display: flex;
             flex-direction: column;
-            gap: 0.75rem;
+            min-width: 85px;
         }
-
-        .draw-action-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        .draw-control-title {
+            font-size: 0.85rem;
             font-weight: 800;
+            line-height: 1.1;
         }
-
-        .draw-action-buttons {
-            display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: 8px;
+        .draw-control-subtitle {
+            font-size: 0.75rem;
+            color: #94a3b8;
+            font-weight: 600;
+        }
+        .draw-control-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            flex: 1;
+            justify-content: flex-end;
+        }
+        .btn-draw-main {
+            flex: 1;
+            max-width: 200px;
+            min-height: 40px !important;
+            height: 40px !important;
+            padding: 0.35rem 0.6rem !important;
+            font-size: 0.85rem !important;
+            font-weight: 800 !important;
+            border-radius: 0.5rem !important;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            white-space: nowrap;
+        }
+        .btn-redraw-icon {
+            width: 40px !important;
+            height: 40px !important;
+            min-height: 40px !important;
+            min-width: 40px !important;
+            padding: 0 !important;
+            font-size: 1.1rem !important;
+            border-radius: 0.5rem !important;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
         }
 
         @media (max-width: 768px) {
-            body { padding: 0.85rem; }
-            .header { flex-direction: column; align-items: stretch; gap: 0.75rem; }
-            .header h1 { text-align: center; }
-            .header > div { flex-direction: column; width: 100%; gap: 0.5rem; }
-            .voice-toggle-container { width: 100%; justify-content: space-between; }
-            .btn { width: 100%; }
-            .btn-group { grid-template-columns: 1fr; gap: 0.5rem; }
+            body { padding: 0.5rem; }
+            .header { flex-direction: row; justify-content: space-between; align-items: center; gap: 0.5rem; margin-bottom: 1rem; }
+            .header h1 { font-size: 1.25rem; text-align: left; }
+            .card { padding: 0.75rem; border-radius: 0.85rem; }
+            .btn-group { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.35rem; }
+            .btn-group .btn { width: 100%; min-height: 40px; padding: 0.4rem 0.2rem; font-size: 0.8rem; }
         }
 
         @media print {
@@ -330,61 +364,97 @@
 
     <div class="grid">
         <!-- Live Draw Board (Top Card) -->
-        <div class="card">
-            <h2>Live Draw Panel</h2>
-            <div id="draw-rolling-label" style="display: none; text-align: center; font-size: 1.2rem; font-weight: bold; margin-bottom: 1.25rem; color: #f59e0b; animation: pulse 1s infinite;">🎰 ROLLING FOR WINNER...</div>
+        <div class="card" style="padding: 0.85rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                <h2 style="margin: 0; border: none; padding: 0; font-size: 1.1rem;">🎰 Live Draw Controls</h2>
+                <button type="button" class="btn" onclick="triggerConfetti()" style="background-color: #eab308; border-color: #ca8a04; color: black; min-height: 36px; height: 36px; padding: 0 0.6rem; font-size: 0.8rem;">🎉 Confetti</button>
+            </div>
 
-            <div class="draw-grid-row">
+            <div id="draw-rolling-label" style="display: none; text-align: center; font-size: 1.1rem; font-weight: bold; margin-bottom: 0.75rem; color: #f59e0b; animation: pulse 1s infinite;">🎰 ROLLING FOR WINNER...</div>
+
+            <div class="draw-control-container">
                 <!-- $100 PACK -->
-                <div class="draw-action-card" style="border-color: var(--accent-100);">
-                    <div class="draw-action-header">
-                        <span style="color: var(--accent-100);">$100 Packs</span>
-                        <span style="font-size: 0.9rem; color: var(--text);"><span id="lbl-left-100">0</span> Left</span>
+                <div class="draw-control-row" style="border-left: 4px solid #f59e0b;">
+                    <div class="draw-control-info">
+                        <div class="draw-control-title" style="color: #f59e0b;">🥩 $100 Packs</div>
+                        <div class="draw-control-subtitle"><span id="lbl-left-100">0</span> Left</div>
                     </div>
-                    <div class="draw-action-buttons">
-                        <button class="btn draw-btn" onclick="runRedraw(100)" id="btn-redraw-100" style="background-color: #334155; border-color: #ef4444; color: #ef4444; font-size: 0.85rem;">🔄 REDRAW</button>
-                        <button class="btn draw-btn" onclick="runDraw(100)" id="btn-draw-100" style="background-color: #ef4444; border-color: #dc2626; color: white;">🎰 DRAW PRIZE</button>
+                    <div class="draw-control-actions">
+                        <button class="btn draw-btn btn-draw-main" onclick="runDraw(100)" id="btn-draw-100" style="background-color: #f59e0b; border-color: #d97706; color: black;">
+                            🎰 DRAW $100
+                        </button>
+                        <button class="btn draw-btn btn-redraw-icon" onclick="runRedraw(100)" id="btn-redraw-100" title="Redraw $100" style="background-color: #1e293b; border-color: #ef4444; color: #ef4444;">
+                            🔄
+                        </button>
                     </div>
                 </div>
 
                 <!-- $50 PACK -->
-                <div class="draw-action-card" style="border-color: var(--accent-50);">
-                    <div class="draw-action-header">
-                        <span style="color: var(--accent-50);">$50 Packs</span>
-                        <span style="font-size: 0.9rem; color: var(--text);"><span id="lbl-left-50">0</span> Left</span>
+                <div class="draw-control-row" style="border-left: 4px solid #3b82f6;">
+                    <div class="draw-control-info">
+                        <div class="draw-control-title" style="color: #60a5fa;">🍗 $50 Packs</div>
+                        <div class="draw-control-subtitle"><span id="lbl-left-50">0</span> Left</div>
                     </div>
-                    <div class="draw-action-buttons">
-                        <button class="btn draw-btn" onclick="runRedraw(50)" id="btn-redraw-50" style="background-color: #334155; border-color: #ef4444; color: #ef4444; font-size: 0.85rem;">🔄 REDRAW</button>
-                        <button class="btn draw-btn" onclick="runDraw(50)" id="btn-draw-50" style="background-color: var(--accent-50); border-color: var(--accent-50); color: white;">🎰 DRAW PRIZE</button>
+                    <div class="draw-control-actions">
+                        <button class="btn draw-btn btn-draw-main" onclick="runDraw(50)" id="btn-draw-50" style="background-color: #2563eb; border-color: #1d4ed8; color: white;">
+                            🎰 DRAW $50
+                        </button>
+                        <button class="btn draw-btn btn-redraw-icon" onclick="runRedraw(50)" id="btn-redraw-50" title="Redraw $50" style="background-color: #1e293b; border-color: #ef4444; color: #ef4444;">
+                            🔄
+                        </button>
                     </div>
                 </div>
 
                 <!-- $25 PACK -->
-                <div class="draw-action-card" style="border-color: var(--accent-25);">
-                    <div class="draw-action-header">
-                        <span style="color: var(--accent-25);">$25 Packs</span>
-                        <span style="font-size: 0.9rem; color: var(--text);"><span id="lbl-left-25">0</span> Left</span>
+                <div class="draw-control-row" style="border-left: 4px solid #10b981;">
+                    <div class="draw-control-info">
+                        <div class="draw-control-title" style="color: #34d399;">🥓 $25 Packs</div>
+                        <div class="draw-control-subtitle"><span id="lbl-left-25">0</span> Left</div>
                     </div>
-                    <div class="draw-action-buttons">
-                        <button class="btn draw-btn" onclick="runRedraw(25)" id="btn-redraw-25" style="background-color: #334155; border-color: #ef4444; color: #ef4444; font-size: 0.85rem;">🔄 REDRAW</button>
-                        <button class="btn draw-btn" onclick="runDraw(25)" id="btn-draw-25" style="background-color: var(--accent-25); border-color: var(--accent-25); color: white;">🎰 DRAW PRIZE</button>
+                    <div class="draw-control-actions">
+                        <button class="btn draw-btn btn-draw-main" onclick="runDraw(25)" id="btn-draw-25" style="background-color: #10b981; border-color: #059669; color: white;">
+                            🎰 DRAW $25
+                        </button>
+                        <button class="btn draw-btn btn-redraw-icon" onclick="runRedraw(25)" id="btn-redraw-25" title="Redraw $25" style="background-color: #1e293b; border-color: #ef4444; color: #ef4444;">
+                            🔄
+                        </button>
+                    </div>
+                </div>
+
+                <!-- BONUS PRIZE -->
+                <div class="draw-control-row" style="border-left: 4px solid #6366f1;">
+                    <div class="draw-control-info">
+                        <div class="draw-control-title" style="color: #a5b4fc;">🎁 Bonus</div>
+                        <div class="draw-control-subtitle">Special Prize</div>
+                    </div>
+                    <div class="draw-control-actions">
+                        <button class="btn draw-btn btn-draw-main" onclick="runDraw('bonus')" style="background-color: #6366f1; border-color: #4f46e5; color: white;">
+                            🎁 DRAW BONUS
+                        </button>
+                        <button class="btn draw-btn btn-redraw-icon" onclick="runRedraw('bonus')" title="Redraw Bonus" style="background-color: #1e293b; border-color: #ef4444; color: #ef4444;">
+                            🔄
+                        </button>
+                    </div>
+                </div>
+
+                <!-- VOUCHER -->
+                <div class="draw-control-row" style="border-left: 4px solid #8b5cf6;">
+                    <div class="draw-control-info">
+                        <div class="draw-control-title" style="color: #c084fc;">🎟️ Voucher</div>
+                        <div class="draw-control-subtitle">Club Voucher</div>
+                    </div>
+                    <div class="draw-control-actions">
+                        <button class="btn draw-btn btn-draw-main" onclick="runDraw('voucher')" style="background-color: #8b5cf6; border-color: #7c3aed; color: white;">
+                            🎟️ DRAW VOUCHER
+                        </button>
+                        <button class="btn draw-btn btn-redraw-icon" onclick="runRedraw('voucher')" title="Redraw Voucher" style="background-color: #1e293b; border-color: #8b5cf6; color: #8b5cf6;">
+                            🔄
+                        </button>
                     </div>
                 </div>
             </div>
 
-            <div style="display: flex; flex-direction: column; gap: 0.8rem; border-top: 1.5px solid var(--border); padding-top: 1.25rem;">
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                    <button class="btn draw-btn" onclick="runRedraw('bonus')" style="background-color: #334155; border-color: #ef4444; color: #ef4444; font-size: 0.85rem;">🔄 REDRAW BONUS</button>
-                    <button class="btn btn-primary draw-btn" onclick="runDraw('bonus')" style="background-color: #6366f1; border-color: #4f46e5; color: white;">🎁 DRAW BONUS</button>
-                </div>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                    <button class="btn draw-btn" onclick="runRedraw('voucher')" style="background-color: #334155; border-color: #8b5cf6; color: #8b5cf6; font-size: 0.85rem;">🔄 REDRAW VOUCHER</button>
-                    <button class="btn btn-primary draw-btn" onclick="runDraw('voucher')" style="background-color: #8b5cf6; border-color: #7c3aed; color: white;">🎟️ DRAW VOUCHER</button>
-                </div>
-                <button class="btn" onclick="triggerConfetti()" style="background-color: #eab308; border-color: #ca8a04; color: black;">🎉 Confetti</button>
-            </div>
-            
-            <div class="status" id="status-display">Updated Successfully</div>
+            <div class="status" id="status-display" style="margin-top: 0.5rem;">Updated Successfully</div>
         </div>
 
         <!-- Display Controls (Under Live Draw Panel) -->
