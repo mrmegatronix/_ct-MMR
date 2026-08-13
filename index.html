@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://*.google.com https://*.googleusercontent.com https://*.firebaseio.com;">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https:; media-src 'self' data: blob:; connect-src 'self' https://*.google.com https://*.googleusercontent.com https://*.firebaseio.com https://api.qrserver.com;">
     <title>Monster Meat Raffle - Display</title>
     <script>
         document.write('<script src="config.js?v=' + Date.now() + '"><\/script>');
@@ -198,7 +198,7 @@
 
         /* Avatar styling */
         .avatar-container {
-            margin-top: 12rem;
+            margin-top: 2rem;
             position: relative;
             z-index: 5;
             display: flex;
@@ -1003,6 +1003,12 @@
         let congratsStartTime = null;
         let currentSlideIdx = 0;
         let isPaused = false;
+        function getActiveDrawData(drawState) {
+            if (!drawState) return {};
+            const evtName = drawState.activeEvent || 'thursday';
+            return drawState[evtName] || drawState.thursday || drawState;
+        }
+
         let state = {
             activeView: 'slides',
             nextDrawTime: getNextThursday7PM(),
@@ -1010,10 +1016,21 @@
                 { type: "countdown", title: "Time Until Draw", duration: 30000 }
             ],
             draw: {
+                activeEvent: 'thursday',
+                thursday: {
+                    cfgPrizes100: 20,
+                    cfgPrizes50: 12,
+                    cfgPrizes25: 16,
+                    prizes100: 20,
+                    prizes50: 12,
+                    prizes25: 16,
+                    drawnNumbers: [],
+                    prizesLeft: 48
+                },
                 isRolling: false,
                 currentNumber: '---',
                 drawnNumbers: [],
-                prizesLeft: (window.MMR_CONFIG && window.MMR_CONFIG.DEFAULT_PRIZE_COUNT) || 62
+                prizesLeft: 48
             }
         };
 
@@ -1062,12 +1079,12 @@
         };
 
         function handleSlideCmd(cmd) {
-            if (cmd === 'next') nextSlide();
-            if (cmd === 'prev') prevSlide();
-            if (cmd === 'toggle') toggleSlidePlay();
+            if (cmd === 'next') nextSlide(true);
+            if (cmd === 'prev') prevSlide(true);
+            if (cmd === 'toggle') toggleSlidePlay(true);
         }
 
-        function nextSlide() {
+        function nextSlide(fromRemote) {
             const slides = document.querySelectorAll('.slide');
             if (slides.length === 0) return;
             slides[currentSlideIdx].classList.remove('active');
@@ -1076,9 +1093,13 @@
             playActiveCarousel();
             const nextDur = parseInt(slides[currentSlideIdx].getAttribute('data-duration')) || 30000;
             startSlideTimer(nextDur);
+            if (!fromRemote) {
+                bc.postMessage({ type: 'SLIDE_CMD', payload: { cmd: 'next' } });
+                writeFirebase({ slideCmd: { cmd: 'next', ts: Date.now() } });
+            }
         }
 
-        function prevSlide() {
+        function prevSlide(fromRemote) {
             const slides = document.querySelectorAll('.slide');
             if (slides.length === 0) return;
             slides[currentSlideIdx].classList.remove('active');
@@ -1087,9 +1108,13 @@
             playActiveCarousel();
             const nextDur = parseInt(slides[currentSlideIdx].getAttribute('data-duration')) || 30000;
             startSlideTimer(nextDur);
+            if (!fromRemote) {
+                bc.postMessage({ type: 'SLIDE_CMD', payload: { cmd: 'prev' } });
+                writeFirebase({ slideCmd: { cmd: 'prev', ts: Date.now() } });
+            }
         }
 
-        function toggleSlidePlay() {
+        function toggleSlidePlay(fromRemote) {
             isPaused = !isPaused;
             const btn = document.getElementById('play-pause-btn');
             if (btn) {
@@ -1099,6 +1124,10 @@
             if (slides.length === 0) return;
             const nextDur = parseInt(slides[currentSlideIdx].getAttribute('data-duration')) || 30000;
             startSlideTimer(nextDur);
+            if (!fromRemote) {
+                bc.postMessage({ type: 'SLIDE_CMD', payload: { cmd: 'toggle' } });
+                writeFirebase({ slideCmd: { cmd: 'toggle', ts: Date.now() } });
+            }
         }
 
         let winnersInterval = null;
@@ -1145,10 +1174,10 @@
             state = { ...state, ...newState };
 
             // Check total configured prizes
-            const activeEvtData = (state.draw && state.draw[state.draw.activeEvent]) || {};
-            const cfgPrizes100 = activeEvtData.cfgPrizes100 !== undefined ? activeEvtData.cfgPrizes100 : 0;
-            const cfgPrizes50 = activeEvtData.cfgPrizes50 !== undefined ? activeEvtData.cfgPrizes50 : 0;
-            const cfgPrizes25 = activeEvtData.cfgPrizes25 !== undefined ? activeEvtData.cfgPrizes25 : 0;
+            const activeEvtData = getActiveDrawData(state.draw);
+            const cfgPrizes100 = activeEvtData.cfgPrizes100 !== undefined ? activeEvtData.cfgPrizes100 : (activeEvtData.prizes100 ?? 12);
+            const cfgPrizes50 = activeEvtData.cfgPrizes50 !== undefined ? activeEvtData.cfgPrizes50 : (activeEvtData.prizes50 ?? 20);
+            const cfgPrizes25 = activeEvtData.cfgPrizes25 !== undefined ? activeEvtData.cfgPrizes25 : (activeEvtData.prizes25 ?? 30);
             const hasPrizes = (cfgPrizes100 + cfgPrizes50 + cfgPrizes25) > 0;
 
             // Intercept and auto-correct activeView if outside congrats window (only when prizes > 0)
@@ -1206,9 +1235,9 @@
 
             // Slides rendering (only when data or activeView changes to optimize timer performance)
             const currentSlidesJson = JSON.stringify(state.slides || []) + '_' + JSON.stringify({
-                t100: (state.draw[state.draw.activeEvent]||{}).cfgPrizes100 || 0,
-                t50: (state.draw[state.draw.activeEvent]||{}).cfgPrizes50 || 0,
-                t25: (state.draw[state.draw.activeEvent]||{}).cfgPrizes25 || 0
+                t100: cfgPrizes100,
+                t50: cfgPrizes50,
+                t25: cfgPrizes25
             });
             if (state.activeView === 'slides' && (state.activeView !== lastActiveView || currentSlidesJson !== lastRenderedSlidesJson)) {
                 renderSlides(state.slides);
@@ -1511,9 +1540,10 @@
             const disabledList = state.disabledSlides || [];
             const visibleSlides = slidesData.filter(s => !disabledList.includes(s.title));
             
-            const t100 = (state.draw[state.draw.activeEvent]||{}).cfgPrizes100 !== undefined ? (state.draw[state.draw.activeEvent]||{}).cfgPrizes100 : 0;
-            const t50 = (state.draw[state.draw.activeEvent]||{}).cfgPrizes50 !== undefined ? (state.draw[state.draw.activeEvent]||{}).cfgPrizes50 : 0;
-            const t25 = (state.draw[state.draw.activeEvent]||{}).cfgPrizes25 !== undefined ? (state.draw[state.draw.activeEvent]||{}).cfgPrizes25 : 0;
+            const activeEvtData = getActiveDrawData(state.draw);
+            const t100 = Number(activeEvtData.cfgPrizes100 ?? activeEvtData.prizes100 ?? 12);
+            const t50 = Number(activeEvtData.cfgPrizes50 ?? activeEvtData.prizes50 ?? 20);
+            const t25 = Number(activeEvtData.cfgPrizes25 ?? activeEvtData.prizes25 ?? 30);
             const totalPrizes = t100 + t50 + t25;
             const totalPool = (t100 * 100) + (t50 * 50) + (t25 * 25);
             
@@ -1701,6 +1731,7 @@
             progressBar.style.width = '0%';
             
             progressInterval = setInterval(() => {
+                if (isPaused) return;
                 let elapsed = Date.now() - start;
                 let percent = (elapsed / duration) * 100;
                 progressBar.style.width = Math.min(percent, 100) + '%';
@@ -1812,7 +1843,7 @@
                         triggerConfetti();
                         
                         const cfg = window.MMR_CONFIG;
-                        const voiceOn = localStorage.getItem('mmr_voice_on') !== 'false';
+                        const voiceOn = localStorage.getItem('mmr_voice_on') === 'true';
                         if ('speechSynthesis' in window && voiceOn) {
                             window.speechSynthesis.cancel();
                             let label = "Ticket number ";
@@ -1823,7 +1854,7 @@
                             msg.volume = 1;
                             msg.rate = (cfg && cfg.VOICE_RATE) || 0.9;
                             msg.pitch = (cfg && cfg.VOICE_PITCH) || 0.8;
-                            setTimeout(() => window.speechSynthesis.speak(msg), 150);
+                            setTimeout(() => window.speechSynthesis.speak(msg), 600);
                         }
                     }
                 }, delay);
@@ -2010,6 +2041,10 @@
             let idxOverlay = header.indexOf('overlayimage');
             if (idxOverlay === -1) idxOverlay = header.indexOf('overlayimg');
             
+            let idxAvatar = header.indexOf('avatarimage');
+            if (idxAvatar === -1) idxAvatar = header.indexOf('avatar');
+            if (idxAvatar === -1) idxAvatar = header.indexOf('avatarimg');
+
             const idxBubble = header.indexOf('bubbletext');
             const idxWinnerPhotos = header.indexOf('winnerphotos');
 
@@ -2020,10 +2055,11 @@
                 const durationVal = idxDuration !== -1 ? parseInt(clean[idxDuration]) : 30000;
                 const bgImage = idxBg !== -1 ? clean[idxBg] : '';
                 const overlayImage = idxOverlay !== -1 ? clean[idxOverlay] : '';
+                const avatarImage = idxAvatar !== -1 ? clean[idxAvatar] : '';
                 const bubbleText = idxBubble !== -1 ? clean[idxBubble] : '';
                 const winnerPhotos = idxWinnerPhotos !== -1 ? clean[idxWinnerPhotos] : '';
 
-                if (!title && !subtitle && !bubbleText && !winnerPhotos) return null;
+                if (!title && !subtitle && !bubbleText && !winnerPhotos && !bgImage && !overlayImage && !avatarImage && type !== 'countdown' && type !== 'avatar') return null;
 
                 const ruthlessString = [title, subtitle, type, bubbleText].join(' ').toLowerCase();
                 if (ruthlessString.includes('tbc') || ruthlessString.includes('tba') || 
@@ -2038,6 +2074,7 @@
                     duration: durationVal || 30000,
                     backgroundImage: bgImage || '',
                     overlayImage: overlayImage || '',
+                    avatarImage: avatarImage || '',
                     bubbleText: bubbleText || '',
                     winnerPhotos: winnerPhotos || ''
                 };
@@ -2079,6 +2116,9 @@
 
             if (success && csv) {
                 let slides = parseSlidesCSV(csv);
+                if (window.MMR_CONFIG && Array.isArray(window.MMR_CONFIG.LOCAL_WINNERS_SLIDES)) {
+                    slides = [...slides, ...window.MMR_CONFIG.LOCAL_WINNERS_SLIDES];
+                }
 
                 if (slides.length > 0) {
                     console.log('[MMR] Slides synced OK — ' + slides.length + ' slides loaded.');
@@ -2191,32 +2231,43 @@
         function handleFbEvent(e) {
             try {
                 const eventData = JSON.parse(e.data);
-                const data = eventData.data || eventData; // Handle both PUT and PATCH
-                if (!data) return;
+                const path = eventData.path || '/';
+                const rawData = eventData.data;
+                if (rawData === undefined || rawData === null) return;
 
-                // Handle voice toggle
-                if (data.voiceOn !== undefined) {
-                    localStorage.setItem('mmr_voice_on', data.voiceOn);
+                if (path === '/voiceOn' || (path === '/' && rawData.voiceOn !== undefined)) {
+                    const voiceVal = path === '/voiceOn' ? rawData : rawData.voiceOn;
+                    localStorage.setItem('mmr_voice_on', voiceVal);
                 }
 
-                // Handle slide commands
-                if (data.slideCmd && data.slideCmd.ts > (state.lastSlideCmdTs || 0)) {
-                    state.lastSlideCmdTs = data.slideCmd.ts;
-                    handleSlideCmd(data.slideCmd.cmd);
+                const slideCmdObj = path === '/slideCmd' ? rawData : (rawData && rawData.slideCmd);
+                if (slideCmdObj && slideCmdObj.ts > (state.lastSlideCmdTs || 0)) {
+                    state.lastSlideCmdTs = slideCmdObj.ts;
+                    handleSlideCmd(slideCmdObj.cmd);
                 }
 
-                // Handle draw commands
-                if (data.cmd && data.cmd.ts > lastFbCmdTs) {
-                    lastFbCmdTs = data.cmd.ts;
-                    if (data.cmd.type === 'START_ROLL') startLotteryRoll(data.cmd.prize);
-                    else if (data.cmd.type === 'STOP_ROLL') stopLotteryRoll(data.cmd.number, data.cmd.prize);
-                    else if (data.cmd.type === 'CONFETTI') triggerConfetti();
-                    else if (data.cmd.type === 'FORCE_SYNC') fetchAndApplySlides();
+                const cmdObj = path === '/cmd' ? rawData : (rawData && rawData.cmd);
+                if (cmdObj && cmdObj.ts > lastFbCmdTs) {
+                    lastFbCmdTs = cmdObj.ts;
+                    if (cmdObj.type === 'START_ROLL') startLotteryRoll(cmdObj.prize);
+                    else if (cmdObj.type === 'STOP_ROLL') stopLotteryRoll(cmdObj.number, cmdObj.prize);
+                    else if (cmdObj.type === 'CONFETTI') triggerConfetti();
+                    else if (cmdObj.type === 'FORCE_SYNC') fetchAndApplySlides();
                 }
-                // Handle state changes (exclude control keys)
-                const { cmd, slideCmd, voiceOn, ...stateData } = data;
-                if (stateData.slides) delete stateData.slides;
-                if (Object.keys(stateData).length) updateState(stateData);
+
+                if (path === '/') {
+                    const { cmd, slideCmd, voiceOn, ...stateData } = rawData;
+                    if (stateData.slides) delete stateData.slides;
+                    if (Object.keys(stateData).length) updateState(stateData);
+                } else if (path === '/activeView') {
+                    updateState({ activeView: rawData });
+                } else if (path.startsWith('/draw')) {
+                    if (path === '/draw') updateState({ draw: rawData });
+                    else {
+                        const key = path.replace('/draw/', '');
+                        updateState({ draw: { [key]: rawData } });
+                    }
+                }
             } catch(err) {
                 console.error('[MMR] Firebase event processing error:', err);
             }

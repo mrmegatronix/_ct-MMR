@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' https://*.google.com https://*.googleusercontent.com https://*.firebaseio.com; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://*.google.com https://*.googleusercontent.com https://*.firebaseio.com;">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' https://*.google.com https://*.googleusercontent.com https://*.firebaseio.com https://api.qrserver.com; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https:; media-src 'self' data: blob:; connect-src 'self' https://*.google.com https://*.googleusercontent.com https://*.firebaseio.com https://api.qrserver.com;">
     <title>MMR - Admin Panel</title>
     <script>
         document.write('<script src="config.js?v=' + Date.now() + '"><\/script>');
@@ -755,16 +755,47 @@
             slides: [],
             lastSlideCmdTs: 0,
             draw: {
-                min: 0,
-                max: 5000,
+                activeEvent: 'thursday',
+                thursday: {
+                    enabled: true,
+                    manualDraw: false,
+                    min: 1,
+                    max: 999,
+                    excludes: [],
+                    prizes100: 20,
+                    prizes50: 12,
+                    prizes25: 16,
+                    cfgPrizes100: 20,
+                    cfgPrizes50: 12,
+                    cfgPrizes25: 16,
+                    prizesLeft: 48,
+                    drawnNumbers: []
+                },
+                sunday: {
+                    enabled: false,
+                    manualDraw: false,
+                    min: 1,
+                    max: 999,
+                    excludes: [],
+                    prizes100: 0,
+                    prizes50: 0,
+                    prizes25: 0,
+                    cfgPrizes100: 0,
+                    cfgPrizes50: 0,
+                    cfgPrizes25: 0,
+                    prizesLeft: 0,
+                    drawnNumbers: []
+                },
+                min: 1,
+                max: 999,
                 excludes: [],
-                prizes100: 0,
-                prizes50: 0,
-                prizes25: 0,
-                cfgPrizes100: 0,
-                cfgPrizes50: 0,
-                cfgPrizes25: 0,
-                prizesLeft: 0,
+                prizes100: 20,
+                prizes50: 12,
+                prizes25: 16,
+                cfgPrizes100: 20,
+                cfgPrizes50: 12,
+                cfgPrizes25: 16,
+                prizesLeft: 48,
                 isRolling: false,
                 currentNumber: '---',
                 drawnNumbers: []
@@ -790,7 +821,7 @@
             const storedUrl = localStorage.getItem('mmr_fb_url') || (cfg && cfg.FIREBASE_DB_URL) || '';
             document.getElementById('fb-url').value = storedUrl;
             
-            const voiceOn = localStorage.getItem('mmr_voice_on') !== 'false';
+            const voiceOn = localStorage.getItem('mmr_voice_on') === 'true';
             document.getElementById('voice-toggle').checked = voiceOn;
 
             // Load saved state (excluding slides)
@@ -838,6 +869,7 @@
 
             // Fetch slides immediately on load (in-memory) to populate the admin visibility checklist
             updateViewButtons();
+            initFirebase();
             fetchSlidesForAdmin();
         }
 
@@ -1233,6 +1265,56 @@
             }).catch(e => console.warn('[MMR Admin] Firebase write error:', e));
         }
 
+        function initFirebase() {
+            const url = localStorage.getItem('mmr_fb_url') || (window.MMR_CONFIG && window.MMR_CONFIG.FIREBASE_DB_URL) || '';
+            if (!url) return;
+            listenFirebaseState(url);
+        }
+
+        function listenFirebaseState(url) {
+            try {
+                const es = new EventSource(`${url}/mmr.json`);
+                es.addEventListener('put', handleFbEvent);
+                es.addEventListener('patch', handleFbEvent);
+                es.onerror = () => { es.close(); setTimeout(() => listenFirebaseState(url), 5000); };
+            } catch(e) { console.warn('[MMR Admin] Firebase listen error:', e); }
+        }
+
+        function handleFbEvent(e) {
+            try {
+                const eventData = JSON.parse(e.data);
+                const path = eventData.path || '/';
+                const rawData = eventData.data;
+                if (rawData === undefined || rawData === null) return;
+
+                if (path === '/voiceOn' || (path === '/' && rawData.voiceOn !== undefined)) {
+                    const voiceVal = path === '/voiceOn' ? rawData : rawData.voiceOn;
+                    localStorage.setItem('mmr_voice_on', voiceVal);
+                    const vEl = document.getElementById('voice-toggle');
+                    if (vEl) vEl.checked = voiceVal;
+                }
+
+                if (path === '/') {
+                    const { cmd, slideCmd, voiceOn, ...stateData } = rawData;
+                    if (stateData.slides) delete stateData.slides;
+                    if (Object.keys(stateData).length) {
+                        state = { ...state, ...stateData };
+                        updateUI();
+                    }
+                } else if (path === '/activeView') {
+                    state.activeView = rawData;
+                    updateUI();
+                } else if (path.startsWith('/draw')) {
+                    if (path === '/draw') state.draw = { ...state.draw, ...rawData };
+                    else {
+                        const key = path.replace('/draw/', '');
+                        state.draw[key] = rawData;
+                    }
+                    updateUI();
+                }
+            } catch(err) { console.error('[MMR Admin] Firebase event error:', err); }
+        }
+
         async function syncFromSheets() {
             const slidesUrl = DEFAULT_SLIDES_URL;
             showStatus('Fetching data...', 'success');
@@ -1333,32 +1415,78 @@
         }
 
         function parseSlidesCSV(text) {
-            const rows = text.split(/\r?\n/).filter(line => line.trim());
-            if (rows.length < 2) return [];
+            const result = [];
+            let row = [];
+            let col = '';
+            let inQuotes = false;
 
-            const parsed = rows.slice(1).map(line => {
-                const parts = splitCSVLine(line);
-                const clean = parts.map(p => p.replace(/^"|"$/g, '').trim());
+            for (let i = 0; i < text.length; i++) {
+                const char = text[i];
+                const nextChar = text[i + 1];
 
-                const type = (clean[2] || 'normal').toLowerCase();
-                if (!clean[0] && type !== 'avatar') return null; // Ignore rows with no title (except avatar slides)
+                if (inQuotes) {
+                    if (char === '"' && nextChar === '"') { col += '"'; i++; }
+                    else if (char === '"') { inQuotes = false; }
+                    else { col += char; }
+                } else {
+                    if (char === '"') { inQuotes = true; }
+                    else if (char === ',') { row.push(col.trim()); col = ''; }
+                    else if (char === '\n' || (char === '\r' && nextChar === '\n')) {
+                        if (char === '\r') i++;
+                        row.push(col.trim());
+                        result.push(row);
+                        row = []; col = '';
+                    } else { col += char; }
+                }
+            }
+            if (col || row.length > 0) { row.push(col.trim()); result.push(row); }
+
+            if (result.length < 2) return [];
+
+            const header = result[0].map(h => h.toLowerCase().trim());
+            const idxTitle = header.indexOf('title');
+            const idxSubtitle = header.indexOf('subtitle');
+            const idxType = header.indexOf('type');
+            const idxDuration = header.indexOf('duration');
+
+            let idxBg = header.indexOf('backgroundimage');
+            if (idxBg === -1) idxBg = header.indexOf('backgroundimg');
+
+            let idxOverlay = header.indexOf('overlayimage');
+            if (idxOverlay === -1) idxOverlay = header.indexOf('overlayimg');
+
+            let idxAvatar = header.indexOf('avatarimage');
+            if (idxAvatar === -1) idxAvatar = header.indexOf('avatar');
+            if (idxAvatar === -1) idxAvatar = header.indexOf('avatarimg');
+
+            const idxBubble = header.indexOf('bubbletext');
+            const idxWinnerPhotos = header.indexOf('winnerphotos');
+
+            return result.slice(1).map(clean => {
+                const type = (idxType !== -1 ? clean[idxType] : 'normal').toLowerCase();
+                const title = idxTitle !== -1 ? clean[idxTitle] : '';
+                const subtitle = idxSubtitle !== -1 ? clean[idxSubtitle] : '';
+                const durationVal = idxDuration !== -1 ? parseInt(clean[idxDuration]) : 30000;
+                const bgImage = idxBg !== -1 ? clean[idxBg] : '';
+                const overlayImage = idxOverlay !== -1 ? clean[idxOverlay] : '';
+                const avatarImage = idxAvatar !== -1 ? clean[idxAvatar] : '';
+                const bubbleText = idxBubble !== -1 ? clean[idxBubble] : '';
+                const winnerPhotos = idxWinnerPhotos !== -1 ? clean[idxWinnerPhotos] : '';
+
+                if (!title && !subtitle && !bubbleText && !winnerPhotos && !bgImage && !overlayImage && !avatarImage && type !== 'countdown' && type !== 'avatar') return null;
 
                 return {
-                    title: clean[0],
-                    subtitle: clean[1] || '',
-                    type: type,
-                    duration: parseInt(clean[3]) || 30000,
-                    backgroundImage: clean[4] || '',
-                    overlayImage: clean[5] || '',
-                    bubbleText: clean[6] || '',
-                    winnerPhotos: clean[7] || ''
+                    title: title || '',
+                    subtitle: subtitle || '',
+                    type: type || 'normal',
+                    duration: durationVal || 30000,
+                    backgroundImage: bgImage || '',
+                    overlayImage: overlayImage || '',
+                    avatarImage: avatarImage || '',
+                    bubbleText: bubbleText || '',
+                    winnerPhotos: winnerPhotos || ''
                 };
             }).filter(s => s !== null);
-
-            // Avatar is now handled directly via Google Sheets!
-            // (Just add a row with type: 'avatar')
-
-            return parsed;
         }
 
         function parseConfigCSV(text) {
@@ -1553,6 +1681,7 @@
         }
 
         function getDrawStateData() {
+            if (state && state.draw) return state.draw;
             let drawState = null;
             try {
                 const saved = localStorage.getItem('mmr_state_v5');
@@ -1562,6 +1691,7 @@
         }
 
         function getFinancialsData() {
+            if (state && state.financials) return state.financials;
             let fins = null;
             try {
                 const saved = localStorage.getItem('mmr_state_v5');
@@ -1713,7 +1843,12 @@
 
         function printHTML(content) {
             const win = window.open('', '_blank');
+            if (!win) {
+                alert('Popup blocked! Please allow popups for printing.');
+                return;
+            }
             win.document.write(`
+                <!DOCTYPE html>
                 <html><head>
                 <style>
                     @page { size: A4 portrait; margin: 1cm; } 
@@ -1735,11 +1870,13 @@
                     .bold{font-weight:bold;}
                     .footer{margin-top:20px; font-family:monospace; font-size:10px; display:flex; justify-content:space-between;}
                 </style>
-                </head><body>` + content + `
-                <script>window.onload=()=>{setTimeout(()=>{window.print();window.close();}, 500);}<\\/script>
-                </body></html>
+                </head><body>` + content + `</body></html>
             `);
             win.document.close();
+            win.focus();
+            setTimeout(() => {
+                win.print();
+            }, 300);
         }
 
         function generateQRCodes() {

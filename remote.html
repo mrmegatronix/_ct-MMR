@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' https://*.firebaseio.com https://api.qrserver.com; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://*.firebaseio.com https://api.qrserver.com;">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' https://*.google.com https://*.googleusercontent.com https://*.firebaseio.com https://api.qrserver.com; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https:; media-src 'self' data: blob:; connect-src 'self' https://*.google.com https://*.googleusercontent.com https://*.firebaseio.com https://api.qrserver.com;">
     <title>MMR - Remote Control</title>
     <script>
         document.write('<script src="config.js?v=' + Date.now() + '"><\/script>');
@@ -16,7 +16,7 @@
             --text: var(--cfg-text-light, #f8fafc);
             --text-muted: #64748b;
             --border: #334155;
-            --accent-100: #d97706;
+            --accent-100: #ef4444;
             --accent-50: #2563eb;
             --accent-25: #10b981;
         }
@@ -329,26 +329,7 @@
     </div>
 
     <div class="grid">
-        <!-- Display Controls (Top of Page) -->
-        <div class="card">
-            <h2>📺 Display Live Views</h2>
-            
-            <label>Change Screen View</label>
-            <div class="btn-group">
-                <button class="btn" onclick="setView('slides')" id="btn-slides">📺 Slideshow</button>
-                <button class="btn" onclick="setView('draw')" id="btn-draw">🎯 Draw Screen</button>
-                <button class="btn" onclick="setView('congrats')" id="btn-congrats">🎉 Congrats Page</button>
-            </div>
-
-            <label>Slideshow Navigation</label>
-            <div class="btn-group">
-                <button class="btn" onclick="remoteSlide('prev')">⏮ Prev</button>
-                <button class="btn" onclick="remoteSlide('toggle')" id="btn-play-pause">⏸ Pause</button>
-                <button class="btn" onclick="remoteSlide('next')">Next ⏭</button>
-            </div>
-        </div>
-
-        <!-- Live Draw Board -->
+        <!-- Live Draw Board (Top Card) -->
         <div class="card">
             <h2>Live Draw Panel</h2>
             <div id="draw-rolling-label" style="display: none; text-align: center; font-size: 1.2rem; font-weight: bold; margin-bottom: 1.25rem; color: #f59e0b; animation: pulse 1s infinite;">🎰 ROLLING FOR WINNER...</div>
@@ -362,7 +343,7 @@
                     </div>
                     <div class="draw-action-buttons">
                         <button class="btn draw-btn" onclick="runRedraw(100)" id="btn-redraw-100" style="background-color: #334155; border-color: #ef4444; color: #ef4444; font-size: 0.85rem;">🔄 REDRAW</button>
-                        <button class="btn draw-btn" onclick="runDraw(100)" id="btn-draw-100" style="background-color: var(--accent-100); border-color: var(--accent-100); color: white;">🎰 DRAW PRIZE</button>
+                        <button class="btn draw-btn" onclick="runDraw(100)" id="btn-draw-100" style="background-color: #ef4444; border-color: #dc2626; color: white;">🎰 DRAW PRIZE</button>
                     </div>
                 </div>
 
@@ -406,9 +387,26 @@
             <div class="status" id="status-display">Updated Successfully</div>
         </div>
 
-        
+        <!-- Display Controls (Under Live Draw Panel) -->
+        <div class="card">
+            <h2>📺 Display Live Views</h2>
+            
+            <label>Change Screen View</label>
+            <div class="btn-group">
+                <button class="btn" onclick="setView('slides')" id="btn-slides">📺 Slideshow</button>
+                <button class="btn" onclick="setView('draw')" id="btn-draw">🎯 Draw Screen</button>
+                <button class="btn" onclick="setView('congrats')" id="btn-congrats">🎉 Congrats Page</button>
+            </div>
 
-        <!-- Draw Configuration (Moved to bottom) -->
+            <label>Slideshow Navigation</label>
+            <div class="btn-group">
+                <button class="btn" onclick="remoteSlide('prev')">⏮ Prev</button>
+                <button class="btn" onclick="remoteSlide('toggle')" id="btn-play-pause">⏸ Pause</button>
+                <button class="btn" onclick="remoteSlide('next')">Next ⏭</button>
+            </div>
+        </div>
+
+        <!-- Draw Configuration -->
         <div class="card">
             <h2>Draw Configuration</h2>
             
@@ -418,36 +416,39 @@
                     Thursday Draw
                     <div>
                         <label style="display:inline; margin-right: 10px;">Enable</label>
-                        <input type="checkbox" id="cfg-thu-enabled" style="width: auto;" onchange="updateDrawState()">
+                        <input type="checkbox" id="cfg-thu-enabled" style="width: auto;" onchange="updateThursdayConfig()">
                         <label style="display:inline; margin-left: 10px; margin-right: 10px;">Manual Draw</label>
-                        <input type="checkbox" id="cfg-thu-manual" style="width: auto;" onchange="updateDrawState()">
+                        <input type="checkbox" id="cfg-thu-manual" style="width: auto;" onchange="updateThursdayConfig()">
                     </div>
                 </h3>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 0.5rem;">
                     <div class="form-group">
                         <label>Min Ticket</label>
-                        <input type="number" id="cfg-thu-min" value="0">
+                        <input type="number" id="cfg-thu-min" value="1" oninput="updateThursdayConfig()">
                     </div>
                     <div class="form-group">
                         <label>Max Ticket</label>
-                        <input type="number" id="cfg-thu-max" max="10000" value="10000">
+                        <input type="number" id="cfg-thu-max" max="10000" value="999" oninput="updateThursdayConfig()">
                     </div>
                 </div>
                 <div class="form-group" style="margin-bottom: 0.5rem;">
+                    <label>Next Draw Time</label>
+                    <input type="datetime-local" id="drawTime" onchange="updateTime()" style="width:100%; box-sizing: border-box;">
+                </div>
+                <div class="form-group" style="margin-bottom: 0.5rem;">
                     <label>Excluded Numbers</label>
-                    <input type="text" id="cfg-thu-excludes" placeholder="e.g. 5,12,45">
+                    <input type="text" id="cfg-thu-excludes" placeholder="e.g. 5,12,45" oninput="updateThursdayConfig()">
                 </div>
                 <div class="form-group" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 0.5rem;">
-                    <div><label style="font-size:0.75rem;">$100 Packs</label><input type="number" id="cfg-thu-prizes-100" value="0"></div>
-                    <div><label style="font-size:0.75rem;">$50 Prizes</label><input type="number" id="cfg-thu-prizes-50" value="0"></div>
-                    <div><label style="font-size:0.75rem;">$25 Prizes</label><input type="number" id="cfg-thu-prizes-25" value="0"></div>
+                    <div><label style="font-size:0.75rem;">$100 Packs</label><input type="number" id="cfg-thu-prizes-100" value="20" oninput="updateThursdayConfig()"></div>
+                    <div><label style="font-size:0.75rem;">$50 Prizes</label><input type="number" id="cfg-thu-prizes-50" value="12" oninput="updateThursdayConfig()"></div>
+                    <div><label style="font-size:0.75rem;">$25 Prizes</label><input type="number" id="cfg-thu-prizes-25" value="16" oninput="updateThursdayConfig()"></div>
                 </div>
                 <div class="form-group" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 1rem;">
-                    <div><label style="font-size:0.75rem;">Vouchers Count</label><input type="number" id="cfg-thu-vouchers-count" value="0"></div>
-                    <div><label style="font-size:0.75rem;">Voucher Value ($)</label><input type="number" id="cfg-thu-vouchers-value" value="0"></div>
+                    <div><label style="font-size:0.75rem;">Vouchers Count</label><input type="number" id="cfg-thu-vouchers-count" value="0" oninput="updateThursdayConfig()"></div>
+                    <div><label style="font-size:0.75rem;">Voucher Value ($)</label><input type="number" id="cfg-thu-vouchers-value" value="0" oninput="updateThursdayConfig()"></div>
                 </div>
-                <button class="btn" onclick="updateThursdayConfig()" style="background-color: #1e40af; color: white; border: none; width: 100%; margin-bottom: 0.5rem;">💾 Update Thursday Config</button>
-                <button class="btn" id="btn-confirm-thu" onclick="confirmThursday()" style="background-color: #3b82f6; color: white; border: none; width: 100%;">Confirm Thursday Draw</button>
+                <button class="btn" onclick="updateThursdayConfig()" style="background-color: #1e40af; color: white; border: none; width: 100%; margin-bottom: 0.5rem;">💾 Save Thursday Config</button>
             </div>
 
             <!-- Sunday Config -->
@@ -456,41 +457,35 @@
                     Sunday Draw
                     <div>
                         <label style="display:inline; margin-right: 10px;">Enable</label>
-                        <input type="checkbox" id="cfg-sun-enabled" style="width: auto;" onchange="updateDrawState()">
+                        <input type="checkbox" id="cfg-sun-enabled" style="width: auto;" onchange="updateSundayConfig()">
                         <label style="display:inline; margin-left: 10px; margin-right: 10px;">Manual Draw</label>
-                        <input type="checkbox" id="cfg-sun-manual" style="width: auto;" onchange="updateDrawState()">
+                        <input type="checkbox" id="cfg-sun-manual" style="width: auto;" onchange="updateSundayConfig()">
                     </div>
                 </h3>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 0.5rem;">
                     <div class="form-group">
                         <label>Min Ticket</label>
-                        <input type="number" id="cfg-sun-min" value="0">
+                        <input type="number" id="cfg-sun-min" value="1" oninput="updateSundayConfig()">
                     </div>
                     <div class="form-group">
                         <label>Max Ticket</label>
-                        <input type="number" id="cfg-sun-max" max="10000" value="10000">
+                        <input type="number" id="cfg-sun-max" max="10000" value="999" oninput="updateSundayConfig()">
                     </div>
                 </div>
                 <div class="form-group" style="margin-bottom: 0.5rem;">
                     <label>Excluded Numbers</label>
-                    <input type="text" id="cfg-sun-excludes" placeholder="e.g. 5,12,45">
+                    <input type="text" id="cfg-sun-excludes" placeholder="e.g. 5,12,45" oninput="updateSundayConfig()">
                 </div>
                 <div class="form-group" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 0.5rem;">
-                    <div><label style="font-size:0.75rem;">$100 Packs</label><input type="number" id="cfg-sun-prizes-100" value="0"></div>
-                    <div><label style="font-size:0.75rem;">$50 Prizes</label><input type="number" id="cfg-sun-prizes-50" value="0"></div>
-                    <div><label style="font-size:0.75rem;">$25 Prizes</label><input type="number" id="cfg-sun-prizes-25" value="0"></div>
+                    <div><label style="font-size:0.75rem;">$100 Packs</label><input type="number" id="cfg-sun-prizes-100" value="0" oninput="updateSundayConfig()"></div>
+                    <div><label style="font-size:0.75rem;">$50 Prizes</label><input type="number" id="cfg-sun-prizes-50" value="0" oninput="updateSundayConfig()"></div>
+                    <div><label style="font-size:0.75rem;">$25 Prizes</label><input type="number" id="cfg-sun-prizes-25" value="0" oninput="updateSundayConfig()"></div>
                 </div>
                 <div class="form-group" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 1rem;">
-                    <div><label style="font-size:0.75rem;">Vouchers Count</label><input type="number" id="cfg-sun-vouchers-count" value="0"></div>
-                    <div><label style="font-size:0.75rem;">Voucher Value ($)</label><input type="number" id="cfg-sun-vouchers-value" value="0"></div>
+                    <div><label style="font-size:0.75rem;">Vouchers Count</label><input type="number" id="cfg-sun-vouchers-count" value="0" oninput="updateSundayConfig()"></div>
+                    <div><label style="font-size:0.75rem;">Voucher Value ($)</label><input type="number" id="cfg-sun-vouchers-value" value="0" oninput="updateSundayConfig()"></div>
                 </div>
-                <button class="btn" onclick="updateSundayConfig()" style="background-color: #991b1b; color: white; border: none; width: 100%; margin-bottom: 0.5rem;">💾 Update Sunday Config</button>
-                <button class="btn" id="btn-confirm-sun" onclick="confirmSunday()" style="background-color: #ef4444; color: white; border: none; width: 100%;">Confirm Sunday Draw / End Week</button>
-            </div>
-
-            <div class="form-group">
-                <label>Next Draw Time</label>
-                <input type="datetime-local" id="drawTime" onchange="updateTime()">
+                <button class="btn" onclick="updateSundayConfig()" style="background-color: #991b1b; color: white; border: none; width: 100%; margin-bottom: 0.5rem;">💾 Save Sunday Config</button>
             </div>
         </div>
 
@@ -500,7 +495,7 @@
             <div class="voice-toggle-container">
                 <span style="font-size: 0.8rem; font-weight: bold;">VOICE</span>
                 <label class="switch">
-                    <input type="checkbox" id="voice-toggle" onchange="toggleVoice()" checked>
+                    <input type="checkbox" id="voice-toggle" onchange="toggleVoice()">
                     <span class="slider"></span>
                 </label>
             </div>
@@ -688,19 +683,26 @@
             draw: {
                 activeEvent: 'thursday',
                 thursday: {
+                    enabled: true,
                     manualDraw: false,
+                    min: 1,
+                    max: 999,
+                    excludes: [],
                     drawnNumbers: [],
-                    prizesLeft: 0,
-                    prizes100: 0,
-                    prizes50: 0,
-                    prizes25: 0,
-                    cfgPrizes100: 0,
-                    cfgPrizes50: 0,
-                    cfgPrizes25: 0,
+                    prizesLeft: 48,
+                    prizes100: 20,
+                    prizes50: 12,
+                    prizes25: 16,
+                    cfgPrizes100: 20,
+                    cfgPrizes50: 12,
+                    cfgPrizes25: 16
                 },
                 sunday: {
                     enabled: false,
                     manualDraw: false,
+                    min: 1,
+                    max: 999,
+                    excludes: [],
                     drawnNumbers: [],
                     prizesLeft: 0,
                     prizes100: 0,
@@ -713,7 +715,20 @@
                     cfgPrizes25: 0,
                     cfgVouchersCount: 0,
                     cfgVouchersValue: 0
-                }
+                },
+                min: 1,
+                max: 999,
+                excludes: [],
+                prizes100: 20,
+                prizes50: 12,
+                prizes25: 16,
+                cfgPrizes100: 20,
+                cfgPrizes50: 12,
+                cfgPrizes25: 16,
+                prizesLeft: 48,
+                isRolling: false,
+                currentNumber: '---',
+                drawnNumbers: []
             }
         };
 
@@ -742,8 +757,54 @@
             try {
                 if (!fbDbUrl) { updateFbStatus(false); return; }
                 updateFbStatus(true);
+                listenFirebaseState();
                 console.log('[MMR Remote] Firebase connected:', fbDbUrl);
             } catch(e) { console.error('[MMR Remote] Firebase init error:', e); }
+        }
+
+        function listenFirebaseState() {
+            if (!fbDbUrl) return;
+            try {
+                const es = new EventSource(`${fbDbUrl}/mmr.json`);
+                es.addEventListener('put', handleFbEvent);
+                es.addEventListener('patch', handleFbEvent);
+                es.onerror = () => { es.close(); setTimeout(listenFirebaseState, 5000); };
+            } catch(e) { console.warn('[MMR Remote] Firebase listen error:', e); }
+        }
+
+        function handleFbEvent(e) {
+            try {
+                const eventData = JSON.parse(e.data);
+                const path = eventData.path || '/';
+                const rawData = eventData.data;
+                if (rawData === undefined || rawData === null) return;
+
+                if (path === '/voiceOn' || (path === '/' && rawData.voiceOn !== undefined)) {
+                    const voiceVal = path === '/voiceOn' ? rawData : rawData.voiceOn;
+                    localStorage.setItem('mmr_voice_on', voiceVal);
+                    const vEl = document.getElementById('voice-toggle');
+                    if (vEl) vEl.checked = voiceVal;
+                }
+
+                if (path === '/') {
+                    const { cmd, slideCmd, voiceOn, ...stateData } = rawData;
+                    if (stateData.slides) delete stateData.slides;
+                    if (Object.keys(stateData).length) {
+                        state = { ...state, ...stateData };
+                        updateUI();
+                    }
+                } else if (path === '/activeView') {
+                    state.activeView = rawData;
+                    updateUI();
+                } else if (path.startsWith('/draw')) {
+                    if (path === '/draw') state.draw = { ...state.draw, ...rawData };
+                    else {
+                        const key = path.replace('/draw/', '');
+                        state.draw[key] = rawData;
+                    }
+                    updateUI();
+                }
+            } catch(err) { console.error('[MMR Remote] Firebase event error:', err); }
         }
 
         function writeFirebase(data) {
@@ -797,31 +858,48 @@
             const thu = state.draw.thursday;
             const sun = state.draw.sunday;
 
-            if (thu.prizes100 === undefined) thu.prizes100 = 0;
-            if (thu.prizes50 === undefined) thu.prizes50 = 0;
-            if (thu.prizes25 === undefined) thu.prizes25 = 0;
+            if (thu.cfgPrizes100 === undefined) thu.cfgPrizes100 = 20;
+            if (thu.cfgPrizes50 === undefined) thu.cfgPrizes50 = 12;
+            if (thu.cfgPrizes25 === undefined) thu.cfgPrizes25 = 16;
+
+            const thu_n100 = (thu.drawnNumbers || []).filter(d => (typeof d === 'object' ? d.prize : 0) === 100).length;
+            const thu_n50 = (thu.drawnNumbers || []).filter(d => (typeof d === 'object' ? d.prize : 0) === 50).length;
+            const thu_n25 = (thu.drawnNumbers || []).filter(d => (typeof d === 'object' ? d.prize : 0) === 25).length;
+
+            thu.prizes100 = Math.max(0, thu.cfgPrizes100 - thu_n100);
+            thu.prizes50 = Math.max(0, thu.cfgPrizes50 - thu_n50);
+            thu.prizes25 = Math.max(0, thu.cfgPrizes25 - thu_n25);
             thu.prizesLeft = thu.prizes100 + thu.prizes50 + thu.prizes25;
 
-            if (sun.prizes100 === undefined) sun.prizes100 = 0;
-            if (sun.prizes50 === undefined) sun.prizes50 = 0;
-            if (sun.prizes25 === undefined) sun.prizes25 = 0;
+            if (sun.cfgPrizes100 === undefined) sun.cfgPrizes100 = 0;
+            if (sun.cfgPrizes50 === undefined) sun.cfgPrizes50 = 0;
+            if (sun.cfgPrizes25 === undefined) sun.cfgPrizes25 = 0;
+
+            const sun_n100 = (sun.drawnNumbers || []).filter(d => (typeof d === 'object' ? d.prize : 0) === 100).length;
+            const sun_n50 = (sun.drawnNumbers || []).filter(d => (typeof d === 'object' ? d.prize : 0) === 50).length;
+            const sun_n25 = (sun.drawnNumbers || []).filter(d => (typeof d === 'object' ? d.prize : 0) === 25).length;
+
+            sun.prizes100 = Math.max(0, sun.cfgPrizes100 - sun_n100);
+            sun.prizes50 = Math.max(0, sun.cfgPrizes50 - sun_n50);
+            sun.prizes25 = Math.max(0, sun.cfgPrizes25 - sun_n25);
             sun.prizesLeft = sun.prizes100 + sun.prizes50 + sun.prizes25;
 
-            document.getElementById('cfg-thu-prizes-100').value = thu.cfgPrizes100 !== undefined ? thu.cfgPrizes100 : 0;
-            document.getElementById('cfg-thu-prizes-50').value = thu.cfgPrizes50 !== undefined ? thu.cfgPrizes50 : 0;
-            document.getElementById('cfg-thu-prizes-25').value = thu.cfgPrizes25 !== undefined ? thu.cfgPrizes25 : 0;
+            if (document.activeElement !== document.getElementById('cfg-thu-prizes-100')) document.getElementById('cfg-thu-prizes-100').value = thu.cfgPrizes100;
+            if (document.activeElement !== document.getElementById('cfg-thu-prizes-50')) document.getElementById('cfg-thu-prizes-50').value = thu.cfgPrizes50;
+            if (document.activeElement !== document.getElementById('cfg-thu-prizes-25')) document.getElementById('cfg-thu-prizes-25').value = thu.cfgPrizes25;
             document.getElementById('cfg-thu-manual').checked = !!thu.manualDraw;
 
-            document.getElementById('cfg-sun-prizes-100').value = sun.cfgPrizes100 !== undefined ? sun.cfgPrizes100 : 0;
-            document.getElementById('cfg-sun-prizes-50').value = sun.cfgPrizes50 !== undefined ? sun.cfgPrizes50 : 0;
-            document.getElementById('cfg-sun-prizes-25').value = sun.cfgPrizes25 !== undefined ? sun.cfgPrizes25 : 0;
+            if (document.activeElement !== document.getElementById('cfg-sun-prizes-100')) document.getElementById('cfg-sun-prizes-100').value = sun.cfgPrizes100;
+            if (document.activeElement !== document.getElementById('cfg-sun-prizes-50')) document.getElementById('cfg-sun-prizes-50').value = sun.cfgPrizes50;
+            if (document.activeElement !== document.getElementById('cfg-sun-prizes-25')) document.getElementById('cfg-sun-prizes-25').value = sun.cfgPrizes25;
             document.getElementById('cfg-sun-manual').checked = !!sun.manualDraw;
             document.getElementById('cfg-sun-enabled').checked = !!sun.enabled;
 
-            const activeEvt = state.draw[state.draw.activeEvent];
-            document.getElementById('lbl-left-100').innerText = activeEvt.prizes100 || 0;
-            document.getElementById('lbl-left-50').innerText = activeEvt.prizes50 || 0;
-            document.getElementById('lbl-left-25').innerText = activeEvt.prizes25 || 0;
+            const activeEvtKey = state.draw.activeEvent || 'thursday';
+            const activeEvt = state.draw[activeEvtKey] || thu;
+            document.getElementById('lbl-left-100').innerText = activeEvt.prizes100 !== undefined ? activeEvt.prizes100 : (activeEvt.cfgPrizes100 ?? 20);
+            document.getElementById('lbl-left-50').innerText = activeEvt.prizes50 !== undefined ? activeEvt.prizes50 : (activeEvt.cfgPrizes50 ?? 12);
+            document.getElementById('lbl-left-25').innerText = activeEvt.prizes25 !== undefined ? activeEvt.prizes25 : (activeEvt.cfgPrizes25 ?? 16);
 
             const isThursdayFinished = thu.prizesLeft === 0 && thu.drawnNumbers.length > 0;
             document.getElementById('cfg-thu-prizes-100').disabled = isThursdayFinished;
@@ -833,20 +911,19 @@
             document.getElementById('cfg-sun-prizes-50').disabled = isSundayFinished;
             document.getElementById('cfg-sun-prizes-25').disabled = isSundayFinished;
 
-
-            document.getElementById('cfg-thu-min').value = thu.min !== undefined ? thu.min : 0;
-            document.getElementById('cfg-thu-max').value = thu.max !== undefined ? thu.max : 10000;
-            document.getElementById('cfg-thu-excludes').value = (thu.excludes || []).join(',');
-            document.getElementById('cfg-thu-vouchers-count').value = thu.cfgVouchersCount !== undefined ? thu.cfgVouchersCount : 0;
-            document.getElementById('cfg-thu-vouchers-value').value = thu.cfgVouchersValue !== undefined ? thu.cfgVouchersValue : 0;
+            if (document.activeElement !== document.getElementById('cfg-thu-min')) document.getElementById('cfg-thu-min').value = thu.min !== undefined ? thu.min : 1;
+            if (document.activeElement !== document.getElementById('cfg-thu-max')) document.getElementById('cfg-thu-max').value = thu.max !== undefined ? thu.max : 999;
+            if (document.activeElement !== document.getElementById('cfg-thu-excludes')) document.getElementById('cfg-thu-excludes').value = (thu.excludes || []).join(',');
+            if (document.activeElement !== document.getElementById('cfg-thu-vouchers-count')) document.getElementById('cfg-thu-vouchers-count').value = thu.cfgVouchersCount !== undefined ? thu.cfgVouchersCount : 0;
+            if (document.activeElement !== document.getElementById('cfg-thu-vouchers-value')) document.getElementById('cfg-thu-vouchers-value').value = thu.cfgVouchersValue !== undefined ? thu.cfgVouchersValue : 0;
             document.getElementById('cfg-thu-enabled').checked = !!thu.enabled;
 
-            document.getElementById('cfg-sun-min').value = sun.min !== undefined ? sun.min : 0;
-            document.getElementById('cfg-sun-max').value = sun.max !== undefined ? sun.max : 10000;
-            document.getElementById('cfg-sun-excludes').value = (sun.excludes || []).join(',');
-            document.getElementById('cfg-sun-vouchers-count').value = sun.cfgVouchersCount !== undefined ? sun.cfgVouchersCount : 0;
-            document.getElementById('cfg-sun-vouchers-value').value = sun.cfgVouchersValue !== undefined ? sun.cfgVouchersValue : 0;
-            if (state.nextDrawTime !== undefined) document.getElementById('drawTime').value = state.nextDrawTime;
+            if (document.activeElement !== document.getElementById('cfg-sun-min')) document.getElementById('cfg-sun-min').value = sun.min !== undefined ? sun.min : 1;
+            if (document.activeElement !== document.getElementById('cfg-sun-max')) document.getElementById('cfg-sun-max').value = sun.max !== undefined ? sun.max : 999;
+            if (document.activeElement !== document.getElementById('cfg-sun-excludes')) document.getElementById('cfg-sun-excludes').value = (sun.excludes || []).join(',');
+            if (document.activeElement !== document.getElementById('cfg-sun-vouchers-count')) document.getElementById('cfg-sun-vouchers-count').value = sun.cfgVouchersCount !== undefined ? sun.cfgVouchersCount : 0;
+            if (document.activeElement !== document.getElementById('cfg-sun-vouchers-value')) document.getElementById('cfg-sun-vouchers-value').value = sun.cfgVouchersValue !== undefined ? sun.cfgVouchersValue : 0;
+            if (document.activeElement !== document.getElementById('drawTime') && state.nextDrawTime !== undefined) document.getElementById('drawTime').value = state.nextDrawTime;
         }
 
         function updateViewButtons() {
@@ -1265,6 +1342,7 @@
         }
 
         function getDrawStateData() {
+            if (state && state.draw) return state.draw;
             let drawState = null;
             try {
                 const saved = localStorage.getItem('mmr_state_v5');
@@ -1274,6 +1352,7 @@
         }
 
         function getFinancialsData() {
+            if (state && state.financials) return state.financials;
             let fins = null;
             try {
                 const saved = localStorage.getItem('mmr_state_v5');
@@ -1425,7 +1504,12 @@
 
         function printHTML(content) {
             const win = window.open('', '_blank');
+            if (!win) {
+                alert('Popup blocked! Please allow popups for printing.');
+                return;
+            }
             win.document.write(`
+                <!DOCTYPE html>
                 <html><head>
                 <style>
                     @page { size: A4 portrait; margin: 1cm; } 
@@ -1447,11 +1531,13 @@
                     .bold{font-weight:bold;}
                     .footer{margin-top:20px; font-family:monospace; font-size:10px; display:flex; justify-content:space-between;}
                 </style>
-                </head><body>` + content + `
-                <script>window.onload=()=>{setTimeout(()=>{window.print();window.close();}, 500);}<\\/script>
-                </body></html>
+                </head><body>` + content + `</body></html>
             `);
             win.document.close();
+            win.focus();
+            setTimeout(() => {
+                win.print();
+            }, 300);
         }
 
         function generateQRCodes() {

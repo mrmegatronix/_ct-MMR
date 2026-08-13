@@ -31,7 +31,7 @@ window.MMR_CONFIG = {
     PROGRESS_BAR_HEIGHT: '12px',   // Thicker for TV visibility
     
     // ── LOTTERY LOGIC ───────────────────────────────────────────────────
-    DEFAULT_PRIZE_COUNT: 62,
+    DEFAULT_PRIZE_COUNT: 48,
     DEFAULT_TICKET_MIN: 1,
     DEFAULT_TICKET_MAX: 999,
     
@@ -46,7 +46,7 @@ window.MMR_CONFIG = {
     CONFETTI_SYMBOLS: ['🥩', '🥓', '🍗', '🍖', 'LOGO'],
     
     // ── FEATURES ────────────────────────────────────────────────────────
-    VOICE_ENABLED_DEFAULT: true,
+    VOICE_ENABLED_DEFAULT: false,
     VOICE_RATE: 0.9,
     VOICE_PITCH: 0.8,
     
