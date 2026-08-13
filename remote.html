@@ -430,7 +430,7 @@
                     </div>
                     <div class="form-group">
                         <label>Max Ticket</label>
-                        <input type="number" id="cfg-thu-max" max="10000" value="5000">
+                        <input type="number" id="cfg-thu-max" max="50000" value="10000">
                     </div>
                 </div>
                 <div class="form-group" style="margin-bottom: 0.5rem;">
@@ -468,7 +468,7 @@
                     </div>
                     <div class="form-group">
                         <label>Max Ticket</label>
-                        <input type="number" id="cfg-sun-max" max="10000" value="5000">
+                        <input type="number" id="cfg-sun-max" max="50000" value="10000">
                     </div>
                 </div>
                 <div class="form-group" style="margin-bottom: 0.5rem;">
@@ -835,14 +835,14 @@
 
 
             document.getElementById('cfg-thu-min').value = thu.min !== undefined ? thu.min : 0;
-            document.getElementById('cfg-thu-max').value = thu.max !== undefined ? thu.max : 5000;
+            document.getElementById('cfg-thu-max').value = thu.max !== undefined ? thu.max : 10000;
             document.getElementById('cfg-thu-excludes').value = (thu.excludes || []).join(',');
             document.getElementById('cfg-thu-vouchers-count').value = thu.cfgVouchersCount !== undefined ? thu.cfgVouchersCount : 0;
             document.getElementById('cfg-thu-vouchers-value').value = thu.cfgVouchersValue !== undefined ? thu.cfgVouchersValue : 0;
             document.getElementById('cfg-thu-enabled').checked = !!thu.enabled;
 
             document.getElementById('cfg-sun-min').value = sun.min !== undefined ? sun.min : 0;
-            document.getElementById('cfg-sun-max').value = sun.max !== undefined ? sun.max : 5000;
+            document.getElementById('cfg-sun-max').value = sun.max !== undefined ? sun.max : 10000;
             document.getElementById('cfg-sun-excludes').value = (sun.excludes || []).join(',');
             document.getElementById('cfg-sun-vouchers-count').value = sun.cfgVouchersCount !== undefined ? sun.cfgVouchersCount : 0;
             document.getElementById('cfg-sun-vouchers-value').value = sun.cfgVouchersValue !== undefined ? sun.cfgVouchersValue : 0;
@@ -883,7 +883,7 @@
             const sun = state.draw.sunday;
 
             thu.min = parseInt(document.getElementById('cfg-thu-min').value) || 0;
-            thu.max = parseInt(document.getElementById('cfg-thu-max').value) || 5000;
+            thu.max = parseInt(document.getElementById('cfg-thu-max').value) || 10000;
             const thuExcludesStr = document.getElementById('cfg-thu-excludes').value || '';
             thu.excludes = thuExcludesStr.split(',').map(n => parseInt(n.trim())).filter(n => !isNaN(n));
             thu.excludesStr = thuExcludesStr;
@@ -896,7 +896,7 @@
             thu.enabled = document.getElementById('cfg-thu-enabled').checked;
 
             sun.min = parseInt(document.getElementById('cfg-sun-min').value) || 0;
-            sun.max = parseInt(document.getElementById('cfg-sun-max').value) || 5000;
+            sun.max = parseInt(document.getElementById('cfg-sun-max').value) || 10000;
             const sunExcludesStr = document.getElementById('cfg-sun-excludes').value || '';
             sun.excludes = sunExcludesStr.split(',').map(n => parseInt(n.trim())).filter(n => !isNaN(n));
             sun.excludesStr = sunExcludesStr;
