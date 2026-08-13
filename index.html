@@ -1547,13 +1547,27 @@
             const totalPrizes = t100 + t50 + t25;
             const totalPool = (t100 * 100) + (t50 * 50) + (t25 * 25);
             
+            const activeEvtName = (state.draw && state.draw.activeEvent) || 'thursday';
+            const isSunday = activeEvtName === 'sunday';
+            const targetDay = isSunday ? 0 : 4; // 0 = Sunday, 4 = Thursday
+            const dayNameUpper = isSunday ? 'SUNDAYS' : 'THURSDAYS';
+            const dayNameCap = isSunday ? "Sunday's" : "Thursday's";
+            const defaultSaleTime = isSunday ? "1:00PM" : "5:30PM";
+            const defaultDrawTime = isSunday ? "2:30PM" : "7:00PM";
+
             const nzDate = getNZDate();
             const day = nzDate.getDay();
-            const targetDay = (window.MMR_CONFIG && window.MMR_CONFIG.TARGET_DAY) ?? 4;
+            const hour = nzDate.getHours();
 
-            const ticketsWording = (day === targetDay) ? "TONIGHT FROM 5:30PM" : (day === (targetDay - 1 + 7) % 7) ? "TOMORROW FROM 5:30PM" : "THURSDAYS FROM 5:30PM";
-            const drawWording = (day === targetDay) ? "TONIGHT AT 7:00PM" : (day === (targetDay - 1 + 7) % 7) ? "TOMORROW AT 7:00PM" : "THURSDAYS AT 7:00PM";
-            const poolWording = (day === targetDay) ? "tonight's" : (day === (targetDay - 1 + 7) % 7) ? "tomorrow's" : "Thursday's";
+            const activeEvt = (state.draw && state.draw[activeEvtName]) || {};
+            const isDrawFinished = activeEvt.prizesLeft === 0 && (activeEvt.drawnNumbers || []).length > 0;
+            const isAfter8PM = hour >= 20;
+
+            let isTonight = (day === targetDay) && !isAfter8PM && !isDrawFinished;
+
+            const ticketsWording = isTonight ? `TONIGHT FROM ${defaultSaleTime}` : (day === (targetDay - 1 + 7) % 7) ? `TOMORROW FROM ${defaultSaleTime}` : `${dayNameUpper} FROM ${defaultSaleTime}`;
+            const drawWording = isTonight ? `TONIGHT AT ${defaultDrawTime}` : (day === (targetDay - 1 + 7) % 7) ? `TOMORROW AT ${defaultDrawTime}` : `${dayNameUpper} AT ${defaultDrawTime}`;
+            const poolWording = isTonight ? "tonight's" : (day === (targetDay - 1 + 7) % 7) ? "tomorrow's" : dayNameCap;
 
             const advertSlides = [];
             if (t100 > 0) {

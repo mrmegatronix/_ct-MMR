@@ -469,85 +469,99 @@
     <div class="card" style="margin-top: 2rem;">
     <!-- Financials & Audit Breakdown Card -->
     <div class="card" style="margin-top: 1.5rem;">
-        <h2>💰 Financials & Draw Audit Breakdown</h2>
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.75rem;">
+            <h2 style="margin: 0;">💰 Financials & Raffle Audit</h2>
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <label style="font-size: 0.85rem; font-weight: bold; color: var(--text-muted);">Saved Raffles:</label>
+                <select id="fin-saved-dates" onchange="onSelectSavedFinancialDate()" style="padding: 0.4rem 0.75rem; border-radius: 0.375rem; background: #0f172a; color: white; border: 1px solid #334155; font-weight: bold; font-size: 0.85rem;">
+                    <option value="current">-- Current Active Raffle --</option>
+                </select>
+                <button type="button" class="btn" id="btn-toggle-fin-lock" onclick="toggleFinancialsLock()" style="background: #334155; color: white; font-size: 0.85rem; padding: 0.4rem 0.75rem;">🔒 Locked (Click to Edit)</button>
+            </div>
+        </div>
         <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1rem;">
-            Enter cash and EFTPOS totals for each draw day. Ticket counts, gross revenues, prize pool values, and net margins auto-calculate from active draw configs.
+            Select a saved raffle date to view or edit previous figures. All day totals and weekly summary auto-calculate.
         </p>
 
         <!-- Thursday Financials -->
         <div style="background: rgba(59, 130, 246, 0.1); border: 1px solid #3b82f6; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
-                <h3 style="margin: 0; color: #3b82f6;">Thursday Financial Breakdown</h3>
-                <span id="fin-thu-cfg-badge" style="font-size: 0.8rem; background: rgba(59, 130, 246, 0.2); padding: 3px 8px; border-radius: 4px; color: #93c5fd; font-weight: bold;">
-                    Ticket Range: #1 - #9999 (9999 Tickets)
-                </span>
-            </div>
+            <h3 style="margin-top: 0; color: #3b82f6;">Thursday Raffle Financials</h3>
             
             <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; margin-bottom: 0.75rem;">
-                <div class="form-group"><label style="font-size:0.75rem;">Ticket Min #</label><input type="text" id="fin-thu-min-disp" readonly style="background: #0d1526; color: #94a3b8;"></div>
-                <div class="form-group"><label style="font-size:0.75rem;">Ticket Max #</label><input type="text" id="fin-thu-max-disp" readonly style="background: #0d1526; color: #94a3b8;"></div>
-                <div class="form-group"><label style="font-size:0.75rem;">Tickets Available</label><input type="text" id="fin-thu-avail-disp" readonly style="background: #0d1526; font-weight: bold; color: #60a5fa;"></div>
-                <div class="form-group"><label style="font-size:0.75rem;">Prize Pool Value</label><input type="text" id="fin-thu-prizepool-disp" readonly style="background: #0d1526; font-weight: bold; color: #f59e0b;" value="$3,000.00"></div>
+                <div class="form-group"><label style="font-size:0.75rem;">Ticket Start (#)</label><input type="number" id="fin-thu-ticket-start" value="1" readonly class="fin-field" oninput="calcFinancials()"></div>
+                <div class="form-group"><label style="font-size:0.75rem;">Ticket Finish (#)</label><input type="number" id="fin-thu-ticket-finish" value="9999" readonly class="fin-field" oninput="calcFinancials()"></div>
+                <div class="form-group"><label style="font-size:0.75rem;">Tickets Sold</label><input type="number" id="fin-thu-tickets" value="0" readonly class="fin-field" oninput="calcFinancials()"></div>
+                <div class="form-group"><label style="font-size:0.75rem;">Prize Pool Total ($)</label><input type="number" id="fin-thu-prizepool" value="3000" step="0.01" readonly class="fin-field" oninput="calcFinancials()"></div>
             </div>
 
-            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; margin-bottom: 0.5rem;">
-                <div class="form-group"><label style="font-size:0.75rem;">Cash Received ($)</label><input type="number" id="fin-thu-cash" value="0" step="0.01" oninput="calcFinancials()"></div>
-                <div class="form-group"><label style="font-size:0.75rem;">EFTPOS Received ($)</label><input type="number" id="fin-thu-eftpos" value="0" step="0.01" oninput="calcFinancials()"></div>
-                <div class="form-group"><label style="font-size:0.75rem;">Tickets Sold</label><input type="number" id="fin-thu-tickets" value="0" oninput="calcFinancials()"></div>
-                <div class="form-group"><label style="font-size:0.75rem;">Thursday Revenue Total</label><input type="text" id="fin-thu-total" value="$0.00" readonly style="background: #0d1526; font-weight: bold; color: #3b82f6; font-size: 1rem;"></div>
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; margin-bottom: 0.75rem;">
+                <div class="form-group"><label style="font-size:0.75rem;">Ticket Price Single ($)</label><input type="number" id="fin-thu-price-single" value="2.00" step="0.01" readonly class="fin-field" oninput="calcFinancials()"></div>
+                <div class="form-group"><label style="font-size:0.75rem;">Singles Sold</label><input type="number" id="fin-thu-singles" value="0" readonly class="fin-field" oninput="calcFinancials()"></div>
+                <div class="form-group"><label style="font-size:0.75rem;">Ticket Price Strip ($)</label><input type="number" id="fin-thu-price-strip" value="10.00" step="0.01" readonly class="fin-field" oninput="calcFinancials()"></div>
+                <div class="form-group"><label style="font-size:0.75rem;">Strips Sold</label><input type="number" id="fin-thu-strips" value="0" readonly class="fin-field" oninput="calcFinancials()"></div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; margin-bottom: 0.75rem;">
+                <div class="form-group"><label style="font-size:0.75rem;">Cash Total ($)</label><input type="number" id="fin-thu-cash" value="0" step="0.01" readonly class="fin-field" oninput="calcFinancials()"></div>
+                <div class="form-group"><label style="font-size:0.75rem;">EFTPOS Total ($)</label><input type="number" id="fin-thu-eftpos" value="0" step="0.01" readonly class="fin-field" oninput="calcFinancials()"></div>
+                <div class="form-group"><label style="font-size:0.75rem;">Reimbursements ($)</label><input type="number" id="fin-thu-reimb" value="0" step="0.01" readonly class="fin-field" oninput="calcFinancials()"></div>
+                <div class="form-group"><label style="font-size:0.75rem;">Thursday Total ($)</label><input type="text" id="fin-thu-total" value="$0.00" readonly style="background: #0d1526; font-weight: bold; color: #3b82f6; font-size: 1rem;"></div>
             </div>
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
-                <div class="form-group"><label style="font-size:0.75rem;">Thu Net Profit / Margin ($)</label><input type="text" id="fin-thu-net" value="$0.00" readonly style="background: #0d1526; font-weight: bold; color: #10b981;"></div>
-                <div class="form-group"><label style="font-size:0.75rem;">Thursday Prize Details</label><input type="text" id="fin-thu-prizes-summary" readonly style="background: #0d1526; color: #cbd5e1; font-size: 0.85rem;"></div>
+                <div class="form-group"><label style="font-size:0.75rem;">General Notes</label><input type="text" id="fin-thu-notes-gen" readonly class="fin-field" placeholder="Thursday general notes"></div>
+                <div class="form-group"><label style="font-size:0.75rem;">Reimbursements Notes</label><input type="text" id="fin-thu-notes-reimb" readonly class="fin-field" placeholder="Thursday reimbursement notes"></div>
             </div>
         </div>
 
         <!-- Sunday Financials -->
         <div style="background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
-                <h3 style="margin: 0; color: #ef4444;">Sunday Financial Breakdown</h3>
-                <span id="fin-sun-cfg-badge" style="font-size: 0.8rem; background: rgba(239, 68, 68, 0.2); padding: 3px 8px; border-radius: 4px; color: #fca5a5; font-weight: bold;">
-                    Ticket Range: #1 - #9999 (9999 Tickets)
-                </span>
+            <h3 style="margin-top: 0; color: #ef4444;">Sunday Raffle Financials</h3>
+
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; margin-bottom: 0.75rem;">
+                <div class="form-group"><label style="font-size:0.75rem;">Ticket Start (#)</label><input type="number" id="fin-sun-ticket-start" value="1" readonly class="fin-field" oninput="calcFinancials()"></div>
+                <div class="form-group"><label style="font-size:0.75rem;">Ticket Finish (#)</label><input type="number" id="fin-sun-ticket-finish" value="9999" readonly class="fin-field" oninput="calcFinancials()"></div>
+                <div class="form-group"><label style="font-size:0.75rem;">Tickets Sold</label><input type="number" id="fin-sun-tickets" value="0" readonly class="fin-field" oninput="calcFinancials()"></div>
+                <div class="form-group"><label style="font-size:0.75rem;">Prize Pool Total ($)</label><input type="number" id="fin-sun-prizepool" value="0" step="0.01" readonly class="fin-field" oninput="calcFinancials()"></div>
             </div>
 
             <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; margin-bottom: 0.75rem;">
-                <div class="form-group"><label style="font-size:0.75rem;">Ticket Min #</label><input type="text" id="fin-sun-min-disp" readonly style="background: #0d1526; color: #94a3b8;"></div>
-                <div class="form-group"><label style="font-size:0.75rem;">Ticket Max #</label><input type="text" id="fin-sun-max-disp" readonly style="background: #0d1526; color: #94a3b8;"></div>
-                <div class="form-group"><label style="font-size:0.75rem;">Tickets Available</label><input type="text" id="fin-sun-avail-disp" readonly style="background: #0d1526; font-weight: bold; color: #f87171;"></div>
-                <div class="form-group"><label style="font-size:0.75rem;">Prize Pool Value</label><input type="text" id="fin-sun-prizepool-disp" readonly style="background: #0d1526; font-weight: bold; color: #f59e0b;" value="$0.00"></div>
+                <div class="form-group"><label style="font-size:0.75rem;">Ticket Price Single ($)</label><input type="number" id="fin-sun-price-single" value="2.00" step="0.01" readonly class="fin-field" oninput="calcFinancials()"></div>
+                <div class="form-group"><label style="font-size:0.75rem;">Singles Sold</label><input type="number" id="fin-sun-singles" value="0" readonly class="fin-field" oninput="calcFinancials()"></div>
+                <div class="form-group"><label style="font-size:0.75rem;">Ticket Price Strip ($)</label><input type="number" id="fin-sun-price-strip" value="10.00" step="0.01" readonly class="fin-field" oninput="calcFinancials()"></div>
+                <div class="form-group"><label style="font-size:0.75rem;">Strips Sold</label><input type="number" id="fin-sun-strips" value="0" readonly class="fin-field" oninput="calcFinancials()"></div>
             </div>
 
-            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; margin-bottom: 0.5rem;">
-                <div class="form-group"><label style="font-size:0.75rem;">Cash Received ($)</label><input type="number" id="fin-sun-cash" value="0" step="0.01" oninput="calcFinancials()"></div>
-                <div class="form-group"><label style="font-size:0.75rem;">EFTPOS Received ($)</label><input type="number" id="fin-sun-eftpos" value="0" step="0.01" oninput="calcFinancials()"></div>
-                <div class="form-group"><label style="font-size:0.75rem;">Tickets Sold</label><input type="number" id="fin-sun-tickets" value="0" oninput="calcFinancials()"></div>
-                <div class="form-group"><label style="font-size:0.75rem;">Sunday Revenue Total</label><input type="text" id="fin-sun-total" value="$0.00" readonly style="background: #0d1526; font-weight: bold; color: #ef4444; font-size: 1rem;"></div>
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; margin-bottom: 0.75rem;">
+                <div class="form-group"><label style="font-size:0.75rem;">Cash Total ($)</label><input type="number" id="fin-sun-cash" value="0" step="0.01" readonly class="fin-field" oninput="calcFinancials()"></div>
+                <div class="form-group"><label style="font-size:0.75rem;">EFTPOS Total ($)</label><input type="number" id="fin-sun-eftpos" value="0" step="0.01" readonly class="fin-field" oninput="calcFinancials()"></div>
+                <div class="form-group"><label style="font-size:0.75rem;">Reimbursements ($)</label><input type="number" id="fin-sun-reimb" value="0" step="0.01" readonly class="fin-field" oninput="calcFinancials()"></div>
+                <div class="form-group"><label style="font-size:0.75rem;">Sunday Total ($)</label><input type="text" id="fin-sun-total" value="$0.00" readonly style="background: #0d1526; font-weight: bold; color: #ef4444; font-size: 1rem;"></div>
             </div>
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
-                <div class="form-group"><label style="font-size:0.75rem;">Sun Net Profit / Margin ($)</label><input type="text" id="fin-sun-net" value="$0.00" readonly style="background: #0d1526; font-weight: bold; color: #10b981;"></div>
-                <div class="form-group"><label style="font-size:0.75rem;">Sunday Prize Details</label><input type="text" id="fin-sun-prizes-summary" readonly style="background: #0d1526; color: #cbd5e1; font-size: 0.85rem;"></div>
+                <div class="form-group"><label style="font-size:0.75rem;">General Notes</label><input type="text" id="fin-sun-notes-gen" readonly class="fin-field" placeholder="Sunday general notes"></div>
+                <div class="form-group"><label style="font-size:0.75rem;">Reimbursements Notes</label><input type="text" id="fin-sun-notes-reimb" readonly class="fin-field" placeholder="Sunday reimbursement notes"></div>
             </div>
         </div>
 
-        <!-- Grand Totals & Audit Summary -->
+        <!-- Weekly Summary & Grand Totals -->
         <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid #10b981; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem;">
-            <h3 style="margin-top: 0; color: #10b981;">Weekly Grand Totals & Audit Summary</h3>
+            <h3 style="margin-top: 0; color: #10b981;">Weekly Summary & Grand Totals</h3>
             <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem;">
-                <div class="form-group"><label style="font-size:0.75rem;">Total Cash</label><input type="text" id="fin-total-cash" value="$0.00" readonly style="background: #0d1526; font-weight: bold; color: #10b981;"></div>
-                <div class="form-group"><label style="font-size:0.75rem;">Total EFTPOS</label><input type="text" id="fin-total-eftpos" value="$0.00" readonly style="background: #0d1526; font-weight: bold; color: #10b981;"></div>
-                <div class="form-group"><label style="font-size:0.75rem;">Combined Revenue</label><input type="text" id="fin-grand-total" value="$0.00" readonly style="background: #0d1526; font-weight: bold; color: #10b981; font-size: 1.1rem;"></div>
-                <div class="form-group"><label style="font-size:0.75rem;">Overall Net Margin</label><input type="text" id="fin-overall-net" value="$0.00" readonly style="background: #0d1526; font-weight: bold; color: #34d399; font-size: 1.1rem;"></div>
+                <div class="form-group"><label style="font-size:0.75rem;">Combined Cash Total ($)</label><input type="text" id="fin-total-cash" value="$0.00" readonly style="background: #0d1526; font-weight: bold; color: #10b981;"></div>
+                <div class="form-group"><label style="font-size:0.75rem;">Combined EFTPOS Total ($)</label><input type="text" id="fin-total-eftpos" value="$0.00" readonly style="background: #0d1526; font-weight: bold; color: #10b981;"></div>
+                <div class="form-group"><label style="font-size:0.75rem;">Combined Reimbursements ($)</label><input type="text" id="fin-total-reimb" value="$0.00" readonly style="background: #0d1526; font-weight: bold; color: #f59e0b;"></div>
+                <div class="form-group"><label style="font-size:0.75rem;">Weekly Grand Total ($)</label><input type="text" id="fin-grand-total" value="$0.00" readonly style="background: #0d1526; font-weight: bold; color: #10b981; font-size: 1.1rem;"></div>
             </div>
-            <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 1rem; margin-top: 0.5rem;">
-                <div class="form-group"><label style="font-size:0.75rem;">Total Tickets Recorded</label><input type="text" id="fin-total-tickets" value="0" readonly style="background: #0d1526; font-weight: bold; color: #10b981;"></div>
-                <div class="form-group"><label style="font-size:0.75rem;">Audit Notes</label><input type="text" id="fin-notes" placeholder="Optional audit notes"></div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr 2fr; gap: 1rem; margin-top: 0.5rem;">
+                <div class="form-group"><label style="font-size:0.75rem;">Combined Tickets Sold</label><input type="text" id="fin-total-tickets" value="0" readonly style="background: #0d1526; font-weight: bold; color: #10b981;"></div>
+                <div class="form-group"><label style="font-size:0.75rem;">Combined Prize Pool Total ($)</label><input type="text" id="fin-total-prizepool" value="$0.00" readonly style="background: #0d1526; font-weight: bold; color: #f59e0b;"></div>
+                <div class="form-group"><label style="font-size:0.75rem;">Weekly Summary Notes</label><input type="text" id="fin-weekly-notes" readonly class="fin-field" placeholder="Weekly summary notes"></div>
             </div>
         </div>
 
-        <button class="btn btn-primary" onclick="saveFinancials()" style="width: 100%; background-color: #10b981; border-color: #059669;">💾 Save Financials & Sync</button>
+        <button class="btn btn-primary" onclick="saveFinancials()" style="width: 100%; background-color: #10b981; border-color: #059669;">💾 Save Financials & Update</button>
     </div>
 
     <!-- End of Week & Print Actions -->
@@ -1093,92 +1107,210 @@
             showGlobalStatus('Sunday Config Updated & Synced!', 'red');
         }
 
+        let isFinancialsUnlocked = false;
+        let selectedFinancialDateKey = 'current';
+
+        function toggleFinancialsLock() {
+            isFinancialsUnlocked = !isFinancialsUnlocked;
+            const btn = document.getElementById('btn-toggle-fin-lock');
+            const fields = document.querySelectorAll('.fin-field');
+            
+            fields.forEach(el => {
+                el.readOnly = !isFinancialsUnlocked;
+                el.style.background = isFinancialsUnlocked ? '#1e293b' : '';
+                el.style.borderColor = isFinancialsUnlocked ? '#3b82f6' : '';
+            });
+
+            if (btn) {
+                btn.innerText = isFinancialsUnlocked ? '🔓 Unlocked (Editing Allowed)' : '🔒 Locked (Click to Edit)';
+                btn.style.background = isFinancialsUnlocked ? '#16a34a' : '#334155';
+            }
+        }
+
+        function getFinancialsHistory() {
+            let hist = {};
+            try {
+                const saved = localStorage.getItem('mmr_financials_history');
+                if (saved) hist = JSON.parse(saved);
+            } catch(e) {}
+            return hist;
+        }
+
+        function populateSavedFinancialDatesDropdown() {
+            const select = document.getElementById('fin-saved-dates');
+            if (!select) return;
+
+            const hist = getFinancialsHistory();
+            const currVal = select.value || 'current';
+
+            select.innerHTML = '<option value="current">-- Current Active Raffle --</option>';
+
+            const dates = Object.keys(hist).sort().reverse();
+            dates.forEach(d => {
+                const opt = document.createElement('option');
+                opt.value = d;
+                opt.textContent = `Raffle Week of ${d}`;
+                select.appendChild(opt);
+            });
+
+            select.value = currVal;
+        }
+
+        function onSelectSavedFinancialDate() {
+            const select = document.getElementById('fin-saved-dates');
+            if (!select) return;
+            selectedFinancialDateKey = select.value;
+
+            if (selectedFinancialDateKey === 'current') {
+                loadFinancials();
+                showGlobalStatus('Loaded Current Active Raffle Financials', 'blue');
+            } else {
+                const hist = getFinancialsHistory();
+                const record = hist[selectedFinancialDateKey];
+                if (record) {
+                    fillFinancialsForm(record);
+                    showGlobalStatus(`Loaded Saved Raffle Figures for ${selectedFinancialDateKey}`, 'green');
+                }
+            }
+        }
+
+        function fillFinancialsForm(data) {
+            if (!data) return;
+            const thu = data.thursday || {};
+            const sun = data.sunday || {};
+
+            const elSet = (id, val) => { const el = document.getElementById(id); if (el) el.value = val !== undefined && val !== null ? val : 0; };
+
+            elSet('fin-thu-ticket-start', thu.ticketStart !== undefined ? thu.ticketStart : 1);
+            elSet('fin-thu-ticket-finish', thu.ticketFinish !== undefined ? thu.ticketFinish : 9999);
+            elSet('fin-thu-tickets', thu.ticketsSold !== undefined ? thu.ticketsSold : 0);
+            elSet('fin-thu-prizepool', thu.prizePool !== undefined ? thu.prizePool : 3000);
+            elSet('fin-thu-price-single', thu.priceSingle !== undefined ? thu.priceSingle : 2.00);
+            elSet('fin-thu-singles', thu.singlesSold !== undefined ? thu.singlesSold : 0);
+            elSet('fin-thu-price-strip', thu.priceStrip !== undefined ? thu.priceStrip : 10.00);
+            elSet('fin-thu-strips', thu.stripsSold !== undefined ? thu.stripsSold : 0);
+            elSet('fin-thu-cash', thu.cash || 0);
+            elSet('fin-thu-eftpos', thu.eftpos || 0);
+            elSet('fin-thu-reimb', thu.reimbursements || 0);
+            const elThuGen = document.getElementById('fin-thu-notes-gen'); if (elThuGen) elThuGen.value = thu.notesGeneral || '';
+            const elThuReimb = document.getElementById('fin-thu-notes-reimb'); if (elThuReimb) elThuReimb.value = thu.notesReimb || '';
+
+            elSet('fin-sun-ticket-start', sun.ticketStart !== undefined ? sun.ticketStart : 1);
+            elSet('fin-sun-ticket-finish', sun.ticketFinish !== undefined ? sun.ticketFinish : 9999);
+            elSet('fin-sun-tickets', sun.ticketsSold !== undefined ? sun.ticketsSold : 0);
+            elSet('fin-sun-prizepool', sun.prizePool !== undefined ? sun.prizePool : 0);
+            elSet('fin-sun-price-single', sun.priceSingle !== undefined ? sun.priceSingle : 2.00);
+            elSet('fin-sun-singles', sun.singlesSold !== undefined ? sun.singlesSold : 0);
+            elSet('fin-sun-price-strip', sun.priceStrip !== undefined ? sun.priceStrip : 10.00);
+            elSet('fin-sun-strips', sun.stripsSold !== undefined ? sun.stripsSold : 0);
+            elSet('fin-sun-cash', sun.cash || 0);
+            elSet('fin-sun-eftpos', sun.eftpos || 0);
+            elSet('fin-sun-reimb', sun.reimbursements || 0);
+            const elSunGen = document.getElementById('fin-sun-notes-gen'); if (elSunGen) elSunGen.value = sun.notesGeneral || '';
+            const elSunReimb = document.getElementById('fin-sun-notes-reimb'); if (elSunReimb) elSunReimb.value = sun.notesReimb || '';
+
+            const elWkNotes = document.getElementById('fin-weekly-notes'); if (elWkNotes) elWkNotes.value = data.weeklyNotes || '';
+
+            calcFinancials();
+        }
+
         function calcFinancials() {
-            const thu = (state.draw && state.draw.thursday) || {};
-            const sun = (state.draw && state.draw.sunday) || {};
-
-            const thuMin = thu.min !== undefined ? thu.min : 1;
-            const thuMax = thu.max !== undefined ? thu.max : 9999;
-            const thuAvail = (thuMax >= thuMin) ? (thuMax - thuMin + 1) : 0;
-            const thuP100 = thu.cfgPrizes100 !== undefined ? thu.cfgPrizes100 : 20;
-            const thuP50 = thu.cfgPrizes50 !== undefined ? thu.cfgPrizes50 : 12;
-            const thuP25 = thu.cfgPrizes25 !== undefined ? thu.cfgPrizes25 : 16;
-            const thuPrizeVal = (thuP100 * 100) + (thuP50 * 50) + (thuP25 * 25);
-
-            const sunMin = sun.min !== undefined ? sun.min : 1;
-            const sunMax = sun.max !== undefined ? sun.max : 9999;
-            const sunAvail = (sunMax >= sunMin) ? (sunMax - sunMin + 1) : 0;
-            const sunP100 = sun.cfgPrizes100 !== undefined ? sun.cfgPrizes100 : 0;
-            const sunP50 = sun.cfgPrizes50 !== undefined ? sun.cfgPrizes50 : 0;
-            const sunP25 = sun.cfgPrizes25 !== undefined ? sun.cfgPrizes25 : 0;
-            const sunVouchCount = sun.cfgVouchersCount !== undefined ? sun.cfgVouchersCount : 0;
-            const sunVouchVal = sun.cfgVouchersValue !== undefined ? sun.cfgVouchersValue : 0;
-            const sunPrizeVal = (sunP100 * 100) + (sunP50 * 50) + (sunP25 * 25) + (sunVouchCount * sunVouchVal);
-
+            const num = (id) => parseFloat(document.getElementById(id)?.value) || 0;
             const elSet = (id, val) => { const el = document.getElementById(id); if (el) el.value = val; };
-            const elTxt = (id, val) => { const el = document.getElementById(id); if (el) el.innerText = val; };
 
-            elSet('fin-thu-min-disp', '#' + thuMin);
-            elSet('fin-thu-max-disp', '#' + thuMax);
-            elSet('fin-thu-avail-disp', thuAvail + ' tickets');
-            elSet('fin-thu-prizepool-disp', '$' + thuPrizeVal.toFixed(2));
-            elSet('fin-thu-prizes-summary', `${thuP100}x$100, ${thuP50}x$50, ${thuP25}x$25`);
-            elTxt('fin-thu-cfg-badge', `Ticket Range: #${thuMin} - #${thuMax} (${thuAvail} Tickets)`);
+            const thuStart = num('fin-thu-ticket-start');
+            const thuFinish = num('fin-thu-ticket-finish');
+            let thuTickets = num('fin-thu-tickets');
+            if (thuFinish >= thuStart && thuStart > 0 && thuTickets === 0) {
+                thuTickets = (thuFinish - thuStart + 1);
+                elSet('fin-thu-tickets', thuTickets);
+            }
+            const thuPrizepool = num('fin-thu-prizepool');
+            const thuCash = num('fin-thu-cash');
+            const thuEftpos = num('fin-thu-eftpos');
+            const thuReimb = num('fin-thu-reimb');
+            const thuTotal = thuCash + thuEftpos - thuReimb;
 
-            elSet('fin-sun-min-disp', '#' + sunMin);
-            elSet('fin-sun-max-disp', '#' + sunMax);
-            elSet('fin-sun-avail-disp', sunAvail + ' tickets');
-            elSet('fin-sun-prizepool-disp', '$' + sunPrizeVal.toFixed(2));
-            elSet('fin-sun-prizes-summary', `${sunP100}x$100, ${sunP50}x$50, ${sunP25}x$25` + (sunVouchCount ? `, ${sunVouchCount}x$${sunVouchVal} Vouchers` : ''));
-            elTxt('fin-sun-cfg-badge', `Ticket Range: #${sunMin} - #${sunMax} (${sunAvail} Tickets)`);
-
-            const thuCash = parseFloat(document.getElementById('fin-thu-cash').value) || 0;
-            const thuEftpos = parseFloat(document.getElementById('fin-thu-eftpos').value) || 0;
-            const thuTickets = parseInt(document.getElementById('fin-thu-tickets').value) || 0;
-            const thuTotal = thuCash + thuEftpos;
-            const thuNet = thuTotal - thuPrizeVal;
-
-            const sunCash = parseFloat(document.getElementById('fin-sun-cash').value) || 0;
-            const sunEftpos = parseFloat(document.getElementById('fin-sun-eftpos').value) || 0;
-            const sunTickets = parseInt(document.getElementById('fin-sun-tickets').value) || 0;
-            const sunTotal = sunCash + sunEftpos;
-            const sunNet = sunTotal - sunPrizeVal;
+            const sunStart = num('fin-sun-ticket-start');
+            const sunFinish = num('fin-sun-ticket-finish');
+            let sunTickets = num('fin-sun-tickets');
+            if (sunFinish >= sunStart && sunStart > 0 && sunTickets === 0) {
+                sunTickets = (sunFinish - sunStart + 1);
+                elSet('fin-sun-tickets', sunTickets);
+            }
+            const sunPrizepool = num('fin-sun-prizepool');
+            const sunCash = num('fin-sun-cash');
+            const sunEftpos = num('fin-sun-eftpos');
+            const sunReimb = num('fin-sun-reimb');
+            const sunTotal = sunCash + sunEftpos - sunReimb;
 
             const totalCash = thuCash + sunCash;
             const totalEftpos = thuEftpos + sunEftpos;
+            const totalReimb = thuReimb + sunReimb;
             const grandTotal = thuTotal + sunTotal;
-            const overallNet = thuNet + sunNet;
+            const totalTickets = thuTickets + sunTickets;
+            const totalPrizepool = thuPrizepool + sunPrizepool;
 
             elSet('fin-thu-total', '$' + thuTotal.toFixed(2));
-            elSet('fin-thu-net', '$' + thuNet.toFixed(2));
-
             elSet('fin-sun-total', '$' + sunTotal.toFixed(2));
-            elSet('fin-sun-net', '$' + sunNet.toFixed(2));
-
             elSet('fin-total-cash', '$' + totalCash.toFixed(2));
             elSet('fin-total-eftpos', '$' + totalEftpos.toFixed(2));
+            elSet('fin-total-reimb', '$' + totalReimb.toFixed(2));
             elSet('fin-grand-total', '$' + grandTotal.toFixed(2));
-            elSet('fin-overall-net', '$' + overallNet.toFixed(2));
-            elSet('fin-total-tickets', thuTickets + sunTickets);
+            elSet('fin-total-tickets', totalTickets);
+            elSet('fin-total-prizepool', '$' + totalPrizepool.toFixed(2));
         }
 
         function saveFinancials() {
+            const num = (id) => parseFloat(document.getElementById(id)?.value) || 0;
+            const str = (id) => document.getElementById(id)?.value || '';
+
             const data = {
                 thursday: {
-                    cash: parseFloat(document.getElementById('fin-thu-cash').value) || 0,
-                    eftpos: parseFloat(document.getElementById('fin-thu-eftpos').value) || 0,
-                    tickets: parseInt(document.getElementById('fin-thu-tickets').value) || 0
+                    ticketStart: num('fin-thu-ticket-start'),
+                    ticketFinish: num('fin-thu-ticket-finish'),
+                    ticketsSold: num('fin-thu-tickets'),
+                    prizePool: num('fin-thu-prizepool'),
+                    priceSingle: num('fin-thu-price-single'),
+                    singlesSold: num('fin-thu-singles'),
+                    priceStrip: num('fin-thu-price-strip'),
+                    stripsSold: num('fin-thu-strips'),
+                    cash: num('fin-thu-cash'),
+                    eftpos: num('fin-thu-eftpos'),
+                    reimbursements: num('fin-thu-reimb'),
+                    notesGeneral: str('fin-thu-notes-gen'),
+                    notesReimb: str('fin-thu-notes-reimb')
                 },
                 sunday: {
-                    cash: parseFloat(document.getElementById('fin-sun-cash').value) || 0,
-                    eftpos: parseFloat(document.getElementById('fin-sun-eftpos').value) || 0,
-                    tickets: parseInt(document.getElementById('fin-sun-tickets').value) || 0
+                    ticketStart: num('fin-sun-ticket-start'),
+                    ticketFinish: num('fin-sun-ticket-finish'),
+                    ticketsSold: num('fin-sun-tickets'),
+                    prizePool: num('fin-sun-prizepool'),
+                    priceSingle: num('fin-sun-price-single'),
+                    singlesSold: num('fin-sun-singles'),
+                    priceStrip: num('fin-sun-price-strip'),
+                    stripsSold: num('fin-sun-strips'),
+                    cash: num('fin-sun-cash'),
+                    eftpos: num('fin-sun-eftpos'),
+                    reimbursements: num('fin-sun-reimb'),
+                    notesGeneral: str('fin-sun-notes-gen'),
+                    notesReimb: str('fin-sun-notes-reimb')
                 },
-                notes: document.getElementById('fin-notes').value,
+                weeklyNotes: str('fin-weekly-notes'),
                 savedAt: new Date().toISOString()
             };
+
+            const dateKey = selectedFinancialDateKey === 'current' ? formatDDMMYYYY(new Date()) : selectedFinancialDateKey;
+
+            const hist = getFinancialsHistory();
+            hist[dateKey] = data;
+            localStorage.setItem('mmr_financials_history', JSON.stringify(hist));
             localStorage.setItem('mmr_financials', JSON.stringify(data));
-            showGlobalStatus('Financials Saved!', 'green');
+
+            state.financials = data;
+            writeFirebase({ financials: data, financials_history: hist });
+            populateSavedFinancialDatesDropdown();
+            showGlobalStatus(`Financials Saved & Updated for ${dateKey}!`, 'green');
         }
 
         function loadFinancials() {
@@ -1186,20 +1318,12 @@
                 const saved = localStorage.getItem('mmr_financials');
                 if (saved) {
                     const data = JSON.parse(saved);
-                    if (data.thursday) {
-                        document.getElementById('fin-thu-cash').value = data.thursday.cash || 0;
-                        document.getElementById('fin-thu-eftpos').value = data.thursday.eftpos || 0;
-                        document.getElementById('fin-thu-tickets').value = data.thursday.tickets || 0;
-                    }
-                    if (data.sunday) {
-                        document.getElementById('fin-sun-cash').value = data.sunday.cash || 0;
-                        document.getElementById('fin-sun-eftpos').value = data.sunday.eftpos || 0;
-                        document.getElementById('fin-sun-tickets').value = data.sunday.tickets || 0;
-                    }
-                    if (data.notes) document.getElementById('fin-notes').value = data.notes;
+                    fillFinancialsForm(data);
+                } else {
                     calcFinancials();
                 }
-            } catch(e) {}
+            } catch(e) { calcFinancials(); }
+            populateSavedFinancialDatesDropdown();
         }
 
         function confirmThursday() {
@@ -1948,46 +2072,55 @@
             const printedDate = formatDDMMYYYY(new Date());
             return `
                 <div class="print-page">
-                    <h1>Monster Meat Raffle — Official Financial Audit Sheet</h1>
-                    <div class="form-grid"><div style="grid-column:span 2;"><strong>Raffle Date:</strong> ${printedDate}</div></div>
+                    <h1 style="margin-bottom: 4px;">Monster Meat Raffle — Official Financial Audit Sheet</h1>
+                    <div style="font-weight: bold; margin-bottom: 12px; border-bottom: 2px solid #000; padding-bottom: 4px;">Raffle Date / Week: ${printedDate}</div>
                     
                     <div style="display: flex; gap: 15px;">
-                        <div style="flex: 2;">
-                            <h3 style="background:#dbeafe; color:#1e40af; border-left:4px solid #2563eb; padding:6px 10px; margin:10px 0 5px 0;">THURSDAY RAFFLE BREAKDOWN</h3>
-                            <table class="financial-table"><thead><tr><th>Sales Description</th><th>Recorded Value</th><th>Audit Notes</th></tr></thead><tbody>
-                                <tr><td class="bold">Start Ticket Number (Min)</td><td><div class="input-placeholder"></div></td><td>First ticket sold</td></tr>
-                                <tr><td class="bold">End Ticket Number (Max)</td><td><div class="input-placeholder"></div></td><td>Last ticket sold</td></tr>
-                                <tr><td class="bold">Total Tickets Sold</td><td><div class="input-placeholder"></div></td><td>(Max - Min + 1)</td></tr>
-                                <tr><td class="bold">Ticket Price ($)</td><td><div class="input-placeholder"></div></td><td>Price per ticket</td></tr>
-                                <tr><td class="bold">Calculated Gross Revenue ($)</td><td><div class="input-placeholder"></div></td><td>Tickets Sold × Price</td></tr>
-                                <tr><td class="bold">EFTPOS Total ($)</td><td><div class="input-placeholder"></div></td><td>EFTPOS terminal roll</td></tr>
-                                <tr><td class="bold">Cash Total ($)</td><td><div class="input-placeholder"></div></td><td>Cash register till count</td></tr>
-                                <tr><td class="bold">Total Cash + EFTPOS Taken ($)</td><td><div class="input-placeholder"></div></td><td>Cash + EFTPOS</td></tr>
-                                <tr><td class="bold">Prize Pool Value ($)</td><td>$3,000.00</td><td>20x$100, 12x$50, 16x$25</td></tr>
-                                <tr><td class="bold">Net Profit / Margin ($)</td><td><div class="input-placeholder"></div></td><td>Total Taken - Prize Pool</td></tr>
-                            </tbody></table>
+                        <div style="flex: 3;">
+                            <h3 style="background:#eff6ff; color:#1e40af; border-left:4px solid #2563eb; padding:4px 8px; margin:5px 0 5px 0; font-size:0.85rem;">THURSDAY RAFFLE BREAKDOWN</h3>
+                            <table class="financial-table" style="font-size:0.78rem; margin-bottom:8px;">
+                                <thead><tr><th>Sales Description</th><th>Value / Count</th><th>Audit Notes</th></tr></thead>
+                                <tbody>
+                                    <tr><td class="bold">Ticket Start Number (#)</td><td><div class="input-placeholder"></div></td><td>First ticket sold</td></tr>
+                                    <tr><td class="bold">Ticket Finish Number (#)</td><td><div class="input-placeholder"></div></td><td>Last ticket sold</td></tr>
+                                    <tr><td class="bold">Total Tickets Sold</td><td><div class="input-placeholder"></div></td><td>Finish - Start + 1</td></tr>
+                                    <tr><td class="bold">Singles Sold & Price</td><td><div class="input-placeholder"></div></td><td>@ $2.00 per single</td></tr>
+                                    <tr><td class="bold">Strips Sold & Price</td><td><div class="input-placeholder"></div></td><td>@ $10.00 per strip</td></tr>
+                                    <tr><td class="bold">Cash Total ($)</td><td><div class="input-placeholder"></div></td><td>Cash register till count</td></tr>
+                                    <tr><td class="bold">EFTPOS Total ($)</td><td><div class="input-placeholder"></div></td><td>EFTPOS terminal report</td></tr>
+                                    <tr><td class="bold">Reimbursements ($)</td><td><div class="input-placeholder"></div></td><td>Expenses / Payouts</td></tr>
+                                    <tr><td class="bold">Thursday Total ($)</td><td><div class="input-placeholder"></div></td><td>Cash + EFTPOS - Reimbursements</td></tr>
+                                </tbody>
+                            </table>
 
-                            <h3 style="background:#fee2e2; color:#991b1b; border-left:4px solid #ef4444; padding:6px 10px; margin:10px 0 5px 0;">SUNDAY RAFFLE BREAKDOWN</h3>
-                            <table class="financial-table"><thead><tr><th>Sales Description</th><th>Recorded Value</th><th>Audit Notes</th></tr></thead><tbody>
-                                <tr><td class="bold">Start Ticket Number (Min)</td><td><div class="input-placeholder"></div></td><td>First ticket sold</td></tr>
-                                <tr><td class="bold">End Ticket Number (Max)</td><td><div class="input-placeholder"></div></td><td>Last ticket sold</td></tr>
-                                <tr><td class="bold">Total Tickets Sold</td><td><div class="input-placeholder"></div></td><td>(Max - Min + 1)</td></tr>
-                                <tr><td class="bold">Total Revenue Taken ($)</td><td><div class="input-placeholder"></div></td><td>Cash + EFTPOS</td></tr>
-                            </tbody></table>
+                            <h3 style="background:#fef2f2; color:#991b1b; border-left:4px solid #ef4444; padding:4px 8px; margin:8px 0 5px 0; font-size:0.85rem;">SUNDAY RAFFLE BREAKDOWN</h3>
+                            <table class="financial-table" style="font-size:0.78rem; margin-bottom:8px;">
+                                <thead><tr><th>Sales Description</th><th>Value / Count</th><th>Audit Notes</th></tr></thead>
+                                <tbody>
+                                    <tr><td class="bold">Ticket Start Number (#)</td><td><div class="input-placeholder"></div></td><td>First ticket sold</td></tr>
+                                    <tr><td class="bold">Ticket Finish Number (#)</td><td><div class="input-placeholder"></div></td><td>Last ticket sold</td></tr>
+                                    <tr><td class="bold">Total Tickets Sold</td><td><div class="input-placeholder"></div></td><td>Finish - Start + 1</td></tr>
+                                    <tr><td class="bold">Singles Sold & Price</td><td><div class="input-placeholder"></div></td><td>@ $2.00 per single</td></tr>
+                                    <tr><td class="bold">Strips Sold & Price</td><td><div class="input-placeholder"></div></td><td>@ $10.00 per strip</td></tr>
+                                    <tr><td class="bold">Cash Total ($)</td><td><div class="input-placeholder"></div></td><td>Cash register till count</td></tr>
+                                    <tr><td class="bold">EFTPOS Total ($)</td><td><div class="input-placeholder"></div></td><td>EFTPOS terminal report</td></tr>
+                                    <tr><td class="bold">Reimbursements ($)</td><td><div class="input-placeholder"></div></td><td>Expenses / Payouts</td></tr>
+                                    <tr><td class="bold">Sunday Total ($)</td><td><div class="input-placeholder"></div></td><td>Cash + EFTPOS - Reimbursements</td></tr>
+                                </tbody>
+                            </table>
                         </div>
 
-                        <div style="flex: 1; background: #f8fafc; border: 2px dashed #64748b; padding: 12px; border-radius: 6px; font-size: 0.85rem;">
-                            <h4 style="margin-top: 0; color: #0284c7; border-bottom: 2px solid #0284c7; padding-bottom: 4px;">📐 FORMULAS & AUDIT HELP</h4>
-                            <p><strong>1. Tickets Sold:</strong><br><code>(End Ticket - Start Ticket) + 1</code></p>
-                            <p><strong>2. Expected Revenue:</strong><br><code>Tickets Sold × Ticket Price</code></p>
-                            <p><strong>3. Total Collected:</strong><br><code>EFTPOS Total + Cash Total</code></p>
-                            <p><strong>4. Net Earnings:</strong><br><code>Total Collected - Prize Pool ($3,000)</code></p>
-                            <p><strong>5. Till Variance Check:</strong><br><code>Total Collected - Expected Revenue</code><br><em>(Should equal $0.00)</em></p>
-                            <hr style="border: 0; border-top: 1px solid #cbd5e1; margin: 10px 0;">
-                            <p style="font-size: 0.75rem; color: #64748b;">Signatures required below upon completion of till count.</p>
-                            <br><br>
-                            <p>Duty Mgr Sig: __________________</p>
-                            <p>Audit Date: __________________</p>
+                        <div style="flex: 2; background: #f8fafc; border: 2px dashed #000; padding: 10px; border-radius: 4px; font-size: 0.78rem;">
+                            <h4 style="margin-top: 0; color: #0284c7; border-bottom: 2px solid #0284c7; padding-bottom: 2px; margin-bottom: 6px;">📐 SELLER MANUAL MATH FORMULAS</h4>
+                            <p style="margin: 3px 0;"><strong>1. Singles Total:</strong><br><code>Singles Sold × $2.00</code></p>
+                            <p style="margin: 3px 0;"><strong>2. Strips Total:</strong><br><code>Strips Sold × $10.00</code></p>
+                            <p style="margin: 3px 0;"><strong>3. Gross Expected Sales:</strong><br><code>Singles Total + Strips Total</code></p>
+                            <p style="margin: 3px 0;"><strong>4. Total Collected:</strong><br><code>Cash Total + EFTPOS Total - Reimbursements</code></p>
+                            <p style="margin: 3px 0;"><strong>5. Till Variance Check:</strong><br><code>Total Collected - Expected Sales (= $0.00)</code></p>
+                            <p style="margin: 3px 0;"><strong>6. Tickets Sold:</strong><br><code>(Ticket Finish - Ticket Start) + 1</code></p>
+                            <hr style="border: 0; border-top: 1px dashed #64748b; margin: 8px 0;">
+                            <p style="font-size: 0.72rem; color: #475569;">Seller Signature: _______________________</p>
+                            <p style="font-size: 0.72rem; color: #475569;">Duty Manager Sig: ______________________</p>
                         </div>
                     </div>
                 </div>
@@ -1995,64 +2128,119 @@
         }
 
         function buildFinancialSheetHTML() {
-            const fins = getFinancialsData();
-            const draw = getDrawStateData();
-            const thu = (draw && draw.thursday) || {};
-            const sun = (draw && draw.sunday) || {};
-            
-            const thuMin = thu.min !== undefined ? thu.min : 1;
-            const thuMax = thu.max !== undefined ? thu.max : 9999;
-            const thuTicketsSold = (thuMax >= thuMin) ? (thuMax - thuMin + 1) : 0;
-            
-            const thuCash = fins.thursday?.cash || 0;
-            const thuEftpos = fins.thursday?.eftpos || 0;
-            const thuTotal = thuCash + thuEftpos;
-            
-            const sunCash = fins.sunday?.cash || 0;
-            const sunEftpos = fins.sunday?.eftpos || 0;
-            const sunTotal = sunCash + sunEftpos;
+            const fins = getFinancialsData() || {};
+            const thu = fins.thursday || {};
+            const sun = fins.sunday || {};
+
+            const thuCash = thu.cash || 0; const thuEftpos = thu.eftpos || 0; const thuReimb = thu.reimbursements || 0;
+            const thuTotal = thuCash + thuEftpos - thuReimb;
+
+            const sunCash = sun.cash || 0; const sunEftpos = sun.eftpos || 0; const sunReimb = sun.reimbursements || 0;
+            const sunTotal = sunCash + sunEftpos - sunReimb;
+
             const grandTotal = thuTotal + sunTotal;
             const printedDate = formatDDMMYYYY(new Date());
 
             return `
                 <div class="print-page">
-                    <h1>Weekly Financial & Draw Summary</h1>
-                    <div class="form-grid"><div style="grid-column:span 2;"><strong>Week of:</strong> ${printedDate}</div></div>
+                    <h1 style="margin-bottom: 4px;">Weekly Financial & Draw Summary</h1>
+                    <div style="font-weight: bold; margin-bottom: 12px; border-bottom: 2px solid #000; padding-bottom: 4px;">Week / Date: ${printedDate}</div>
                     
                     <div style="display: flex; gap: 15px;">
-                        <div style="flex: 2;">
-                            <table class="financial-table">
-                                <thead><tr><th>Day</th><th>Min / Max Ticket</th><th>Tickets Sold</th><th>Cash</th><th>EFTPOS</th><th>Total Revenue</th></tr></thead>
+                        <div style="flex: 3;">
+                            <h3 style="background:#eff6ff; color:#1e40af; border-left:4px solid #2563eb; padding:4px 8px; margin:5px 0 5px 0; font-size:0.85rem;">THURSDAY RAFFLE FINANCIAL BREAKDOWN</h3>
+                            <table class="financial-table" style="font-size:0.78rem; margin-bottom:8px;">
+                                <thead>
+                                    <tr>
+                                        <th>Ticket Range</th>
+                                        <th>Sold</th>
+                                        <th>Single ($)</th>
+                                        <th>Strips ($)</th>
+                                        <th>Cash ($)</th>
+                                        <th>EFTPOS ($)</th>
+                                        <th>Reimb. ($)</th>
+                                        <th>Prize Pool ($)</th>
+                                        <th>Total ($)</th>
+                                    </tr>
+                                </thead>
                                 <tbody>
-                                    <tr style="background:#eff6ff;">
-                                        <td class="bold" style="border-left:4px solid #2563eb; color:#1e40af;">Thursday</td>
-                                        <td>#${thuMin} - #${thuMax}</td>
-                                        <td class="bold">${thuTicketsSold}</td>
+                                    <tr>
+                                        <td>#${thu.ticketStart || 1} - #${thu.ticketFinish || 9999}</td>
+                                        <td class="bold">${thu.ticketsSold || 0}</td>
+                                        <td>${thu.singlesSold || 0} x $${(thu.priceSingle || 2).toFixed(2)}</td>
+                                        <td>${thu.stripsSold || 0} x $${(thu.priceStrip || 10).toFixed(2)}</td>
                                         <td>$${thuCash.toFixed(2)}</td>
                                         <td>$${thuEftpos.toFixed(2)}</td>
-                                        <td class="bold">$${thuTotal.toFixed(2)}</td>
-                                    </tr>
-                                    <tr style="background:#fef2f2;">
-                                        <td class="bold" style="border-left:4px solid #ef4444; color:#991b1b;">Sunday</td>
-                                        <td>#${sun.min || 1} - #${sun.max || 9999}</td>
-                                        <td class="bold">${(sun.max && sun.min) ? (sun.max - sun.min + 1) : 0}</td>
-                                        <td>$${sunCash.toFixed(2)}</td>
-                                        <td>$${sunEftpos.toFixed(2)}</td>
-                                        <td class="bold">$${sunTotal.toFixed(2)}</td>
-                                    </tr>
-                                    <tr style="background:#f0fdf4;">
-                                        <td colspan="5" class="text-right bold" style="border-left:4px solid #10b981; color:#166534;">GRAND TOTAL REVENUE</td>
-                                        <td class="bold" style="color:#166534; font-size:1.1rem;">$${grandTotal.toFixed(2)}</td>
+                                        <td>-$${thuReimb.toFixed(2)}</td>
+                                        <td>$${(thu.prizePool || 3000).toFixed(2)}</td>
+                                        <td class="bold" style="color:#2563eb;">$${thuTotal.toFixed(2)}</td>
                                     </tr>
                                 </tbody>
                             </table>
+                            <div style="font-size:0.72rem; margin-bottom:8px; display:flex; gap:12px;">
+                                <span><strong>Gen Notes:</strong> ${thu.notesGeneral || 'None'}</span>
+                                <span><strong>Reimb Notes:</strong> ${thu.notesReimb || 'None'}</span>
+                            </div>
+
+                            <h3 style="background:#fef2f2; color:#991b1b; border-left:4px solid #ef4444; padding:4px 8px; margin:8px 0 5px 0; font-size:0.85rem;">SUNDAY RAFFLE FINANCIAL BREAKDOWN</h3>
+                            <table class="financial-table" style="font-size:0.78rem; margin-bottom:8px;">
+                                <thead>
+                                    <tr>
+                                        <th>Ticket Range</th>
+                                        <th>Sold</th>
+                                        <th>Single ($)</th>
+                                        <th>Strips ($)</th>
+                                        <th>Cash ($)</th>
+                                        <th>EFTPOS ($)</th>
+                                        <th>Reimb. ($)</th>
+                                        <th>Prize Pool ($)</th>
+                                        <th>Total ($)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>#${sun.ticketStart || 1} - #${sun.ticketFinish || 9999}</td>
+                                        <td class="bold">${sun.ticketsSold || 0}</td>
+                                        <td>${sun.singlesSold || 0} x $${(sun.priceSingle || 2).toFixed(2)}</td>
+                                        <td>${sun.stripsSold || 0} x $${(sun.priceStrip || 10).toFixed(2)}</td>
+                                        <td>$${sunCash.toFixed(2)}</td>
+                                        <td>$${sunEftpos.toFixed(2)}</td>
+                                        <td>-$${sunReimb.toFixed(2)}</td>
+                                        <td>$${(sun.prizePool || 0).toFixed(2)}</td>
+                                        <td class="bold" style="color:#ef4444;">$${sunTotal.toFixed(2)}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <div style="font-size:0.72rem; margin-bottom:8px; display:flex; gap:12px;">
+                                <span><strong>Gen Notes:</strong> ${sun.notesGeneral || 'None'}</span>
+                                <span><strong>Reimb Notes:</strong> ${sun.notesReimb || 'None'}</span>
+                            </div>
+
+                            <h3 style="background:#f0fdf4; color:#166534; border-left:4px solid #10b981; padding:4px 8px; margin:8px 0 5px 0; font-size:0.85rem;">WEEKLY SUMMARY & GRAND TOTALS</h3>
+                            <table class="financial-table" style="font-size:0.82rem;">
+                                <tbody>
+                                    <tr><td class="bold">Combined Cash Total</td><td>$${(thuCash + sunCash).toFixed(2)}</td></tr>
+                                    <tr><td class="bold">Combined EFTPOS Total</td><td>$${(thuEftpos + sunEftpos).toFixed(2)}</td></tr>
+                                    <tr><td class="bold">Combined Reimbursements</td><td>-$${(thuReimb + sunReimb).toFixed(2)}</td></tr>
+                                    <tr><td class="bold">Combined Tickets Sold</td><td>${((thu.ticketsSold || 0) + (sun.ticketsSold || 0))}</td></tr>
+                                    <tr><td class="bold">Combined Prize Pool Total</td><td>$${((thu.prizePool || 3000) + (sun.prizePool || 0)).toFixed(2)}</td></tr>
+                                    <tr style="background:#f0fdf4;"><td class="bold" style="color:#166534; font-size:1rem;">WEEKLY GRAND TOTAL</td><td class="bold" style="color:#166534; font-size:1.05rem;">$${grandTotal.toFixed(2)}</td></tr>
+                                </tbody>
+                            </table>
+                            <div style="font-size:0.75rem; margin-top:6px;"><strong>Weekly Summary Notes:</strong> ${fins.weeklyNotes || 'None'}</div>
                         </div>
 
-                        <div style="flex: 1; background: #f8fafc; border: 2px dashed #64748b; padding: 12px; border-radius: 6px; font-size: 0.85rem;">
-                            <h4 style="margin-top: 0; color: #0284c7; border-bottom: 2px solid #0284c7; padding-bottom: 4px;">📐 HELPFUL FORMULAS</h4>
-                            <p><strong>• Tickets Sold:</strong> <code>(Max - Min + 1)</code></p>
-                            <p><strong>• Thursday Revenue:</strong> <code>Cash + EFTPOS</code></p>
-                            <p><strong>• Net Profit:</strong> <code>Revenue - Prize Pool ($3,000)</code></p>
+                        <div style="flex: 2; background: #f8fafc; border: 2px dashed #000; padding: 10px; border-radius: 4px; font-size: 0.78rem;">
+                            <h4 style="margin-top: 0; color: #0284c7; border-bottom: 2px solid #0284c7; padding-bottom: 2px; margin-bottom: 6px;">📐 SELLER MANUAL MATH FORMULAS</h4>
+                            <p style="margin: 3px 0;"><strong>1. Singles Sales Total:</strong><br><code>Singles Sold × Price Single ($2.00)</code></p>
+                            <p style="margin: 3px 0;"><strong>2. Strips Sales Total:</strong><br><code>Strips Sold × Price Strip ($10.00)</code></p>
+                            <p style="margin: 3px 0;"><strong>3. Gross Expected Sales:</strong><br><code>Singles Total + Strips Total</code></p>
+                            <p style="margin: 3px 0;"><strong>4. Actual Total Collected:</strong><br><code>Cash Total + EFTPOS Total - Reimbursements</code></p>
+                            <p style="margin: 3px 0;"><strong>5. Till Variance Check:</strong><br><code>Actual Collected - Gross Expected Sales (= $0.00)</code></p>
+                            <p style="margin: 3px 0;"><strong>6. Tickets Sold:</strong><br><code>(Ticket Finish - Ticket Start) + 1</code></p>
+                            <hr style="border: 0; border-top: 1px dashed #64748b; margin: 8px 0;">
+                            <p style="font-size: 0.72rem; color: #475569;">Seller Signature: _______________________</p>
+                            <p style="font-size: 0.72rem; color: #475569;">Duty Manager Sig: ______________________</p>
                         </div>
                     </div>
                 </div>
