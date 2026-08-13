@@ -3,126 +3,719 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Archive - Monster Meat Raffle</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Raffle Archive History - Monster Meat Raffle</title>
     <style>
-        body { background-color: var(--bg-dark); color: white; font-family: system-ui, -apple-system, sans-serif; padding: 2rem; }
-        .archive-card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 1rem; padding: 2rem; margin-bottom: 2rem; }
-        h1 { color: var(--primary); text-align: center; margin-bottom: 3rem; }
-        .draw-section { margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.1); }
-        .numbers-list { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem; }
-        .number-badge { background: #333; padding: 0.3rem 0.8rem; border-radius: 0.5rem; font-weight: bold; }
-        .prize-100 { background: #ef4444; }
-        .prize-50 { background: #2563eb; }
-        .prize-25 { background: #10b981; }
-        .prize-bonus { background: #ffd700; color: black; }
-        .financials { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1rem; background: rgba(0,0,0,0.3); padding: 1rem; border-radius: 0.5rem; }
+        :root {
+            --bg: #0b0f19;
+            --surface: #1e293b;
+            --surface-card: #0f172a;
+            --primary: #ef4444;
+            --text: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #334155;
+            --accent-100: #f59e0b;
+            --accent-50: #3b82f6;
+            --accent-25: #10b981;
+            --accent-bonus: #eab308;
+            --accent-voucher: #8b5cf6;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 1.5rem;
+            line-height: 1.5;
+        }
+
+        /* ── Header Nav Bar ── */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(30, 41, 59, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            padding: 1rem 1.5rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .navbar-title {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .navbar-title h1 {
+            margin: 0;
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--primary);
+            letter-spacing: -0.5px;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .nav-btn {
+            background: #0f172a;
+            color: var(--text);
+            border: 1.5px solid var(--border);
+            padding: 0.5rem 0.9rem;
+            border-radius: 0.6rem;
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 700;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            cursor: pointer;
+        }
+
+        .nav-btn:hover {
+            background: #334155;
+            border-color: #475569;
+            color: white;
+        }
+
+        .nav-btn-primary {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: white;
+        }
+        .nav-btn-primary:hover {
+            background: #dc2626;
+        }
+
+        /* ── Controls Bar ── */
+        .controls-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .search-box {
+            position: relative;
+            flex: 1;
+            min-width: 250px;
+        }
+
+        .search-box input {
+            width: 100%;
+            background: #0f172a;
+            border: 1.5px solid var(--border);
+            color: var(--text);
+            padding: 0.65rem 1rem 0.65rem 2.4rem;
+            border-radius: 0.75rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+            outline: none;
+        }
+
+        .search-box input:focus {
+            border-color: var(--primary);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 0.8rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            pointer-events: none;
+        }
+
+        /* ── Archive Card ── */
+        .archive-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 1.25rem;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .archive-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1.5px solid var(--border);
+            padding-bottom: 1rem;
+            margin-bottom: 1.25rem;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+        }
+
+        .archive-header h2 {
+            margin: 0;
+            font-size: 1.3rem;
+            color: #f8fafc;
+            font-weight: 800;
+        }
+
+        .archive-date-tag {
+            background: #0f172a;
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            padding: 0.3rem 0.75rem;
+            border-radius: 2rem;
+            font-size: 0.8rem;
+            font-weight: 700;
+        }
+
+        .draw-section {
+            background: var(--surface-card);
+            border: 1px solid var(--border);
+            border-radius: 0.85rem;
+            padding: 1.1rem;
+            margin-top: 1rem;
+        }
+
+        .draw-section h3 {
+            margin: 0 0 0.5rem 0;
+            font-size: 1.05rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .numbers-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+            margin-top: 0.8rem;
+        }
+
+        .number-badge {
+            padding: 0.35rem 0.65rem;
+            border-radius: 0.5rem;
+            font-weight: 800;
+            font-size: 0.85rem;
+            border: 1px solid transparent;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .badge-100 {
+            background: #78350f;
+            color: #fef3c7;
+            border-color: #d97706;
+        }
+        .badge-50 {
+            background: #1e3a8a;
+            color: #dbeafe;
+            border-color: #2563eb;
+        }
+        .badge-25 {
+            background: #064e3b;
+            color: #d1fae5;
+            border-color: #10b981;
+        }
+        .badge-bonus {
+            background: #713f12;
+            color: #fef08a;
+            border-color: #eab308;
+        }
+        .badge-voucher {
+            background: #581c87;
+            color: #f3e8ff;
+            border-color: #8b5cf6;
+        }
+        .badge-redrawn {
+            background: #451a03;
+            color: #fca5a5;
+            border-color: #ef4444;
+            text-decoration: line-through;
+            opacity: 0.65;
+        }
+
+        /* ── Financial Breakdown Table ── */
+        .fin-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 0.8rem;
+            font-size: 0.82rem;
+            background: #0b0f19;
+            border-radius: 0.5rem;
+            overflow: hidden;
+        }
+
+        .fin-table th, .fin-table td {
+            padding: 0.6rem 0.8rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .fin-table th {
+            background: #1e293b;
+            color: var(--text-muted);
+            font-weight: 800;
+            text-transform: uppercase;
+            font-size: 0.7rem;
+            letter-spacing: 0.5px;
+        }
+
+        .fin-table td {
+            color: #e2e8f0;
+            font-weight: 600;
+        }
+
+        .fin-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .sample-badge {
+            background: #0284c7;
+            color: white;
+            padding: 0.2rem 0.6rem;
+            border-radius: 0.4rem;
+            font-size: 0.75rem;
+            font-weight: 800;
+            text-transform: uppercase;
+        }
+
+        @media (max-width: 600px) {
+            body { padding: 0.85rem; }
+            .navbar { flex-direction: column; align-items: stretch; }
+            .nav-links { justify-content: center; }
+            .archive-card { padding: 1rem; }
+        }
     </style>
 </head>
 <body>
-    <h1>📚 Raffle Archive History</h1>
+    <!-- Top Navigation Bar -->
+    <div class="navbar">
+        <div class="navbar-title">
+            <span style="font-size: 1.8rem;">📚</span>
+            <div>
+                <h1>Monster Meat Raffle Archives</h1>
+                <div style="font-size: 0.75rem; color: var(--text-muted);">Historical Draw Results & Financial Audit Logs</div>
+            </div>
+        </div>
+        <div class="nav-links">
+            <a href="index.html" class="nav-btn" target="_blank">📺 Display TV</a>
+            <a href="admin.html" class="nav-btn">⚙️ Admin Dashboard</a>
+            <a href="remote.html" class="nav-btn">📱 Remote Control</a>
+            <a href="verify.html" class="nav-btn">🔍 Ticket Verify</a>
+        </div>
+    </div>
+
+    <!-- Controls Bar -->
+    <div class="controls-bar">
+        <div class="search-box">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="archive-search" placeholder="Search ticket #, prize, date, or notes..." oninput="filterArchives()">
+        </div>
+        <div style="display: flex; gap: 0.5rem;">
+            <button class="nav-btn" onclick="toggleSampleData()" id="btn-toggle-sample">🧪 Show Sample Archive</button>
+            <button class="nav-btn nav-btn-primary" onclick="loadArchive()">🔄 Refresh</button>
+        </div>
+    </div>
+
+    <!-- Info Banner for Sample View -->
+    <div id="sample-banner" style="display: none; background: rgba(2, 132, 199, 0.15); border: 1.5px solid #0284c7; color: #38bdf8; padding: 0.85rem 1.25rem; border-radius: 0.85rem; margin-bottom: 1.5rem; font-size: 0.88rem; font-weight: 600;">
+        💡 <strong>Demonstration View Active:</strong> Showing realistic sample raffle archives. Click "Hide Sample Data" above to view live database logs.
+    </div>
+
+    <!-- Container for Archive Cards -->
     <div id="archive-container">
-        <p style="text-align:center;">Loading archive data from Firebase...</p>
+        <div style="text-align: center; padding: 3rem 1rem; color: var(--text-muted);">
+            <div style="font-size: 2.5rem; margin-bottom: 1rem;">⌛</div>
+            <div>Loading archive history from Firebase database...</div>
+        </div>
     </div>
 
     <script src="config.js"></script>
     <script>
-        async function loadArchive() {
-            try {
-                const url = window.MMR_CONFIG.FIREBASE_DB_URL + '/mmr_archive.json';
-                const response = await fetch(url);
-                const data = await response.json();
-                
-                const container = document.getElementById('archive-container');
-                container.innerHTML = '';
-                
-                if (!data) {
-                    container.innerHTML = '<p style="text-align:center;">No archived draws found.</p>';
-                    return;
+        let allArchiveItems = [];
+        let showingSample = false;
+
+        function formatDDMMYYYY(dateObj) {
+            if (!dateObj || isNaN(dateObj.getTime())) return '';
+            const dd = String(dateObj.getDate()).padStart(2, '0');
+            const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
+            const yyyy = dateObj.getFullYear();
+            return `${dd}/${mm}/${yyyy}`;
+        }
+
+        // Realistic Sample Data for Demonstration
+        const sampleArchiveData = {
+            "1786185600000": {
+                "timestamp": 1786185600000,
+                "thursday": {
+                    "enabled": true,
+                    "manualDraw": false,
+                    "drawnNumbers": [
+                        { "number": 1042, "prize": 100 },
+                        { "number": 1120, "prize": 100 },
+                        { "number": 1203, "prize": 100, "redrawn": true },
+                        { "number": 1305, "prize": 100 },
+                        { "number": 1015, "prize": 50 },
+                        { "number": 1180, "prize": 50 },
+                        { "number": 1244, "prize": 50 },
+                        { "number": 1008, "prize": 25 },
+                        { "number": 1092, "prize": 25 },
+                        { "number": 1311, "prize": 25 },
+                        { "number": 1542, "prize": "bonus" },
+                        { "number": 1289, "prize": "voucher" }
+                    ]
+                },
+                "sunday": {
+                    "enabled": true,
+                    "manualDraw": false,
+                    "drawnNumbers": [
+                        { "number": 2014, "prize": "bonus" },
+                        { "number": 2088, "prize": "bonus" },
+                        { "number": 2155, "prize": "bonus" }
+                    ]
+                },
+                "financials": {
+                    "thursday": {
+                        "ticketStart": 1001,
+                        "ticketFinish": 1850,
+                        "ticketsSold": 850,
+                        "cash": 650.00,
+                        "eftpos": 1050.00,
+                        "reimbursements": 50.00,
+                        "singlesSold": 400,
+                        "stripsSold": 90,
+                        "priceSingle": 2.00,
+                        "priceStrip": 10.00,
+                        "prizePool": 3000.00,
+                        "notesGeneral": "All 48 meat packs claimed on night.",
+                        "notesReimb": "$50 paid out for extra ice bags."
+                    },
+                    "sunday": {
+                        "ticketStart": 2001,
+                        "ticketFinish": 2400,
+                        "ticketsSold": 400,
+                        "cash": 320.00,
+                        "eftpos": 480.00,
+                        "reimbursements": 0.00,
+                        "singlesSold": 400,
+                        "stripsSold": 0,
+                        "priceSingle": 2.00,
+                        "priceStrip": 10.00,
+                        "prizePool": 500.00,
+                        "notesGeneral": "Rob's Bonus Box raffle completed cleanly."
+                    },
+                    "weeklyNotes": "Great turn out for week. Till reconciled exactly $0.00 variance."
                 }
-                
-                // Sort by key (timestamp) descending
+            },
+            "1785580800000": {
+                "timestamp": 1785580800000,
+                "thursday": {
+                    "enabled": true,
+                    "manualDraw": false,
+                    "drawnNumbers": [
+                        { "number": 3012, "prize": 100 },
+                        { "number": 3099, "prize": 100 },
+                        { "number": 3150, "prize": 50 },
+                        { "number": 3210, "prize": 50 },
+                        { "number": 3005, "prize": 25 },
+                        { "number": 3410, "prize": 25 }
+                    ]
+                },
+                "sunday": {
+                    "enabled": true,
+                    "drawnNumbers": [
+                        { "number": 4002, "prize": "bonus" }
+                    ]
+                },
+                "financials": {
+                    "thursday": {
+                        "ticketStart": 3001,
+                        "ticketFinish": 3750,
+                        "ticketsSold": 750,
+                        "cash": 500.00,
+                        "eftpos": 1000.00,
+                        "reimbursements": 0.00,
+                        "singlesSold": 350,
+                        "stripsSold": 80,
+                        "priceSingle": 2.00,
+                        "priceStrip": 10.00,
+                        "prizePool": 3000.00,
+                        "notesGeneral": "Smooth draw session."
+                    },
+                    "sunday": {
+                        "ticketStart": 4001,
+                        "ticketFinish": 4300,
+                        "ticketsSold": 300,
+                        "cash": 250.00,
+                        "eftpos": 350.00,
+                        "reimbursements": 0.00,
+                        "singlesSold": 300,
+                        "stripsSold": 0,
+                        "priceSingle": 2.00,
+                        "priceStrip": 10.00,
+                        "prizePool": 500.00
+                    },
+                    "weeklyNotes": "Weekly audit sheet signed by Duty Manager."
+                }
+            }
+        };
+
+        async function loadArchive() {
+            const container = document.getElementById('archive-container');
+            const sampleBtn = document.getElementById('btn-toggle-sample');
+            const sampleBanner = document.getElementById('sample-banner');
+            
+            container.innerHTML = `
+                <div style="text-align: center; padding: 3rem 1rem; color: var(--text-muted);">
+                    <div style="font-size: 2.5rem; margin-bottom: 1rem;">⌛</div>
+                    <div>Loading archive history from Firebase database...</div>
+                </div>`;
+
+            try {
+                let data = null;
+                if (!showingSample) {
+                    const fbUrl = window.MMR_CONFIG && window.MMR_CONFIG.FIREBASE_DB_URL;
+                    if (fbUrl) {
+                        const response = await fetch(`${fbUrl}/mmr_archive.json`);
+                        if (response.ok) {
+                            data = await response.json();
+                        }
+                    }
+                }
+
+                if (showingSample || !data || Object.keys(data).length === 0) {
+                    if (!data || Object.keys(data).length === 0) {
+                        showingSample = true;
+                        sampleBanner.style.display = 'block';
+                        sampleBtn.innerText = '📡 Show Live Firebase Archives';
+                    }
+                    data = sampleArchiveData;
+                } else {
+                    sampleBanner.style.display = 'none';
+                    sampleBtn.innerText = '🧪 Show Sample Archive';
+                }
+
+                allArchiveItems = [];
                 const keys = Object.keys(data).sort((a,b) => b.localeCompare(a));
                 
                 keys.forEach(key => {
-                    const week = data[key];
-                    const date = new Date(Number(key));
-                    
-                    const card = document.createElement('div');
-                    card.className = 'archive-card';
-                    
-                    let html = `<h2>Week of ${date.toLocaleDateString()}</h2>`;
-                    
-                    // Render Thursday
-                    if (week.thursday) {
-                        html += `<div class="draw-section">
-                            <h3 style="color:#60a5fa;">Thursday Draw</h3>
-                            <p>Manual Draw: ${week.thursday.manualDraw ? 'Yes' : 'No'}</p>`;
-                            
-                        if (week.thursday.drawnNumbers && week.thursday.drawnNumbers.length > 0) {
-                            html += `<div class="numbers-list">`;
-                            week.thursday.drawnNumbers.forEach(d => {
-                                const num = typeof d === 'object' ? d.number : d;
-                                const prize = typeof d === 'object' ? d.prize : 25;
-                                const redrawn = typeof d === 'object' ? d.redrawn : false;
-                                let pClass = prize == 100 ? 'prize-100' : (prize == 50 ? 'prize-50' : 'prize-25');
-                                if (prize === 'bonus') pClass = 'prize-bonus';
-                                const style = redrawn ? 'text-decoration: line-through; opacity:0.5;' : '';
-                                html += `<span class="number-badge ${pClass}" style="${style}">${num}</span>`;
-                            });
-                            html += `</div>`;
-                        }
-                        
-                        // Thursday Financials (if saved)
-                        if (week.financials && week.financials.thursday) {
-                            html += `<div class="financials">
-                                <div>Cash: $${week.financials.thursday.cash || 0}</div>
-                                <div>Eftpos: $${week.financials.thursday.eftpos || 0}</div>
-                                <div>Singles: ${week.financials.thursday.singles || 0}</div>
-                                <div>Strips: ${week.financials.thursday.strips || 0}</div>
-                            </div>`;
-                        }
-                        html += `</div>`;
-                    }
-                    
-                    // Render Sunday
-                    if (week.sunday && week.sunday.enabled) {
-                        html += `<div class="draw-section">
-                            <h3 style="color:#fbbf24;">Sunday Draw (Rob's Bonus Box)</h3>
-                            <p>Manual Draw: ${week.sunday.manualDraw ? 'Yes' : 'No'}</p>`;
-                            
-                        if (week.sunday.drawnNumbers && week.sunday.drawnNumbers.length > 0) {
-                            html += `<div class="numbers-list">`;
-                            week.sunday.drawnNumbers.forEach(d => {
-                                const num = typeof d === 'object' ? d.number : d;
-                                const redrawn = typeof d === 'object' ? d.redrawn : false;
-                                const style = redrawn ? 'text-decoration: line-through; opacity:0.5;' : '';
-                                html += `<span class="number-badge prize-bonus" style="${style}">${num}</span>`;
-                            });
-                            html += `</div>`;
-                        }
-                        
-                        // Sunday Financials (if saved)
-                        if (week.financials && week.financials.sunday) {
-                            html += `<div class="financials">
-                                <div>Cash: $${week.financials.sunday.cash || 0}</div>
-                                <div>Eftpos: $${week.financials.sunday.eftpos || 0}</div>
-                                <div>Tickets: ${week.financials.sunday.singles || 0}</div>
-                            </div>`;
-                        }
-                        html += `</div>`;
-                    }
-                    
-                    card.innerHTML = html;
-                    container.appendChild(card);
+                    allArchiveItems.push({ key, week: data[key] });
                 });
-                
+
+                renderArchiveList(allArchiveItems);
             } catch (err) {
-                console.error(err);
-                document.getElementById('archive-container').innerHTML = '<p style="color:red; text-align:center;">Failed to load archive.</p>';
+                console.warn('Firebase load error, falling back to sample data:', err);
+                showingSample = true;
+                sampleBanner.style.display = 'block';
+                sampleBtn.innerText = '📡 Show Live Firebase Archives';
+                allArchiveItems = Object.keys(sampleArchiveData).map(key => ({ key, week: sampleArchiveData[key] }));
+                renderArchiveList(allArchiveItems);
             }
         }
-        
+
+        function toggleSampleData() {
+            showingSample = !showingSample;
+            loadArchive();
+        }
+
+        function renderArchiveList(items) {
+            const container = document.getElementById('archive-container');
+            container.innerHTML = '';
+
+            if (!items || items.length === 0) {
+                container.innerHTML = '<div style="text-align:center; padding: 3rem; color: var(--text-muted);">No archived draws matching your search.</div>';
+                return;
+            }
+
+            items.forEach(item => {
+                const week = item.week;
+                const dateObj = new Date(Number(item.key) || Date.now());
+                const formattedDate = formatDDMMYYYY(dateObj);
+
+                const card = document.createElement('div');
+                card.className = 'archive-card';
+
+                const thuFins = week.financials?.thursday || {};
+                const sunFins = week.financials?.sunday || {};
+                const thuTotal = (thuFins.cash || 0) + (thuFins.eftpos || 0) - (thuFins.reimbursements || 0);
+                const sunTotal = (sunFins.cash || 0) + (sunFins.eftpos || 0) - (sunFins.reimbursements || 0);
+                const grandTotal = thuTotal + sunTotal;
+
+                let html = `
+                    <div class="archive-header">
+                        <div>
+                            <h2>Raffle Week of ${formattedDate || item.key}</h2>
+                            <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 2px;">
+                                Total Tickets Sold: <strong>${(thuFins.ticketsSold || 0) + (sunFins.ticketsSold || 0)}</strong> &nbsp;|&nbsp;
+                                Combined Revenue: <strong style="color: #10b981;">$${grandTotal.toFixed(2)}</strong>
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 0.5rem; align-items: center;">
+                            ${showingSample ? '<span class="sample-badge">Sample Demo</span>' : ''}
+                            <span class="archive-date-tag">🗓️ ${formattedDate}</span>
+                        </div>
+                    </div>
+                `;
+
+                // ── Thursday Draw Breakdown ──
+                if (week.thursday) {
+                    const drawn = week.thursday.drawnNumbers || [];
+                    html += `
+                        <div class="draw-section" style="border-left: 4px solid #2563eb;">
+                            <h3 style="color:#60a5fa;">
+                                <span>Thursday Draw Breakdown</span>
+                                <span style="font-size:0.8rem; color:var(--text-muted); font-weight:normal;">Range: #${thuFins.ticketStart || 1} - #${thuFins.ticketFinish || 9999}</span>
+                            </h3>
+                    `;
+
+                    if (drawn.length > 0) {
+                        html += `<div class="numbers-grid">`;
+                        drawn.forEach(d => {
+                            const num = typeof d === 'object' ? d.number : d;
+                            const prize = typeof d === 'object' ? d.prize : 25;
+                            const redrawn = typeof d === 'object' ? d.redrawn : false;
+
+                            let bClass = 'badge-25';
+                            let pLabel = '$25';
+
+                            if (prize == 100) { bClass = 'badge-100'; pLabel = '$100'; }
+                            else if (prize == 50) { bClass = 'badge-50'; pLabel = '$50'; }
+                            else if (prize === 'bonus') { bClass = 'badge-bonus'; pLabel = '🎁 Bonus'; }
+                            else if (prize === 'voucher') { bClass = 'badge-voucher'; pLabel = '🎟️ Voucher'; }
+
+                            if (redrawn) bClass += ' badge-redrawn';
+
+                            html += `<span class="number-badge ${bClass}" title="${pLabel} Prize">${pLabel}: #${num} ${redrawn ? '(Redrawn)' : ''}</span>`;
+                        });
+                        html += `</div>`;
+                    } else {
+                        html += `<div style="font-size:0.85rem; color:var(--text-muted);">No individual drawn numbers logged.</div>`;
+                    }
+
+                    if (week.financials?.thursday) {
+                        html += `
+                            <table class="fin-table">
+                                <thead>
+                                    <tr>
+                                        <th>Tickets Sold</th>
+                                        <th>Single Sales</th>
+                                        <th>Strip Sales</th>
+                                        <th>Cash</th>
+                                        <th>EFTPOS</th>
+                                        <th>Reimbursements</th>
+                                        <th>Thursday Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>${thuFins.ticketsSold || 0}</td>
+                                        <td>${thuFins.singlesSold || 0} x $${(thuFins.priceSingle || 2).toFixed(2)}</td>
+                                        <td>${thuFins.stripsSold || 0} x $${(thuFins.priceStrip || 10).toFixed(2)}</td>
+                                        <td>$${(thuFins.cash || 0).toFixed(2)}</td>
+                                        <td>$${(thuFins.eftpos || 0).toFixed(2)}</td>
+                                        <td style="color:#ef4444;">-$${(thuFins.reimbursements || 0).toFixed(2)}</td>
+                                        <td style="color:#60a5fa; font-weight:800;">$${thuTotal.toFixed(2)}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        `;
+                    }
+                    html += `</div>`;
+                }
+
+                // ── Sunday Draw Breakdown ──
+                if (week.sunday) {
+                    const drawnSun = week.sunday.drawnNumbers || [];
+                    html += `
+                        <div class="draw-section" style="border-left: 4px solid #eab308; margin-top: 1rem;">
+                            <h3 style="color:#facc15;">
+                                <span>Sunday Draw (Rob's Bonus Box)</span>
+                                <span style="font-size:0.8rem; color:var(--text-muted); font-weight:normal;">Range: #${sunFins.ticketStart || 1} - #${sunFins.ticketFinish || 9999}</span>
+                            </h3>
+                    `;
+
+                    if (drawnSun.length > 0) {
+                        html += `<div class="numbers-grid">`;
+                        drawnSun.forEach(d => {
+                            const num = typeof d === 'object' ? d.number : d;
+                            const redrawn = typeof d === 'object' ? d.redrawn : false;
+                            const bClass = redrawn ? 'badge-bonus badge-redrawn' : 'badge-bonus';
+                            html += `<span class="number-badge ${bClass}">🎁 Bonus Box: #${num} ${redrawn ? '(Redrawn)' : ''}</span>`;
+                        });
+                        html += `</div>`;
+                    } else {
+                        html += `<div style="font-size:0.85rem; color:var(--text-muted);">No individual drawn numbers logged.</div>`;
+                    }
+
+                    if (week.financials?.sunday) {
+                        html += `
+                            <table class="fin-table">
+                                <thead>
+                                    <tr>
+                                        <th>Tickets Sold</th>
+                                        <th>Cash</th>
+                                        <th>EFTPOS</th>
+                                        <th>Reimbursements</th>
+                                        <th>Sunday Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>${sunFins.ticketsSold || 0}</td>
+                                        <td>$${(sunFins.cash || 0).toFixed(2)}</td>
+                                        <td>$${(sunFins.eftpos || 0).toFixed(2)}</td>
+                                        <td style="color:#ef4444;">-$${(sunFins.reimbursements || 0).toFixed(2)}</td>
+                                        <td style="color:#facc15; font-weight:800;">$${sunTotal.toFixed(2)}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        `;
+                    }
+                    html += `</div>`;
+                }
+
+                // ── Weekly Financial Notes ──
+                if (week.financials?.weeklyNotes || thuFins.notesGeneral) {
+                    html += `
+                        <div style="margin-top: 1rem; padding: 0.75rem 1rem; background: #0b0f19; border: 1px solid var(--border); border-radius: 0.6rem; font-size: 0.8rem; color: var(--text-muted);">
+                            <strong>📝 Weekly Audit Notes:</strong> ${week.financials?.weeklyNotes || thuFins.notesGeneral || 'None logged.'}
+                        </div>
+                    `;
+                }
+
+                card.innerHTML = html;
+                container.appendChild(card);
+            });
+        }
+
+        function filterArchives() {
+            const query = document.getElementById('archive-search').value.toLowerCase().trim();
+            if (!query) {
+                renderArchiveList(allArchiveItems);
+                return;
+            }
+
+            const filtered = allArchiveItems.filter(item => {
+                const jsonStr = JSON.stringify(item).toLowerCase();
+                const dateObj = new Date(Number(item.key) || Date.now());
+                const formattedDate = formatDDMMYYYY(dateObj);
+                return jsonStr.includes(query) || formattedDate.includes(query);
+            });
+
+            renderArchiveList(filtered);
+        }
+
+        // Initialize on load
         loadArchive();
     </script>
 </body>
