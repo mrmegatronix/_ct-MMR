@@ -1248,24 +1248,31 @@
             const btnDraw = document.getElementById('btn-draw');
             const btnCongrats = document.getElementById('btn-congrats');
             if (btnSlides && btnDraw && btnCongrats) {
-                const isSlides = state.activeView === 'slides';
-                const isDraw = state.activeView === 'draw';
-                const isCongrats = state.activeView === 'congrats' || state.activeView === 'congrats-video';
+                const active = state.activeView || 'slides';
+                const isSlides = active === 'slides';
+                const isDraw = active === 'draw';
+                const isCongrats = active === 'congrats' || active === 'congrats-video';
 
                 btnSlides.style.backgroundColor = isSlides ? '#2563eb' : 'rgba(30, 41, 59, 0.8)';
                 btnSlides.style.borderColor = isSlides ? '#60a5fa' : 'var(--border)';
                 btnSlides.style.color = isSlides ? '#ffffff' : 'var(--text)';
-                btnSlides.style.boxShadow = isSlides ? '0 0 14px rgba(37, 99, 235, 0.6)' : 'none';
+                btnSlides.style.boxShadow = isSlides ? '0 0 16px rgba(37, 99, 235, 0.8)' : 'none';
+                btnSlides.style.fontWeight = isSlides ? 'bold' : 'normal';
+                btnSlides.style.transform = isSlides ? 'scale(1.03)' : 'none';
 
                 btnDraw.style.backgroundColor = isDraw ? '#ef4444' : 'rgba(30, 41, 59, 0.8)';
                 btnDraw.style.borderColor = isDraw ? '#f87171' : 'var(--border)';
                 btnDraw.style.color = isDraw ? '#ffffff' : 'var(--text)';
-                btnDraw.style.boxShadow = isDraw ? '0 0 14px rgba(239, 68, 68, 0.6)' : 'none';
+                btnDraw.style.boxShadow = isDraw ? '0 0 16px rgba(239, 68, 68, 0.8)' : 'none';
+                btnDraw.style.fontWeight = isDraw ? 'bold' : 'normal';
+                btnDraw.style.transform = isDraw ? 'scale(1.03)' : 'none';
 
                 btnCongrats.style.backgroundColor = isCongrats ? '#10b981' : 'rgba(30, 41, 59, 0.8)';
                 btnCongrats.style.borderColor = isCongrats ? '#34d399' : 'var(--border)';
                 btnCongrats.style.color = isCongrats ? '#ffffff' : 'var(--text)';
-                btnCongrats.style.boxShadow = isCongrats ? '0 0 14px rgba(16, 185, 129, 0.6)' : 'none';
+                btnCongrats.style.boxShadow = isCongrats ? '0 0 16px rgba(16, 185, 129, 0.8)' : 'none';
+                btnCongrats.style.fontWeight = isCongrats ? 'bold' : 'normal';
+                btnCongrats.style.transform = isCongrats ? 'scale(1.03)' : 'none';
             }
         }
 
