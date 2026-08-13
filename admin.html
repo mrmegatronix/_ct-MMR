@@ -934,6 +934,9 @@
             sun.manualDraw = document.getElementById('cfg-sun-manual').checked;
             sun.enabled = document.getElementById('cfg-sun-enabled').checked;
             
+            if (!thu.drawnNumbers) thu.drawnNumbers = [];
+            if (!sun.drawnNumbers) sun.drawnNumbers = [];
+
             // Recalculate remaining
             const thu_n100 = thu.drawnNumbers.filter(d => (typeof d === 'object' ? d.prize : 0) === 100).length;
             const thu_n50 = thu.drawnNumbers.filter(d => (typeof d === 'object' ? d.prize : 0) === 50).length;
@@ -954,6 +957,17 @@
             sun.prizesLeft = sun.prizes100 + sun.prizes50 + sun.prizes25;
             if (sun.prizesLeft === 0 && sun.drawnNumbers.length > 0) sun.drawsFinishedTime = sun.drawsFinishedTime || new Date().toISOString();
             else sun.drawsFinishedTime = null;
+
+            // Sync active event properties to top-level state.draw
+            const activeEvtName = state.draw.activeEvent || 'thursday';
+            const activeEvt = state.draw[activeEvtName] || thu;
+            state.draw.prizes100 = activeEvt.prizes100;
+            state.draw.prizes50 = activeEvt.prizes50;
+            state.draw.prizes25 = activeEvt.prizes25;
+            state.draw.prizesLeft = activeEvt.prizesLeft;
+            state.draw.min = activeEvt.min;
+            state.draw.max = activeEvt.max;
+            state.draw.excludes = activeEvt.excludes;
 
             updateTotalsSummary();
             broadcast();
