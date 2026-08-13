@@ -1135,9 +1135,9 @@
                     }
                 };
                 document.getElementById('cfg-thu-min').value = 0;
-                document.getElementById('cfg-thu-max').value = 5000;
+                document.getElementById('cfg-thu-max').value = 9999;
                 document.getElementById('cfg-sun-min').value = 0;
-                document.getElementById('cfg-sun-max').value = 5000;
+                document.getElementById('cfg-sun-max').value = 9999;
                 document.getElementById('cfg-thu-prizes-100').value = 0;
                 document.getElementById('cfg-thu-prizes-50').value = 0;
                 document.getElementById('cfg-thu-prizes-25').value = 0;
@@ -1170,7 +1170,7 @@
             if (prizeSize !== 'bonus' && evt.prizesLeft <= 0) { alert('No prizes left to draw!'); return; }
 
             const min = evt.min !== undefined ? evt.min : (state.draw.min !== undefined ? state.draw.min : 0);
-            const max = evt.max !== undefined ? evt.max : (state.draw.max !== undefined ? state.draw.max : 5000);
+            const max = evt.max !== undefined ? evt.max : (state.draw.max !== undefined ? state.draw.max : 9999);
             const isSunday = state.draw.activeEvent === 'sunday';
             const excludeStr = document.getElementById(isSunday ? 'cfg-sun-excludes' : 'cfg-thu-excludes').value;
             const excludes = excludeStr.split(',').map(n => parseInt(n.trim())).filter(n => !isNaN(n));
@@ -1290,7 +1290,7 @@
         function generateReportText() {
             const evt = state.draw[state.draw.activeEvent];
             const min = evt.min !== undefined ? evt.min : 0;
-            const max = evt.max !== undefined ? evt.max : 5000;
+            const max = evt.max !== undefined ? evt.max : 9999;
             const isSunday = state.draw.activeEvent === 'sunday';
             const excludeStr = document.getElementById(isSunday ? 'cfg-sun-excludes' : 'cfg-thu-excludes').value;
             const t100 = evt.cfgPrizes100 || 0;
@@ -1333,7 +1333,7 @@
                 const tVouchers = evt.cfgVouchersCount || 0;
                 const total = t100 + t50 + t25 + tVouchers;
                 const min = evt.min !== undefined ? evt.min : 0;
-                const max = evt.max !== undefined ? evt.max : 5000;
+                const max = evt.max !== undefined ? evt.max : 9999;
                 const isSunday = state.draw.activeEvent === 'sunday';
                 const excludeStr = document.getElementById(isSunday ? 'cfg-sun-excludes' : 'cfg-thu-excludes').value;
                 prct.innerHTML = `
@@ -1649,20 +1649,40 @@
         }
 
         function generateQRCodes() {
-            const baseUrl = window.location.href.split('?')[0].substring(0, window.location.href.lastIndexOf('/'));
+            let baseUrl = '';
+            if (window.location.protocol.startsWith('http')) {
+                baseUrl = window.location.origin + window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/'));
+            } else {
+                baseUrl = 'http://' + (window.location.hostname || 'localhost') + ':8080';
+            }
             
             const urls = {
                 'qr-display': baseUrl + '/index.html',
                 'qr-remote': baseUrl + '/remote.html'
             };
 
-            for (const [id, url] of Object.entries(urls)) {
-                const api = `https://api.qrserver.com/v1/create-qr-code/?size=160x160&format=png&color=0f172a&bgcolor=ffffff&data=`;
+            for (const [id, targetUrl] of Object.entries(urls)) {
                 const imgEl = document.getElementById(id);
-                if (imgEl) imgEl.src = api + encodeURIComponent(url);
+                if (imgEl) {
+                    const encoded = encodeURIComponent(targetUrl);
+                    const primary = `https://api.qrserver.com/v1/create-qr-code/?size=160x160&format=png&color=0f172a&bgcolor=ffffff&data=${encoded}`;
+                    const fallback1 = `https://quickchart.io/qr?text=${encoded}&size=160`;
+                    const fallback2 = `https://chart.googleapis.com/chart?cht=qr&chs=160x160&chl=${encoded}`;
+                    
+                    imgEl.onerror = function() {
+                        if (!this.dataset.triedFb1) {
+                            this.dataset.triedFb1 = "true";
+                            this.src = fallback1;
+                        } else if (!this.dataset.triedFb2) {
+                            this.dataset.triedFb2 = "true";
+                            this.src = fallback2;
+                        }
+                    };
+                    imgEl.src = primary;
+                }
                 const linkId = 'link-' + id.replace('qr-', '');
                 const linkEl = document.getElementById(linkId);
-                if (linkEl) linkEl.href = url;
+                if (linkEl) linkEl.href = targetUrl;
             }
         }
 

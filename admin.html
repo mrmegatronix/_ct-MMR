@@ -389,7 +389,7 @@
                 </div>
                 <div class="form-group">
                     <label>Thursday Max Ticket</label>
-                    <input type="number" id="cfg-thu-max" max="10000" value="10000" onchange="updateDrawState()">
+                    <input type="number" id="cfg-thu-max" max="9999" value="9999" onchange="updateDrawState()">
                 </div>
             </div>
             <div class="form-group" style="margin-bottom: 0.5rem;">
@@ -427,7 +427,7 @@
                 </div>
                 <div class="form-group">
                     <label>Sunday Max Ticket</label>
-                    <input type="number" id="cfg-sun-max" max="10000" value="10000" onchange="updateDrawState()">
+                    <input type="number" id="cfg-sun-max" max="9999" value="9999" onchange="updateDrawState()">
                 </div>
             </div>
             <div class="form-group" style="margin-bottom: 0.5rem;">
@@ -760,7 +760,7 @@
                     enabled: true,
                     manualDraw: false,
                     min: 1,
-                    max: 999,
+                    max: 9999,
                     excludes: [],
                     prizes100: 20,
                     prizes50: 12,
@@ -775,7 +775,7 @@
                     enabled: false,
                     manualDraw: false,
                     min: 1,
-                    max: 999,
+                    max: 9999,
                     excludes: [],
                     prizes100: 0,
                     prizes50: 0,
@@ -787,7 +787,7 @@
                     drawnNumbers: []
                 },
                 min: 1,
-                max: 999,
+                max: 9999,
                 excludes: [],
                 prizes100: 20,
                 prizes50: 12,
@@ -1987,22 +1987,41 @@
         }
 
         function generateQRCodes() {
-            const baseUrl = window.location.href.split('?')[0].substring(0, window.location.href.lastIndexOf('/'));
+            let baseUrl = '';
+            if (window.location.protocol.startsWith('http')) {
+                baseUrl = window.location.origin + window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/'));
+            } else {
+                baseUrl = 'http://' + (window.location.hostname || 'localhost') + ':8080';
+            }
+            
             const urls = {
                 'qr-display': baseUrl + '/index.html',
                 'qr-remote': baseUrl + '/remote.html',
                 'qr-admin': baseUrl + '/admin.html',
-                'qr-archive': baseUrl + '/archive.html'
+                'qr-archive': baseUrl + '/archive.html',
+                'qr-verify-admin': baseUrl + '/verify.html'
             };
-            const api = `https://api.qrserver.com/v1/create-qr-code/?size=120x120&format=png&color=0f172a&bgcolor=ffffff&data=`;
-            for (const [id, url] of Object.entries(urls)) {
+
+            for (const [id, targetUrl] of Object.entries(urls)) {
                 const el = document.getElementById(id);
-                if (el) el.src = api + encodeURIComponent(url);
+                if (el) {
+                    const encoded = encodeURIComponent(targetUrl);
+                    const primary = `https://api.qrserver.com/v1/create-qr-code/?size=140x140&format=png&color=0f172a&bgcolor=ffffff&data=${encoded}`;
+                    const fallback1 = `https://quickchart.io/qr?text=${encoded}&size=140`;
+                    const fallback2 = `https://chart.googleapis.com/chart?cht=qr&chs=140x140&chl=${encoded}`;
+                    
+                    el.onerror = function() {
+                        if (!this.dataset.triedFb1) {
+                            this.dataset.triedFb1 = "true";
+                            this.src = fallback1;
+                        } else if (!this.dataset.triedFb2) {
+                            this.dataset.triedFb2 = "true";
+                            this.src = fallback2;
+                        }
+                    };
+                    el.src = primary;
+                }
             }
-            const verifyUrl = baseUrl + '/verify.html';
-            const verifyApi = `https://api.qrserver.com/v1/create-qr-code/?size=160x160&format=png&color=0f172a&bgcolor=ffffff&data=`;
-            const verifyEl = document.getElementById('qr-verify-admin');
-            if (verifyEl) verifyEl.src = verifyApi + encodeURIComponent(verifyUrl);
         }
 
         document.addEventListener('DOMContentLoaded', () => {
