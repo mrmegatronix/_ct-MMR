@@ -820,11 +820,20 @@
                 } else if (path === '/activeView') {
                     state.activeView = rawData;
                     updateUI();
+                } else if (path === '/nextDrawTime') {
+                    state.nextDrawTime = rawData;
+                    updateUI();
                 } else if (path.startsWith('/draw')) {
-                    if (path === '/draw') state.draw = { ...state.draw, ...rawData };
-                    else {
-                        const key = path.replace('/draw/', '');
-                        state.draw[key] = rawData;
+                    if (path === '/draw') {
+                        state.draw = { ...state.draw, ...rawData };
+                    } else {
+                        const parts = path.replace(/^\/draw\//, '').split('/');
+                        let current = state.draw;
+                        for (let i = 0; i < parts.length - 1; i++) {
+                            if (!current[parts[i]] || typeof current[parts[i]] !== 'object') current[parts[i]] = {};
+                            current = current[parts[i]];
+                        }
+                        current[parts[parts.length - 1]] = rawData;
                     }
                     updateUI();
                 }
@@ -936,14 +945,14 @@
             document.getElementById('cfg-sun-prizes-25').disabled = isSundayFinished;
 
             if (document.activeElement !== document.getElementById('cfg-thu-min')) document.getElementById('cfg-thu-min').value = thu.min !== undefined ? thu.min : 1;
-            if (document.activeElement !== document.getElementById('cfg-thu-max')) document.getElementById('cfg-thu-max').value = thu.max !== undefined ? thu.max : 999;
+            if (document.activeElement !== document.getElementById('cfg-thu-max')) document.getElementById('cfg-thu-max').value = thu.max !== undefined ? thu.max : 9999;
             if (document.activeElement !== document.getElementById('cfg-thu-excludes')) document.getElementById('cfg-thu-excludes').value = (thu.excludes || []).join(',');
             if (document.activeElement !== document.getElementById('cfg-thu-vouchers-count')) document.getElementById('cfg-thu-vouchers-count').value = thu.cfgVouchersCount !== undefined ? thu.cfgVouchersCount : 0;
             if (document.activeElement !== document.getElementById('cfg-thu-vouchers-value')) document.getElementById('cfg-thu-vouchers-value').value = thu.cfgVouchersValue !== undefined ? thu.cfgVouchersValue : 0;
-            document.getElementById('cfg-thu-enabled').checked = !!thu.enabled;
+            document.getElementById('cfg-thu-enabled').checked = thu.enabled !== false;
 
             if (document.activeElement !== document.getElementById('cfg-sun-min')) document.getElementById('cfg-sun-min').value = sun.min !== undefined ? sun.min : 1;
-            if (document.activeElement !== document.getElementById('cfg-sun-max')) document.getElementById('cfg-sun-max').value = sun.max !== undefined ? sun.max : 999;
+            if (document.activeElement !== document.getElementById('cfg-sun-max')) document.getElementById('cfg-sun-max').value = sun.max !== undefined ? sun.max : 9999;
             if (document.activeElement !== document.getElementById('cfg-sun-excludes')) document.getElementById('cfg-sun-excludes').value = (sun.excludes || []).join(',');
             if (document.activeElement !== document.getElementById('cfg-sun-vouchers-count')) document.getElementById('cfg-sun-vouchers-count').value = sun.cfgVouchersCount !== undefined ? sun.cfgVouchersCount : 0;
             if (document.activeElement !== document.getElementById('cfg-sun-vouchers-value')) document.getElementById('cfg-sun-vouchers-value').value = sun.cfgVouchersValue !== undefined ? sun.cfgVouchersValue : 0;
