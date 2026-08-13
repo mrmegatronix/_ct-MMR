@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' https://*.google.com https://*.googleusercontent.com https://*.firebaseio.com https://api.qrserver.com; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https:; media-src 'self' data: blob:; connect-src 'self' https://*.google.com https://*.googleusercontent.com https://*.firebaseio.com https://api.qrserver.com;">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' https://*.google.com https://*.googleusercontent.com https://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebaseio.com wss://*.firebasedatabase.app https://api.qrserver.com https://quickchart.io https://chart.googleapis.com; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https:; media-src 'self' data: blob:; connect-src 'self' https://*.google.com https://*.googleusercontent.com https://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebaseio.com wss://*.firebasedatabase.app https://api.qrserver.com https://quickchart.io https://chart.googleapis.com;">
     <title>MMR - Admin Panel</title>
     <script>
         document.write('<script src="config.js?v=' + Date.now() + '"><\/script>');
@@ -1003,7 +1003,8 @@
 
             updateTotalsSummary();
             broadcast();
-            showGlobalStatus('Config Updated Locally', 'blue');
+            writeFirebase({ draw: state.draw });
+            showGlobalStatus('Config Updated & Synced to Firebase!', 'green');
         }
 
         function showGlobalStatus(msg, color) {
@@ -1018,17 +1019,20 @@
 
         function forceUpdateConfig() {
             updateDrawState();
+            writeFirebase({ draw: state.draw });
             showGlobalStatus('Configuration Saved & Synced!', 'green');
         }
 
         function updateThursdayConfig() {
             updateDrawState();
-            showGlobalStatus('Thursday Config Updated!', 'blue');
+            writeFirebase({ draw: state.draw });
+            showGlobalStatus('Thursday Config Updated & Synced!', 'blue');
         }
 
         function updateSundayConfig() {
             updateDrawState();
-            showGlobalStatus('Sunday Config Updated!', 'red');
+            writeFirebase({ draw: state.draw });
+            showGlobalStatus('Sunday Config Updated & Synced!', 'red');
         }
 
         function calcFinancials() {
@@ -1287,19 +1291,60 @@
             }).catch(e => console.warn('[MMR Admin] Firebase write error:', e));
         }
 
+        function updateFbStatus(connected) {
+            const statusEls = document.querySelectorAll('#fb-status, .fb-status-badge');
+            statusEls.forEach(el => {
+                if (el) {
+                    el.textContent = connected ? '🟢 Firebase: Connected' : '🔴 Firebase: Disconnected';
+                    el.style.color = connected ? '#10b981' : '#ef4444';
+                    el.style.display = 'inline-block';
+                }
+            });
+        }
+
         function initFirebase() {
             const url = localStorage.getItem('mmr_fb_url') || (window.MMR_CONFIG && window.MMR_CONFIG.FIREBASE_DB_URL) || '';
-            if (!url) return;
+            if (!url) {
+                updateFbStatus(false);
+                return;
+            }
             listenFirebaseState(url);
         }
 
         function listenFirebaseState(url) {
+            const targetUrl = url || localStorage.getItem('mmr_fb_url') || (window.MMR_CONFIG && window.MMR_CONFIG.FIREBASE_DB_URL) || '';
+            if (!targetUrl) {
+                updateFbStatus(false);
+                return;
+            }
             try {
-                const es = new EventSource(`${url}/mmr.json`);
-                es.addEventListener('put', handleFbEvent);
-                es.addEventListener('patch', handleFbEvent);
-                es.onerror = () => { es.close(); setTimeout(() => listenFirebaseState(url), 5000); };
-            } catch(e) { console.warn('[MMR Admin] Firebase listen error:', e); }
+                if (window.adminFbEventSource) {
+                    try { window.adminFbEventSource.close(); } catch(e) {}
+                }
+                const es = new EventSource(`${targetUrl}/mmr.json`);
+                window.adminFbEventSource = es;
+
+                es.onopen = () => {
+                    updateFbStatus(true);
+                };
+
+                es.addEventListener('put', (e) => {
+                    updateFbStatus(true);
+                    handleFbEvent(e);
+                });
+                es.addEventListener('patch', (e) => {
+                    updateFbStatus(true);
+                    handleFbEvent(e);
+                });
+                es.onerror = () => {
+                    updateFbStatus(false);
+                    es.close();
+                    setTimeout(() => listenFirebaseState(targetUrl), 5000);
+                };
+            } catch(e) {
+                console.warn('[MMR Admin] Firebase listen error:', e);
+                updateFbStatus(false);
+            }
         }
 
         function handleFbEvent(e) {
@@ -1723,6 +1768,28 @@
             return fins;
         }
 
+        function formatDDMMYYYY(dateVal) {
+            if (!dateVal) return '';
+            const d = (dateVal instanceof Date) ? dateVal : new Date(dateVal);
+            if (isNaN(d.getTime())) return String(dateVal);
+            const day = String(d.getDate()).padStart(2, '0');
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const year = d.getFullYear();
+            return `${day}/${month}/${year}`;
+        }
+
+        function formatDDMMYYYYTime(dateVal) {
+            if (!dateVal) return '';
+            const d = (dateVal instanceof Date) ? dateVal : new Date(dateVal);
+            if (isNaN(d.getTime())) return String(dateVal);
+            const day = String(d.getDate()).padStart(2, '0');
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const year = d.getFullYear();
+            const hours = String(d.getHours()).padStart(2, '0');
+            const mins = String(d.getMinutes()).padStart(2, '0');
+            return `${day}/${month}/${year} ${hours}:${mins}`;
+        }
+
         function buildChecklistHTML() {
             const draw = getDrawStateData();
             const drawn = draw.drawnNumbers || [];
@@ -1737,7 +1804,7 @@
             const rem50 = activeEvt.prizes50 !== undefined ? activeEvt.prizes50 : Math.max(0, total50 - numbers50.length);
             const rem25 = activeEvt.prizes25 !== undefined ? activeEvt.prizes25 : Math.max(0, total25 - numbers25.length);
             let sessionHash = localStorage.getItem('mmr_session_hash') || (Math.random().toString(36).substring(2, 10));
-            const timestamp = new Date().toLocaleString('en-NZ', { dateStyle: 'medium', timeStyle: 'short' });
+            const timestamp = formatDDMMYYYYTime(new Date());
             
             const renderBoxes = (total, numbers) => {
                 let html = '';
@@ -1764,7 +1831,7 @@
         }
 
         function buildBlankFinancialsHTML() {
-            const printedDate = new Date().toLocaleDateString('en-NZ', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+            const printedDate = formatDDMMYYYY(new Date());
             return `
                 <div class="print-page">
                     <h1>Monster Meat Raffle — Official Financial Audit Sheet</h1>
@@ -1820,7 +1887,7 @@
             const sun = (draw && draw.sunday) || {};
             
             const thuMin = thu.min !== undefined ? thu.min : 1;
-            const thuMax = thu.max !== undefined ? thu.max : 999;
+            const thuMax = thu.max !== undefined ? thu.max : 9999;
             const thuTicketsSold = (thuMax >= thuMin) ? (thuMax - thuMin + 1) : 0;
             
             const thuCash = fins.thursday?.cash || 0;
@@ -1831,7 +1898,7 @@
             const sunEftpos = fins.sunday?.eftpos || 0;
             const sunTotal = sunCash + sunEftpos;
             const grandTotal = thuTotal + sunTotal;
-            const printedDate = new Date().toLocaleDateString('en-NZ', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+            const printedDate = formatDDMMYYYY(new Date());
 
             return `
                 <div class="print-page">
@@ -1853,7 +1920,7 @@
                                     </tr>
                                     <tr style="background:#fef2f2;">
                                         <td class="bold" style="border-left:4px solid #ef4444; color:#991b1b;">Sunday</td>
-                                        <td>#${sun.min || 1} - #${sun.max || 999}</td>
+                                        <td>#${sun.min || 1} - #${sun.max || 9999}</td>
                                         <td class="bold">${(sun.max && sun.min) ? (sun.max - sun.min + 1) : 0}</td>
                                         <td>$${sunCash.toFixed(2)}</td>
                                         <td>$${sunEftpos.toFixed(2)}</td>
@@ -1881,7 +1948,7 @@
         function buildDrawResultsHTML() {
             const draw = getDrawStateData();
             const drawn = draw.drawnNumbers || [];
-            const printedDate = new Date().toLocaleDateString('en-NZ', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+            const printedDate = formatDDMMYYYY(new Date());
             
             let leftRows = '';
             let rightRows = '';
