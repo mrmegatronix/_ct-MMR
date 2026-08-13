@@ -1435,13 +1435,20 @@
             return `${day}/${month}/${year} ${hours}:${mins}`;
         }
 
+        function getActiveDrawnNumbers(drawObj) {
+            const d = drawObj || getDrawStateData();
+            const activeEvtName = (d && d.activeEvent) || 'thursday';
+            const activeEvt = (d && d[activeEvtName]) || d.thursday || d || {};
+            return Array.isArray(activeEvt.drawnNumbers) ? activeEvt.drawnNumbers : [];
+        }
+
         function buildChecklistHTML() {
             const draw = getDrawStateData();
-            const drawn = draw.drawnNumbers || [];
             const activeEvt = (draw && draw[draw.activeEvent || 'thursday']) || draw.thursday || draw || {};
+            const drawn = getActiveDrawnNumbers(draw);
             const numbers100 = drawn.filter(d => (typeof d === 'object' ? d.prize : 0) === 100).map(d => typeof d === 'object' ? d.number : d).reverse();
             const numbers50 = drawn.filter(d => (typeof d === 'object' ? d.prize : 0) === 50).map(d => typeof d === 'object' ? d.number : d).reverse();
-            const numbers25 = drawn.filter(d => (typeof d === 'object' ? d.prize : 0) === 25 || typeof d !== 'object').map(d => typeof d === 'object' ? d.number : d).reverse();
+            const numbers25 = drawn.filter(d => (typeof d === 'object' ? d.prize === 25 : false)).map(d => typeof d === 'object' ? d.number : d).reverse();
             const total100 = activeEvt.cfgPrizes100 ?? 20;
             const total50 = activeEvt.cfgPrizes50 ?? 12;
             const total25 = activeEvt.cfgPrizes25 ?? 16;
@@ -1466,6 +1473,7 @@
             return `
                 <div class="landscape print-page">
                     <h1>Tonight's Meat Raffle Prize Checklist & Claim Sheet</h1>
+                    <div style="font-size: 0.85rem; margin-bottom: 10px; color: #475569;">Tick empty square above each number box when winner collects prize.</div>
                     <div class="prize-row" style="background:#fef2f2;"><div><strong>${total100} x $100</strong><br>PACKS</div><div class="boxes-container">${renderBoxes(total100, numbers100)}</div><div class="remaining-col"><div>${rem100}</div>LEFT</div></div>
                     <div class="prize-row" style="background:#eff6ff;"><div><strong>${total50} x $50</strong><br>PACKS</div><div class="boxes-container">${renderBoxes(total50, numbers50)}</div><div class="remaining-col"><div>${rem50}</div>LEFT</div></div>
                     <div class="prize-row" style="background:#f0fdf4;"><div><strong>${total25} x $25</strong><br>PACKS</div><div class="boxes-container">${renderBoxes(total25, numbers25)}</div><div class="remaining-col"><div>${rem25}</div>LEFT</div></div>
@@ -1591,16 +1599,8 @@
 
         function buildDrawResultsHTML() {
             const draw = getDrawStateData();
-            const drawn = draw.drawnNumbers || [];
-            const printedDate = formatDDMMYYYY(new Date());             </div>
-                </div>
-            `;
-        }
-
-        function buildDrawResultsHTML() {
-            const draw = getDrawStateData();
-            const drawn = draw.drawnNumbers || [];
-            const printedDate = new Date().toLocaleDateString('en-NZ', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+            const drawn = getActiveDrawnNumbers(draw);
+            const printedDate = formatDDMMYYYY(new Date());
             
             let leftRows = '';
             let rightRows = '';
@@ -1608,14 +1608,14 @@
             for (let i = 0; i < 24; i++) {
                 const itemLeft = drawn[i];
                 const numLeft = itemLeft ? (typeof itemLeft === 'object' ? itemLeft.number : itemLeft) : '';
-                const prizeLeft = itemLeft ? (typeof itemLeft === 'object' ? itemLeft.prize : 25) : '';
+                const prizeLeft = itemLeft ? (typeof itemLeft === 'object' ? itemLeft.prize : '') : '';
                 const prizeStrLeft = prizeLeft ? `$${prizeLeft} Pack` : '';
                 leftRows += `<tr><td style="width:25px; text-align:center; font-weight:bold; font-size:0.85rem;">${i+1}</td><td style="font-weight:bold; font-size:1.05rem; text-align:center;">${numLeft}</td><td style="font-size:0.85rem;">${prizeStrLeft}</td><td style="width:30px; text-align:center;">[ &nbsp; ]</td></tr>`;
 
                 const idxRight = i + 24;
                 const itemRight = drawn[idxRight];
                 const numRight = itemRight ? (typeof itemRight === 'object' ? itemRight.number : itemRight) : '';
-                const prizeRight = itemRight ? (typeof itemRight === 'object' ? itemRight.prize : 25) : '';
+                const prizeRight = itemRight ? (typeof itemRight === 'object' ? itemRight.prize : '') : '';
                 const prizeStrRight = prizeRight ? `$${prizeRight} Pack` : '';
                 rightRows += `<tr><td style="width:25px; text-align:center; font-weight:bold; font-size:0.85rem;">${idxRight+1}</td><td style="font-weight:bold; font-size:1.05rem; text-align:center;">${numRight}</td><td style="font-size:0.85rem;">${prizeStrRight}</td><td style="width:30px; text-align:center;">[ &nbsp; ]</td></tr>`;
             }

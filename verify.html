@@ -238,7 +238,9 @@ const winningTicket = availableTickets[winnerIndex];</code></pre>
 
             try {
                 const state = JSON.parse(saved);
-                const drawn = state.draw.drawnNumbers || [];
+                const activeEvtName = (state.draw && state.draw.activeEvent) || 'thursday';
+                const activeEvt = (state.draw && state.draw[activeEvtName]) || (state.draw && state.draw.thursday) || state.draw || {};
+                const drawn = (activeEvt && Array.isArray(activeEvt.drawnNumbers)) ? activeEvt.drawnNumbers : [];
                 
                 if (drawn.length === 0) {
                     emptyMsg.style.display = 'block';
