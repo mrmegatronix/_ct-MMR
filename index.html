@@ -1310,35 +1310,36 @@
                 let glow = 'rgba(16,185,129,0.6)';
                 let prizeLabel = isSunday ? '$' + prize : '$' + prize + ' Pack';
                 if (prize === 100 || prize === '100') {
-                    bg = '#f59e0b';
-                    glow = 'rgba(245,158,11,0.6)';
+                    bg = '#ef4444';
+                    glow = 'rgba(239,68,68,0.6)';
                     prizeLabel = '$100 Pack';
                 } else if (prize === 50 || prize === '50') {
-                    bg = '#2563eb';
-                    glow = 'rgba(37,99,235,0.6)';
+                    bg = '#3b82f6';
+                    glow = 'rgba(59,130,246,0.6)';
                     prizeLabel = '$50 Prize';
                 } else if (prize === 25 || prize === '25') {
                     bg = '#10b981';
                     glow = 'rgba(16,185,129,0.6)';
                     prizeLabel = '$25 Prize';
                 } else if (prize === 'bonus') {
-                    bg = '#6366f1';
-                    glow = 'rgba(99,102,241,0.6)';
+                    bg = '#ffd700';
+                    glow = 'rgba(255,215,0,0.6)';
                     prizeLabel = 'BONUS';
                 } else if (prize === 'meat') {
                     bg = '#f97316';
                     glow = 'rgba(249,115,22,0.6)';
                     prizeLabel = 'Meat Tray';
                 } else if (prize === 'voucher') {
-                    bg = '#8b5cf6';
-                    glow = 'rgba(139,92,246,0.6)';
-                    prizeLabel = 'Voucher';
+                    bg = '#ffffff';
+                    glow = 'rgba(255,255,255,0.6)';
+                    prizeLabel = 'VOUCHER';
                 }
                 
+                const textColor = (prize === 'voucher' || prize === 'bonus') ? '#000000' : '#ffffff';
                 const isLastDrawn = drawn[0] && (typeof drawn[0] === 'object' ? drawn[0].number : drawn[0]) === num;
                 const extraClass = isLastDrawn && !redrawn ? 'class="last-drawn-glow"' : '';
                 
-                let style = `background: ${bg}; box-shadow: 0 0 15px ${glow}; padding: 0.5rem 1.4rem; border-radius: 0.75rem; color: #fff; font-weight: 800; font-size: ${2.6 * scale}rem; position: relative; z-index: 2; animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.1; min-width: ${5 * scale}rem;`;
+                let style = `background: ${bg}; box-shadow: 0 0 15px ${glow}; padding: 0.5rem 1.4rem; border-radius: 0.75rem; color: ${textColor}; font-weight: 800; font-size: ${2.6 * scale}rem; position: relative; z-index: 2; animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.1; min-width: ${5 * scale}rem;`;
                 
                 if (redrawn) {
                     style += `opacity: 0.4; filter: grayscale(100%); text-decoration: line-through; text-decoration-color: #ff0000; text-decoration-thickness: 3px;`;
