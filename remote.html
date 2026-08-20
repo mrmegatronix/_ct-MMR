@@ -952,7 +952,7 @@
             delete stateToSave.slides;
             localStorage.setItem('mmr_state_v5', JSON.stringify(stateToSave));
             bc.postMessage({ type: 'STATE_UPDATE', payload: stateToSave });
-            // Let the caller handle writeFirebase if they only want to send specific commands
+            writeFirebase(stateToSave);
         }
 
         // Initialize
