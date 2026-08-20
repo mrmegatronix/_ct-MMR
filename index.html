@@ -369,12 +369,13 @@
         }
         
         #view-draw.prize-100 {
-            --primary: #ef4444;
-            --primary-glow: rgba(239, 68, 68, 0.45);
-            --spotlight-color-low: rgba(239, 68, 68, 0.3);
-            --spotlight-bg-low: rgba(239, 68, 68, 0.05);
-            --spotlight-color-high: rgba(239, 68, 68, 0.8);
-            --spotlight-bg-high: rgba(239, 68, 68, 0.15);
+            --primary: #f59e0b;
+            --primary-glow: rgba(245, 158, 11, 0.45);
+            --spotlight-color-low: rgba(245, 158, 11, 0.3);
+            --spotlight-bg-low: rgba(245, 158, 11, 0.05);
+            --spotlight-color-high: rgba(245, 158, 11, 0.8);
+            --spotlight-bg-high: rgba(245, 158, 11, 0.2);
+            background: radial-gradient(circle at center, rgba(245, 158, 11, 0.35) 0%, rgba(2,6,23,0.95) 75%, #020617 100%) !important;
         }
         #view-draw.prize-50 {
             --primary: #3b82f6;
@@ -382,7 +383,8 @@
             --spotlight-color-low: rgba(59, 130, 246, 0.3);
             --spotlight-bg-low: rgba(59, 130, 246, 0.05);
             --spotlight-color-high: rgba(59, 130, 246, 0.8);
-            --spotlight-bg-high: rgba(59, 130, 246, 0.15);
+            --spotlight-bg-high: rgba(59, 130, 246, 0.2);
+            background: radial-gradient(circle at center, rgba(59, 130, 246, 0.35) 0%, rgba(2,6,23,0.95) 75%, #020617 100%) !important;
         }
         #view-draw.prize-25 {
             --primary: #10b981;
@@ -390,15 +392,26 @@
             --spotlight-color-low: rgba(16, 185, 129, 0.3);
             --spotlight-bg-low: rgba(16, 185, 129, 0.05);
             --spotlight-color-high: rgba(16, 185, 129, 0.8);
-            --spotlight-bg-high: rgba(16, 185, 129, 0.15);
+            --spotlight-bg-high: rgba(16, 185, 129, 0.2);
+            background: radial-gradient(circle at center, rgba(16, 185, 129, 0.35) 0%, rgba(2,6,23,0.95) 75%, #020617 100%) !important;
         }
         #view-draw.prize-bonus {
-            --primary: #ffd700;
-            --primary-glow: rgba(255, 215, 0, 0.45);
-            --spotlight-color-low: rgba(255, 215, 0, 0.3);
-            --spotlight-bg-low: rgba(255, 215, 0, 0.05);
-            --spotlight-color-high: rgba(255, 215, 0, 0.8);
-            --spotlight-bg-high: rgba(255, 215, 0, 0.15);
+            --primary: #6366f1;
+            --primary-glow: rgba(99, 102, 241, 0.45);
+            --spotlight-color-low: rgba(99, 102, 241, 0.3);
+            --spotlight-bg-low: rgba(99, 102, 241, 0.05);
+            --spotlight-color-high: rgba(99, 102, 241, 0.8);
+            --spotlight-bg-high: rgba(99, 102, 241, 0.2);
+            background: radial-gradient(circle at center, rgba(99, 102, 241, 0.35) 0%, rgba(2,6,23,0.95) 75%, #020617 100%) !important;
+        }
+        #view-draw.prize-voucher {
+            --primary: #8b5cf6;
+            --primary-glow: rgba(139, 92, 246, 0.45);
+            --spotlight-color-low: rgba(139, 92, 246, 0.3);
+            --spotlight-bg-low: rgba(139, 92, 246, 0.05);
+            --spotlight-color-high: rgba(139, 92, 246, 0.8);
+            --spotlight-bg-high: rgba(139, 92, 246, 0.2);
+            background: radial-gradient(circle at center, rgba(139, 92, 246, 0.35) 0%, rgba(2,6,23,0.95) 75%, #020617 100%) !important;
         }
         
         .winner-gold-bg::after {
@@ -1228,12 +1241,8 @@
             // Update draw view color category class
             const drawView = document.getElementById('view-draw');
             if (drawView) {
-                drawView.classList.remove('prize-100', 'prize-50', 'prize-25', 'prize-bonus');
-                const curPrize = state.draw.currentPrize;
-                if (curPrize === 100 || curPrize === '100') drawView.classList.add('prize-100');
-                else if (curPrize === 50 || curPrize === '50') drawView.classList.add('prize-50');
-                else if (curPrize === 25 || curPrize === '25') drawView.classList.add('prize-25');
-                else if (curPrize === 'bonus') drawView.classList.add('prize-bonus');
+                const curPrize = (state.draw && state.draw.currentPrize) || null;
+                setPrizeTheme(curPrize);
             }
 
             // Slides rendering (only when data or activeView changes to optimize timer performance)
@@ -1295,25 +1304,31 @@
                 const redrawn = typeof entry === 'object' ? entry.redrawn : false;
                 
                 let bg = '#10b981';
-                let glow = 'rgba(16,185,129,0.5)';
+                let glow = 'rgba(16,185,129,0.6)';
                 let prizeLabel = isSunday ? '$' + prize : '$' + prize + ' Pack';
                 if (prize === 100 || prize === '100') {
-                    bg = '#ef4444';
-                    glow = 'rgba(239,68,68,0.5)';
+                    bg = '#f59e0b';
+                    glow = 'rgba(245,158,11,0.6)';
+                    prizeLabel = '$100 Pack';
                 } else if (prize === 50 || prize === '50') {
                     bg = '#2563eb';
-                    glow = 'rgba(37,99,235,0.5)';
+                    glow = 'rgba(37,99,235,0.6)';
+                    prizeLabel = '$50 Prize';
+                } else if (prize === 25 || prize === '25') {
+                    bg = '#10b981';
+                    glow = 'rgba(16,185,129,0.6)';
+                    prizeLabel = '$25 Prize';
                 } else if (prize === 'bonus') {
-                    bg = '#ffd700';
-                    glow = 'rgba(255,215,0,0.5)';
+                    bg = '#6366f1';
+                    glow = 'rgba(99,102,241,0.6)';
                     prizeLabel = 'BONUS';
                 } else if (prize === 'meat') {
                     bg = '#f97316';
-                    glow = 'rgba(249,115,22,0.5)';
+                    glow = 'rgba(249,115,22,0.6)';
                     prizeLabel = 'Meat Tray';
                 } else if (prize === 'voucher') {
                     bg = '#8b5cf6';
-                    glow = 'rgba(139,92,246,0.5)';
+                    glow = 'rgba(139,92,246,0.6)';
                     prizeLabel = 'Voucher';
                 }
                 
@@ -1326,15 +1341,15 @@
                     style += `opacity: 0.4; filter: grayscale(100%); text-decoration: line-through; text-decoration-color: #ff0000; text-decoration-thickness: 3px;`;
                 }
 
-                // Connector line logic
+                // Connector line logic between drawn numbers
                 const hasNext = i < arr.length - 1;
-                const lineHtml = hasNext ? `<div style="width: 2rem; height: 4px; background: rgba(255,255,255,0.2); margin-top: ${1.5 * scale}rem; z-index: 1;"></div>` : '';
+                const lineHtml = hasNext ? `<div style="width: ${2.2 * scale}rem; height: ${4 * scale}px; background: linear-gradient(90deg, ${glow}, rgba(255,255,255,0.6)); align-self: center; z-index: 1; flex-shrink: 0; box-shadow: 0 0 8px ${glow}; border-radius: 2px;"></div>` : '';
 
                 return `
-                    <div style="display: flex; align-items: flex-start; margin-bottom: 1rem;">
+                    <div style="display: flex; align-items: center; margin-bottom: 0.8rem;">
                         <div ${extraClass} style="${style}">
                             <span>${sanitize(String(num))}</span>
-                            <span style="font-size: ${0.8 * scale}rem; font-weight: 600; opacity: 0.8; text-transform: uppercase;">${prizeLabel}</span>
+                            <span style="font-size: ${0.8 * scale}rem; font-weight: 600; opacity: 0.85; text-transform: uppercase;">${prizeLabel}</span>
                         </div>
                         ${lineHtml}
                     </div>`;
