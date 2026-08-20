@@ -1013,6 +1013,7 @@
 
         // State
         let slotsRolling = false;
+        let rollingPrize = null;
         let congratsStartTime = null;
         let currentSlideIdx = 0;
         let isPaused = false;
@@ -1243,7 +1244,7 @@
             if (drawView) {
                 const activeDrawDataObj = getActiveDrawData(state.draw);
                 const hasDrawn = activeDrawDataObj && activeDrawDataObj.drawnNumbers && activeDrawDataObj.drawnNumbers.length > 0;
-                const curPrize = (hasDrawn || slotsRolling) ? (state.draw && state.draw.currentPrize) : null;
+                const curPrize = slotsRolling ? rollingPrize : (hasDrawn ? (state.draw && state.draw.currentPrize) : null);
                 setPrizeTheme(curPrize);
             }
 
@@ -1832,6 +1833,7 @@
         function startLotteryRoll(prizeType, speedParam) {
             const speed = speedParam || getDrawSpeedConfig();
             slotsRolling = true;
+            rollingPrize = prizeType;
             setPrizeTheme(prizeType);
             updateState(state); // Force re-render to hide the new number from list
             clearInterval(rollInterval);
@@ -1921,6 +1923,7 @@
                     if (index === slots.length - 1) {
                         clearInterval(rollInterval);
                         slotsRolling = false;
+                        rollingPrize = null;
                         updateState(state);
                         
                         const drawView = document.getElementById('view-draw');
