@@ -181,13 +181,15 @@
             padding: 0.45rem 0.65rem;
             display: flex;
             align-items: center;
-            justify-content: space-between;
-            gap: 0.5rem;
+            justify-content: center;
+            gap: 0.55rem;
         }
         .draw-control-info {
             display: flex;
             flex-direction: column;
             min-width: 85px;
+            text-align: center;
+            align-items: center;
         }
         .draw-control-title {
             font-size: 0.85rem;
@@ -202,17 +204,17 @@
         .draw-control-actions {
             display: flex;
             align-items: center;
+            justify-content: center;
             gap: 0.4rem;
             flex: 1;
-            justify-content: flex-end;
         }
         .btn-draw-main {
             flex: 1;
-            max-width: 200px;
+            max-width: 180px;
             min-height: 40px !important;
             height: 40px !important;
             padding: 0.35rem 0.6rem !important;
-            font-size: 0.85rem !important;
+            font-size: 0.82rem !important;
             font-weight: 800 !important;
             border-radius: 0.5rem !important;
             display: inline-flex;
@@ -221,17 +223,18 @@
             white-space: nowrap;
         }
         .btn-redraw-icon {
-            width: 40px !important;
-            height: 40px !important;
             min-height: 40px !important;
-            min-width: 40px !important;
-            padding: 0 !important;
-            font-size: 1.1rem !important;
+            height: 40px !important;
+            padding: 0.35rem 0.55rem !important;
+            font-size: 0.78rem !important;
+            font-weight: 800 !important;
             border-radius: 0.5rem !important;
             display: inline-flex;
             align-items: center;
             justify-content: center;
+            gap: 0.2rem;
             flex-shrink: 0;
+            white-space: nowrap;
         }
 
         @media (max-width: 768px) {
@@ -384,7 +387,7 @@
                             🎰 DRAW $100
                         </button>
                         <button class="btn draw-btn btn-redraw-icon" onclick="runRedraw(100)" id="btn-redraw-100" title="Redraw $100" style="background-color: #1e293b; border-color: #ef4444; color: #ef4444;">
-                            🔄
+                            🔄 REDRAW
                         </button>
                     </div>
                 </div>
@@ -400,7 +403,7 @@
                             🎰 DRAW $50
                         </button>
                         <button class="btn draw-btn btn-redraw-icon" onclick="runRedraw(50)" id="btn-redraw-50" title="Redraw $50" style="background-color: #1e293b; border-color: #ef4444; color: #ef4444;">
-                            🔄
+                            🔄 REDRAW
                         </button>
                     </div>
                 </div>
@@ -416,7 +419,7 @@
                             🎰 DRAW $25
                         </button>
                         <button class="btn draw-btn btn-redraw-icon" onclick="runRedraw(25)" id="btn-redraw-25" title="Redraw $25" style="background-color: #1e293b; border-color: #ef4444; color: #ef4444;">
-                            🔄
+                            🔄 REDRAW
                         </button>
                     </div>
                 </div>
@@ -432,7 +435,7 @@
                             🎁 DRAW BONUS
                         </button>
                         <button class="btn draw-btn btn-redraw-icon" onclick="runRedraw('bonus')" title="Redraw Bonus" style="background-color: #1e293b; border-color: #ef4444; color: #ef4444;">
-                            🔄
+                            🔄 REDRAW
                         </button>
                     </div>
                 </div>
@@ -448,7 +451,7 @@
                             🎟️ DRAW VOUCHER
                         </button>
                         <button class="btn draw-btn btn-redraw-icon" onclick="runRedraw('voucher')" title="Redraw Voucher" style="background-color: #1e293b; border-color: #8b5cf6; color: #8b5cf6;">
-                            🔄
+                            🔄 REDRAW
                         </button>
                     </div>
                 </div>
