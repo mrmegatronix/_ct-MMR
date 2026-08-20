@@ -462,32 +462,36 @@
             100% { transform: scale(1); opacity: 1; }
         }
 
-        .prizes-left {
+        .prizes-top-bar {
             position: absolute;
-            top: 40%;
-            right: 3rem;
-            transform: translateY(-50%);
+            top: 2rem;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            z-index: 20;
+            flex-wrap: wrap;
+        }
+        .prize-counter-pill {
             background: rgba(0, 0, 0, 0.7);
             backdrop-filter: blur(10px);
-            padding: 1.5rem 3.5rem;
-            border-radius: 2.5rem;
-            border: 3px solid var(--primary);
-            text-align: center;
-            box-shadow: 0 0 35px var(--primary-glow);
+            padding: 0.6rem 1.6rem;
+            border-radius: 2rem;
+            border: 2px solid rgba(255, 255, 255, 0.15);
+            color: #fff;
+            font-size: 1.8rem;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            box-shadow: 0 0 15px rgba(0,0,0,0.5);
+            animation: popIn 0.4s ease-out;
         }
-        .prizes-left .label { 
-            font-size: 2.2rem; 
-            color: white; 
-            text-transform: uppercase; 
-            font-weight: 900; 
-            text-shadow: 0 0 10px var(--primary-glow);
-        }
-        .prizes-left .value { 
-            font-size: 7.5rem; 
-            font-weight: 900; 
-            color: white; 
-            text-shadow: 0 0 20px #fff, 0 0 40px var(--primary), 0 0 60px var(--primary-glow);
-            animation: prizes-glow 2s infinite alternate;
+        .prize-counter-pill span.val {
+            font-size: 2.6rem;
+            color: #fff;
+            font-weight: 900;
         }
         /* Countdown Clock - ACE Layout style */
         .slide-countdown {
@@ -879,9 +883,8 @@
 
         <!-- DRAW VIEW -->
         <div id="view-draw" class="view">
-            <div class="prizes-left">
-                <div class="label">Prizes Left</div>
-                <div class="value" id="prizes-count">0</div>
+            <div id="prizes-top-bar" class="prizes-top-bar">
+                <!-- Javascript will populate this with prize counters -->
             </div>
             
             <div class="lottery-container">
@@ -1279,7 +1282,40 @@
             const p25Val = Math.max(0, (activeDrawData.cfgPrizes25 ?? activeDrawData.prizes25 ?? 16) - n25Drawn);
             const totalRemaining = p100Val + p50Val + p25Val;
 
-            if (prizesCountEl) prizesCountEl.innerText = totalRemaining;
+            const ptBar = document.getElementById('prizes-top-bar');
+            if (ptBar) {
+                let html = '';
+                if (p100Val > 0) {
+                    html += `<div class="prize-counter-pill" style="border-color: #ef4444; box-shadow: 0 0 10px rgba(239,68,68,0.4);">
+                                <span style="color: #ef4444;">${isSunday ? '$100' : '$100 Pack'}</span>
+                                <span class="val">${p100Val}</span>
+                             </div>`;
+                }
+                if (p50Val > 0) {
+                    html += `<div class="prize-counter-pill" style="border-color: #3b82f6; box-shadow: 0 0 10px rgba(59,130,246,0.4);">
+                                <span style="color: #3b82f6;">$50 Prize</span>
+                                <span class="val">${p50Val}</span>
+                             </div>`;
+                }
+                if (p25Val > 0) {
+                    html += `<div class="prize-counter-pill" style="border-color: #10b981; box-shadow: 0 0 10px rgba(16,185,129,0.4);">
+                                <span style="color: #10b981;">$25 Prize</span>
+                                <span class="val">${p25Val}</span>
+                             </div>`;
+                }
+                if (totalRemaining > 0) {
+                    const alertColor = totalRemaining <= 5 ? '#f43f5e' : '#ffffff';
+                    html += `<div class="prize-counter-pill" style="border-color: ${alertColor}; box-shadow: 0 0 15px ${alertColor}66; margin-left: 2rem;">
+                                <span style="color: ${alertColor};">Total Left</span>
+                                <span class="val" style="color: ${alertColor};">${totalRemaining}</span>
+                             </div>`;
+                } else {
+                    html += `<div class="prize-counter-pill" style="border-color: #ef4444; box-shadow: 0 0 15px rgba(239,68,68,0.6);">
+                                <span style="color: #ef4444;">ALL PRIZES DRAWN</span>
+                             </div>`;
+                }
+                ptBar.innerHTML = html;
+            }
             
             // Update countdown slide prize counts if they exist in DOM
             const c100 = document.getElementById('count-100');
