@@ -2301,7 +2301,7 @@
                     updateState(parsed); 
                 } catch(e){}
             } else {
-                updateState(state);
+                updateState({}); // Trigger re-render without mutating global state object destructively
             }
 
             // 2. Then immediately pull fresh slides from Sheets
@@ -2411,9 +2411,9 @@
             }
         }
 
-        let wavingLoopInterval = null;
-        let sequenceTimeout = null;
-        let wavingActive = false;
+        var wavingLoopInterval = null;
+        var sequenceTimeout = null;
+        var wavingActive = false;
 
         function startCongratsWavingSequence() {
             if (wavingActive) return;
