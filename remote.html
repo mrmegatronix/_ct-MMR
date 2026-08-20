@@ -377,13 +377,13 @@
 
             <div class="draw-control-container">
                 <!-- $100 PACK -->
-                <div class="draw-control-row" style="border-left: 4px solid #f59e0b;">
+                <div class="draw-control-row" style="border-left: 4px solid #ef4444;">
                     <div class="draw-control-info">
-                        <div class="draw-control-title" style="color: #f59e0b;">🥩 $100 Packs</div>
+                        <div class="draw-control-title" style="color: #f87171;">🥩 $100 Packs</div>
                         <div class="draw-control-subtitle"><span id="lbl-left-100">0</span> Left</div>
                     </div>
                     <div class="draw-control-actions">
-                        <button class="btn draw-btn btn-draw-main" onclick="runDraw(100)" id="btn-draw-100" style="background-color: #f59e0b; border-color: #d97706; color: black;">
+                        <button class="btn draw-btn btn-draw-main" onclick="runDraw(100)" id="btn-draw-100" style="background-color: #ef4444; border-color: #dc2626; color: white;">
                             🎰 DRAW $100
                         </button>
                         <button class="btn draw-btn btn-redraw-icon" onclick="runRedraw(100)" id="btn-redraw-100" title="Redraw $100" style="background-color: #1e293b; border-color: #ef4444; color: #ef4444;">
@@ -425,32 +425,32 @@
                 </div>
 
                 <!-- BONUS PRIZE -->
-                <div class="draw-control-row" style="border-left: 4px solid #6366f1;">
+                <div class="draw-control-row" style="border-left: 4px solid #ffd700;">
                     <div class="draw-control-info">
-                        <div class="draw-control-title" style="color: #a5b4fc;">🎁 Bonus</div>
+                        <div class="draw-control-title" style="color: #f59e0b;">🎁 Bonus</div>
                         <div class="draw-control-subtitle">Special Prize</div>
                     </div>
                     <div class="draw-control-actions">
-                        <button class="btn draw-btn btn-draw-main" onclick="runDraw('bonus')" style="background-color: #6366f1; border-color: #4f46e5; color: white;">
+                        <button class="btn draw-btn btn-draw-main" onclick="runDraw('bonus')" style="background-color: #eab308; border-color: #ca8a04; color: black;">
                             🎁 DRAW BONUS
                         </button>
-                        <button class="btn draw-btn btn-redraw-icon" onclick="runRedraw('bonus')" title="Redraw Bonus" style="background-color: #1e293b; border-color: #ef4444; color: #ef4444;">
+                        <button class="btn draw-btn btn-redraw-icon" onclick="runRedraw('bonus')" title="Redraw Bonus" style="background-color: #1e293b; border-color: #eab308; color: #eab308;">
                             🔄 REDRAW
                         </button>
                     </div>
                 </div>
 
                 <!-- VOUCHER -->
-                <div class="draw-control-row" style="border-left: 4px solid #8b5cf6;">
+                <div class="draw-control-row" style="border-left: 4px solid #ffffff;">
                     <div class="draw-control-info">
-                        <div class="draw-control-title" style="color: #c084fc;">🎟️ Voucher</div>
+                        <div class="draw-control-title" style="color: #ffffff;">🎟️ Voucher</div>
                         <div class="draw-control-subtitle">Club Voucher</div>
                     </div>
                     <div class="draw-control-actions">
-                        <button class="btn draw-btn btn-draw-main" onclick="runDraw('voucher')" style="background-color: #8b5cf6; border-color: #7c3aed; color: white;">
+                        <button class="btn draw-btn btn-draw-main" onclick="runDraw('voucher')" style="background-color: #ffffff; border-color: #cbd5e1; color: black;">
                             🎟️ DRAW VOUCHER
                         </button>
-                        <button class="btn draw-btn btn-redraw-icon" onclick="runRedraw('voucher')" title="Redraw Voucher" style="background-color: #1e293b; border-color: #8b5cf6; color: #8b5cf6;">
+                        <button class="btn draw-btn btn-redraw-icon" onclick="runRedraw('voucher')" title="Redraw Voucher" style="background-color: #1e293b; border-color: #ffffff; color: #ffffff;">
                             🔄 REDRAW
                         </button>
                     </div>
@@ -1764,7 +1764,7 @@
             const thuFinished = !!(thuDraw.isConfirmedFinished || thuDraw.drawsFinishedTime || (thuDraw.prizesLeft === 0 && (thuDraw.drawnNumbers || []).length > 0));
             const sunFinished = !!(sunDraw.isConfirmedFinished || sunDraw.drawsFinishedTime || (sunDraw.prizesLeft === 0 && (sunDraw.drawnNumbers || []).length > 0));
 
-            const thuPrizePoolDisplay = thuFinished ? (thu.prizePool || 3000) : 0;
+            const thuPrizePoolDisplay = thuFinished ? (thu.prizePool || 0) : 0;
             const sunPrizePoolDisplay = sunFinished ? (sun.prizePool || 0) : 0;
             const combinedPrizePoolDisplay = thuPrizePoolDisplay + sunPrizePoolDisplay;
 

@@ -369,13 +369,13 @@
         }
         
         #view-draw.prize-100 {
-            --primary: #f59e0b;
-            --primary-glow: rgba(245, 158, 11, 0.45);
-            --spotlight-color-low: rgba(245, 158, 11, 0.3);
-            --spotlight-bg-low: rgba(245, 158, 11, 0.05);
-            --spotlight-color-high: rgba(245, 158, 11, 0.8);
-            --spotlight-bg-high: rgba(245, 158, 11, 0.2);
-            background: radial-gradient(circle at center, rgba(245, 158, 11, 0.35) 0%, rgba(2,6,23,0.95) 75%, #020617 100%) !important;
+            --primary: #ef4444;
+            --primary-glow: rgba(239, 68, 68, 0.45);
+            --spotlight-color-low: rgba(239, 68, 68, 0.3);
+            --spotlight-bg-low: rgba(239, 68, 68, 0.05);
+            --spotlight-color-high: rgba(239, 68, 68, 0.8);
+            --spotlight-bg-high: rgba(239, 68, 68, 0.2);
+            background: radial-gradient(circle at center, rgba(239, 68, 68, 0.35) 0%, rgba(2,6,23,0.95) 75%, #020617 100%) !important;
         }
         #view-draw.prize-50 {
             --primary: #3b82f6;
@@ -396,22 +396,22 @@
             background: radial-gradient(circle at center, rgba(16, 185, 129, 0.35) 0%, rgba(2,6,23,0.95) 75%, #020617 100%) !important;
         }
         #view-draw.prize-bonus {
-            --primary: #6366f1;
-            --primary-glow: rgba(99, 102, 241, 0.45);
-            --spotlight-color-low: rgba(99, 102, 241, 0.3);
-            --spotlight-bg-low: rgba(99, 102, 241, 0.05);
-            --spotlight-color-high: rgba(99, 102, 241, 0.8);
-            --spotlight-bg-high: rgba(99, 102, 241, 0.2);
-            background: radial-gradient(circle at center, rgba(99, 102, 241, 0.35) 0%, rgba(2,6,23,0.95) 75%, #020617 100%) !important;
+            --primary: #ffd700;
+            --primary-glow: rgba(255, 215, 0, 0.45);
+            --spotlight-color-low: rgba(255, 215, 0, 0.3);
+            --spotlight-bg-low: rgba(255, 215, 0, 0.05);
+            --spotlight-color-high: rgba(255, 215, 0, 0.8);
+            --spotlight-bg-high: rgba(255, 215, 0, 0.2);
+            background: radial-gradient(circle at center, rgba(255, 215, 0, 0.35) 0%, rgba(2,6,23,0.95) 75%, #020617 100%) !important;
         }
         #view-draw.prize-voucher {
-            --primary: #8b5cf6;
-            --primary-glow: rgba(139, 92, 246, 0.45);
-            --spotlight-color-low: rgba(139, 92, 246, 0.3);
-            --spotlight-bg-low: rgba(139, 92, 246, 0.05);
-            --spotlight-color-high: rgba(139, 92, 246, 0.8);
-            --spotlight-bg-high: rgba(139, 92, 246, 0.2);
-            background: radial-gradient(circle at center, rgba(139, 92, 246, 0.35) 0%, rgba(2,6,23,0.95) 75%, #020617 100%) !important;
+            --primary: #ffffff;
+            --primary-glow: rgba(255, 255, 255, 0.45);
+            --spotlight-color-low: rgba(255, 255, 255, 0.3);
+            --spotlight-bg-low: rgba(255, 255, 255, 0.05);
+            --spotlight-color-high: rgba(255, 255, 255, 0.8);
+            --spotlight-bg-high: rgba(255, 255, 255, 0.2);
+            background: radial-gradient(circle at center, rgba(255, 255, 255, 0.35) 0%, rgba(2,6,23,0.95) 75%, #020617 100%) !important;
         }
         
         .winner-gold-bg::after {
@@ -1824,9 +1824,22 @@
             
             const titleEl = document.getElementById('draw-view-title');
             if (titleEl) {
-                if (prizeType === 'bonus') {
+                const pKey = String(prizeType || '');
+                if (pKey === '100') {
+                    titleEl.innerText = "DRAWING $100 PACK";
+                    titleEl.style.color = "#ef4444";
+                } else if (pKey === '50') {
+                    titleEl.innerText = "DRAWING $50 PRIZE";
+                    titleEl.style.color = "#60a5fa";
+                } else if (pKey === '25') {
+                    titleEl.innerText = "DRAWING $25 PRIZE";
+                    titleEl.style.color = "#34d399";
+                } else if (pKey === 'bonus') {
                     titleEl.innerText = "BONUS PRIZE DRAW";
-                    titleEl.style.color = "#a5b4fc";
+                    titleEl.style.color = "#ffd700";
+                } else if (pKey === 'voucher') {
+                    titleEl.innerText = "CLUB VOUCHER DRAW";
+                    titleEl.style.color = "#ffffff";
                 } else {
                     titleEl.innerText = "Winning Number";
                     titleEl.style.color = "white";
