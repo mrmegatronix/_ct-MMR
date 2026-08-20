@@ -457,6 +457,20 @@
                 </div>
             </div>
 
+            <!-- Draw Speed Setting Slider -->
+            <div style="margin-top: 0.75rem; background: rgba(15, 23, 42, 0.7); border: 1px solid var(--border); padding: 0.6rem 0.85rem; border-radius: 0.65rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+                    <span style="font-size: 0.82rem; font-weight: 800; color: #cbd5e1;">⚡ Draw Speed:</span>
+                    <span id="speed-setting-label" style="font-size: 0.82rem; font-weight: 800; color: #38bdf8;">Normal</span>
+                </div>
+                <input type="range" id="draw-speed-slider" min="1" max="3" value="1" step="1" oninput="updateSpeedFromSlider()" onchange="saveSpeedSetting()" style="width: 100%; cursor: pointer; accent-color: #38bdf8;">
+                <div style="display: flex; justify-content: space-between; font-size: 0.72rem; color: #94a3b8; font-weight: 700; margin-top: 2px;">
+                    <span>🐢 Normal</span>
+                    <span>⚡ Fast</span>
+                    <span>🚀 Faster</span>
+                </div>
+            </div>
+
             <div class="status" id="status-display" style="margin-top: 0.5rem;">Updated Successfully</div>
         </div>
 
@@ -1296,6 +1310,43 @@
         }
 
 
+        function getDrawSpeedConfig() {
+            const val = parseInt((state.draw && state.draw.drawSpeed) || localStorage.getItem('mmr_draw_speed') || 1);
+            if (val === 3) {
+                return { mode: 3, name: 'Faster', rollDuration: 600, slotInterval: 15, digitBaseDelay: 150, digitStepDelay: 120 };
+            } else if (val === 2) {
+                return { mode: 2, name: 'Fast', rollDuration: 1500, slotInterval: 30, digitBaseDelay: 400, digitStepDelay: 300 };
+            } else {
+                return { mode: 1, name: 'Normal', rollDuration: 3000, slotInterval: 50, digitBaseDelay: 800, digitStepDelay: 600 };
+            }
+        }
+
+        function updateSpeedFromSlider() {
+            const slider = document.getElementById('draw-speed-slider');
+            if (!slider) return;
+            const val = parseInt(slider.value) || 1;
+            const labels = { 1: 'Normal', 2: 'Fast', 3: 'Faster' };
+            const colors = { 1: '#38bdf8', 2: '#f59e0b', 3: '#ef4444' };
+            const labelEl = document.getElementById('speed-setting-label');
+            if (labelEl) {
+                labelEl.innerText = labels[val] || 'Normal';
+                labelEl.style.color = colors[val] || '#38bdf8';
+            }
+        }
+
+        function saveSpeedSetting() {
+            const slider = document.getElementById('draw-speed-slider');
+            if (!slider) return;
+            const val = parseInt(slider.value) || 1;
+            if (!state.draw) state.draw = {};
+            state.draw.drawSpeed = val;
+            localStorage.setItem('mmr_draw_speed', val);
+            updateSpeedFromSlider();
+            broadcast();
+            writeFirebase({ draw: state.draw });
+            showGlobalStatus(`Draw Speed set to ${val === 3 ? 'Faster' : (val === 2 ? 'Fast' : 'Normal')}`, 'blue');
+        }
+
         // Draw Runner
         let isDrawing = false;
         function runDraw(prizeSize) {
@@ -1351,11 +1402,13 @@
             }
             const winner = available[winnerIndex];
             
+            const cfgSpeed = getDrawSpeedConfig();
+
             // Tell display to start rolling animation
-            bc.postMessage({ type: 'START_ROLL', payload: { prize: prizeSize } });
-            writeFirebase({ cmd: { type: 'START_ROLL', prize: prizeSize, ts: Date.now() } });
+            bc.postMessage({ type: 'START_ROLL', payload: { prize: prizeSize, speed: cfgSpeed } });
+            writeFirebase({ cmd: { type: 'START_ROLL', prize: prizeSize, speed: cfgSpeed, ts: Date.now() } });
             
-            // Wait 3 seconds then stop on winner
+            // Wait rollDuration then stop on winner
             setTimeout(() => {
                 const drawEntry = { 
                     number: winner, 
@@ -1383,14 +1436,14 @@
                 }
                 
                 broadcast(); // updates prizes and history
-                bc.postMessage({ type: 'STOP_ROLL', payload: { number: winner, prize: prizeSize } });
-                writeFirebase({ cmd: { type: 'STOP_ROLL', number: winner, prize: prizeSize, ts: Date.now() } });
+                bc.postMessage({ type: 'STOP_ROLL', payload: { number: winner, prize: prizeSize, speed: cfgSpeed } });
+                writeFirebase({ cmd: { type: 'STOP_ROLL', number: winner, prize: prizeSize, speed: cfgSpeed, ts: Date.now() } });
                 
                 isDrawing = false;
                 document.querySelectorAll('.draw-btn').forEach(btn => btn.disabled = false);
                 document.getElementById('draw-rolling-label').style.display = 'none';
                 updateUI();
-            }, 3000);
+            }, cfgSpeed.rollDuration);
         }
 
         function runRedraw(prizeSize) {

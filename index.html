@@ -1062,10 +1062,10 @@
                 updateState(cleanPayload);
             }
             if (data.type === 'START_ROLL') {
-                startLotteryRoll(data.payload ? data.payload.prize : null);
+                startLotteryRoll(data.payload ? data.payload.prize : null, data.payload ? data.payload.speed : null);
             }
             if (data.type === 'STOP_ROLL') {
-                stopLotteryRoll(data.payload.number, data.payload.prize);
+                stopLotteryRoll(data.payload ? data.payload.number : null, data.payload ? data.payload.prize : null, data.payload ? data.payload.speed : null);
             }
             if (data.type === 'CONFETTI') {
                 triggerConfetti();
@@ -1783,11 +1783,24 @@
             }, duration);
         }
 
+        // Draw Speed Helper
+        function getDrawSpeedConfig() {
+            const val = parseInt((state.draw && state.draw.drawSpeed) || localStorage.getItem('mmr_draw_speed') || 1);
+            if (val === 3) {
+                return { mode: 3, name: 'Faster', rollDuration: 600, slotInterval: 15, digitBaseDelay: 150, digitStepDelay: 120 };
+            } else if (val === 2) {
+                return { mode: 2, name: 'Fast', rollDuration: 1500, slotInterval: 30, digitBaseDelay: 400, digitStepDelay: 300 };
+            } else {
+                return { mode: 1, name: 'Normal', rollDuration: 3000, slotInterval: 50, digitBaseDelay: 800, digitStepDelay: 600 };
+            }
+        }
+
         // Draw Logic
         let rollInterval;
         let lockTimeouts = [];
         
-        function startLotteryRoll(prizeType) {
+        function startLotteryRoll(prizeType, speedParam) {
+            const speed = speedParam || getDrawSpeedConfig();
             slotsRolling = true;
             updateState(state); // Force re-render to hide the new number from list
             clearInterval(rollInterval);
@@ -1825,10 +1838,11 @@
                         slot.innerText = Math.floor(Math.random() * 10);
                     }
                 });
-            }, 50);
+            }, speed.slotInterval || 50);
         }
 
-        function stopLotteryRoll(finalNumber, prizeType) {
+        function stopLotteryRoll(finalNumber, prizeType, speedParam) {
+            const speed = speedParam || getDrawSpeedConfig();
             clearInterval(rollInterval);
             lockTimeouts.forEach(t => clearTimeout(t));
             lockTimeouts = [];
@@ -1851,10 +1865,10 @@
                         slot.innerText = Math.floor(Math.random() * 10);
                     }
                 });
-            }, 50);
+            }, speed.slotInterval || 50);
             
             slots.forEach((slot, index) => {
-                const delay = 800 + index * 600;
+                const delay = (speed.digitBaseDelay || 800) + index * (speed.digitStepDelay || 600);
                 const t = setTimeout(() => {
                     slot.classList.remove('rolling');
                     slot.classList.add('locked');
@@ -1884,7 +1898,7 @@
                             msg.volume = 1;
                             msg.rate = (cfg && cfg.VOICE_RATE) || 0.9;
                             msg.pitch = (cfg && cfg.VOICE_PITCH) || 0.8;
-                            setTimeout(() => window.speechSynthesis.speak(msg), 600);
+                            setTimeout(() => window.speechSynthesis.speak(msg), 400);
                         }
                     }
                 }, delay);
@@ -2279,8 +2293,8 @@
                 const cmdObj = path === '/cmd' ? rawData : (rawData && rawData.cmd);
                 if (cmdObj && cmdObj.ts > lastFbCmdTs) {
                     lastFbCmdTs = cmdObj.ts;
-                    if (cmdObj.type === 'START_ROLL') startLotteryRoll(cmdObj.prize);
-                    else if (cmdObj.type === 'STOP_ROLL') stopLotteryRoll(cmdObj.number, cmdObj.prize);
+                    if (cmdObj.type === 'START_ROLL') startLotteryRoll(cmdObj.prize, cmdObj.speed);
+                    else if (cmdObj.type === 'STOP_ROLL') stopLotteryRoll(cmdObj.number, cmdObj.prize, cmdObj.speed);
                     else if (cmdObj.type === 'CONFETTI') triggerConfetti();
                     else if (cmdObj.type === 'FORCE_SYNC') fetchAndApplySlides();
                 }
