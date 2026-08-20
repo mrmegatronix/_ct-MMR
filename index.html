@@ -605,6 +605,12 @@
             align-items: center;
             justify-content: center;
         }
+        
+        #view-draw .lottery-container {
+            /* Shift up to make room for drawn numbers at the bottom */
+            transform: translate(-50%, -60%);
+        }
+
         .control-btn:hover {
             color: var(--primary);
             transform: scale(1.2);
@@ -899,11 +905,11 @@
                 </div>
             </div>
 
-            <div class="drawn-numbers-bar" style="max-height: 42vh; bottom: 1rem; overflow-y: auto; padding: 1.5rem 2rem;">
-                <div style="font-size: 1.6rem; color: #94a3b8; font-weight: 700; margin-bottom: 0.8rem; text-transform: uppercase; text-align: center; letter-spacing: 1px;">
+            <div class="drawn-numbers-bar" style="max-height: 38vh; bottom: 1rem; overflow-y: auto; padding: 1.2rem 2rem;">
+                <div style="font-size: 1.4rem; color: #94a3b8; font-weight: 700; margin-bottom: 0.8rem; text-transform: uppercase; text-align: center; letter-spacing: 1px;">
                     Drawn Ticket Numbers (Order of Draw)
                 </div>
-                <div id="drawn-horizontal-list" style="display: flex; flex-wrap: wrap; gap: 0.6rem; justify-content: center; font-size: 2.6rem; font-weight: 800; align-content: flex-start;">
+                <div id="drawn-horizontal-list" style="display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: center; font-size: 2.0rem; font-weight: 800; align-content: flex-start;">
                     <!-- drawn numbers horizontally -->
                 </div>
             </div>
@@ -1189,9 +1195,14 @@
             if (newState && newState !== state) {
                 const { draw, ...rest } = newState;
                 if (draw) {
-                    state.draw = { ...state.draw, ...draw };
+                    state.draw = { ...(state.draw || {}), ...draw };
                 }
                 state = { ...state, ...rest };
+                
+                // CRITICAL FIX: Rescue corrupted localStorage where state.draw was deleted
+                if (!state.draw) {
+                    state.draw = { thursday: {}, sunday: {} };
+                }
             }
 
             // Check total configured prizes
@@ -1419,7 +1430,7 @@
 
             // Update Robs Advert
             const robsPrizes = document.getElementById('robs-prizes-list');
-            if (robsPrizes && state.draw.sunday) {
+            if (robsPrizes && state.draw && state.draw.sunday) {
                 let p = [];
                 let totalPrizes = 0;
                 let totalValue = 0;
@@ -1437,8 +1448,8 @@
             // Render last drawn number in slots if not currently rolling
             const slotsContainer = document.querySelector('.slot-container');
             if (slotsContainer && (!rollInterval || slotsContainer.querySelectorAll('.rolling').length === 0)) {
-                const curNum = state.draw.currentNumber || '---';
-                const curPrize = state.draw.currentPrize;
+                const curNum = activeEvtData.currentNumber || state.draw.currentNumber || '---';
+                const curPrize = activeEvtData.currentPrize || state.draw.currentPrize;
                 const titleEl = document.getElementById('draw-view-title');
                 if (titleEl) {
                     if (curPrize === 'bonus') {
@@ -1559,7 +1570,7 @@
             if (state.activeView === 'congrats' || state.activeView === 'winning-numbers' || state.activeView === 'view-robs-advert') {
                 if (!postDrawLoopInterval) {
                     let steps = ['congrats'];
-                    if (state.draw.sunday && state.draw.sunday.enabled) {
+                    if (state.draw && state.draw.sunday && state.draw.sunday.enabled) {
                         steps.push('view-robs-advert');
                     }
                     const activeDrawData = state.draw[state.draw.activeEvent || 'thursday'] || {};
