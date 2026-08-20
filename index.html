@@ -2248,7 +2248,42 @@
                         console.log('[MMR] Loaded slides from local-backup.csv');
                     }
                 } catch (e) {
-                    console.error('[MMR] Failed to load local-backup.csv:', e);
+                    console.error('[MMR] Failed to load local-backup.csv via fetch:', e);
+                    // Show a manual file picker as a workaround for CORS on file://
+                    let fallbackUI = document.getElementById('local-fallback-ui');
+                    if (!fallbackUI) {
+                        fallbackUI = document.createElement('div');
+                        fallbackUI.id = 'local-fallback-ui';
+                        fallbackUI.style.cssText = 'position:fixed; bottom:20px; right:20px; background:#ef4444; color:#fff; padding:15px; border-radius:8px; z-index:9999; font-family:sans-serif; box-shadow:0 4px 6px rgba(0,0,0,0.3);';
+                        fallbackUI.innerHTML = `
+                            <strong>Slides Sync Failed (CORS block)</strong><br><br>
+                            Please manually select <code>local-backup.csv</code>:<br><br>
+                            <input type="file" accept=".csv" id="local-fallback-file" style="color:#000; background:#fff; padding:5px; border-radius:4px; width:100%; box-sizing:border-box;">
+                        `;
+                        document.body.appendChild(fallbackUI);
+                        
+                        document.getElementById('local-fallback-file').addEventListener('change', function(e) {
+                            const file = e.target.files[0];
+                            if (file) {
+                                const reader = new FileReader();
+                                reader.onload = function(evt) {
+                                    const fileCsv = evt.target.result;
+                                    let slides = parseSlidesCSV(fileCsv);
+                                    if (window.MMR_CONFIG && Array.isArray(window.MMR_CONFIG.LOCAL_WINNERS_SLIDES)) {
+                                        slides = [...slides, ...window.MMR_CONFIG.LOCAL_WINNERS_SLIDES];
+                                    }
+                                    if (slides.length > 0) {
+                                        console.log('[MMR] Slides synced OK from local file — ' + slides.length + ' slides loaded.');
+                                        updateState({ slides: slides });
+                                        fallbackUI.style.display = 'none'; // hide it on success
+                                    }
+                                };
+                                reader.readAsText(file);
+                            }
+                        });
+                    } else {
+                        fallbackUI.style.display = 'block';
+                    }
                 }
             }
 

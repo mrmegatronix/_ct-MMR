@@ -718,7 +718,8 @@
                 const originalView = state.activeView;
                 checkCongratsAutoOff();
             updateViewButtons();
-                updateUI();
+                updateDrawState();
+                updateViewButtons();
                 if (state.activeView !== originalView) {
                     broadcast();
                 }
@@ -904,14 +905,14 @@
                     if (stateData.slides) delete stateData.slides;
                     if (Object.keys(stateData).length) {
                         state = { ...state, ...stateData };
-                        updateUI();
+                        updateDrawState(); updateViewButtons();;
                     }
                 } else if (path === '/activeView') {
                     state.activeView = rawData;
-                    updateUI();
+                    updateDrawState(); updateViewButtons();;
                 } else if (path === '/nextDrawTime') {
                     state.nextDrawTime = rawData;
-                    updateUI();
+                    updateDrawState(); updateViewButtons();;
                 } else if (path.startsWith('/draw')) {
                     if (path === '/draw') {
                         state.draw = { ...state.draw, ...rawData };
@@ -924,7 +925,7 @@
                         }
                         current[parts[parts.length - 1]] = rawData;
                     }
-                    updateUI();
+                    updateDrawState(); updateViewButtons();;
                 }
             } catch(err) { console.error('[MMR Remote] Firebase event error:', err); }
         }
@@ -944,6 +945,14 @@
             if (!el) return;
             el.textContent = connected ? '🟢 Firebase: Connected' : '🔴 Firebase: Not configured';
             el.style.color = connected ? '#22c55e' : '#94a3b8';
+        }
+
+        function broadcast() {
+            const stateToSave = { ...state };
+            delete stateToSave.slides;
+            localStorage.setItem('mmr_state_v5', JSON.stringify(stateToSave));
+            bc.postMessage({ type: 'STATE_UPDATE', payload: stateToSave });
+            // Let the caller handle writeFirebase if they only want to send specific commands
         }
 
         // Initialize
@@ -1031,7 +1040,7 @@
             document.getElementById('cfg-thu-prizes-50').disabled = isThursdayFinished;
             document.getElementById('cfg-thu-prizes-25').disabled = isThursdayFinished;
 
-            const isSundayFinished = sun.prizesLeft === 0 && sun.drawnNumbers.length > 0;
+            const isSundayFinished = sun.prizesLeft === 0 && (sun.drawnNumbers || []).length > 0;
             document.getElementById('cfg-sun-prizes-100').disabled = isSundayFinished;
             document.getElementById('cfg-sun-prizes-50').disabled = isSundayFinished;
             document.getElementById('cfg-sun-prizes-25').disabled = isSundayFinished;
@@ -1091,7 +1100,12 @@
             updateViewButtons();
             checkCongratsAutoOff();
             updateViewButtons();
-            updateUI();
+            // Call updateDrawState UI sync instead of undefined updateUI
+            // We'll define a dummy updateUI to prevent crashes from broadcast receiver
+            window.updateUI = function() {
+                // UI update logic is mostly handled inline in broadcast receiver
+            };
+            window.updateDrawState(); updateViewButtons();;
             broadcast();
             showStatus();
         }
@@ -1170,7 +1184,7 @@
             state.draw.max = activeEvt.max;
             state.draw.excludes = activeEvt.excludes;
 
-            updateUI();
+            updateViewButtons();
             broadcast();
             writeFirebase({ draw: state.draw });
             showGlobalStatus('Config Updated & Synced to Firebase!', 'green');
@@ -1304,7 +1318,7 @@
                 document.getElementById('cfg-sun-vouchers-value').value = 0;
                 if(document.getElementById('cfg-sun-enabled')) document.getElementById('cfg-sun-enabled').checked = false;
                 
-                updateUI();
+                updateDrawState(); updateViewButtons();;
                 broadcast();
             }
         }
@@ -1442,7 +1456,7 @@
                 isDrawing = false;
                 document.querySelectorAll('.draw-btn').forEach(btn => btn.disabled = false);
                 document.getElementById('draw-rolling-label').style.display = 'none';
-                updateUI();
+                updateDrawState(); updateViewButtons();;
             }, cfgSpeed.rollDuration);
         }
 
@@ -1461,7 +1475,8 @@
                     evt.prizesLeft = (evt.prizes100 || 0) + (evt.prizes50 || 0) + (evt.prizes25 || 0);
                     evt.drawsFinishedTime = null;
                     broadcast();
-                    updateUI();
+                updateDrawState();
+                updateViewButtons();
                 } else {
                     alert(`No drawn tickets found for ${label} category to redraw!`);
                     return;
