@@ -1361,13 +1361,23 @@
 
             const horizontalList = document.getElementById('drawn-horizontal-list');
             if (horizontalList) {
-                horizontalList.innerHTML = chronological.map((e, i, a) => renderDrawnNumberLine(e, i, a, 1.0)).join('');
+                let dynamicScale = 1.0;
+                if (chronological.length > 35) dynamicScale = 0.65;
+                else if (chronological.length > 25) dynamicScale = 0.75;
+                else if (chronological.length > 15) dynamicScale = 0.85;
+                
+                horizontalList.innerHTML = chronological.map((e, i, a) => renderDrawnNumberLine(e, i, a, dynamicScale)).join('');
             }
             
             // Populate winning numbers view exactly the same, but bigger
             const winningList = document.getElementById('winning-horizontal-list');
             if (winningList) {
-                winningList.innerHTML = chronological.map((e, i, a) => renderDrawnNumberLine(e, i, a, 1.3)).join('');
+                let winScale = 1.3;
+                if (chronological.length > 35) winScale = 0.8;
+                else if (chronological.length > 25) winScale = 0.95;
+                else if (chronological.length > 15) winScale = 1.1;
+                
+                winningList.innerHTML = chronological.map((e, i, a) => renderDrawnNumberLine(e, i, a, winScale)).join('');
             }
 
             // Update Robs Advert
