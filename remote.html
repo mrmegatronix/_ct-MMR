@@ -522,6 +522,7 @@
                     <div><label style="font-size:0.75rem;">Voucher Value ($)</label><input type="number" id="cfg-thu-vouchers-value" value="0" oninput="updateThursdayConfig()"></div>
                 </div>
                 <button class="btn" onclick="updateThursdayConfig()" style="background-color: #1e40af; color: white; border: none; width: 100%; margin-bottom: 0.5rem;">💾 Save Thursday Config</button>
+                <button class="btn" id="btn-confirm-thu" onclick="confirmThursday()" style="background-color: #3b82f6; color: white; border: none; width: 100%;">Confirm Finished</button>
             </div>
 
             <!-- Sunday Config -->
@@ -559,6 +560,7 @@
                     <div><label style="font-size:0.75rem;">Voucher Value ($)</label><input type="number" id="cfg-sun-vouchers-value" value="0" oninput="updateSundayConfig()"></div>
                 </div>
                 <button class="btn" onclick="updateSundayConfig()" style="background-color: #991b1b; color: white; border: none; width: 100%; margin-bottom: 0.5rem;">💾 Save Sunday Config</button>
+                <button class="btn" id="btn-confirm-sun" onclick="confirmSunday()" style="background-color: #ef4444; color: white; border: none; width: 100%;">Confirm Finished</button>
             </div>
         </div>
 
@@ -1025,7 +1027,8 @@
             if (document.activeElement !== document.getElementById('cfg-thu-excludes')) document.getElementById('cfg-thu-excludes').value = (thu.excludes || []).join(',');
             if (document.activeElement !== document.getElementById('cfg-thu-vouchers-count')) document.getElementById('cfg-thu-vouchers-count').value = thu.cfgVouchersCount !== undefined ? thu.cfgVouchersCount : 0;
             if (document.activeElement !== document.getElementById('cfg-thu-vouchers-value')) document.getElementById('cfg-thu-vouchers-value').value = thu.cfgVouchersValue !== undefined ? thu.cfgVouchersValue : 0;
-            document.getElementById('cfg-thu-enabled').checked = thu.enabled !== false;
+            if (document.activeElement !== document.getElementById('cfg-thu-enabled')) document.getElementById('cfg-thu-enabled').checked = thu.enabled !== false;
+            if (document.activeElement !== document.getElementById('cfg-sun-enabled')) document.getElementById('cfg-sun-enabled').checked = sun.enabled === true;
 
             if (document.activeElement !== document.getElementById('cfg-sun-min')) document.getElementById('cfg-sun-min').value = sun.min !== undefined ? sun.min : 1;
             if (document.activeElement !== document.getElementById('cfg-sun-max')) document.getElementById('cfg-sun-max').value = sun.max !== undefined ? sun.max : 9999;
@@ -1189,19 +1192,41 @@
 
         function confirmThursday() {
             state.draw.activeEvent = 'sunday';
+            if (!state.draw.thursday) state.draw.thursday = {};
+            state.draw.thursday.isConfirmedFinished = true;
+            state.draw.thursday.drawsFinishedTime = state.draw.thursday.drawsFinishedTime || new Date().toISOString();
             ['thu-enabled', 'thu-manual', 'thu-min', 'thu-max', 'thu-excludes', 'thu-prizes-100', 'thu-prizes-50', 'thu-prizes-25', 'thu-vouchers-count', 'thu-vouchers-value'].forEach(id => {
                 const el = document.getElementById('cfg-' + id);
                 if(el) el.disabled = true;
             });
-            document.getElementById('btn-confirm-thu').disabled = true;
-            document.getElementById('btn-confirm-thu').innerText = 'Thursday Locked';
+            const btn = document.getElementById('btn-confirm-thu');
+            if (btn) {
+                btn.disabled = true;
+                btn.innerText = 'Thursday Confirmed Finished';
+            }
             broadcast();
-            showGlobalStatus('Thursday Draw Confirmed & Locked!', 'blue');
+            writeFirebase({ draw: state.draw });
+            showGlobalStatus('Thursday Draw Confirmed Finished & Locked!', 'blue');
         }
 
         function confirmSunday() {
-            archiveDraws();
-            showGlobalStatus('Week Ended!', 'red');
+            if (confirm('Confirm end of week? This will lock Sunday and prepare for reset.')) {
+                if (!state.draw.sunday) state.draw.sunday = {};
+                state.draw.sunday.isConfirmedFinished = true;
+                state.draw.sunday.drawsFinishedTime = state.draw.sunday.drawsFinishedTime || new Date().toISOString();
+                ['sun-enabled', 'sun-manual', 'sun-min', 'sun-max', 'sun-excludes', 'sun-prizes-100', 'sun-prizes-50', 'sun-prizes-25', 'sun-vouchers-count', 'sun-vouchers-value'].forEach(id => {
+                    const el = document.getElementById('cfg-' + id);
+                    if(el) el.disabled = true;
+                });
+                const btn = document.getElementById('btn-confirm-sun');
+                if (btn) {
+                    btn.disabled = true;
+                    btn.innerText = 'Sunday Confirmed Finished';
+                }
+                broadcast();
+                writeFirebase({ draw: state.draw });
+                showGlobalStatus('Sunday Draw Confirmed Finished!', 'red');
+            }
         }
 
         
@@ -1589,9 +1614,9 @@
                                 <tbody>
                                     <tr><td class="bold">Ticket Start Number (#)</td><td><div class="input-placeholder"></div></td><td>First ticket sold</td></tr>
                                     <tr><td class="bold">Ticket Finish Number (#)</td><td><div class="input-placeholder"></div></td><td>Last ticket sold</td></tr>
-                                    <tr><td class="bold">Total Tickets Sold</td><td><div class="input-placeholder"></div></td><td>Finish - Start + 1</td></tr>
-                                    <tr><td class="bold">Singles Sold & Price</td><td><div class="input-placeholder"></div></td><td>@ $2.00 per single</td></tr>
-                                    <tr><td class="bold">Strips Sold & Price</td><td><div class="input-placeholder"></div></td><td>@ $10.00 per strip</td></tr>
+                                    <tr><td class="bold">Total Tickets Sold</td><td><div class="input-placeholder"></div></td><td>Explicitly entered sold count</td></tr>
+                                    <tr><td class="bold">Singles Sold & Price</td><td><div class="input-placeholder"></div></td><td>@ $5.00 per single</td></tr>
+                                    <tr><td class="bold">Strips Sold & Price</td><td><div class="input-placeholder"></div></td><td>@ $20.00 per strip</td></tr>
                                     <tr><td class="bold">Cash Total ($)</td><td><div class="input-placeholder"></div></td><td>Cash register till count</td></tr>
                                     <tr><td class="bold">EFTPOS Total ($)</td><td><div class="input-placeholder"></div></td><td>EFTPOS terminal report</td></tr>
                                     <tr><td class="bold">Reimbursements ($)</td><td><div class="input-placeholder"></div></td><td>Expenses / Payouts</td></tr>
@@ -1605,9 +1630,9 @@
                                 <tbody>
                                     <tr><td class="bold">Ticket Start Number (#)</td><td><div class="input-placeholder"></div></td><td>First ticket sold</td></tr>
                                     <tr><td class="bold">Ticket Finish Number (#)</td><td><div class="input-placeholder"></div></td><td>Last ticket sold</td></tr>
-                                    <tr><td class="bold">Total Tickets Sold</td><td><div class="input-placeholder"></div></td><td>Finish - Start + 1</td></tr>
-                                    <tr><td class="bold">Singles Sold & Price</td><td><div class="input-placeholder"></div></td><td>@ $2.00 per single</td></tr>
-                                    <tr><td class="bold">Strips Sold & Price</td><td><div class="input-placeholder"></div></td><td>@ $10.00 per strip</td></tr>
+                                    <tr><td class="bold">Total Tickets Sold</td><td><div class="input-placeholder"></div></td><td>Explicitly entered sold count</td></tr>
+                                    <tr><td class="bold">Singles Sold & Price</td><td><div class="input-placeholder"></div></td><td>@ $5.00 per single</td></tr>
+                                    <tr><td class="bold">Strips Sold & Price</td><td><div class="input-placeholder"></div></td><td>@ $20.00 per strip</td></tr>
                                     <tr><td class="bold">Cash Total ($)</td><td><div class="input-placeholder"></div></td><td>Cash register till count</td></tr>
                                     <tr><td class="bold">EFTPOS Total ($)</td><td><div class="input-placeholder"></div></td><td>EFTPOS terminal report</td></tr>
                                     <tr><td class="bold">Reimbursements ($)</td><td><div class="input-placeholder"></div></td><td>Expenses / Payouts</td></tr>
@@ -1618,32 +1643,33 @@
 
                         <div style="flex: 2; background: #f8fafc; border: 2px dashed #64748b; padding: 8px 10px; border-radius: 4px; font-size: 0.75rem;">
                             <h4 style="margin-top: 0; color: #0284c7; border-bottom: 1.5px solid #0284c7; padding-bottom: 2px; margin-bottom: 4px;">📐 SELLER MANUAL MATH FORMULAS</h4>
-                            <p style="margin: 2px 0;"><strong>1. Singles Total:</strong> <code>Singles Sold × Price ($2.00)</code></p>
-                            <p style="margin: 2px 0;"><strong>2. Strips Total:</strong> <code>Strips Sold × Price ($10.00)</code></p>
+                            <p style="margin: 2px 0;"><strong>1. Singles Total:</strong> <code>Singles Sold × Price ($5.00)</code></p>
+                            <p style="margin: 2px 0;"><strong>2. Strips Total:</strong> <code>Strips Sold × Price ($20.00)</code></p>
                             <p style="margin: 2px 0;"><strong>3. Gross Expected Sales:</strong> <code>Singles Total + Strips Total</code></p>
                             <p style="margin: 2px 0;"><strong>4. Total Collected:</strong> <code>Cash + EFTPOS - Reimbursements</code></p>
                             <p style="margin: 2px 0;"><strong>5. Till Variance Check:</strong> <code>Actual Collected - Gross Expected (= $0.00)</code></p>
-                            <p style="margin: 2px 0;"><strong>6. Tickets Sold:</strong> <code>(Finish Ticket - Start Ticket) + 1</code></p>
+                            <p style="margin: 2px 0;"><strong>6. Tickets Sold:</strong> <code>Explicitly entered total count</code></p>
                             <hr style="border: 0; border-top: 1px dashed #64748b; margin: 6px 0;">
                             <p style="font-size: 0.7rem; color: #475569; margin: 2px 0;">Seller Sig: ________________________________</p>
                             <p style="font-size: 0.7rem; color: #475569; margin: 2px 0;">Duty Mgr Sig: _____________________________</p>
                         </div>
                     </div>
 
-                    <!-- Bottom Full Width Weekly Summary -->
+                    <!-- BOTTOM: Full Width Weekly Summary & Grand Totals -->
                     <div style="background: #f0fdf4; border: 2px solid #10b981; border-radius: 6px; padding: 8px 12px; margin-top: 6px;">
-                        <h3 style="margin: 0 0 4px 0; color: #166534; font-size: 0.88rem; border-bottom: 1.5px solid #10b981; padding-bottom: 2px; display: flex; justify-content: space-between;">
+                        <h3 style="margin: 0 0 6px 0; color: #166534; font-size: 0.9rem; border-bottom: 1.5px solid #10b981; padding-bottom: 3px; display: flex; justify-content: space-between;">
                             <span>🏆 WEEKLY SUMMARY & GRAND TOTALS</span>
-                            <span style="font-size: 0.78rem; font-weight: normal; color: #15803d;">Manual Reconciled Totals</span>
+                            <span style="font-size: 0.8rem; font-weight: normal; color: #15803d;">Audited Official Record</span>
                         </h3>
-                        <table class="financial-table" style="font-size: 0.78rem; margin: 0; background: #fff;">
+                        <table class="financial-table" style="font-size: 0.8rem; margin: 0; background: #fff;">
                             <thead>
                                 <tr style="background: #dcfce7;">
-                                    <th>Combined Cash ($)</th>
-                                    <th>Combined EFTPOS ($)</th>
-                                    <th>Combined Reimbursements ($)</th>
+                                    <th>Combined Cash</th>
+                                    <th>Combined EFTPOS</th>
+                                    <th>Combined Reimbursements</th>
                                     <th>Combined Tickets Sold</th>
-                                    <th style="background: #10b981; color: white; text-align: center;">WEEKLY GRAND TOTAL ($)</th>
+                                    <th>Combined Prize Pool</th>
+                                    <th style="background: #10b981; color: white; text-align: center;">WEEKLY GRAND TOTAL</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -1652,10 +1678,14 @@
                                     <td><div class="input-placeholder"></div></td>
                                     <td><div class="input-placeholder"></div></td>
                                     <td><div class="input-placeholder"></div></td>
-                                    <td style="background: #f0fdf4;"><div class="input-placeholder"></div></td>
+                                    <td><div class="input-placeholder"></div></td>
+                                    <td class="bold" style="color: #166534; font-size: 1.15rem; background: #f0fdf4; text-align: center;"><div class="input-placeholder"></div></td>
                                 </tr>
                             </tbody>
                         </table>
+                        <div style="font-size: 0.72rem; margin-top: 6px; color: #166534;">
+                            <strong>Weekly Summary Audit Notes:</strong> ____________________________________________________
+                        </div>
                     </div>
                 </div>
             `;
@@ -1663,6 +1693,9 @@
 
         function buildFinancialSheetHTML() {
             const fins = getFinancialsData() || {};
+            const draw = getDrawStateData() || {};
+            const thuDraw = draw.thursday || {};
+            const sunDraw = draw.sunday || {};
             const thu = fins.thursday || {};
             const sun = fins.sunday || {};
 
@@ -1674,6 +1707,13 @@
 
             const grandTotal = thuTotal + sunTotal;
             const printedDate = formatDDMMYYYY(new Date());
+
+            const thuFinished = !!(thuDraw.isConfirmedFinished || thuDraw.drawsFinishedTime || (thuDraw.prizesLeft === 0 && (thuDraw.drawnNumbers || []).length > 0));
+            const sunFinished = !!(sunDraw.isConfirmedFinished || sunDraw.drawsFinishedTime || (sunDraw.prizesLeft === 0 && (sunDraw.drawnNumbers || []).length > 0));
+
+            const thuPrizePoolDisplay = thuFinished ? (thu.prizePool || 3000) : 0;
+            const sunPrizePoolDisplay = sunFinished ? (sun.prizePool || 0) : 0;
+            const combinedPrizePoolDisplay = thuPrizePoolDisplay + sunPrizePoolDisplay;
 
             return `
                 <div class="print-page">
@@ -1706,12 +1746,12 @@
                                     <tr>
                                         <td>#${thu.ticketStart || 1} - #${(thu.ticketFinish && thu.ticketFinish > 0) ? thu.ticketFinish : '...'}</td>
                                         <td class="bold">${thu.ticketsSold || 0}</td>
-                                        <td>${thu.singlesSold || 0} x $${(thu.priceSingle || 2).toFixed(2)}</td>
-                                        <td>${thu.stripsSold || 0} x $${(thu.priceStrip || 10).toFixed(2)}</td>
+                                        <td>${thu.singlesSold || 0} x $${(thu.priceSingle || 5).toFixed(2)}</td>
+                                        <td>${thu.stripsSold || 0} x $${(thu.priceStrip || 20).toFixed(2)}</td>
                                         <td>$${thuCash.toFixed(2)}</td>
                                         <td>$${thuEftpos.toFixed(2)}</td>
                                         <td>-$${thuReimb.toFixed(2)}</td>
-                                        <td>$${(thu.prizePool || 3000).toFixed(2)}</td>
+                                        <td>$${thuPrizePoolDisplay.toFixed(2)}</td>
                                         <td class="bold" style="color:#2563eb;">$${thuTotal.toFixed(2)}</td>
                                     </tr>
                                 </tbody>
@@ -1740,12 +1780,12 @@
                                     <tr>
                                         <td>#${sun.ticketStart || 1} - #${(sun.ticketFinish && sun.ticketFinish > 0) ? sun.ticketFinish : '...'}</td>
                                         <td class="bold">${sun.ticketsSold || 0}</td>
-                                        <td>${sun.singlesSold || 0} x $${(sun.priceSingle || 2).toFixed(2)}</td>
-                                        <td>${sun.stripsSold || 0} x $${(sun.priceStrip || 10).toFixed(2)}</td>
+                                        <td>${sun.singlesSold || 0} x $${(sun.priceSingle || 5).toFixed(2)}</td>
+                                        <td>${sun.stripsSold || 0} x $${(sun.priceStrip || 20).toFixed(2)}</td>
                                         <td>$${sunCash.toFixed(2)}</td>
                                         <td>$${sunEftpos.toFixed(2)}</td>
                                         <td>-$${sunReimb.toFixed(2)}</td>
-                                        <td>$${(sun.prizePool || 0).toFixed(2)}</td>
+                                        <td>$${sunPrizePoolDisplay.toFixed(2)}</td>
                                         <td class="bold" style="color:#ef4444;">$${sunTotal.toFixed(2)}</td>
                                     </tr>
                                 </tbody>
@@ -1759,12 +1799,12 @@
                         <!-- Right: Seller Formulas -->
                         <div style="flex: 2; background: #f8fafc; border: 2px dashed #64748b; padding: 8px 10px; border-radius: 4px; font-size: 0.75rem;">
                             <h4 style="margin-top: 0; color: #0284c7; border-bottom: 1.5px solid #0284c7; padding-bottom: 2px; margin-bottom: 4px;">📐 SELLER MANUAL MATH FORMULAS</h4>
-                            <p style="margin: 2px 0;"><strong>1. Singles Sales Total:</strong> <code>Singles Sold × Price ($2.00)</code></p>
-                            <p style="margin: 2px 0;"><strong>2. Strips Sales Total:</strong> <code>Strips Sold × Price ($10.00)</code></p>
+                            <p style="margin: 2px 0;"><strong>1. Singles Sales Total:</strong> <code>Singles Sold × Price ($5.00)</code></p>
+                            <p style="margin: 2px 0;"><strong>2. Strips Sales Total:</strong> <code>Strips Sold × Price ($20.00)</code></p>
                             <p style="margin: 2px 0;"><strong>3. Gross Expected Sales:</strong> <code>Singles Total + Strips Total</code></p>
                             <p style="margin: 2px 0;"><strong>4. Actual Total Collected:</strong> <code>Cash + EFTPOS - Reimbursements</code></p>
                             <p style="margin: 2px 0;"><strong>5. Till Variance Check:</strong> <code>Actual Collected - Gross Expected (= $0.00)</code></p>
-                            <p style="margin: 2px 0;"><strong>6. Tickets Sold:</strong> <code>(Finish Ticket - Start Ticket) + 1</code></p>
+                            <p style="margin: 2px 0;"><strong>6. Tickets Sold:</strong> <code>Explicitly entered total count</code></p>
                             <hr style="border: 0; border-top: 1px dashed #64748b; margin: 6px 0;">
                             <p style="font-size: 0.7rem; color: #475569; margin: 2px 0;">Seller Sig: ________________________________</p>
                             <p style="font-size: 0.7rem; color: #475569; margin: 2px 0;">Duty Mgr Sig: _____________________________</p>
@@ -1794,7 +1834,7 @@
                                     <td>$${(thuEftpos + sunEftpos).toFixed(2)}</td>
                                     <td style="color:#ef4444;">-$${(thuReimb + sunReimb).toFixed(2)}</td>
                                     <td class="bold">${((thu.ticketsSold || 0) + (sun.ticketsSold || 0))}</td>
-                                    <td>$${((thu.prizePool || 3000) + (sun.prizePool || 0)).toFixed(2)}</td>
+                                    <td>$${combinedPrizePoolDisplay.toFixed(2)}</td>
                                     <td class="bold" style="color: #166534; font-size: 1.15rem; background: #f0fdf4; text-align: center;">$${grandTotal.toFixed(2)}</td>
                                 </tr>
                             </tbody>
