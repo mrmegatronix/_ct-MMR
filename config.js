@@ -52,14 +52,5 @@ window.MMR_CONFIG = {
     
     // ── LOCAL CONTENT OVERRIDES ─────────────────────────────────────────
     // These slides are appended to those fetched from Google Sheets
-    LOCAL_WINNERS_SLIDES: [
-        {
-            title: "",
-            subtitle: "",
-            type: "avatar",
-            duration: 30000,
-            avatarImage: "waving_dark_frame2.jpg",
-            bubbleText: "Meat you @ Coasters!"
-        }
-    ]
+    LOCAL_WINNERS_SLIDES: []
 };

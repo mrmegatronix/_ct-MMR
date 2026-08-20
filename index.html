@@ -1550,7 +1550,7 @@
 
         function renderSlides(slidesData) {
             const disabledList = state.disabledSlides || [];
-            const visibleSlides = slidesData.filter(s => !disabledList.includes(s.title));
+            const visibleSlides = slidesData.filter(s => !disabledList.includes(s.title) && s.type !== 'avatar');
             
             const activeEvtData = getActiveDrawData(state.draw);
             const t100 = Number(activeEvtData.cfgPrizes100 ?? activeEvtData.prizes100 ?? 12);
