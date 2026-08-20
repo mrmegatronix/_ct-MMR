@@ -647,7 +647,7 @@
 
         /* Dynamic Draw Category Color themes & Background Glows */
         #view-draw {
-            background: radial-gradient(circle at center, var(--primary-glow) 0%, rgba(2,6,23,0.95) 75%, #020617 100%);
+            background: radial-gradient(circle at center, rgba(15, 23, 42, 0.6) 0%, rgba(2,6,23,0.98) 75%, #020617 100%);
             transition: background 0.8s ease-in-out;
         }
         #view-draw.prize-100 {
@@ -1241,7 +1241,9 @@
             // Update draw view color category class
             const drawView = document.getElementById('view-draw');
             if (drawView) {
-                const curPrize = (state.draw && state.draw.currentPrize) || null;
+                const activeDrawDataObj = getActiveDrawData(state.draw);
+                const hasDrawn = activeDrawDataObj && activeDrawDataObj.drawnNumbers && activeDrawDataObj.drawnNumbers.length > 0;
+                const curPrize = (hasDrawn || slotsRolling) ? (state.draw && state.draw.currentPrize) : null;
                 setPrizeTheme(curPrize);
             }
 
@@ -1814,9 +1816,23 @@
         let rollInterval;
         let lockTimeouts = [];
         
+        function setPrizeTheme(prizeType) {
+            const drawView = document.getElementById('view-draw');
+            if (!drawView) return;
+            drawView.classList.remove('prize-100', 'prize-50', 'prize-25', 'prize-bonus', 'prize-voucher');
+            if (!prizeType) return; // Clean dark neutral background with no color accent when null/start
+            const pKey = String(prizeType);
+            if (pKey === '100') drawView.classList.add('prize-100');
+            else if (pKey === '50') drawView.classList.add('prize-50');
+            else if (pKey === '25') drawView.classList.add('prize-25');
+            else if (pKey === 'bonus') drawView.classList.add('prize-bonus');
+            else if (pKey === 'voucher') drawView.classList.add('prize-voucher');
+        }
+
         function startLotteryRoll(prizeType, speedParam) {
             const speed = speedParam || getDrawSpeedConfig();
             slotsRolling = true;
+            setPrizeTheme(prizeType);
             updateState(state); // Force re-render to hide the new number from list
             clearInterval(rollInterval);
             lockTimeouts.forEach(t => clearTimeout(t));
