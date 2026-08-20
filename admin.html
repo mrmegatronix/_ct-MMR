@@ -885,6 +885,7 @@
                     if (parsed.nextDrawTime) state.nextDrawTime = parsed.nextDrawTime;
                 } catch(e){}
             }
+        } // Close init() here!
 
         function syncDrawFormFromState() {
             const thu = (state.draw && state.draw.thursday) || {};
@@ -905,9 +906,9 @@
             syncEl('cfg-thu-min', thu.min !== undefined ? thu.min : 1, false);
             syncEl('cfg-thu-max', thu.max !== undefined ? thu.max : 9999, false);
             syncEl('cfg-thu-excludes', (thu.excludes || []).join(','), false);
-            syncEl('cfg-thu-prizes-100', thu.cfgPrizes100 !== undefined ? thu.cfgPrizes100 : 20, false);
-            syncEl('cfg-thu-prizes-50', thu.cfgPrizes50 !== undefined ? thu.cfgPrizes50 : 12, false);
-            syncEl('cfg-thu-prizes-25', thu.cfgPrizes25 !== undefined ? thu.cfgPrizes25 : 16, false);
+            syncEl('cfg-thu-prizes-100', thu.cfgPrizes100 !== undefined ? thu.cfgPrizes100 : 0, false);
+            syncEl('cfg-thu-prizes-50', thu.cfgPrizes50 !== undefined ? thu.cfgPrizes50 : 0, false);
+            syncEl('cfg-thu-prizes-25', thu.cfgPrizes25 !== undefined ? thu.cfgPrizes25 : 0, false);
             syncEl('cfg-thu-vouchers-count', thu.cfgVouchersCount !== undefined ? thu.cfgVouchersCount : 0, false);
             syncEl('cfg-thu-vouchers-value', thu.cfgVouchersValue !== undefined ? thu.cfgVouchersValue : 0, false);
 
@@ -939,11 +940,10 @@
             calcFinancials();
         }
 
-            // Fetch slides immediately on load (in-memory) to populate the admin visibility checklist
-            updateViewButtons();
-            initFirebase();
-            fetchSlidesForAdmin();
-        }
+        // Fetch slides immediately on load (in-memory) to populate the admin visibility checklist
+        updateViewButtons();
+        initFirebase();
+        fetchSlidesForAdmin();
 
         async function fetchSlidesForAdmin() {
             const slidesUrl = DEFAULT_SLIDES_URL;
@@ -1222,13 +1222,25 @@
             const num = (id) => parseFloat(document.getElementById(id)?.value) || 0;
             const elSet = (id, val) => { const el = document.getElementById(id); if (el) el.value = val; };
 
-            const thuTickets = num('fin-thu-tickets');
+            let thuTickets = num('fin-thu-tickets');
+            const thuStart = num('fin-thu-ticket-start');
+            const thuFinish = num('fin-thu-ticket-finish');
+            if (thuFinish > 0 && thuFinish >= thuStart) {
+                thuTickets = (thuFinish - thuStart) + 1;
+                elSet('fin-thu-tickets', thuTickets);
+            }
             const thuCash = num('fin-thu-cash');
             const thuEftpos = num('fin-thu-eftpos');
             const thuReimb = num('fin-thu-reimb');
             const thuTotal = thuCash + thuEftpos - thuReimb;
 
-            const sunTickets = num('fin-sun-tickets');
+            let sunTickets = num('fin-sun-tickets');
+            const sunStart = num('fin-sun-ticket-start');
+            const sunFinish = num('fin-sun-ticket-finish');
+            if (sunFinish > 0 && sunFinish >= sunStart) {
+                sunTickets = (sunFinish - sunStart) + 1;
+                elSet('fin-sun-tickets', sunTickets);
+            }
             const sunCash = num('fin-sun-cash');
             const sunEftpos = num('fin-sun-eftpos');
             const sunReimb = num('fin-sun-reimb');
