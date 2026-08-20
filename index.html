@@ -1186,12 +1186,13 @@
         let postDrawLoopInterval = null;
 
         function updateState(newState) {
-            // Deep merge draw object if present
-            if (newState.draw) {
-                state.draw = { ...state.draw, ...newState.draw };
-                delete newState.draw;
+            if (newState && newState !== state) {
+                const { draw, ...rest } = newState;
+                if (draw) {
+                    state.draw = { ...state.draw, ...draw };
+                }
+                state = { ...state, ...rest };
             }
-            state = { ...state, ...newState };
 
             // Check total configured prizes
             const activeEvtData = getActiveDrawData(state.draw);
