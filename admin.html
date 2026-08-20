@@ -1063,7 +1063,11 @@
             else sun.drawsFinishedTime = null;
 
             // Sync active event properties to top-level state.draw
-            const activeEvtName = state.draw.activeEvent || 'thursday';
+            let activeEvtName = state.draw.activeEvent || 'thursday';
+            if (activeEvtName === 'sunday' && sun.enabled === false) {
+                activeEvtName = 'thursday';
+                state.draw.activeEvent = 'thursday';
+            }
             const activeEvt = state.draw[activeEvtName] || thu;
             state.draw.prizes100 = activeEvt.prizes100;
             state.draw.prizes50 = activeEvt.prizes50;
@@ -1182,7 +1186,7 @@
             const elSet = (id, val) => { const el = document.getElementById(id); if (el) el.value = val !== undefined && val !== null ? val : 0; };
 
             elSet('fin-thu-ticket-start', thu.ticketStart !== undefined ? thu.ticketStart : 1);
-            elSet('fin-thu-ticket-finish', thu.ticketFinish !== undefined ? thu.ticketFinish : 9999);
+            elSet('fin-thu-ticket-finish', (thu.ticketFinish !== undefined && thu.ticketFinish > 0) ? thu.ticketFinish : 0);
             elSet('fin-thu-tickets', thu.ticketsSold !== undefined ? thu.ticketsSold : 0);
             elSet('fin-thu-prizepool', thu.prizePool !== undefined ? thu.prizePool : 3000);
             elSet('fin-thu-price-single', thu.priceSingle !== undefined ? thu.priceSingle : 2.00);
@@ -1196,7 +1200,7 @@
             const elThuReimb = document.getElementById('fin-thu-notes-reimb'); if (elThuReimb) elThuReimb.value = thu.notesReimb || '';
 
             elSet('fin-sun-ticket-start', sun.ticketStart !== undefined ? sun.ticketStart : 1);
-            elSet('fin-sun-ticket-finish', sun.ticketFinish !== undefined ? sun.ticketFinish : 9999);
+            elSet('fin-sun-ticket-finish', (sun.ticketFinish !== undefined && sun.ticketFinish > 0) ? sun.ticketFinish : 0);
             elSet('fin-sun-tickets', sun.ticketsSold !== undefined ? sun.ticketsSold : 0);
             elSet('fin-sun-prizepool', sun.prizePool !== undefined ? sun.prizePool : 0);
             elSet('fin-sun-price-single', sun.priceSingle !== undefined ? sun.priceSingle : 2.00);
@@ -1220,11 +1224,11 @@
 
             const thuStart = num('fin-thu-ticket-start');
             const thuFinish = num('fin-thu-ticket-finish');
-            let thuTickets = num('fin-thu-tickets');
-            if (thuFinish >= thuStart && thuStart > 0 && thuTickets === 0) {
+            let thuTickets = 0;
+            if (thuFinish > 0 && thuFinish >= thuStart) {
                 thuTickets = (thuFinish - thuStart + 1);
-                elSet('fin-thu-tickets', thuTickets);
             }
+            elSet('fin-thu-tickets', thuTickets);
             const thuPrizepool = num('fin-thu-prizepool');
             const thuCash = num('fin-thu-cash');
             const thuEftpos = num('fin-thu-eftpos');
@@ -1233,11 +1237,11 @@
 
             const sunStart = num('fin-sun-ticket-start');
             const sunFinish = num('fin-sun-ticket-finish');
-            let sunTickets = num('fin-sun-tickets');
-            if (sunFinish >= sunStart && sunStart > 0 && sunTickets === 0) {
+            let sunTickets = 0;
+            if (sunFinish > 0 && sunFinish >= sunStart) {
                 sunTickets = (sunFinish - sunStart + 1);
-                elSet('fin-sun-tickets', sunTickets);
             }
+            elSet('fin-sun-tickets', sunTickets);
             const sunPrizepool = num('fin-sun-prizepool');
             const sunCash = num('fin-sun-cash');
             const sunEftpos = num('fin-sun-eftpos');
@@ -2201,7 +2205,7 @@
                                 </thead>
                                 <tbody>
                                     <tr>
-                                        <td>#${thu.ticketStart || 1} - #${thu.ticketFinish || 9999}</td>
+                                        <td>#${thu.ticketStart || 1} - #${(thu.ticketFinish && thu.ticketFinish > 0) ? thu.ticketFinish : '...'}</td>
                                         <td class="bold">${thu.ticketsSold || 0}</td>
                                         <td>${thu.singlesSold || 0} x $${(thu.priceSingle || 2).toFixed(2)}</td>
                                         <td>${thu.stripsSold || 0} x $${(thu.priceStrip || 10).toFixed(2)}</td>
@@ -2235,7 +2239,7 @@
                                 </thead>
                                 <tbody>
                                     <tr>
-                                        <td>#${sun.ticketStart || 1} - #${sun.ticketFinish || 9999}</td>
+                                        <td>#${sun.ticketStart || 1} - #${(sun.ticketFinish && sun.ticketFinish > 0) ? sun.ticketFinish : '...'}</td>
                                         <td class="bold">${sun.ticketsSold || 0}</td>
                                         <td>${sun.singlesSold || 0} x $${(sun.priceSingle || 2).toFixed(2)}</td>
                                         <td>${sun.stripsSold || 0} x $${(sun.priceStrip || 10).toFixed(2)}</td>

@@ -1005,7 +1005,10 @@
         let isPaused = false;
         function getActiveDrawData(drawState) {
             if (!drawState) return {};
-            const evtName = drawState.activeEvent || 'thursday';
+            let evtName = drawState.activeEvent || 'thursday';
+            if (evtName === 'sunday' && drawState.sunday && drawState.sunday.enabled === false) {
+                evtName = 'thursday';
+            }
             return drawState[evtName] || drawState.thursday || drawState;
         }
 
@@ -1246,21 +1249,30 @@
             lastActiveView = state.activeView;
 
             // Active Event State parsing
-            const activeEventName = state.draw.activeEvent || 'thursday';
-            const activeDrawData = state.draw[activeEventName] || state.draw.thursday || state.draw;
-            const isSunday = activeEventName === 'sunday';
+            const activeDrawData = getActiveDrawData(state.draw);
+            const isSundayEnabled = !!(state.draw && state.draw.sunday && state.draw.sunday.enabled);
+            let activeEventName = (state.draw && state.draw.activeEvent) || 'thursday';
+            if (activeEventName === 'sunday' && !isSundayEnabled) {
+                activeEventName = 'thursday';
+            }
+            const isSunday = activeEventName === 'sunday' && isSundayEnabled;
 
-            // Draw rendering
-            prizesCountEl.innerText = activeDrawData.prizesLeft !== undefined ? activeDrawData.prizesLeft : state.draw.prizesLeft;
+            // Compute remaining prizes dynamically from config minus drawn
+            const drawnNumbers = activeDrawData.drawnNumbers || [];
+            const n100Drawn = drawnNumbers.filter(d => (typeof d === 'object' ? d.prize : 0) == 100).length;
+            const n50Drawn = drawnNumbers.filter(d => (typeof d === 'object' ? d.prize : 0) == 50).length;
+            const n25Drawn = drawnNumbers.filter(d => (typeof d === 'object' ? d.prize : 0) == 25).length;
+            const p100Val = Math.max(0, (activeDrawData.cfgPrizes100 ?? activeDrawData.prizes100 ?? 20) - n100Drawn);
+            const p50Val = Math.max(0, (activeDrawData.cfgPrizes50 ?? activeDrawData.prizes50 ?? 12) - n50Drawn);
+            const p25Val = Math.max(0, (activeDrawData.cfgPrizes25 ?? activeDrawData.prizes25 ?? 16) - n25Drawn);
+            const totalRemaining = p100Val + p50Val + p25Val;
+
+            if (prizesCountEl) prizesCountEl.innerText = totalRemaining;
             
             // Update countdown slide prize counts if they exist in DOM
             const c100 = document.getElementById('count-100');
             const c50 = document.getElementById('count-50');
             const c25 = document.getElementById('count-25');
-            const p100Val = activeDrawData.prizes100 !== undefined ? activeDrawData.prizes100 : (activeDrawData.cfgPrizes100 || 0);
-            const p50Val = activeDrawData.prizes50 !== undefined ? activeDrawData.prizes50 : (activeDrawData.cfgPrizes50 || 0);
-            const p25Val = activeDrawData.prizes25 !== undefined ? activeDrawData.prizes25 : (activeDrawData.cfgPrizes25 || 0);
-
             if (c100) { c100.innerText = p100Val; }
             if (c50) { c50.innerText = p50Val; }
             if (c25) { c25.innerText = p25Val; }
@@ -1547,8 +1559,12 @@
             const totalPrizes = t100 + t50 + t25;
             const totalPool = (t100 * 100) + (t50 * 50) + (t25 * 25);
             
-            const activeEvtName = (state.draw && state.draw.activeEvent) || 'thursday';
-            const isSunday = activeEvtName === 'sunday';
+            const isSundayEnabled = !!(state.draw && state.draw.sunday && state.draw.sunday.enabled);
+            let activeEvtName = (state.draw && state.draw.activeEvent) || 'thursday';
+            if (activeEvtName === 'sunday' && !isSundayEnabled) {
+                activeEvtName = 'thursday';
+            }
+            const isSunday = activeEvtName === 'sunday' && isSundayEnabled;
             const targetDay = isSunday ? 0 : 4; // 0 = Sunday, 4 = Thursday
             const dayNameUpper = isSunday ? 'SUNDAYS' : 'THURSDAYS';
             const dayNameCap = isSunday ? "Sunday's" : "Thursday's";

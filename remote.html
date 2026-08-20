@@ -998,7 +998,10 @@
             document.getElementById('cfg-sun-manual').checked = !!sun.manualDraw;
             document.getElementById('cfg-sun-enabled').checked = !!sun.enabled;
 
-            const activeEvtKey = state.draw.activeEvent || 'thursday';
+            let activeEvtKey = state.draw.activeEvent || 'thursday';
+            if (activeEvtKey === 'sunday' && sun.enabled === false) {
+                activeEvtKey = 'thursday';
+            }
             const activeEvt = state.draw[activeEvtKey] || thu;
             document.getElementById('lbl-left-100').innerText = activeEvt.prizes100 !== undefined ? activeEvt.prizes100 : (activeEvt.cfgPrizes100 ?? 20);
             document.getElementById('lbl-left-50').innerText = activeEvt.prizes50 !== undefined ? activeEvt.prizes50 : (activeEvt.cfgPrizes50 ?? 12);
@@ -1133,7 +1136,11 @@
             sun.prizesLeft = sun.prizes100 + sun.prizes50 + sun.prizes25;
 
             // Sync top-level active event draw helpers for backwards compatibility
-            const activeEvtName = state.draw.activeEvent || 'thursday';
+            let activeEvtName = state.draw.activeEvent || 'thursday';
+            if (activeEvtName === 'sunday' && sun.enabled === false) {
+                activeEvtName = 'thursday';
+                state.draw.activeEvent = 'thursday';
+            }
             const activeEvt = state.draw[activeEvtName] || thu;
             state.draw.prizes100 = activeEvt.prizes100;
             state.draw.prizes50 = activeEvt.prizes50;
@@ -1694,7 +1701,7 @@
                                 </thead>
                                 <tbody>
                                     <tr>
-                                        <td>#${thu.ticketStart || 1} - #${thu.ticketFinish || 9999}</td>
+                                        <td>#${thu.ticketStart || 1} - #${(thu.ticketFinish && thu.ticketFinish > 0) ? thu.ticketFinish : '...'}</td>
                                         <td class="bold">${thu.ticketsSold || 0}</td>
                                         <td>${thu.singlesSold || 0} x $${(thu.priceSingle || 2).toFixed(2)}</td>
                                         <td>${thu.stripsSold || 0} x $${(thu.priceStrip || 10).toFixed(2)}</td>
@@ -1728,7 +1735,7 @@
                                 </thead>
                                 <tbody>
                                     <tr>
-                                        <td>#${sun.ticketStart || 1} - #${sun.ticketFinish || 9999}</td>
+                                        <td>#${sun.ticketStart || 1} - #${(sun.ticketFinish && sun.ticketFinish > 0) ? sun.ticketFinish : '...'}</td>
                                         <td class="bold">${sun.ticketsSold || 0}</td>
                                         <td>${sun.singlesSold || 0} x $${(sun.priceSingle || 2).toFixed(2)}</td>
                                         <td>${sun.stripsSold || 0} x $${(sun.priceStrip || 10).toFixed(2)}</td>

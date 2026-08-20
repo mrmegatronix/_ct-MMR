@@ -574,7 +574,7 @@
                         <div class="draw-section" style="border-left: 4px solid #2563eb;">
                             <h3 style="color:#60a5fa;">
                                 <span>Thursday Draw Breakdown</span>
-                                <span style="font-size:0.8rem; color:var(--text-muted); font-weight:normal;">Range: #${thuFins.ticketStart || 1} - #${thuFins.ticketFinish || 9999}</span>
+                                <span style="font-size:0.8rem; color:var(--text-muted); font-weight:normal;">Range: #${thuFins.ticketStart || 1} - #${(thuFins.ticketFinish && thuFins.ticketFinish > 0) ? thuFins.ticketFinish : '...'}</span>
                             </h3>
                     `;
 
@@ -640,7 +640,7 @@
                         <div class="draw-section" style="border-left: 4px solid #eab308; margin-top: 1rem;">
                             <h3 style="color:#facc15;">
                                 <span>Sunday Draw (Rob's Bonus Box)</span>
-                                <span style="font-size:0.8rem; color:var(--text-muted); font-weight:normal;">Range: #${sunFins.ticketStart || 1} - #${sunFins.ticketFinish || 9999}</span>
+                                <span style="font-size:0.8rem; color:var(--text-muted); font-weight:normal;">Range: #${sunFins.ticketStart || 1} - #${(sunFins.ticketFinish && sunFins.ticketFinish > 0) ? sunFins.ticketFinish : '...'}</span>
                             </h3>
                     `;
 
