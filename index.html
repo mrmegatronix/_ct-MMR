@@ -1902,9 +1902,14 @@
             rollingPrize = prizeType;
             setPrizeTheme(prizeType);
             updateState(state); // Force re-render to hide the new number from list
-            clearInterval(rollInterval);
-            lockTimeouts.forEach(t => clearTimeout(t));
-            lockTimeouts = [];
+            
+            if (window.rollInterval) {
+                clearInterval(window.rollInterval);
+            }
+            if (window.lockTimeouts) {
+                window.lockTimeouts.forEach(t => clearTimeout(t));
+            }
+            window.lockTimeouts = [];
             
             const titleEl = document.getElementById('draw-view-title');
             if (titleEl) {
@@ -1965,9 +1970,14 @@
 
         function stopLotteryRoll(finalNumber, prizeType, speedParam) {
             const speed = speedParam || getDrawSpeedConfig();
-            clearInterval(rollInterval);
-            lockTimeouts.forEach(t => clearTimeout(t));
-            lockTimeouts = [];
+            
+            if (window.rollInterval) {
+                clearInterval(window.rollInterval);
+            }
+            if (window.lockTimeouts) {
+                window.lockTimeouts.forEach(t => clearTimeout(t));
+            }
+            window.lockTimeouts = [];
             
             const numStr = String(finalNumber).padStart(4, '0');
             const container = document.querySelector('.slot-container');
@@ -1979,9 +1989,13 @@
                 container.innerHTML = html;
             }
             
-            const slots = document.querySelectorAll('.slot-digit');
+            const slots = Array.from(document.querySelectorAll('.slot-digit'));
+            if (slots.length === 0) {
+                if (window.rollInterval) clearInterval(window.rollInterval);
+                return;
+            }
             
-            rollInterval = setInterval(() => {
+            window.rollInterval = setInterval(() => {
                 slots.forEach(slot => {
                     if (slot.classList.contains('rolling')) {
                         slot.innerText = Math.floor(Math.random() * 10);
@@ -1997,7 +2011,7 @@
                     slot.innerText = numStr[index];
                     
                     if (index === slots.length - 1) {
-                        clearInterval(rollInterval);
+                        if (window.rollInterval) clearInterval(window.rollInterval);
                         slotsRolling = false;
                         rollingPrize = null;
                         updateState(state);
@@ -2025,7 +2039,7 @@
                         }
                     }
                 }, delay);
-                lockTimeouts.push(t);
+                window.lockTimeouts.push(t);
             });
         }
 
