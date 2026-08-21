@@ -2068,12 +2068,8 @@
         }
 
         function generateQRCodes() {
-            let baseUrl = '';
-            if (window.location.protocol.startsWith('http')) {
-                baseUrl = window.location.origin + window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/'));
-            } else {
-                baseUrl = 'http://' + (window.location.hostname || 'localhost') + ':8080';
-            }
+            let baseUrl = window.location.href.split('?')[0].split('#')[0];
+            baseUrl = baseUrl.substring(0, baseUrl.lastIndexOf('/'));
             
             const urls = {
                 'qr-display': baseUrl + '/index.html',
