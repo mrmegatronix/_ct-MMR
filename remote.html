@@ -950,7 +950,9 @@
         function broadcast() {
             const stateToSave = { ...state };
             delete stateToSave.slides;
-            localStorage.setItem('mmr_state_v5', JSON.stringify(stateToSave));
+            try {
+                localStorage.setItem('mmr_state_v5', JSON.stringify(stateToSave));
+            } catch(e) { console.error('Failed to save state to localStorage:', e); }
             bc.postMessage({ type: 'STATE_UPDATE', payload: stateToSave });
             writeFirebase(stateToSave);
         }
@@ -1119,6 +1121,9 @@
             }
         }
         function updateDrawState() {
+            if (!state.draw) state.draw = { thursday: {}, sunday: {} };
+            if (!state.draw.thursday) state.draw.thursday = {};
+            if (!state.draw.sunday) state.draw.sunday = {};
             const thu = state.draw.thursday;
             const sun = state.draw.sunday;
 
@@ -1148,8 +1153,10 @@
             sun.manualDraw = document.getElementById('cfg-sun-manual').checked;
             sun.enabled = document.getElementById('cfg-sun-enabled').checked;
 
-            if (!thu.drawnNumbers) thu.drawnNumbers = [];
-            if (!sun.drawnNumbers) sun.drawnNumbers = [];
+            if (thu.drawnNumbers && !Array.isArray(thu.drawnNumbers)) thu.drawnNumbers = Object.values(thu.drawnNumbers);
+            else if (!thu.drawnNumbers) thu.drawnNumbers = [];
+            if (sun.drawnNumbers && !Array.isArray(sun.drawnNumbers)) sun.drawnNumbers = Object.values(sun.drawnNumbers);
+            else if (!sun.drawnNumbers) sun.drawnNumbers = [];
 
             const thu_n100 = thu.drawnNumbers.filter(d => (typeof d === 'object' ? d.prize : 0) === 100).length;
             const thu_n50 = thu.drawnNumbers.filter(d => (typeof d === 'object' ? d.prize : 0) === 50).length;
@@ -1325,7 +1332,9 @@
 
 
         function getDrawSpeedConfig() {
-            const val = parseInt((state.draw && state.draw.drawSpeed) || localStorage.getItem('mmr_draw_speed') || 1);
+            let lsSpeed = 1;
+            try { lsSpeed = localStorage.getItem('mmr_draw_speed') || 1; } catch(e) {}
+            const val = parseInt((state.draw && state.draw.drawSpeed) || lsSpeed);
             if (val === 3) {
                 return { mode: 3, name: 'Faster', rollDuration: 600, slotInterval: 15, digitBaseDelay: 150, digitStepDelay: 120 };
             } else if (val === 2) {
@@ -1419,44 +1428,61 @@
             const cfgSpeed = getDrawSpeedConfig();
 
             // Tell display to start rolling animation
-            bc.postMessage({ type: 'START_ROLL', payload: { prize: prizeSize, speed: cfgSpeed } });
-            writeFirebase({ cmd: { type: 'START_ROLL', prize: prizeSize, speed: cfgSpeed, ts: Date.now() } });
+            const startTs = Date.now();
+            bc.postMessage({ type: 'START_ROLL', payload: { prize: prizeSize, speed: cfgSpeed, ts: startTs } });
+            writeFirebase({ cmd: { type: 'START_ROLL', prize: prizeSize, speed: cfgSpeed, ts: startTs } });
             
             // Wait rollDuration then stop on winner
             setTimeout(() => {
-                const drawEntry = { 
-                    number: winner, 
-                    prize: prizeSize,
-                    timestamp: new Date().toISOString(),
-                    poolSize: available.length,
-                    method: window.crypto && window.crypto.getRandomValues ? 'CSPRNG (Web Cryptography)' : 'PRNG (Math.random)'
-                };
-                evt.drawnNumbers.unshift(drawEntry); // Add to top
+                try {
+                    const drawEntry = { 
+                        number: winner, 
+                        prize: prizeSize,
+                        timestamp: new Date().toISOString(),
+                        poolSize: available.length,
+                        method: window.crypto && window.crypto.getRandomValues ? 'CSPRNG (Web Cryptography)' : 'PRNG (Math.random)'
+                    };
+                    
+                    if (!Array.isArray(evt.drawnNumbers)) {
+                        evt.drawnNumbers = evt.drawnNumbers ? Object.values(evt.drawnNumbers) : [];
+                    }
+                    evt.drawnNumbers.unshift(drawEntry); // Add to top
+                    
+                    // Decrement correct prize counter
+                    if (prizeSize === 100) evt.prizes100 = Math.max(0, evt.prizes100 - 1);
+                    else if (prizeSize === 50) evt.prizes50 = Math.max(0, evt.prizes50 - 1);
+                    else if (prizeSize === 25) evt.prizes25 = Math.max(0, evt.prizes25 - 1);
+                    
+                    evt.prizesLeft = evt.prizes100 + evt.prizes50 + evt.prizes25;
+                    evt.currentNumber = winner;
+                    evt.currentPrize = prizeSize;
+                    
+                    // Track finished time if all prizes are drawn
+                    if (evt.prizesLeft === 0) {
+                        evt.drawsFinishedTime = new Date().toISOString();
+                    } else {
+                        evt.drawsFinishedTime = null;
+                    }
+                } catch(e) { console.error('draw logic error:', e); }
                 
-                // Decrement correct prize counter
-                if (prizeSize === 100) evt.prizes100 = Math.max(0, evt.prizes100 - 1);
-                else if (prizeSize === 50) evt.prizes50 = Math.max(0, evt.prizes50 - 1);
-                else if (prizeSize === 25) evt.prizes25 = Math.max(0, evt.prizes25 - 1);
+                try {
+                    broadcast(); // updates prizes and history
+                } catch(e) { console.error('broadcast error:', e); }
                 
-                evt.prizesLeft = evt.prizes100 + evt.prizes50 + evt.prizes25;
-                evt.currentNumber = winner;
-                evt.currentPrize = prizeSize;
-                
-                // Track finished time if all prizes are drawn
-                if (evt.prizesLeft === 0) {
-                    evt.drawsFinishedTime = new Date().toISOString();
-                } else {
-                    evt.drawsFinishedTime = null;
-                }
-                
-                broadcast(); // updates prizes and history
-                bc.postMessage({ type: 'STOP_ROLL', payload: { number: winner, prize: prizeSize, speed: cfgSpeed } });
-                writeFirebase({ cmd: { type: 'STOP_ROLL', number: winner, prize: prizeSize, speed: cfgSpeed, ts: Date.now() } });
+                try {
+                    const stopTs = Date.now();
+                    bc.postMessage({ type: 'STOP_ROLL', payload: { number: winner, prize: prizeSize, speed: cfgSpeed, ts: stopTs } });
+                    writeFirebase({ cmd: { type: 'STOP_ROLL', number: winner, prize: prizeSize, speed: cfgSpeed, ts: stopTs } });
+                } catch(e) { console.error('stop_roll error:', e); }
                 
                 isDrawing = false;
                 document.querySelectorAll('.draw-btn').forEach(btn => btn.disabled = false);
                 document.getElementById('draw-rolling-label').style.display = 'none';
-                updateDrawState(); updateViewButtons();;
+                
+                try {
+                    updateDrawState(); 
+                    updateViewButtons();
+                } catch(e) { console.error('update ui error:', e); }
             }, cfgSpeed.rollDuration);
         }
 

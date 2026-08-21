@@ -480,7 +480,7 @@
             border-radius: 2rem;
             border: 2px solid rgba(255, 255, 255, 0.15);
             color: #fff;
-            font-size: 1.8rem;
+            font-size: clamp(2rem, 3.5vmin, 3.5rem);
             font-weight: 800;
             display: flex;
             align-items: center;
@@ -489,7 +489,7 @@
             animation: popIn 0.4s ease-out;
         }
         .prize-counter-pill span.val {
-            font-size: 2.6rem;
+            font-size: clamp(2.8rem, 4.5vmin, 4.5rem);
             color: #fff;
             font-weight: 900;
         }
@@ -607,8 +607,8 @@
         }
         
         #view-draw .lottery-container {
-            /* Shift up to make room for drawn numbers at the bottom */
-            transform: translate(-50%, -60%);
+            /* Keep centered, shift up for bottom numbers */
+            transform: translateY(-10vh);
         }
 
         .control-btn:hover {
@@ -1085,9 +1085,11 @@
                 updateState(cleanPayload);
             }
             if (data.type === 'START_ROLL') {
+                if (data.payload && data.payload.ts) lastFbCmdTs = Math.max(lastFbCmdTs, data.payload.ts);
                 startLotteryRoll(data.payload ? data.payload.prize : null, data.payload ? data.payload.speed : null);
             }
             if (data.type === 'STOP_ROLL') {
+                if (data.payload && data.payload.ts) lastFbCmdTs = Math.max(lastFbCmdTs, data.payload.ts);
                 stopLotteryRoll(data.payload ? data.payload.number : null, data.payload ? data.payload.prize : null, data.payload ? data.payload.speed : null);
             }
             if (data.type === 'CONFETTI') {
@@ -1285,7 +1287,8 @@
             const isSunday = activeEventName === 'sunday' && isSundayEnabled;
 
             // Compute remaining prizes dynamically from config minus drawn
-            const drawnNumbers = activeDrawData.drawnNumbers || [];
+            let drawnNumbers = activeDrawData.drawnNumbers || [];
+            if (!Array.isArray(drawnNumbers)) drawnNumbers = Object.values(drawnNumbers);
             const n100Drawn = drawnNumbers.filter(d => (typeof d === 'object' ? d.prize : 0) == 100).length;
             const n50Drawn = drawnNumbers.filter(d => (typeof d === 'object' ? d.prize : 0) == 50).length;
             const n25Drawn = drawnNumbers.filter(d => (typeof d === 'object' ? d.prize : 0) == 25).length;
@@ -1338,7 +1341,9 @@
             if (c25) { c25.innerText = p25Val; }
 
             // Render drawn numbers chronologically (first drawn to last drawn) with line connectors
-            const drawn = activeDrawData.drawnNumbers || [];
+            let drawn = activeDrawData.drawnNumbers || [];
+            if (!Array.isArray(drawn)) drawn = Object.values(drawn);
+            let chronological = [...drawn].reverse();
             
             // If reels are spinning, hide the currently rolling number (drawn[0])
             let displayDrawn = [...drawn];
@@ -1862,7 +1867,9 @@
 
         // Draw Speed Helper
         function getDrawSpeedConfig() {
-            const val = parseInt((state.draw && state.draw.drawSpeed) || localStorage.getItem('mmr_draw_speed') || 1);
+            let lsSpeed = 1;
+            try { lsSpeed = localStorage.getItem('mmr_draw_speed') || 1; } catch(e) {}
+            const val = parseInt((state.draw && state.draw.drawSpeed) || lsSpeed);
             if (val === 3) {
                 return { mode: 3, name: 'Faster', rollDuration: 600, slotInterval: 15, digitBaseDelay: 150, digitStepDelay: 120 };
             } else if (val === 2) {
@@ -1937,6 +1944,16 @@
             }
             
             const slots = document.querySelectorAll('.slot-digit');
+            
+            // Failsafe: if STOP_ROLL never arrives (e.g. remote closed, network dropped), stop automatically after 10s
+            if (window._rollFailsafe) clearTimeout(window._rollFailsafe);
+            window._rollFailsafe = setTimeout(() => {
+                if (slotsRolling) {
+                    console.warn('[Failsafe] STOP_ROLL not received! Auto-stopping draw to prevent infinite loop.');
+                    stopLotteryRoll('----', prizeType, speed);
+                }
+            }, 10000);
+
             rollInterval = setInterval(() => {
                 slots.forEach(slot => {
                     if (slot.classList.contains('rolling')) {
@@ -2387,6 +2404,7 @@
         // ── Firebase cross-device sync (optional) ──────────────────────────
         let fbDbUrl = (window.MMR_CONFIG && window.MMR_CONFIG.FIREBASE_DB_URL) || '';
         let lastFbCmdTs = 0;
+        let isInitialFbLoad = true;
 
         function initFirebase() {
             try {
@@ -2434,11 +2452,15 @@
                 const cmdObj = path === '/cmd' ? rawData : (rawData && rawData.cmd);
                 if (cmdObj && cmdObj.ts > lastFbCmdTs) {
                     lastFbCmdTs = cmdObj.ts;
-                    if (cmdObj.type === 'START_ROLL') startLotteryRoll(cmdObj.prize, cmdObj.speed);
-                    else if (cmdObj.type === 'STOP_ROLL') stopLotteryRoll(cmdObj.number, cmdObj.prize, cmdObj.speed);
-                    else if (cmdObj.type === 'CONFETTI') triggerConfetti();
-                    else if (cmdObj.type === 'FORCE_SYNC') fetchAndApplySlides();
+                    if (!isInitialFbLoad) {
+                        if (cmdObj.type === 'START_ROLL') startLotteryRoll(cmdObj.prize, cmdObj.speed);
+                        else if (cmdObj.type === 'STOP_ROLL') stopLotteryRoll(cmdObj.number, cmdObj.prize, cmdObj.speed);
+                        else if (cmdObj.type === 'CONFETTI') triggerConfetti();
+                        else if (cmdObj.type === 'FORCE_SYNC') fetchAndApplySlides();
+                    }
                 }
+                
+                isInitialFbLoad = false;
 
                 if (path === '/') {
                     const { cmd, slideCmd, voiceOn, ...stateData } = rawData;

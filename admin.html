@@ -2536,6 +2536,11 @@
                         }
                     };
                     el.src = primary;
+                    const linkId = id.replace('qr-', 'link-');
+                    const linkEl = document.getElementById(linkId);
+                    if (linkEl) {
+                        linkEl.href = targetUrl;
+                    }
                 }
             }
         }
