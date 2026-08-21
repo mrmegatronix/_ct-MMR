@@ -1459,27 +1459,42 @@
 
             // Render last drawn number in slots if not currently rolling
             const slotsContainer = document.querySelector('.slot-container');
-            if (slotsContainer && (!rollInterval || slotsContainer.querySelectorAll('.rolling').length === 0)) {
-                const curNum = activeEvtData.currentNumber || state.draw.currentNumber || '---';
+            if (slotsContainer && (!window.rollInterval || slotsContainer.querySelectorAll('.slot-strip').length === 0)) {
+                const activeEvtData = getActiveDrawData(state.draw);
+                const curNum = activeEvtData.currentNumber || state.draw.currentNumber || '-';
                 const curPrize = activeEvtData.currentPrize || state.draw.currentPrize;
                 const titleEl = document.getElementById('draw-view-title');
                 if (titleEl) {
                     if (curPrize === 'bonus') {
                         titleEl.innerText = "BONUS PRIZE DRAW";
-                        titleEl.style.color = "#a5b4fc";
+                        titleEl.style.color = "#ffd700";
+                    } else if (curPrize === 'voucher') {
+                        titleEl.innerText = "CLUB VOUCHER DRAW";
+                        titleEl.style.color = "#ffffff";
+                    } else if (curPrize === 100 || curPrize === '100') {
+                        titleEl.innerText = "WINNING $100 PACK";
+                        titleEl.style.color = "#ef4444";
+                    } else if (curPrize === 50 || curPrize === '50') {
+                        titleEl.innerText = "WINNING $50 PRIZE";
+                        titleEl.style.color = "#3b82f6";
+                    } else if (curPrize === 25 || curPrize === '25') {
+                        titleEl.innerText = "WINNING $25 PRIZE";
+                        titleEl.style.color = "#10b981";
                     } else {
                         titleEl.innerText = "Winning Number";
                         titleEl.style.color = "white";
                     }
                 }
                 
-                const numStr = String(curNum).padStart(4, '0');
+                const maxTickets = window.MMR_CONFIG ? window.MMR_CONFIG.DEFAULT_TICKET_MAX : 999;
+                const digitsCount = String(maxTickets).length;
+
                 let html = '';
-                for (let i = 0; i < numStr.length; i++) {
-                    const char = numStr[i];
-                    const isDash = char === '-';
+                const displayStr = String(curNum).padStart(digitsCount, curNum === '-' ? '-' : '0');
+                for (let i = 0; i < displayStr.length; i++) {
+                    const isDash = displayStr[i] === '-';
                     const cssClass = isDash ? 'slot-digit' : 'slot-digit locked';
-                    html += `<span class="${cssClass}">${char}</span>`;
+                    html += `<span class="${cssClass}">${displayStr[i]}</span>`;
                 }
                 slotsContainer.innerHTML = html;
             }
@@ -1903,6 +1918,33 @@
             else if (pKey === 'voucher') drawView.classList.add('prize-voucher');
         }
 
+        // Slot Machine Audio Context
+        let audioCtx = null;
+        function playSlotTick() {
+            if (!state || !state.soundEnabled) return;
+            try {
+                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+                
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(400, audioCtx.currentTime + 0.05);
+                
+                gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.05);
+                
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.05);
+            } catch (e) {
+                console.error('Audio play failed', e);
+            }
+        }
+
         function startLotteryRoll(prizeType, speedParam) {
             const speed = speedParam || getDrawSpeedConfig();
             slotsRolling = true;
@@ -1944,35 +1986,49 @@
             
             document.getElementById('view-draw').classList.add('draw-flash-bg');
             
-            // Standard slot digits layout
+            // Dynamic slot digits layout based on config
+            const maxTickets = window.MMR_CONFIG ? window.MMR_CONFIG.DEFAULT_TICKET_MAX : 999;
+            const digitsCount = String(maxTickets).length;
+            
             const container = document.querySelector('.slot-container');
             if (container) {
-                container.innerHTML = `
-                    <span class="slot-digit rolling">-</span>
-                    <span class="slot-digit rolling">-</span>
-                    <span class="slot-digit rolling">-</span>
-                    <span class="slot-digit rolling">-</span>
-                `;
+                let html = '';
+                for (let i = 0; i < digitsCount; i++) {
+                    html += `
+                    <span class="slot-digit">
+                        <div class="slot-strip" id="slot-strip-${i}">
+                            ${Array(80).fill(0).map((_, j) => `<span class="slot-strip-num">${j % 10}</span>`).join('')}
+                        </div>
+                    </span>`;
+                }
+                container.innerHTML = html;
+                
+                // Start the initial spin animation by translating far down slowly
+                setTimeout(() => {
+                    for (let i = 0; i < digitsCount; i++) {
+                        const strip = document.getElementById(`slot-strip-${i}`);
+                        if (strip) {
+                            strip.style.transition = 'transform 10s cubic-bezier(0.2, 0, 1, 1)';
+                            // Move to around the 70th item
+                            strip.style.transform = `translateY(-${70 * 20}vmin)`;
+                        }
+                    }
+                }, 50);
             }
             
-            const slots = document.querySelectorAll('.slot-digit');
-            
-            // Failsafe: if STOP_ROLL never arrives (e.g. remote closed, network dropped), stop automatically after 10s
+            // Failsafe: if STOP_ROLL never arrives, auto-stop after 10s
             if (window._rollFailsafe) clearTimeout(window._rollFailsafe);
             window._rollFailsafe = setTimeout(() => {
                 if (slotsRolling) {
                     console.warn('[Failsafe] STOP_ROLL not received! Auto-stopping draw to prevent infinite loop.');
-                    stopLotteryRoll('----', prizeType, speed);
+                    stopLotteryRoll('0'.repeat(digitsCount), prizeType, speed);
                 }
             }, 10000);
 
-            rollInterval = setInterval(() => {
-                slots.forEach(slot => {
-                    if (slot.classList.contains('rolling')) {
-                        slot.innerText = Math.floor(Math.random() * 10);
-                    }
-                });
-            }, speed.slotInterval || 50);
+            // Tick sound loop
+            window.rollInterval = setInterval(() => {
+                playSlotTick();
+            }, 100);
         }
 
         function stopLotteryRoll(finalNumber, prizeType, speedParam) {
@@ -1986,39 +2042,32 @@
             }
             window.lockTimeouts = [];
             
-            const numStr = String(finalNumber).padStart(4, '0');
-            const container = document.querySelector('.slot-container');
-            if (container) {
-                let html = '';
-                for (let i = 0; i < numStr.length; i++) {
-                    html += `<span class="slot-digit rolling">-</span>`;
-                }
-                container.innerHTML = html;
-            }
+            const maxTickets = window.MMR_CONFIG ? window.MMR_CONFIG.DEFAULT_TICKET_MAX : 999;
+            const digitsCount = String(maxTickets).length;
+            const numStr = String(finalNumber).padStart(digitsCount, '0');
             
             const slots = Array.from(document.querySelectorAll('.slot-digit'));
-            if (slots.length === 0) {
-                if (window.rollInterval) clearInterval(window.rollInterval);
-                return;
-            }
-            
-            window.rollInterval = setInterval(() => {
-                slots.forEach(slot => {
-                    if (slot.classList.contains('rolling')) {
-                        slot.innerText = Math.floor(Math.random() * 10);
-                    }
-                });
-            }, speed.slotInterval || 50);
+            if (slots.length === 0) return;
             
             slots.forEach((slot, index) => {
+                const strip = slot.querySelector('.slot-strip');
+                if (!strip) return;
+                
+                const targetDigit = parseInt(numStr[index]);
+                // We want to land around the 50th item (so there's enough space to scroll without hitting the end)
+                const targetIndex = 50 + targetDigit;
+                
                 const delay = (speed.digitBaseDelay || 800) + index * (speed.digitStepDelay || 600);
-                const t = setTimeout(() => {
-                    slot.classList.remove('rolling');
+                
+                // Update transition to ease-out bounce to the target
+                const t1 = setTimeout(() => {
+                    strip.style.transition = 'transform 1.5s cubic-bezier(0.175, 0.885, 0.32, 1.1)';
+                    strip.style.transform = `translateY(-${targetIndex * 20}vmin)`;
+                    playSlotTick(); // Final click sound
+                    
                     slot.classList.add('locked');
-                    slot.innerText = numStr[index];
                     
                     if (index === slots.length - 1) {
-                        if (window.rollInterval) clearInterval(window.rollInterval);
                         slotsRolling = false;
                         rollingPrize = null;
                         updateState(state);
@@ -2046,7 +2095,7 @@
                         }
                     }
                 }, delay);
-                window.lockTimeouts.push(t);
+                window.lockTimeouts.push(t1);
             });
         }
 

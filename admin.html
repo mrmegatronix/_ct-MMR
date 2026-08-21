@@ -298,10 +298,13 @@
         <div style="display: flex; gap: 10px; align-items: center;">
             <span id="fb-status" style="font-size:0.8rem; color:#64748b;">🔴 Firebase: Not configured</span>
             <div class="voice-toggle-container">
-                <span style="font-size: 0.8rem; font-weight: bold;">VOICE</span>
-                <label class="switch">
-                    <input type="checkbox" id="voice-toggle" onchange="toggleVoice()" checked>
-                    <span class="slider"></span>
+                <label style="cursor:pointer; display:flex; align-items:center; gap:5px; font-size:0.8rem; font-weight:bold;">
+                    <input type="checkbox" id="voice-toggle" onchange="toggleVoice(this)"> 🔊 Auto-Voice
+                </label>
+            </div>
+            <div class="voice-toggle-container">
+                <label style="cursor:pointer; display:flex; align-items:center; gap:5px; font-size:0.8rem; font-weight:bold;">
+                    <input type="checkbox" id="sound-toggle" onchange="toggleSound(this)"> 🎰 Slot Sounds
                 </label>
             </div>
             <a href="index.html" class="btn">TV Display</a>
@@ -633,7 +636,8 @@
         <div class="btn-group">
             <button class="btn" onclick="setView('slides')" id="btn-slides" style="border-width: 2px;">📺 Slideshow</button>
             <button class="btn" onclick="setView('draw')" id="btn-draw" style="border-width: 2px;">🎯 Draw Screen</button>
-            <button class="btn" onclick="setView('congrats')" id="btn-congrats" style="border-width: 2px;">🎉 Congrats Page</button>
+            <button class="btn" onclick="setView('congrats')" id="btn-congrats" style="border-width: 2px;">🎉 Congrats (Full)</button>
+            <button class="btn" onclick="setView('congrats-video')" id="btn-congrats-video" style="border-width: 2px; background: #6b21a8; border-color: #a855f7;">🎉 Congrats (Plain)</button>
         </div>
     </div>
 
@@ -1359,6 +1363,11 @@
                 const saved = localStorage.getItem('mmr_financials');
                 if (saved) {
                     const data = JSON.parse(saved);
+                    if (state) {
+                        if (document.getElementById('sound-toggle')) {
+                            document.getElementById('sound-toggle').checked = !!state.soundEnabled;
+                        }
+                    }
                     fillFinancialsForm(data);
                 } else {
                     calcFinancials();
@@ -1515,11 +1524,13 @@
             setTimeout(() => el.style.display = 'none', 3000);
         }
 
-        function toggleVoice() {
-            const voiceOn = document.getElementById('voice-toggle').checked;
-            localStorage.setItem('mmr_voice_on', voiceOn);
-            bc.postMessage({ type: 'VOICE_TOGGLE', payload: { voiceOn } });
-            writeFirebase({ voiceOn });
+        function toggleVoice(cb) {
+            localStorage.setItem('mmr_voice_on', cb.checked);
+        }
+
+        function toggleSound(cb) {
+            state.soundEnabled = cb.checked;
+            updateState(state);
         }
 
         function remoteSlide(cmd) {
@@ -1543,11 +1554,13 @@
             const btnSlides = document.getElementById('btn-slides');
             const btnDraw = document.getElementById('btn-draw');
             const btnCongrats = document.getElementById('btn-congrats');
-            if (btnSlides && btnDraw && btnCongrats) {
+            const btnCongratsVideo = document.getElementById('btn-congrats-video');
+            if (btnSlides && btnDraw && btnCongrats && btnCongratsVideo) {
                 const active = state.activeView || 'slides';
                 const isSlides = active === 'slides';
                 const isDraw = active === 'draw';
-                const isCongrats = active === 'congrats' || active === 'congrats-video';
+                const isCongrats = active === 'congrats';
+                const isCongratsVideo = active === 'congrats-video';
 
                 btnSlides.style.backgroundColor = isSlides ? '#2563eb' : 'rgba(30, 41, 59, 0.8)';
                 btnSlides.style.borderColor = isSlides ? '#60a5fa' : 'var(--border)';
@@ -1569,6 +1582,13 @@
                 btnCongrats.style.boxShadow = isCongrats ? '0 0 16px rgba(16, 185, 129, 0.8)' : 'none';
                 btnCongrats.style.fontWeight = isCongrats ? 'bold' : 'normal';
                 btnCongrats.style.transform = isCongrats ? 'scale(1.03)' : 'none';
+                
+                btnCongratsVideo.style.backgroundColor = isCongratsVideo ? '#a855f7' : 'rgba(30, 41, 59, 0.8)';
+                btnCongratsVideo.style.borderColor = isCongratsVideo ? '#d8b4fe' : 'var(--border)';
+                btnCongratsVideo.style.color = isCongratsVideo ? '#ffffff' : 'var(--text)';
+                btnCongratsVideo.style.boxShadow = isCongratsVideo ? '0 0 16px rgba(168, 85, 247, 0.8)' : 'none';
+                btnCongratsVideo.style.fontWeight = isCongratsVideo ? 'bold' : 'normal';
+                btnCongratsVideo.style.transform = isCongratsVideo ? 'scale(1.03)' : 'none';
             }
         }
 
