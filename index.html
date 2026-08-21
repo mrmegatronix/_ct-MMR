@@ -332,12 +332,20 @@
             -webkit-text-stroke: 1px rgba(0,0,0,0.3);
         }
         .slot-digit.rolling {
-            animation: slot-digit-roll 0.08s infinite linear;
+            /* We will use slot-strip inside for the rolling animation */
         }
-        @keyframes slot-digit-roll {
-            0% { transform: translateY(-5px); filter: blur(1px); }
-            50% { transform: translateY(5px); filter: blur(2px); }
-            100% { transform: translateY(-5px); filter: blur(1px); }
+        .slot-strip {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            transition: transform 3s cubic-bezier(0.1, 0.7, 0.1, 1);
+            will-change: transform;
+        }
+        .slot-strip-num {
+            height: 20vmin;
+            line-height: 20vmin;
+            display: block;
+            text-align: center;
         }
         .slot-digit.locked {
             border-color: var(--primary);
