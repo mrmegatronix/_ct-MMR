@@ -1343,7 +1343,6 @@
             // Render drawn numbers chronologically (first drawn to last drawn) with line connectors
             let drawn = activeDrawData.drawnNumbers || [];
             if (!Array.isArray(drawn)) drawn = Object.values(drawn);
-            let chronological = [...drawn].reverse();
             
             // If reels are spinning, hide the currently rolling number (drawn[0])
             let displayDrawn = [...drawn];
