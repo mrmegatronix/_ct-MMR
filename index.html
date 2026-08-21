@@ -600,52 +600,13 @@
             z-index: 50;
         }
 
-        /* Slide Controls Overlay */
-        #slide-controls-overlay {
-            position: absolute;
-            bottom: 2rem;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(15, 23, 42, 0.85);
-            backdrop-filter: blur(10px);
-            padding: 1rem 2rem;
-            border-radius: 4rem;
-            display: flex;
-            gap: 2rem;
-            align-items: center;
-            opacity: 0;
-            transition: opacity 0.3s ease-in-out;
-            z-index: 2000;
-            border: 2px solid var(--primary);
-            box-shadow: 0 0 30px rgba(0,0,0,0.5);
-        }
-        #view-container:hover #slide-controls-overlay {
-            opacity: 1;
-        }
-        .control-btn {
-            background: none;
-            border: none;
-            color: white;
-            font-size: 2rem;
-            cursor: pointer;
-            transition: transform 0.2s, color 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
+
         #view-draw .lottery-container {
             /* Keep centered, shift up for bottom numbers */
             transform: translateY(-10vh);
         }
 
-        .control-btn:hover {
-            color: var(--primary);
-            transform: scale(1.2);
-        }
-        .control-btn:active {
-            transform: scale(0.9);
-        }
+
 
         /* Winners Carousel */
         .winners-carousel {
@@ -908,12 +869,6 @@
             <div id="progress-container"><div id="progress-bar"></div></div>
         </div>
 
-        <!-- Slide Controls Overlay (Hover-only display) -->
-        <div id="slide-controls-overlay">
-            <button class="control-btn" onclick="prevSlide()">⏮</button>
-            <button class="control-btn" onclick="toggleSlidePlay()" id="play-pause-btn">⏸</button>
-            <button class="control-btn" onclick="nextSlide()">⏭</button>
-        </div>
 
         <!-- DRAW VIEW -->
         <div id="view-draw" class="view">
