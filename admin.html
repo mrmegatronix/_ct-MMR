@@ -320,8 +320,24 @@
         </p>
         <div style="text-align: center; padding: 1rem 0;">
             <img id="qr-verify-admin" alt="Verify QR Code" style="background: white; padding: 0.5rem; border-radius: 0.5rem; width: 140px; height: 140px; border: 1.5px solid var(--border);">
-            <div style="margin-top: 0.75rem; font-size: 0.95rem; font-weight: 700;">
-                <a href="verify.html" target="_blank" style="color: var(--primary); text-decoration: none;">Open Verification Dashboard ↗</a>
+            <div style="margin-top: 0.75rem; font-size: 0.95rem; font-weight: 700; display: flex; flex-direction: column; gap: 0.5rem; align-items: center;">
+                <a href="verify.html" target="_blank" class="btn" style="width: auto; padding: 0.5rem 1rem;">Open in New Window ↗</a>
+                <button class="btn" onclick="setView('qr-verify')" style="width: auto; padding: 0.5rem 1rem; background-color: #3b82f6; border-color: #2563eb;">📺 Open on TV Screen</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Archive QR Code -->
+    <div class="card" style="margin-top: 2rem;">
+        <h2>🏛️ Past Results Archive</h2>
+        <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1.5rem;">
+            Patrons can scan this QR code to view historical draw results.
+        </p>
+        <div style="text-align: center; padding: 1rem 0;">
+            <img id="qr-archive-admin" alt="Archive QR Code" style="background: white; padding: 0.5rem; border-radius: 0.5rem; width: 140px; height: 140px; border: 1.5px solid var(--border);">
+            <div style="margin-top: 0.75rem; font-size: 0.95rem; font-weight: 700; display: flex; flex-direction: column; gap: 0.5rem; align-items: center;">
+                <a href="archive.html" target="_blank" class="btn" style="width: auto; padding: 0.5rem 1rem;">Open in New Window ↗</a>
+                <button class="btn" onclick="setView('qr-archive')" style="width: auto; padding: 0.5rem 1rem; background-color: #3b82f6; border-color: #2563eb;">📺 Open on TV Screen</button>
             </div>
         </div>
     </div>
@@ -636,6 +652,7 @@
         <div class="btn-group">
             <button class="btn" onclick="setView('slides')" id="btn-slides" style="border-width: 2px;">📺 Slideshow</button>
             <button class="btn" onclick="setView('draw')" id="btn-draw" style="border-width: 2px;">🎯 Draw Screen</button>
+            <button class="btn" onclick="openCustomDrawPage()" id="btn-draw-custom" style="border-width: 2px; background: #fbbf24; border-color: #f59e0b; color: black; font-weight: bold;">⭐ Open Custom Draw (Gold)</button>
             <button class="btn" onclick="setView('congrats')" id="btn-congrats" style="border-width: 2px;">🎉 Congrats (Full)</button>
             <button class="btn" onclick="setView('congrats-video')" id="btn-congrats-video" style="border-width: 2px; background: #6b21a8; border-color: #a855f7;">🎉 Congrats (Plain)</button>
         </div>
@@ -1550,6 +1567,22 @@
             writeFirebase({ activeView: view });
         }
 
+        function openCustomDrawPage() {
+            if (state && state.draw && state.draw.activeEvent) {
+                const activeEvent = state.draw.activeEvent;
+                if (state.draw[activeEvent]) {
+                    state.draw[activeEvent].currentPrize = 'custom';
+                    state.draw[activeEvent].currentNumber = null;
+                }
+            }
+            state.activeView = 'draw';
+            updateViewButtons();
+            
+            // Broadcast full state update to ensure index.html catches the prize change
+            bc.postMessage({ type: 'STATE_UPDATE', payload: state });
+            writeFirebase(state);
+        }
+
         function updateViewButtons() {
             const btnSlides = document.getElementById('btn-slides');
             const btnDraw = document.getElementById('btn-draw');
@@ -1558,7 +1591,8 @@
             if (btnSlides && btnDraw && btnCongrats && btnCongratsVideo) {
                 const active = state.activeView || 'slides';
                 const isSlides = active === 'slides';
-                const isDraw = active === 'draw';
+                const isDraw = active === 'draw' && (!state.draw || !state.draw.activeEvent || !state.draw[state.draw.activeEvent] || state.draw[state.draw.activeEvent].currentPrize !== 'custom');
+                const isDrawCustom = active === 'draw' && state.draw && state.draw.activeEvent && state.draw[state.draw.activeEvent] && state.draw[state.draw.activeEvent].currentPrize === 'custom';
                 const isCongrats = active === 'congrats';
                 const isCongratsVideo = active === 'congrats-video';
 
@@ -1575,6 +1609,16 @@
                 btnDraw.style.boxShadow = isDraw ? '0 0 16px rgba(239, 68, 68, 0.8)' : 'none';
                 btnDraw.style.fontWeight = isDraw ? 'bold' : 'normal';
                 btnDraw.style.transform = isDraw ? 'scale(1.03)' : 'none';
+
+                const btnDrawCustom = document.getElementById("btn-draw-custom");
+                if (btnDrawCustom) {
+                    btnDrawCustom.style.backgroundColor = isDrawCustom ? '#fbbf24' : 'rgba(30, 41, 59, 0.8)';
+                    btnDrawCustom.style.borderColor = isDrawCustom ? '#f59e0b' : 'var(--border)';
+                    btnDrawCustom.style.color = isDrawCustom ? 'black' : 'var(--text)';
+                    btnDrawCustom.style.boxShadow = isDrawCustom ? '0 0 16px rgba(251, 191, 36, 0.8)' : 'none';
+                    btnDrawCustom.style.fontWeight = isDrawCustom ? 'bold' : 'normal';
+                    btnDrawCustom.style.transform = isDrawCustom ? 'scale(1.03)' : 'none';
+                }
 
                 btnCongrats.style.backgroundColor = isCongrats ? '#10b981' : 'rgba(30, 41, 59, 0.8)';
                 btnCongrats.style.borderColor = isCongrats ? '#34d399' : 'var(--border)';

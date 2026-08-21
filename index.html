@@ -411,6 +411,7 @@
             --spotlight-color-high: rgba(255, 215, 0, 0.8);
             --spotlight-bg-high: rgba(255, 215, 0, 0.2);
             background: radial-gradient(circle at center, rgba(255, 215, 0, 0.35) 0%, rgba(2,6,23,0.95) 75%, #020617 100%) !important;
+            box-shadow: inset 0 0 150px rgba(255,215,0,0.1);
         }
         #view-draw.prize-voucher {
             --primary: #ffffff;
@@ -420,6 +421,15 @@
             --spotlight-color-high: rgba(255, 255, 255, 0.8);
             --spotlight-bg-high: rgba(255, 255, 255, 0.2);
             background: radial-gradient(circle at center, rgba(255, 255, 255, 0.35) 0%, rgba(2,6,23,0.95) 75%, #020617 100%) !important;
+        }
+        #view-draw.prize-custom {
+            --primary: #fbbf24;
+            --primary-glow: rgba(251, 191, 36, 0.45);
+            --spotlight-color-low: rgba(251, 191, 36, 0.3);
+            --spotlight-bg-low: rgba(251, 191, 36, 0.05);
+            --spotlight-color-high: rgba(251, 191, 36, 0.8);
+            --spotlight-bg-high: rgba(251, 191, 36, 0.2);
+            background: radial-gradient(circle at center, rgba(251, 191, 36, 0.35) 0%, rgba(2,6,23,0.95) 75%, #020617 100%) !important;
         }
         
         .winner-flash-bg::after {
@@ -603,7 +613,7 @@
 
         #view-draw .lottery-container {
             /* Keep centered, shift up for bottom numbers */
-            transform: translateY(-10vh);
+            transform: translateY(-20vh);
         }
 
 
@@ -929,6 +939,35 @@
             <div style="font-size: 1.1rem; color: #888; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 2rem;">
                 Scan QR Code at the counter to verify all transactions and cryptography logs.
             </div>
+            </div>
+        </div>
+
+        <!-- QR VERIFY VIEW -->
+        <div id="view-qr-verify" class="view" style="display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 2rem; box-sizing: border-box; text-align: center; background: radial-gradient(circle at center, #1e3a8a, #020617);">
+            <div style="font-size: clamp(2.5rem, 6vmin, 4.5rem); text-transform: uppercase; letter-spacing: 2px; color: #60a5fa; margin-bottom: 2rem; text-shadow: 0 0 30px rgba(96,165,250,0.5);">
+                🔍 Public Verification Audit
+            </div>
+            <div style="background: white; padding: 2rem; border-radius: 1.5rem; display: inline-block;">
+                <img id="tv-qr-verify" style="width: 400px; height: 400px; display: block;" alt="Verify QR">
+            </div>
+            <div style="font-size: 1.5rem; color: #cbd5e1; font-weight: 600; margin-top: 2rem;">
+                Scan to view live, cryptographically-verifiable audit logs.
+            </div>
+        </div>
+
+        <!-- QR ARCHIVE VIEW -->
+        <div id="view-qr-archive" class="view" style="display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 2rem; box-sizing: border-box; text-align: center; background: radial-gradient(circle at center, #1e3a8a, #020617);">
+            <div style="font-size: clamp(2.5rem, 6vmin, 4.5rem); text-transform: uppercase; letter-spacing: 2px; color: #60a5fa; margin-bottom: 2rem; text-shadow: 0 0 30px rgba(96,165,250,0.5);">
+                🏛️ Past Results Archive
+            </div>
+            <div style="background: white; padding: 2rem; border-radius: 1.5rem; display: inline-block;">
+                <img id="tv-qr-archive" style="width: 400px; height: 400px; display: block;" alt="Archive QR">
+            </div>
+            <div style="font-size: 1.5rem; color: #cbd5e1; font-weight: 600; margin-top: 2rem;">
+                Scan to view historical draw results.
+            </div>
+        </div>
+
         <!-- CONGRATS VIDEO VIEW -->
         <div id="view-congrats-video" class="view" style="background-color: #020617; display: flex; flex-direction: column; justify-content: center; align-items: center; position: absolute; inset: 0;">
             <!-- Waving avatars loop -->
@@ -1455,6 +1494,9 @@
                     } else if (curPrize === 25 || curPrize === '25') {
                         titleEl.innerText = "WINNING $25 PRIZE";
                         titleEl.style.color = "#10b981";
+                    } else if (curPrize === 'custom') {
+                        titleEl.innerText = "WINNING NUMBER";
+                        titleEl.style.color = "#fbbf24";
                     } else {
                         titleEl.innerText = "Winning Number";
                         titleEl.style.color = "white";
@@ -1469,7 +1511,8 @@
                 for (let i = 0; i < displayStr.length; i++) {
                     const isDash = displayStr[i] === '-';
                     const cssClass = isDash ? 'slot-digit' : 'slot-digit locked';
-                    html += `<span class="${cssClass}">${displayStr[i]}</span>`;
+                    const content = isDash ? '<img src="logo-new.png" style="height: 0.8em; vertical-align: middle; filter: drop-shadow(0 2px 5px rgba(0,0,0,0.5));">' : displayStr[i];
+                    html += `<span class="${cssClass}">${content}</span>`;
                 }
                 slotsContainer.innerHTML = html;
             }
@@ -1883,7 +1926,7 @@
         function setPrizeTheme(prizeType) {
             const drawView = document.getElementById('view-draw');
             if (!drawView) return;
-            drawView.classList.remove('prize-100', 'prize-50', 'prize-25', 'prize-bonus', 'prize-voucher');
+            drawView.classList.remove('prize-100', 'prize-50', 'prize-25', 'prize-bonus', 'prize-voucher', 'prize-custom');
             if (!prizeType) return; // Clean dark neutral background with no color accent when null/start
             const pKey = String(prizeType);
             if (pKey === '100') drawView.classList.add('prize-100');
@@ -1891,6 +1934,7 @@
             else if (pKey === '25') drawView.classList.add('prize-25');
             else if (pKey === 'bonus') drawView.classList.add('prize-bonus');
             else if (pKey === 'voucher') drawView.classList.add('prize-voucher');
+            else if (pKey === 'custom') drawView.classList.add('prize-custom');
         }
 
         // Slot Machine Audio Context
@@ -1950,6 +1994,9 @@
                 } else if (pKey === 'bonus') {
                     titleEl.innerText = "BONUS PRIZE DRAW";
                     titleEl.style.color = "#ffd700";
+                } else if (pKey === 'custom') {
+                    titleEl.innerText = "DRAWING NUMBER";
+                    titleEl.style.color = "#fbbf24";
                 } else if (pKey === 'voucher') {
                     titleEl.innerText = "CLUB VOUCHER DRAW";
                     titleEl.style.color = "#ffffff";
@@ -2637,6 +2684,22 @@
         }
 
         initFirebase();
+
+        // Generate QR codes for TV display
+        function generateTVQRCodes() {
+            let baseUrl = window.location.href.split('?')[0].split('#')[0];
+            baseUrl = baseUrl.substring(0, baseUrl.lastIndexOf('/'));
+            const verifyUrl = encodeURIComponent(baseUrl + '/verify.html');
+            const archiveUrl = encodeURIComponent(baseUrl + '/archive.html');
+            
+            const verifyImg = document.getElementById('tv-qr-verify');
+            if (verifyImg) verifyImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&format=png&color=0f172a&bgcolor=ffffff&data=${verifyUrl}`;
+            
+            const archiveImg = document.getElementById('tv-qr-archive');
+            if (archiveImg) archiveImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&format=png&color=0f172a&bgcolor=ffffff&data=${archiveUrl}`;
+        }
+        window.addEventListener('DOMContentLoaded', generateTVQRCodes);
+
 
 
 
