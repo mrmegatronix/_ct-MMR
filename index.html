@@ -422,14 +422,14 @@
             background: radial-gradient(circle at center, rgba(255, 255, 255, 0.35) 0%, rgba(2,6,23,0.95) 75%, #020617 100%) !important;
         }
         
-        .winner-gold-bg::after {
+        .winner-flash-bg::after {
             content: ''; position: absolute; inset: 0; pointer-events: none;
-            animation: gold-flash 2.5s ease-out forwards;
+            animation: winner-flash 2.5s ease-out forwards;
             z-index: 1;
         }
-        @keyframes gold-flash {
-            0% { box-shadow: inset 0 0 500px rgba(255,215,0,0.8); background: rgba(255,215,0,0.4); }
-            100% { box-shadow: inset 0 0 0 rgba(255,215,0,0); background: transparent; }
+        @keyframes winner-flash {
+            0% { box-shadow: inset 0 0 500px var(--spotlight-color-high, rgba(255,255,255,0.8)); background: var(--spotlight-bg-high, rgba(255,255,255,0.4)); }
+            100% { box-shadow: inset 0 0 0 rgba(255,255,255,0); background: transparent; }
         }
 
         .drawn-numbers-bar {
@@ -494,7 +494,27 @@
             align-items: center;
             gap: 1rem;
             box-shadow: 0 0 15px rgba(0,0,0,0.5);
-            animation: popIn 0.4s ease-out;
+            animation: popIn 0.4s ease-out, pillPulse 2s infinite ease-in-out;
+        }
+        @keyframes pillPulse {
+            0% { filter: drop-shadow(0 0 5px rgba(255,255,255,0.2)); }
+            50% { filter: drop-shadow(0 0 20px rgba(255,255,255,0.6)); }
+            100% { filter: drop-shadow(0 0 5px rgba(255,255,255,0.2)); }
+        }
+        @keyframes pulseRed {
+            0% { box-shadow: 0 0 5px rgba(239,68,68,0.4); }
+            50% { box-shadow: 0 0 20px rgba(239,68,68,0.8); }
+            100% { box-shadow: 0 0 5px rgba(239,68,68,0.4); }
+        }
+        @keyframes pulseBlue {
+            0% { box-shadow: 0 0 5px rgba(59,130,246,0.4); }
+            50% { box-shadow: 0 0 20px rgba(59,130,246,0.8); }
+            100% { box-shadow: 0 0 5px rgba(59,130,246,0.4); }
+        }
+        @keyframes pulseGreen {
+            0% { box-shadow: 0 0 5px rgba(16,185,129,0.4); }
+            50% { box-shadow: 0 0 20px rgba(16,185,129,0.8); }
+            100% { box-shadow: 0 0 5px rgba(16,185,129,0.4); }
         }
         .prize-counter-pill span.val {
             font-size: clamp(2.8rem, 4.5vmin, 4.5rem);
@@ -1269,7 +1289,7 @@
             if (drawView) {
                 const activeDrawDataObj = getActiveDrawData(state.draw);
                 const hasDrawn = activeDrawDataObj && activeDrawDataObj.drawnNumbers && activeDrawDataObj.drawnNumbers.length > 0;
-                const curPrize = slotsRolling ? rollingPrize : (hasDrawn ? (state.draw && state.draw.currentPrize) : null);
+                const curPrize = slotsRolling ? rollingPrize : (hasDrawn ? (activeDrawDataObj && activeDrawDataObj.currentPrize) : null);
                 setPrizeTheme(curPrize);
             }
 
@@ -1309,19 +1329,19 @@
             if (ptBar) {
                 let html = '';
                 if (p100Val > 0) {
-                    html += `<div class="prize-counter-pill" style="border-color: #ef4444; box-shadow: 0 0 10px rgba(239,68,68,0.4);">
-                                <span style="color: #ef4444;">${isSunday ? '$100' : '$100 Pack'}</span>
+                    html += `<div class="prize-counter-pill" style="border-color: #ef4444; box-shadow: 0 0 10px rgba(239,68,68,0.4); animation: popIn 0.4s ease-out, pulseRed 2s infinite ease-in-out;">
+                                <span style="color: #ef4444;">$100 Prize</span>
                                 <span class="val">${p100Val}</span>
                              </div>`;
                 }
                 if (p50Val > 0) {
-                    html += `<div class="prize-counter-pill" style="border-color: #3b82f6; box-shadow: 0 0 10px rgba(59,130,246,0.4);">
+                    html += `<div class="prize-counter-pill" style="border-color: #3b82f6; box-shadow: 0 0 10px rgba(59,130,246,0.4); animation: popIn 0.4s ease-out, pulseBlue 2s infinite ease-in-out;">
                                 <span style="color: #3b82f6;">$50 Prize</span>
                                 <span class="val">${p50Val}</span>
                              </div>`;
                 }
                 if (p25Val > 0) {
-                    html += `<div class="prize-counter-pill" style="border-color: #10b981; box-shadow: 0 0 10px rgba(16,185,129,0.4);">
+                    html += `<div class="prize-counter-pill" style="border-color: #10b981; box-shadow: 0 0 10px rgba(16,185,129,0.4); animation: popIn 0.4s ease-out, pulseGreen 2s infinite ease-in-out;">
                                 <span style="color: #10b981;">$25 Prize</span>
                                 <span class="val">${p25Val}</span>
                              </div>`;
@@ -1490,7 +1510,7 @@
                 const digitsCount = String(maxTickets).length;
 
                 let html = '';
-                const displayStr = String(curNum).padStart(digitsCount, curNum === '-' ? '-' : '0');
+                const displayStr = (curNum === '-') ? '-'.repeat(digitsCount) : String(curNum).padStart(digitsCount, '0');
                 for (let i = 0; i < displayStr.length; i++) {
                     const isDash = displayStr[i] === '-';
                     const cssClass = isDash ? 'slot-digit' : 'slot-digit locked';
@@ -2074,8 +2094,8 @@
                         
                         const drawView = document.getElementById('view-draw');
                         drawView.classList.remove('draw-flash-bg');
-                        drawView.classList.add('winner-gold-bg');
-                        setTimeout(() => drawView.classList.remove('winner-gold-bg'), 2500);
+                        drawView.classList.add('winner-flash-bg');
+                        setTimeout(() => drawView.classList.remove('winner-flash-bg'), 2500);
                         
                         triggerConfetti();
                         
