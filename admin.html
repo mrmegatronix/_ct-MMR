@@ -978,34 +978,6 @@
                 }
             } catch(e) {
                 console.error('[MMR Admin] Failed to fetch slides for checklist:', e);
-                let fallbackUI = document.getElementById('admin-local-fallback-ui');
-                if (!fallbackUI) {
-                    fallbackUI = document.createElement('div');
-                    fallbackUI.id = 'admin-local-fallback-ui';
-                    fallbackUI.style.cssText = 'position:fixed; bottom:20px; right:20px; background:#ef4444; color:#fff; padding:15px; border-radius:8px; z-index:9999; font-family:sans-serif; box-shadow:0 4px 6px rgba(0,0,0,0.3);';
-                    fallbackUI.innerHTML = `
-                        <strong>Slides Sync Failed (CORS block)</strong><br><br>
-                        Please manually select <code>local-backup.csv</code> for Admin checklist:<br><br>
-                        <input type="file" accept=".csv" id="admin-local-fallback-file" style="color:#000; background:#fff; padding:5px; border-radius:4px; width:100%; box-sizing:border-box;">
-                    `;
-                    document.body.appendChild(fallbackUI);
-                    
-                    document.getElementById('admin-local-fallback-file').addEventListener('change', function(e) {
-                        const file = e.target.files[0];
-                        if (file) {
-                            const reader = new FileReader();
-                            reader.onload = function(evt) {
-                                const fileCsv = evt.target.result;
-                                state.slides = parseSlidesCSV(fileCsv);
-                                renderAdminSlides();
-                                fallbackUI.style.display = 'none'; // hide it on success
-                            };
-                            reader.readAsText(file);
-                        }
-                    });
-                } else {
-                    fallbackUI.style.display = 'block';
-                }
             }
         }
 
