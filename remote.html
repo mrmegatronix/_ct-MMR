@@ -361,6 +361,7 @@
         <h1 id="header-title">MMR Remote</h1>
         <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap; justify-content: center;">
             <span id="fb-status" style="font-size:0.8rem; color:#64748b;">🔴 Firebase: Not configured</span>
+            <button class="btn btn-primary" id="btn-demo-mode" onclick="toggleDemoMode()" style="background-color: #8b5cf6; border-color: #7c3aed; padding: 0.5rem 1rem; min-height: 36px; height: 36px;">Demo Mode: OFF</button>
         </div>
     </div>
 
@@ -2194,6 +2195,114 @@
                 }
             });
         });
+        let isDemoMode = false;
+        let demoStateBackup = null;
+        let demoDrawTimeout = null;
+        let demoPrizesLeft = { 100: 10, 50: 10, 25: 10 };
+
+        function toggleDemoMode() {
+            isDemoMode = !isDemoMode;
+            const btn = document.getElementById('btn-demo-mode');
+            if (isDemoMode) {
+                btn.innerText = 'Demo Mode: ON';
+                btn.style.backgroundColor = '#ef4444';
+                btn.style.borderColor = '#dc2626';
+                
+                // Backup state
+                demoStateBackup = JSON.parse(JSON.stringify(state));
+                
+                // Reset demo prizes
+                demoPrizesLeft = { 100: 10, 50: 10, 25: 10 };
+                const evt = state.draw[state.draw.activeEvent];
+                evt.prizes100 = 10;
+                evt.prizes50 = 10;
+                evt.prizes25 = 10;
+                evt.prizesLeft = 30;
+                evt.drawnNumbers = [];
+                evt.currentNumber = '---';
+                
+                updateDrawState();
+                broadcast();
+                
+                // Show Banner
+                bc.postMessage({ type: 'DEMO_MODE', payload: true });
+                showDemoBanner(true);
+                
+                // Start automated drawing
+                scheduleNextDemoDraw();
+            } else {
+                btn.innerText = 'Demo Mode: OFF';
+                btn.style.backgroundColor = '#8b5cf6';
+                btn.style.borderColor = '#7c3aed';
+                
+                // Restore state
+                if (demoStateBackup) {
+                    state = JSON.parse(JSON.stringify(demoStateBackup));
+                    updateDrawState();
+                    broadcast();
+                }
+                
+                clearTimeout(demoDrawTimeout);
+                
+                bc.postMessage({ type: 'DEMO_MODE', payload: false });
+                showDemoBanner(false);
+            }
+        }
+
+        function scheduleNextDemoDraw() {
+            if (!isDemoMode) return;
+            const evt = state.draw[state.draw.activeEvent];
+            if (evt.prizesLeft <= 0) {
+                // Done
+                return;
+            }
+            
+            // Wait for not drawing
+            if (isDrawing) {
+                demoDrawTimeout = setTimeout(scheduleNextDemoDraw, 2000);
+                return;
+            }
+            
+            // Pick next prize
+            let nextPrize = null;
+            if (demoPrizesLeft[100] > 0) nextPrize = 100;
+            else if (demoPrizesLeft[50] > 0) nextPrize = 50;
+            else if (demoPrizesLeft[25] > 0) nextPrize = 25;
+            
+            if (nextPrize) {
+                demoPrizesLeft[nextPrize]--;
+                runDraw(nextPrize);
+                
+                // Wait for draw to finish + 5 seconds before next draw
+                const cfgSpeed = getDrawSpeedConfig();
+                demoDrawTimeout = setTimeout(scheduleNextDemoDraw, cfgSpeed.rollDuration + 5000);
+            }
+        }
+
+        function showDemoBanner(show) {
+            let banner = document.getElementById('demo-banner');
+            if (show) {
+                if (!banner) {
+                    banner = document.createElement('div');
+                    banner.id = 'demo-banner';
+                    banner.style.position = 'fixed';
+                    banner.style.top = '0';
+                    banner.style.width = '100%';
+                    banner.style.background = 'repeating-linear-gradient(45deg, #ef4444, #ef4444 20px, #f59e0b 20px, #f59e0b 40px)';
+                    banner.style.color = 'white';
+                    banner.style.fontWeight = 'bold';
+                    banner.style.textAlign = 'center';
+                    banner.style.padding = '10px';
+                    banner.style.zIndex = '999999';
+                    banner.style.fontSize = '1.5rem';
+                    banner.innerText = 'DEMO MODE - NOT A REAL DRAW';
+                    document.body.appendChild(banner);
+                }
+                banner.style.display = 'block';
+            } else if (banner) {
+                banner.style.display = 'none';
+            }
+        }
     </script>
 </body>
 </html>

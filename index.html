@@ -890,10 +890,10 @@
                 <div class="draw-title" id="draw-view-title">Winning Number</div>
                 <div class="number-display" id="lottery-number">
                     <div class="slot-container">
-                        <span class="slot-digit" id="slot-3">-</span>
-                        <span class="slot-digit" id="slot-2">-</span>
-                        <span class="slot-digit" id="slot-1">-</span>
-                        <span class="slot-digit" id="slot-0">-</span>
+                        <span class="slot-digit" id="slot-3"><img src="logo-new.png" style="height: 0.8em; vertical-align: middle; filter: drop-shadow(0 2px 5px rgba(0,0,0,0.5));"></span>
+                        <span class="slot-digit" id="slot-2"><img src="logo-new.png" style="height: 0.8em; vertical-align: middle; filter: drop-shadow(0 2px 5px rgba(0,0,0,0.5));"></span>
+                        <span class="slot-digit" id="slot-1"><img src="logo-new.png" style="height: 0.8em; vertical-align: middle; filter: drop-shadow(0 2px 5px rgba(0,0,0,0.5));"></span>
+                        <span class="slot-digit" id="slot-0"><img src="logo-new.png" style="height: 0.8em; vertical-align: middle; filter: drop-shadow(0 2px 5px rgba(0,0,0,0.5));"></span>
                     </div>
                 </div>
             </div>
@@ -1126,7 +1126,35 @@
             if (data.type === 'FORCE_SYNC') {
                 fetchAndApplySlides();
             }
+            if (data.type === 'DEMO_MODE') {
+                showDemoBanner(data.payload);
+            }
         };
+
+        function showDemoBanner(show) {
+            let banner = document.getElementById('demo-banner');
+            if (show) {
+                if (!banner) {
+                    banner = document.createElement('div');
+                    banner.id = 'demo-banner';
+                    banner.style.position = 'fixed';
+                    banner.style.top = '0';
+                    banner.style.width = '100%';
+                    banner.style.background = 'repeating-linear-gradient(45deg, #ef4444, #ef4444 20px, #f59e0b 20px, #f59e0b 40px)';
+                    banner.style.color = 'white';
+                    banner.style.fontWeight = 'bold';
+                    banner.style.textAlign = 'center';
+                    banner.style.padding = '10px';
+                    banner.style.zIndex = '999999';
+                    banner.style.fontSize = '1.5rem';
+                    banner.innerText = 'DEMO MODE - NOT A REAL DRAW';
+                    document.body.appendChild(banner);
+                }
+                banner.style.display = 'block';
+            } else if (banner) {
+                banner.style.display = 'none';
+            }
+        }
 
         function handleSlideCmd(cmd) {
             if (cmd === 'next') nextSlide(true);
@@ -1618,14 +1646,14 @@
                 congratsStartTime = null;
             }
 
-            // Post-draw alternating loop: Congrats -> Robs Info (if enabled) -> Winning Numbers (unless manual)
             if (state.activeView === 'congrats' || state.activeView === 'winning-numbers' || state.activeView === 'view-robs-advert') {
                 if (!postDrawLoopInterval) {
                     let steps = ['congrats'];
                     if (state.draw && state.draw.sunday && state.draw.sunday.enabled) {
                         steps.push('view-robs-advert');
                     }
-                    const activeDrawData = state.draw[state.draw.activeEvent || 'thursday'] || {};
+                    const activeEvent = (state.draw && state.draw.activeEvent) ? state.draw.activeEvent : 'thursday';
+                    const activeDrawData = (state.draw && state.draw[activeEvent]) ? state.draw[activeEvent] : {};
                     if (!activeDrawData.manualDraw) {
                         steps.push('winning-numbers');
                     }
@@ -2102,10 +2130,16 @@
                         rollingPrize = null;
                         updateState(state);
                         
+                        setPrizeTheme(prizeType); // Force correct color for winner flash
+
                         const drawView = document.getElementById('view-draw');
                         drawView.classList.remove('draw-flash-bg');
                         drawView.classList.add('winner-flash-bg');
-                        setTimeout(() => drawView.classList.remove('winner-flash-bg'), 2500);
+                        setTimeout(() => {
+                            drawView.classList.remove('winner-flash-bg');
+                            // Re-apply state prize theme after flash to ensure consistency
+                            updateState(state);
+                        }, 2500);
                         
                         triggerConfetti();
                         
