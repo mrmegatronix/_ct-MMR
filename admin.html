@@ -265,7 +265,7 @@
     </style>
 </head>
 <body>
-    <div id="global-status-bar" style="background: #10b981; color: white; text-align: center; padding: 0.5rem; font-weight: bold; position: sticky; top: 0; z-index: 1000;">✅ Ready</div>
+    <div id="global-status-bar" style="background: #10b981; color: white; text-align: center; padding: 0.5rem; font-weight: bold; position: fixed; top: 0; left: 0; right: 0; z-index: 1000; transition: transform 0.3s ease-in-out; transform: translateY(-100%);">✅ Ready</div>
 
     <!-- PIN Access Overlay -->
     <div id="pin-overlay">
@@ -1109,8 +1109,9 @@
             if (bar) {
                 bar.innerText = msg;
                 bar.style.backgroundColor = color === 'blue' ? '#3b82f6' : (color === 'red' ? '#ef4444' : '#10b981');
-                bar.style.display = 'block';
-                setTimeout(() => bar.style.display = 'none', 3000);
+                bar.style.transform = 'translateY(0)';
+                if (bar.hideTimeout) clearTimeout(bar.hideTimeout);
+                bar.hideTimeout = setTimeout(() => bar.style.transform = 'translateY(-100%)', 3000);
             }
         }
 
