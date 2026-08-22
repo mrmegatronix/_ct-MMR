@@ -1283,7 +1283,14 @@
             if (drawView) {
                 const activeDrawDataObj = getActiveDrawData(state.draw);
                 const hasDrawn = activeDrawDataObj && activeDrawDataObj.drawnNumbers && activeDrawDataObj.drawnNumbers.length > 0;
-                const curPrize = slotsRolling ? rollingPrize : (hasDrawn ? (activeDrawDataObj && activeDrawDataObj.currentPrize) : null);
+                let curPrize = null;
+                if (slotsRolling) {
+                    curPrize = rollingPrize;
+                } else if (activeDrawDataObj) {
+                    if (hasDrawn || activeDrawDataObj.currentPrize === 'custom') {
+                        curPrize = activeDrawDataObj.currentPrize;
+                    }
+                }
                 setPrizeTheme(curPrize);
             }
 
