@@ -594,6 +594,7 @@
             <button class="btn btn-primary" onclick="printAllPages()" style="flex:1; background-color: #ef4444; border-color: #dc2626;">🖨️ ALL</button>
         </div>
         <button class="btn btn-danger" onclick="archiveDraws()" style="width: 100%; background-color: #ef4444; border-color: #dc2626; color: white;">⚠️ Confirm End of Week Draws</button>
+        <button class="btn btn-danger" onclick="resetAllData()" style="width: 100%; background-color: #7f1d1d; border-color: #450a0a; color: white; margin-top: 0.5rem;">🚨 Reset All Data (New Week)</button>
     </div>
 
     <!-- QR Codes -->
@@ -1405,6 +1406,91 @@
                 broadcast();
                 writeFirebase({ draw: state.draw });
                 showGlobalStatus('Sunday Draw Confirmed Finished!', 'red');
+            }
+        }
+
+        function archiveDraws() {
+            if(confirm('Are you sure you want to end the week and archive the draws?')) {
+                if (fbDbUrl) {
+                    const archiveData = {
+                        timestamp: new Date().toISOString(),
+                        drawState: state.draw,
+                        financials: state.financials
+                    };
+                    fetch(`${fbDbUrl}/mmr_archive.json`, {
+                        method: 'POST',
+                        body: JSON.stringify(archiveData),
+                        headers: { 'Content-Type': 'application/json' }
+                    }).then(() => {
+                        showGlobalStatus('Archived successfully!', 'green');
+                    }).catch(e => console.warn('[MMR Admin] Firebase archive error:', e));
+                }
+            }
+        }
+
+        function resetAllData() {
+            if (confirm('🚨 DANGER: Are you sure you want to completely wipe all draw and financial data for a new week? Configuration will be kept.')) {
+                // Wipe draw state but keep config
+                state.draw = {
+                    activeEvent: 'thursday',
+                    thursday: {
+                        manualDraw: state.draw?.thursday?.manualDraw || false,
+                        drawnNumbers: [],
+                        prizesLeft: 0,
+                        prizes100: 0,
+                        prizes50: 0,
+                        prizes25: 0,
+                        cfgPrizes100: state.draw?.thursday?.cfgPrizes100 || 0,
+                        cfgPrizes50: state.draw?.thursday?.cfgPrizes50 || 0,
+                        cfgPrizes25: state.draw?.thursday?.cfgPrizes25 || 0,
+                        vouchersCount: 0,
+                        vouchersValue: 0,
+                        cfgVouchersCount: state.draw?.thursday?.cfgVouchersCount || 0,
+                        cfgVouchersValue: state.draw?.thursday?.cfgVouchersValue || 0,
+                    },
+                    sunday: {
+                        enabled: state.draw?.sunday?.enabled || false,
+                        manualDraw: state.draw?.sunday?.manualDraw || false,
+                        drawnNumbers: [],
+                        prizesLeft: 0,
+                        prizes100: 0,
+                        prizes50: 0,
+                        prizes25: 0,
+                        vouchersCount: 0,
+                        vouchersValue: 0,
+                        cfgPrizes100: state.draw?.sunday?.cfgPrizes100 || 0,
+                        cfgPrizes50: state.draw?.sunday?.cfgPrizes50 || 0,
+                        cfgPrizes25: state.draw?.sunday?.cfgPrizes25 || 0,
+                        cfgVouchersCount: state.draw?.sunday?.cfgVouchersCount || 0,
+                        cfgVouchersValue: state.draw?.sunday?.cfgVouchersValue || 0
+                    }
+                };
+
+                // Wipe financials
+                state.financials = {
+                    thursday: { ticketsSold: 0, cash: 0, eftpos: 0, reimbursements: 0, notesGen: "", notesReimb: "" },
+                    sunday: { ticketsSold: 0, cash: 0, eftpos: 0, reimbursements: 0, notesGen: "", notesReimb: "" },
+                    weeklyNotes: ""
+                };
+
+                // Remove disabled state from config inputs
+                ['thu-enabled', 'thu-manual', 'thu-min', 'thu-max', 'thu-excludes', 'thu-prizes-100', 'thu-prizes-50', 'thu-prizes-25', 'thu-vouchers-count', 'thu-vouchers-value',
+                 'sun-enabled', 'sun-manual', 'sun-min', 'sun-max', 'sun-excludes', 'sun-prizes-100', 'sun-prizes-50', 'sun-prizes-25', 'sun-vouchers-count', 'sun-vouchers-value'].forEach(id => {
+                    const el = document.getElementById('cfg-' + id);
+                    if(el) el.disabled = false;
+                });
+                
+                const btnThu = document.getElementById('btn-confirm-thu');
+                if (btnThu) { btnThu.disabled = false; btnThu.innerText = 'Confirm Finished'; }
+                const btnSun = document.getElementById('btn-confirm-sun');
+                if (btnSun) { btnSun.disabled = false; btnSun.innerText = 'Confirm Finished'; }
+
+                updateDrawState(); 
+                updateViewButtons();
+                calcFinancials();
+                broadcast();
+                writeFirebase(state);
+                showGlobalStatus('All Data Reset for New Week!', 'green');
             }
         }
 
