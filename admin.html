@@ -983,12 +983,19 @@
             }
         }
 
+        let _broadcastDebounceTimer = null;
         function broadcast() {
             const stateToSave = { ...state };
             delete stateToSave.slides;
-            localStorage.setItem('mmr_state_v5', JSON.stringify(stateToSave));
+            delete stateToSave.activeView; // NEVER broadcast activeView — use setView() for that
+            localStorage.setItem('mmr_state_v5', JSON.stringify({ ...stateToSave, activeView: state.activeView }));
             bc.postMessage({ type: 'STATE_UPDATE', payload: stateToSave });
-            writeFirebase(stateToSave);
+            
+            // Debounce Firebase writes to prevent SSE echo flicker on rapid typing
+            clearTimeout(_broadcastDebounceTimer);
+            _broadcastDebounceTimer = setTimeout(() => {
+                writeFirebase(stateToSave);
+            }, 300);
             
             // Temporary success indicator
             const el = document.getElementById('draw-config-status');
@@ -1102,7 +1109,6 @@
 
             updateTotalsSummary();
             broadcast();
-            writeFirebase({ draw: state.draw });
             showGlobalStatus('Config Updated & Synced to Firebase!', 'green');
         }
 
