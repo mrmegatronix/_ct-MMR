@@ -2199,11 +2199,20 @@
         let demoStateBackup = null;
         let demoDrawTimeout = null;
         let demoPrizesLeft = { 100: 10, 50: 10, 25: 10 };
+        let demoToggleLock = false;
+        let demoCooldown = false;
+        let demoRunId = 0; // Unique ID per demo session to cancel stale callbacks
 
         function toggleDemoMode() {
+            // Debounce: prevent fast switching
+            if (demoToggleLock) return;
+            demoToggleLock = true;
+            setTimeout(() => { demoToggleLock = false; }, 1000);
+
             isDemoMode = !isDemoMode;
             const btn = document.getElementById('btn-demo-mode');
             if (isDemoMode) {
+                demoRunId++; // Invalidate any stale callbacks from a previous session
                 btn.innerText = 'Demo Mode: ON';
                 btn.style.backgroundColor = '#ef4444';
                 btn.style.borderColor = '#dc2626';
@@ -2213,6 +2222,7 @@
                 
                 // Reset demo prizes
                 demoPrizesLeft = { 100: 10, 50: 10, 25: 10 };
+                demoCooldown = false;
                 const evt = state.draw[state.draw.activeEvent];
                 evt.prizes100 = 10;
                 evt.prizes50 = 10;
@@ -2229,8 +2239,9 @@
                 showDemoBanner(true);
                 
                 // Start automated drawing
-                scheduleNextDemoDraw();
+                scheduleNextDemoDraw(demoRunId);
             } else {
+                demoRunId++; // Invalidate pending callbacks
                 btn.innerText = 'Demo Mode: OFF';
                 btn.style.backgroundColor = '#8b5cf6';
                 btn.style.borderColor = '#7c3aed';
@@ -2238,28 +2249,43 @@
                 // Restore state
                 if (demoStateBackup) {
                     state = JSON.parse(JSON.stringify(demoStateBackup));
+                    demoStateBackup = null;
                     updateDrawState();
                     broadcast();
                 }
                 
                 clearTimeout(demoDrawTimeout);
+                demoDrawTimeout = null;
+                demoCooldown = false;
                 
                 bc.postMessage({ type: 'DEMO_MODE', payload: false });
                 showDemoBanner(false);
             }
         }
 
-        function scheduleNextDemoDraw() {
-            if (!isDemoMode) return;
+        function getFullDrawCycleDuration(cfgSpeed) {
+            // rollDuration: time before STOP_ROLL is sent
+            // Then the display locks each digit sequentially:
+            //   digitBaseDelay + (digitsCount-1) * digitStepDelay + 1500ms CSS transition
+            // Then 2500ms winner flash
+            // Plus 1000ms safety buffer
+            const maxTickets = (window.MMR_CONFIG && window.MMR_CONFIG.DEFAULT_TICKET_MAX) || 9999;
+            const digitsCount = String(maxTickets).length;
+            const stopAnimDuration = (cfgSpeed.digitBaseDelay || 800) + (digitsCount - 1) * (cfgSpeed.digitStepDelay || 600) + 1500;
+            return cfgSpeed.rollDuration + stopAnimDuration + 2500 + 1000;
+        }
+
+        function scheduleNextDemoDraw(runId) {
+            if (!isDemoMode || runId !== demoRunId) return;
             const evt = state.draw[state.draw.activeEvent];
             if (evt.prizesLeft <= 0) {
-                // Done
+                // All demo prizes drawn — loop complete
                 return;
             }
             
-            // Wait for not drawing
-            if (isDrawing) {
-                demoDrawTimeout = setTimeout(scheduleNextDemoDraw, 2000);
+            // Wait for both isDrawing flag AND cooldown to clear
+            if (isDrawing || demoCooldown) {
+                demoDrawTimeout = setTimeout(() => scheduleNextDemoDraw(runId), 500);
                 return;
             }
             
@@ -2271,11 +2297,16 @@
             
             if (nextPrize) {
                 demoPrizesLeft[nextPrize]--;
+                demoCooldown = true;
                 runDraw(nextPrize);
                 
-                // Wait for draw to finish + 5 seconds before next draw
+                // Wait for the FULL draw cycle (roll + stop animation + winner flash + buffer)
                 const cfgSpeed = getDrawSpeedConfig();
-                demoDrawTimeout = setTimeout(scheduleNextDemoDraw, cfgSpeed.rollDuration + 5000);
+                const fullCycle = getFullDrawCycleDuration(cfgSpeed);
+                demoDrawTimeout = setTimeout(() => {
+                    demoCooldown = false;
+                    scheduleNextDemoDraw(runId);
+                }, fullCycle);
             }
         }
 
