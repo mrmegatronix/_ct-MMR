@@ -1628,30 +1628,14 @@
                 hasTriggeredCountdownFireworks = false;
             }
 
-            // Check congrats timeline transition to video
-            if (state.activeView === 'congrats' || state.activeView === 'winning-numbers') {
-                if (!congratsStartTime) {
-                    congratsStartTime = Date.now();
-                }
-                const elapsed = Date.now() - congratsStartTime;
-                const isTest = window.location.search.includes('testLoop=1');
-                const congratsLimit = isTest ? 30 * 1000 : 30 * 60 * 1000;
-                
-                if (elapsed >= congratsLimit) {
-                    updateState({ activeView: 'congrats-video' });
-                    bc.postMessage({ type: 'STATE_UPDATE', payload: { activeView: 'congrats-video' } });
-                    writeFirebase({ activeView: 'congrats-video' });
-                }
-            } else if (state.activeView !== 'congrats-video') {
+            // Removed congrats timeline transition to video per request
+            if (state.activeView !== 'congrats-video') {
                 congratsStartTime = null;
             }
 
             if (state.activeView === 'congrats' || state.activeView === 'winning-numbers' || state.activeView === 'view-robs-advert') {
                 if (!postDrawLoopInterval) {
                     let steps = ['congrats'];
-                    if (state.draw && state.draw.sunday && state.draw.sunday.enabled) {
-                        steps.push('view-robs-advert');
-                    }
                     const activeEvent = (state.draw && state.draw.activeEvent) ? state.draw.activeEvent : 'thursday';
                     const activeDrawData = (state.draw && state.draw[activeEvent]) ? state.draw[activeEvent] : {};
                     if (!activeDrawData.manualDraw) {
