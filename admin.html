@@ -335,6 +335,20 @@
             margin-bottom: 0 !important;
             border-top: none !important;
         }
+    
+        @media (max-width: 768px) {
+            body { padding: 1rem; }
+            .card { padding: 1rem; }
+            div[style*="display: grid"] {
+                grid-template-columns: 1fr !important;
+                gap: 0.5rem !important;
+            }
+            .header {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+        }
     </style>
 </head>
 <body>
@@ -1133,8 +1147,9 @@
             const sun25 = parseInt(document.getElementById('cfg-sun-prizes-25').value) || 0;
             const sunVouchers = parseInt(document.getElementById('cfg-sun-vouchers-value').value) || 0;
             const thuVouchers = parseInt(document.getElementById('cfg-thu-vouchers-value').value) || 0;
+            const genPrizes = parseInt(document.getElementById('cfg-gen-prizes')?.value) || 0;
             
-            const totalCount = thu100 + thu50 + thu25 + sun100 + sun50 + sun25 + (parseInt(document.getElementById('cfg-sun-vouchers-count').value) || 0) + (parseInt(document.getElementById('cfg-thu-vouchers-count').value) || 0);
+            const totalCount = thu100 + thu50 + thu25 + sun100 + sun50 + sun25 + (parseInt(document.getElementById('cfg-sun-vouchers-count').value) || 0) + (parseInt(document.getElementById('cfg-thu-vouchers-count').value) || 0) + genPrizes;
             const totalValue = ((thu100 + sun100) * 100) + ((thu50 + sun50) * 50) + ((thu25 + sun25) * 25) + sunVouchers + thuVouchers;
             
             const totalCountEl = document.getElementById('prizes-total-count');
