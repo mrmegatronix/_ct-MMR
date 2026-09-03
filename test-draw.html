@@ -1,0 +1,2703 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' https://*.google.com https://*.googleusercontent.com https://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebaseio.com wss://*.firebasedatabase.app https://api.qrserver.com https://quickchart.io https://chart.googleapis.com; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https:; media-src 'self' data: blob:; connect-src 'self' https://*.google.com https://*.googleusercontent.com https://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebaseio.com wss://*.firebasedatabase.app https://api.qrserver.com https://quickchart.io https://chart.googleapis.com;">
+    <title>Monster Meat Raffle - Display</title>
+    <script>
+        document.write('<script src="config.js?v=' + Date.now() + '"><\/script>');
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap');
+
+        :root {
+            --primary: var(--cfg-primary, #ef4444);
+            --primary-glow: var(--cfg-primary-glow, rgba(239, 68, 68, 0.6));
+            --bg-dark: var(--cfg-bg-dark, #020617);
+            --bg-grad: var(--cfg-bg-grad, radial-gradient(circle at center, #1e293b 0%, #020617 100%));
+            --text-light: var(--cfg-text-light, #f8fafc);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: var(--bg-dark);
+            color: var(--text-light);
+            font-family: 'Outfit', sans-serif;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Branding Top Left */
+        .brand-logo {
+            position: absolute;
+            top: 2rem;
+            left: 2rem;
+            width: clamp(100px, 15vmin, 200px);
+            z-index: 200;
+            filter: drop-shadow(0 0 15px rgba(0,0,0,0.9));
+            opacity: 1;
+        }
+
+        /* Global Countdown (Hidden as per request, now a slide) */
+        .global-countdown {
+            display: none;
+        }
+
+        /* Container for Views */
+        #view-container {
+            flex: 1;
+            position: relative;
+            background: var(--bg-grad);
+        }
+
+        .view {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 1s ease-in-out;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding-top: 22vh; /* Space for the persistent banner */
+        }
+        .view.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* --- SLIDES VIEW --- */
+        .slide {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            opacity: 0;
+            transform: scale(1.05);
+            transition: opacity 1.5s ease-in-out, transform 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+            padding: 3rem 4rem;
+            overflow: hidden;
+        }
+        .slide.active { opacity: 1; transform: scale(1); }
+
+        .slides-fixed-title {
+            position: relative;
+            width: 100%;
+            text-align: center;
+            font-size: clamp(3rem, 7vw, 6rem);
+            font-weight: 900;
+            line-height: 1.1;
+            color: #FFFFFF; /* Bright White */
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            background: transparent; /* Solid Gold removed */
+            border-bottom: 1px solid rgba(59, 130, 246, 0.2);
+            text-shadow: 0 0 20px rgba(59, 130, 246, 0.8), 0 0 40px rgba(59, 130, 246, 0.6); /* Blue Glow */
+            box-shadow: 0 10px 50px rgba(59, 130, 246, 0.2); /* Blue Glow spreading down */
+            z-index: 100;
+            animation: title-pulse 3s infinite ease-in-out;
+            padding: 1.5rem 1rem;
+        }
+
+        .slide-subtitle {
+            font-size: clamp(2.5rem, 5.5vw, 5.2rem);
+            color: #FFFFFF;
+            -webkit-text-fill-color: #FFFFFF;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            filter: drop-shadow(0 0 10px #ef4444) drop-shadow(0 0 20px rgba(239, 68, 68, 0.6));
+            margin-top: 1rem;
+            animation: subtitle-pulse 3s infinite ease-in-out;
+            text-wrap: balance;
+            hyphens: auto;
+            text-align: center;
+            max-width: 85%;
+            line-height: 1.3;
+            position: relative;
+            z-index: 2;
+        }
+
+        .slide-countdown {
+            font-size: clamp(1.92rem, 6.6vmin, 6rem);
+            font-weight: 900;
+            color: var(--primary);
+            text-shadow: 0 0 10px rgba(255,255,255,0.9), 0 0 25px rgba(255,255,255,0.6), 0 0 40px var(--primary-glow), 0 10px 20px rgba(0,0,0,0.5);
+            margin-top: 1rem;
+            font-variant-numeric: tabular-nums;
+            letter-spacing: 0.02em;
+            white-space: nowrap;
+            position: relative;
+            z-index: 2;
+            display: inline-block;
+            transform: scaleY(1.1);
+        }
+
+        @keyframes title-pulse {
+            0%, 100% { text-shadow: 0 0 20px rgba(59, 130, 246, 0.8), 0 0 40px rgba(59, 130, 246, 0.6), 0 5px 20px rgba(0,0,0,0.8); }
+            50% { text-shadow: 0 0 30px #3b82f6, 0 0 60px #3b82f6, 0 5px 20px rgba(0,0,0,0.8); }
+        }
+
+        @keyframes subtitle-pulse {
+            0%, 100% { filter: drop-shadow(0 0 10px #ef4444) drop-shadow(0 0 20px rgba(239, 68, 68, 0.6)); }
+            50% { filter: drop-shadow(0 0 20px #ef4444) drop-shadow(0 0 40px #ef4444); }
+        }
+
+        @keyframes colon-flash {
+            0%, 49.9% { opacity: 1; }
+            50%, 100% { opacity: 0; }
+        }
+        .colon-flash {
+            animation: colon-flash 1s step-start infinite;
+            display: inline-block;
+            margin: 0 0.2em;
+            color: var(--primary);
+        }
+
+        .ambient-confetti {
+            position: absolute;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .slide h1 {
+            font-size: clamp(3.5rem, 10vmin, 8.5rem);
+            font-weight: 900;
+            color: #FFFFFF;
+            -webkit-text-fill-color: #FFFFFF;
+            text-transform: uppercase;
+            line-height: 1.1;
+            filter: drop-shadow(0 0 15px #ef4444) drop-shadow(0 0 30px rgba(239, 68, 68, 0.6));
+            margin-bottom: 1rem;
+            position: relative;
+            z-index: 2;
+            text-wrap: balance;
+            max-width: 95%;
+            overflow-wrap: normal;
+            word-break: keep-all;
+        }
+        .slide .highlight { 
+            color: var(--primary); 
+            text-shadow: 0 0 10px rgba(255,255,255,0.9), 0 0 25px rgba(255,255,255,0.6);
+        }
+        .slide-image-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(2, 6, 23, 0.65);
+            z-index: 1;
+        }
+
+        /* Avatar styling */
+        .avatar-container {
+            margin-top: 2rem;
+            position: relative;
+            z-index: 5;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2rem;
+            width: fit-content;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .animated-avatar {
+            width: clamp(250px, 45vh, 450px);
+            height: clamp(250px, 45vh, 450px);
+            object-fit: cover;
+            object-position: center 15%;
+            border-radius: 50%;
+            border: 5px solid var(--primary);
+            box-shadow: 0 0 40px var(--primary-glow), 0 0 80px rgba(0,0,0,0.8);
+            animation: float 4s ease-in-out infinite;
+            background: rgba(0,0,0,0.4);
+            backdrop-filter: blur(10px);
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+        }
+        .speech-bubble {
+            position: relative;
+            background: white;
+            color: var(--primary);
+            padding: 1.2rem 2.2rem;
+            border-radius: 30px;
+            font-weight: 900;
+            font-size: 2.8rem;
+            text-shadow: 0 0 10px rgba(255,255,255,0.8);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+            animation: float-bubble 4s ease-in-out infinite;
+            z-index: 10;
+            min-width: 250px;
+            max-width: 550px;
+            width: max-content;
+            text-align: center;
+            box-sizing: border-box;
+        }
+        .speech-bubble::after {
+            content: '';
+            position: absolute;
+            bottom: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 15px 15px 0 15px;
+            border-style: solid;
+            border-color: white transparent transparent transparent;
+        }
+        @keyframes float-bubble {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        /* Progress Bar */
+        #progress-container {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: var(--cfg-progress-bar-height, 12px);
+            background: transparent;
+            z-index: 100;
+        }
+        #progress-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--primary), #fff);
+            box-shadow: 0 0 25px var(--primary-glow);
+            transition: width 0.1s linear;
+        }
+
+        /* --- DRAW VIEW --- */
+        .lottery-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2rem;
+            z-index: 10;
+            transform: translateY(-16vh);
+        }
+        .draw-title { 
+            font-size: 4.4vmin; 
+            font-weight: 900; 
+            color: white; 
+            text-transform: uppercase; 
+            text-shadow: 0 0 15px var(--primary-glow);
+        }
+        .number-display {
+            background: transparent;
+            padding: 0;
+            border-radius: 0;
+            border: none;
+            box-shadow: none;
+            min-width: unset;
+            text-align: center;
+            line-height: 1;
+            animation: none;
+        }
+
+        /* Slot Machine theatrical styles */
+        .slot-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1.5vmin;
+        }
+        .slot-digit {
+            display: inline-block;
+            width: 14vmin;
+            height: 20vmin;
+            line-height: 20vmin;
+            font-size: 16vmin;
+            font-weight: 900;
+            font-family: 'Outfit', sans-serif;
+            color: white;
+            text-align: center;
+            background: linear-gradient(180deg, #090d16 0%, #020617 100%);
+            border: 6px solid var(--primary);
+            border-radius: 2.5rem;
+            box-shadow: inset 0 0 30px rgba(0,0,0,0.95), 0 15px 30px rgba(0,0,0,0.7), 0 0 20px var(--primary-glow);
+            transition: border-color 0.25s, box-shadow 0.25s, transform 0.25s;
+            position: relative;
+            overflow: hidden;
+            text-shadow: 0 4px 8px rgba(0,0,0,0.9);
+            -webkit-text-stroke: 1px rgba(0,0,0,0.3);
+        }
+        .slot-digit.rolling {
+            /* We will use slot-strip inside for the rolling animation */
+        }
+        .slot-strip {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            transition: transform 3s cubic-bezier(0.1, 0.7, 0.1, 1);
+            will-change: transform;
+        }
+        .slot-strip-num {
+            height: 20vmin;
+            line-height: 20vmin;
+            display: block;
+            text-align: center;
+        }
+        .slot-digit.locked {
+            border-color: var(--primary);
+            color: #ffffff;
+            text-shadow: 0 0 15px #ffffff, 0 0 30px var(--primary), 0 0 50px var(--primary-glow);
+            box-shadow: inset 0 0 25px rgba(255,255,255,0.2), 0 0 40px var(--primary-glow);
+            animation: slot-lock-bounce 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        @keyframes slot-lock-bounce {
+            0% { transform: scale(1.4); filter: brightness(2); }
+            70% { transform: scale(0.9); }
+            100% { transform: scale(1); filter: brightness(1); }
+        }
+
+        .draw-flash-bg::after {
+            content: ''; position: absolute; inset: 0; pointer-events: none;
+            animation: draw-spotlight 0.3s infinite alternate;
+            z-index: 1;
+        }
+        @keyframes draw-spotlight {
+            from { 
+                box-shadow: inset 0 0 50px var(--spotlight-color-low, rgba(239, 68, 68, 0.3)); 
+                background: var(--spotlight-bg-low, rgba(239, 68, 68, 0.05)); 
+            }
+            to { 
+                box-shadow: inset 0 0 300px var(--spotlight-color-high, rgba(239, 68, 68, 0.8)); 
+                background: var(--spotlight-bg-high, rgba(239, 68, 68, 0.15)); 
+            }
+        }
+        
+        #view-draw.prize-100 {
+            --primary: #ef4444;
+            --primary-glow: rgba(239, 68, 68, 0.45);
+            --spotlight-color-low: rgba(239, 68, 68, 0.3);
+            --spotlight-bg-low: rgba(239, 68, 68, 0.05);
+            --spotlight-color-high: rgba(239, 68, 68, 0.8);
+            --spotlight-bg-high: rgba(239, 68, 68, 0.2);
+            background: radial-gradient(circle at center, rgba(239, 68, 68, 0.35) 0%, rgba(2,6,23,0.95) 75%, #020617 100%) !important;
+        }
+        #view-draw.prize-50 {
+            --primary: #3b82f6;
+            --primary-glow: rgba(59, 130, 246, 0.45);
+            --spotlight-color-low: rgba(59, 130, 246, 0.3);
+            --spotlight-bg-low: rgba(59, 130, 246, 0.05);
+            --spotlight-color-high: rgba(59, 130, 246, 0.8);
+            --spotlight-bg-high: rgba(59, 130, 246, 0.2);
+            background: radial-gradient(circle at center, rgba(59, 130, 246, 0.35) 0%, rgba(2,6,23,0.95) 75%, #020617 100%) !important;
+        }
+        #view-draw.prize-25 {
+            --primary: #10b981;
+            --primary-glow: rgba(16, 185, 129, 0.45);
+            --spotlight-color-low: rgba(16, 185, 129, 0.3);
+            --spotlight-bg-low: rgba(16, 185, 129, 0.05);
+            --spotlight-color-high: rgba(16, 185, 129, 0.8);
+            --spotlight-bg-high: rgba(16, 185, 129, 0.2);
+            background: radial-gradient(circle at center, rgba(16, 185, 129, 0.35) 0%, rgba(2,6,23,0.95) 75%, #020617 100%) !important;
+        }
+        #view-draw.prize-bonus {
+            --primary: #ffd700;
+            --primary-glow: rgba(255, 215, 0, 0.45);
+            --spotlight-color-low: rgba(255, 215, 0, 0.3);
+            --spotlight-bg-low: rgba(255, 215, 0, 0.05);
+            --spotlight-color-high: rgba(255, 215, 0, 0.8);
+            --spotlight-bg-high: rgba(255, 215, 0, 0.2);
+            background: radial-gradient(circle at center, rgba(255, 215, 0, 0.35) 0%, rgba(2,6,23,0.95) 75%, #020617 100%) !important;
+            box-shadow: inset 0 0 150px rgba(255,215,0,0.1);
+        }
+        #view-draw.prize-voucher {
+            --primary: #ffffff;
+            --primary-glow: rgba(255, 255, 255, 0.45);
+            --spotlight-color-low: rgba(255, 255, 255, 0.3);
+            --spotlight-bg-low: rgba(255, 255, 255, 0.05);
+            --spotlight-color-high: rgba(255, 255, 255, 0.8);
+            --spotlight-bg-high: rgba(255, 255, 255, 0.2);
+            background: radial-gradient(circle at center, rgba(255, 255, 255, 0.35) 0%, rgba(2,6,23,0.95) 75%, #020617 100%) !important;
+        }
+        #view-draw.prize-custom {
+            --primary: #fbbf24;
+            --primary-glow: rgba(251, 191, 36, 0.45);
+            --spotlight-color-low: rgba(251, 191, 36, 0.3);
+            --spotlight-bg-low: rgba(251, 191, 36, 0.05);
+            --spotlight-color-high: rgba(251, 191, 36, 0.8);
+            --spotlight-bg-high: rgba(251, 191, 36, 0.2);
+            background: radial-gradient(circle at center, rgba(251, 191, 36, 0.35) 0%, rgba(2,6,23,0.95) 75%, #020617 100%) !important;
+        }
+        
+        .winner-flash-bg::after {
+            content: ''; position: absolute; inset: 0; pointer-events: none;
+            animation: winner-flash 2.5s ease-out forwards;
+            z-index: 1;
+        }
+        @keyframes winner-flash {
+            0% { box-shadow: inset 0 0 500px var(--spotlight-color-high, rgba(255,255,255,0.8)); background: var(--spotlight-bg-high, rgba(255,255,255,0.4)); }
+            100% { box-shadow: inset 0 0 0 rgba(255,255,255,0); background: transparent; }
+        }
+
+        .drawn-numbers-bar {
+            position: absolute;
+            bottom: 2rem;
+            left: 2rem;
+            right: 2rem;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(10px);
+            padding: 1.5rem;
+            border-radius: 1rem;
+            border: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            max-height: 25vh;
+            overflow-y: auto;
+        }
+        .drawn-numbers-bar .title { font-size: 1.32rem; color: #94a3b8; text-transform: uppercase; font-weight: 700; }
+        .drawn-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            justify-content: center;
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: #fff;
+        }
+        .drawn-list span {
+            background: var(--primary);
+            padding: 0.5rem 1.5rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 0 10px var(--primary-glow);
+            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        @keyframes popIn {
+            0% { transform: scale(0); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .prizes-top-bar {
+            position: absolute;
+            top: 2rem;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            z-index: 20;
+            flex-wrap: wrap;
+        }
+        .prize-counter-pill {
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(10px);
+            padding: 0.6rem 1.6rem;
+            border-radius: 2rem;
+            border: 2px solid rgba(255, 255, 255, 0.15);
+            color: #fff;
+            font-size: clamp(2rem, 3.5vmin, 3.5rem);
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            box-shadow: 0 0 15px rgba(0,0,0,0.5);
+            animation: popIn 0.4s ease-out, pillPulse 2s infinite ease-in-out;
+        }
+        @keyframes pillPulse {
+            0% { filter: drop-shadow(0 0 5px rgba(255,255,255,0.2)); }
+            50% { filter: drop-shadow(0 0 20px rgba(255,255,255,0.6)); }
+            100% { filter: drop-shadow(0 0 5px rgba(255,255,255,0.2)); }
+        }
+        @keyframes pulseRed {
+            0% { box-shadow: 0 0 5px rgba(239,68,68,0.4); }
+            50% { box-shadow: 0 0 20px rgba(239,68,68,0.8); }
+            100% { box-shadow: 0 0 5px rgba(239,68,68,0.4); }
+        }
+        @keyframes pulseBlue {
+            0% { box-shadow: 0 0 5px rgba(59,130,246,0.4); }
+            50% { box-shadow: 0 0 20px rgba(59,130,246,0.8); }
+            100% { box-shadow: 0 0 5px rgba(59,130,246,0.4); }
+        }
+        @keyframes pulseGreen {
+            0% { box-shadow: 0 0 5px rgba(16,185,129,0.4); }
+            50% { box-shadow: 0 0 20px rgba(16,185,129,0.8); }
+            100% { box-shadow: 0 0 5px rgba(16,185,129,0.4); }
+        }
+        .prize-counter-pill span.val {
+            font-size: clamp(2.8rem, 4.5vmin, 4.5rem);
+            color: #fff;
+            font-weight: 900;
+        }
+        /* Countdown Clock - ACE Layout style */
+        .slide-countdown {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 900;
+            font-size: clamp(4rem, 12vw, 10rem);
+            line-height: 1;
+            color: #FFFFFF; /* Bright White */
+            text-shadow: 0 0 20px rgba(59, 130, 246, 0.8), 0 0 40px rgba(59, 130, 246, 0.6); /* Blue Glow */
+            margin: 2rem 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 2rem;
+            position: relative;
+            z-index: 10;
+        }
+        .slide-countdown div {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .slide-countdown small {
+            display: block;
+            font-size: 0.2em;
+            letter-spacing: 4px;
+            color: #fff;
+            opacity: 0.8;
+            margin-top: 0.5rem;
+            text-transform: uppercase;
+        }
+        .colon-flash {
+            animation: blink-colon 1s step-start infinite;
+            opacity: 0.6;
+            margin-top: -0.3em;
+        }
+        @keyframes blink-colon { 
+            50% { opacity: 0; } 
+        }
+        @keyframes prizes-glow {
+            from { text-shadow: 0 0 10px #fff, 0 0 20px var(--primary); }
+            to { text-shadow: 0 0 25px #fff, 0 0 50px var(--primary), 0 0 80px var(--primary); }
+        }
+
+        /* --- CONGRATS VIEW --- */
+        .congrats-title {
+            font-size: 12vmin;
+            font-weight: 900;
+            color: white;
+            text-shadow: 0 0 30px var(--primary-glow), 0 0 60px var(--primary-glow);
+            text-transform: uppercase;
+            text-align: center;
+            margin-bottom: 2rem;
+            animation: bounce 2s infinite;
+            line-height: 1.1;
+        }
+        .congrats-subtitle {
+            font-size: 5vmin;
+            color: #fff;
+            text-shadow: 0 0 15px var(--primary-glow);
+            text-align: center;
+            max-width: 80%;
+            line-height: 1.4;
+        }
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        /* Confetti Canvas */
+        #confetti-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 50;
+        }
+
+
+        #view-draw .lottery-container {
+            /* Keep centered, shift up for bottom numbers */
+            transform: translateY(-20vh);
+        }
+
+
+
+        /* Winners Carousel */
+        .winners-carousel {
+            max-height: 50vh;
+            overflow: hidden;
+        }
+        .winners-carousel img {
+            opacity: 0;
+            position: absolute;
+            max-height: 45vh;
+            width: auto !important;
+            object-fit: contain;
+            transition: opacity 1s ease-in-out, transform 1s ease-in-out;
+            transform: scale(0.95);
+        }
+        .winners-carousel img.active {
+            opacity: 1;
+            transform: scale(1);
+            z-index: 2;
+        }
+        /* Glow highlight for the last ticket drawn */
+        .last-drawn-glow {
+            animation: last-drawn-pulse 1s infinite alternate !important;
+            border: 3.5px solid #fff !important;
+            z-index: 10;
+        }
+        @keyframes last-drawn-pulse {
+            0% { 
+                box-shadow: 0 0 15px #ffd700, 0 0 30px #ffd700 !important; 
+                transform: scale(1.08);
+            }
+            100% { 
+                box-shadow: 0 0 30px #ff5500, 0 0 60px #ff5500, 0 0 90px #ff0000 !important; 
+                transform: scale(1.22);
+            }
+        }
+
+        /* Dynamic Draw Category Color themes & Background Glows */
+        #view-draw {
+            background: radial-gradient(circle at center, rgba(15, 23, 42, 0.6) 0%, rgba(2,6,23,0.98) 75%, #020617 100%);
+            transition: background 0.8s ease-in-out;
+        }
+        #view-draw.prize-100 {
+            --primary: #ef4444;
+            --primary-glow: rgba(239, 68, 68, 0.45);
+        }
+        #view-draw.prize-50 {
+            --primary: #3b82f6;
+            --primary-glow: rgba(59, 130, 246, 0.45);
+        }
+        #view-draw.prize-25 {
+            --primary: #10b981;
+            --primary-glow: rgba(16, 185, 129, 0.45);
+        }
+        #view-draw.prize-bonus {
+            --primary: #ffd700;
+            --primary-glow: rgba(255, 215, 0, 0.45);
+        }
+
+        /* Advert Slides Styling */
+        .slide-advert {
+            padding: 3rem !important;
+            box-sizing: border-box !important;
+            overflow: hidden !important;
+            word-wrap: break-word;
+        }
+        .advert-badge-container {
+            font-size: 11rem;
+            margin-bottom: 1rem;
+            filter: drop-shadow(0 0 25px var(--badge-glow));
+            animation: pulse-badge 2s infinite ease-in-out;
+            z-index: 2;
+            line-height: 1;
+        }
+        .advert-title {
+            font-size: clamp(2.5rem, 6.5vw, 6rem) !important;
+            font-weight: 900 !important;
+            text-transform: uppercase !important;
+            margin: 0 0 1.5rem 0 !important;
+            letter-spacing: -2px !important;
+            color: #fff !important;
+            text-shadow: 0 0 40px var(--title-glow);
+            z-index: 2;
+            line-height: 1.1 !important;
+            text-align: center !important;
+            max-width: 95% !important;
+            box-sizing: border-box;
+            word-wrap: break-word;
+        }
+        .advert-subtitle {
+            font-size: clamp(1.5rem, 3.8vw, 2.8rem) !important;
+            max-width: 95% !important;
+            box-sizing: border-box;
+            word-wrap: break-word;
+            font-weight: bold !important;
+            color: #e2e8f0 !important;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.8);
+            margin: 0 !important;
+            z-index: 2;
+            letter-spacing: 0.5px !important;
+            text-align: center !important;
+            max-width: 95% !important;
+            box-sizing: border-box;
+            word-wrap: break-word;
+        }
+        /* Custom Animated Clock */
+        .custom-clock {
+            width: 150px;
+            height: 150px;
+            border: 8px solid #f59e0b; /* Golden border */
+            border-radius: 50%;
+            position: relative;
+            background: #0f172a; /* Slate background */
+            box-shadow: 0 0 35px rgba(245, 158, 11, 0.6), inset 0 0 20px rgba(0, 0, 0, 0.85);
+            margin: 0 auto;
+            display: block;
+            box-sizing: border-box;
+        }
+        .clock-face {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+        .clock-hand {
+            position: absolute;
+            background: #ffffff;
+            border-radius: 4px;
+            bottom: 50%;
+            left: 50%;
+            transform-origin: bottom center;
+            box-shadow: 0 0 8px rgba(255,255,255,0.8);
+        }
+        .clock-hour {
+            width: 6px;
+            height: 38px;
+            margin-left: -3px;
+            animation: spin-hand 12s linear infinite;
+        }
+        .clock-minute {
+            width: 4px;
+            height: 52px;
+            margin-left: -2px;
+            animation: spin-hand 1s linear infinite;
+        }
+        .clock-center {
+            width: 14px;
+            height: 14px;
+            background: #f59e0b;
+            border-radius: 50%;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 10px #f59e0b;
+            z-index: 10;
+        }
+        @keyframes spin-hand {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        @keyframes pulse-badge {
+            0%, 100% { transform: scale(1); filter: drop-shadow(0 0 25px var(--badge-glow)); }
+            50% { transform: scale(1.1); filter: drop-shadow(0 0 45px var(--badge-glow)); }
+        }
+
+        /* Cinematic Countdown Suspense Mode */
+        body.cinematic-mode #view-container {
+            background: radial-gradient(circle at center, #2d0606 0%, #020617 100%) !important;
+            animation: cinematic-ambient 6s infinite ease-in-out !important;
+        }
+        @keyframes cinematic-ambient {
+            0%, 100% { filter: brightness(1); }
+            50% { filter: brightness(0.65); }
+        }
+        
+        /* Last Minute Ticking Heartbeat */
+        .slide-countdown-timer.last-minute {
+            font-size: clamp(4.5rem, 15vmin, 10.5rem) !important;
+            color: #ef4444 !important;
+            text-shadow: 0 0 25px rgba(239, 68, 68, 0.8), 0 0 50px rgba(239, 68, 68, 0.4);
+            animation: heartbeat-pulse 1s infinite alternate ease-in-out !important;
+        }
+        @keyframes heartbeat-pulse {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.08); }
+        }
+        
+        /* Meat Time Announcement */
+        .meat-time-active {
+            font-size: clamp(2rem, 8vw, 6.5rem);
+            font-weight: 900;
+            color: #f59e0b; /* Gold */
+            text-shadow: 0 0 20px #f59e0b, 0 0 40px #ef4444, 0 10px 20px rgba(0,0,0,0.8);
+            animation: flash-announcement 1.5s infinite alternate ease-in-out;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            display: block;
+            text-align: center;
+            line-height: 1.25;
+            padding: 2rem;
+        }
+        @keyframes flash-announcement {
+            0% { transform: scale(0.95); opacity: 0.9; }
+            100% { transform: scale(1.05); opacity: 1; }
+        /* Waving Avatars Speech Bubbles */
+        .speech-bubble-waving {
+            background: #fff;
+            color: #000;
+            border: 3.5px solid var(--primary);
+            padding: 0.8rem 1.6rem;
+            border-radius: 2rem;
+            font-size: clamp(1.1rem, 2.3vmin, 1.9rem);
+            font-weight: 800;
+            max-width: 250px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            animation: bubble-pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 10000;
+            text-align: center;
+            line-height: 1.25;
+        }
+        .speech-bubble-waving::after {
+            content: '';
+            position: absolute;
+            bottom: -14px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 14px 14px 0;
+            border-style: solid;
+            border-color: #fff transparent;
+            display: block;
+            width: 0;
+        }
+        #avatar-bubble-male::after {
+            left: 70%;
+        }
+        #avatar-bubble-female::after {
+            left: 30%;
+        }
+        @keyframes bubble-pop {
+            0% { transform: scale(0.6); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+    </style>
+</head>
+<body>
+
+    <img src="logo-new.png" alt="Logo" class="brand-logo" id="logo">
+
+    <div id="view-container">
+
+        <!-- SLIDES VIEW -->
+        <div id="view-slides" class="view active" style="flex-direction: column; justify-content: flex-start; padding-top: 0;">
+            <!-- Ambient Slides Confetti -->
+            <div id="ambient-confetti-container" style="position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: 5;"></div>
+            
+            <div class="slides-fixed-title" id="fixed-title-main">MONSTER MEAT RAFFLE</div>
+            
+            <div id="slides-wrapper" style="width: 100%; flex: 1; position: relative;"></div>
+            <div id="progress-container"><div id="progress-bar"></div></div>
+        </div>
+
+
+        <!-- DRAW VIEW -->
+        <div id="view-draw" class="view">
+            <div id="prizes-top-bar" class="prizes-top-bar">
+                <!-- Javascript will populate this with prize counters -->
+            </div>
+            
+            <div class="lottery-container">
+                <div class="draw-title" id="draw-view-title">Winning Number</div>
+                <div class="number-display" id="lottery-number">
+                    <div class="slot-container">
+                        <span class="slot-digit" id="slot-3"><img src="logo-new.png" style="height: 0.8em; vertical-align: middle; filter: drop-shadow(0 2px 5px rgba(0,0,0,0.5));"></span>
+                        <span class="slot-digit" id="slot-2"><img src="logo-new.png" style="height: 0.8em; vertical-align: middle; filter: drop-shadow(0 2px 5px rgba(0,0,0,0.5));"></span>
+                        <span class="slot-digit" id="slot-1"><img src="logo-new.png" style="height: 0.8em; vertical-align: middle; filter: drop-shadow(0 2px 5px rgba(0,0,0,0.5));"></span>
+                        <span class="slot-digit" id="slot-0"><img src="logo-new.png" style="height: 0.8em; vertical-align: middle; filter: drop-shadow(0 2px 5px rgba(0,0,0,0.5));"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="drawn-numbers-bar" style="max-height: 38vh; bottom: 1rem; overflow-y: auto; padding: 1.2rem 2rem;">
+                <div style="font-size: 1.4rem; color: #94a3b8; font-weight: 700; margin-bottom: 0.8rem; text-transform: uppercase; text-align: center; letter-spacing: 1px;">
+                    Drawn Ticket Numbers (Order of Draw)
+                </div>
+                <div id="drawn-horizontal-list" style="display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: center; font-size: 2.0rem; font-weight: 800; align-content: flex-start;">
+                    <!-- drawn numbers horizontally -->
+                </div>
+            </div>
+        </div>
+
+        <!-- CONGRATS VIEW -->
+        <div id="view-congrats" class="view">
+            <div class="congrats-title">Congratulations<br>to all the winners</div>
+            <div class="congrats-subtitle">Thank you to all who participated.<br>We hope to see you all next Thursday!</div>
+        </div>
+        
+        <!-- ROBS ADVERT VIEW -->
+        <div id="view-robs-advert" class="view" style="display: flex; flex-direction: column; justify-content: center; align-items: center; background: radial-gradient(circle at center, #1e3a8a, #020617); padding: 2rem; box-sizing: border-box; text-align: center;">
+            <div class="congrats-title" style="font-size: clamp(3rem, 8vmin, 6rem); color: #60a5fa; text-shadow: 0 0 40px rgba(96,165,250,0.6);">
+                ROB'S BONUS BOX
+            </div>
+            <div class="congrats-subtitle" style="font-size: 2.5rem; margin-top: 2rem; color: white;">
+                Sunday 5PM
+            </div>
+            <div id="robs-prizes-list" style="display: flex; flex-direction: column; gap: 2rem; margin-top: 4rem; font-size: clamp(2rem, 5vmin, 3.5rem); font-weight: 800; text-align: center; max-width: 90%; color: #fbbf24; text-shadow: 0 0 20px rgba(251,191,36,0.5);">
+                <!-- Dynamic -->
+            </div>
+        </div>
+        <!-- WINNING NUMBERS VIEW -->
+        <div id="view-winning-numbers" class="view" style="display: flex; flex-direction: column; justify-content: flex-start; align-items: center; padding: 2rem; padding-top: 15rem; box-sizing: border-box; text-align: center;">
+            <div class="congrats-title" style="margin-bottom: 2rem; font-size: clamp(2.5rem, 6vmin, 4.5rem); text-shadow: 0 0 30px rgba(255,215,0,0.4); text-transform: uppercase; letter-spacing: 2px;">
+                🏆 Tonight's Winners 🏆
+            </div>
+            <div style="display: flex; width: 95%; max-width: 1600px; flex: 1; justify-content: center; align-items: flex-start; margin-bottom: 2rem;">
+                <div id="winning-horizontal-list" style="display: flex; flex-wrap: wrap; justify-content: flex-start; align-items: center; align-content: flex-start; width: 100%; height: 100%; overflow-y: auto; padding: 2rem;">
+                    <!-- dynamic -->
+                </div>
+            </div>
+            <div style="font-size: 1.1rem; color: #888; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 2rem;">
+                Scan QR Code at the counter to verify all transactions and cryptography logs.
+            </div>
+            </div>
+        </div>
+
+        <!-- QR VERIFY VIEW -->
+        <div id="view-qr-verify" class="view" style="display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 2rem; box-sizing: border-box; text-align: center; background: radial-gradient(circle at center, #1e3a8a, #020617);">
+            <div style="font-size: clamp(2.5rem, 6vmin, 4.5rem); text-transform: uppercase; letter-spacing: 2px; color: #60a5fa; margin-bottom: 2rem; text-shadow: 0 0 30px rgba(96,165,250,0.5);">
+                🔍 Public Verification Audit
+            </div>
+            <div style="background: white; padding: 2rem; border-radius: 1.5rem; display: inline-block;">
+                <img id="tv-qr-verify" style="width: 400px; height: 400px; display: block;" alt="Verify QR">
+            </div>
+            <div style="font-size: 1.5rem; color: #cbd5e1; font-weight: 600; margin-top: 2rem;">
+                Scan to view live, cryptographically-verifiable audit logs.
+            </div>
+        </div>
+
+        <!-- QR ARCHIVE VIEW -->
+        <div id="view-qr-archive" class="view" style="display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 2rem; box-sizing: border-box; text-align: center; background: radial-gradient(circle at center, #1e3a8a, #020617);">
+            <div style="font-size: clamp(2.5rem, 6vmin, 4.5rem); text-transform: uppercase; letter-spacing: 2px; color: #60a5fa; margin-bottom: 2rem; text-shadow: 0 0 30px rgba(96,165,250,0.5);">
+                🏛️ Past Results Archive
+            </div>
+            <div style="background: white; padding: 2rem; border-radius: 1.5rem; display: inline-block;">
+                <img id="tv-qr-archive" style="width: 400px; height: 400px; display: block;" alt="Archive QR">
+            </div>
+            <div style="font-size: 1.5rem; color: #cbd5e1; font-weight: 600; margin-top: 2rem;">
+                Scan to view historical draw results.
+            </div>
+        </div>
+
+        <!-- CONGRATS VIDEO VIEW -->
+        <div id="view-congrats-video" class="view" style="background-color: #020617; display: flex; flex-direction: column; justify-content: center; align-items: center; position: absolute; inset: 0;">
+            <!-- Waving avatars loop -->
+            <div class="video-animation-container" style="position: relative; width: clamp(400px, 75vmin, 800px); height: clamp(267px, 50vmin, 533px); border-radius: 2rem; overflow: hidden; border: 5px solid var(--primary); box-shadow: 0 0 40px var(--primary-glow); background: #000;">
+                <img id="waving-frame-1" src="waving_dark_frame1.jpg" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;" class="active">
+                <img id="waving-frame-2" src="waving_dark_frame2.jpg" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: none;">
+                
+                <!-- Fixed logos overlaying the shirts to prevent size fluctuation -->
+                <img src="logo-new.png" style="position: absolute; left: 32.5%; top: 56.5%; width: 3%; height: auto; border-radius: 50%; opacity: 0.95; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));" alt="Logo L">
+                <img src="logo-new.png" style="position: absolute; left: 63.8%; top: 55.5%; width: 3%; height: auto; border-radius: 50%; opacity: 0.95; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));" alt="Logo R">
+                
+                <!-- Speech Bubbles -->
+                <div id="avatar-bubble-male" class="speech-bubble-waving" style="position: absolute; bottom: 65%; left: 10%; display: none;"></div>
+                <div id="avatar-bubble-female" class="speech-bubble-waving" style="position: absolute; bottom: 65%; right: 10%; display: none;"></div>
+            </div>
+            
+            <!-- Dark overlay to fade to darkness -->
+            <div id="darkness-overlay" style="position: absolute; inset: 0; background: #000; opacity: 0; pointer-events: none; transition: opacity 3s ease-in-out; z-index: 99999;"></div>
+        </div>
+
+    </div>
+
+    <!-- Confetti logic -->
+    <div id="confetti-container" style="position: absolute; inset: 0; pointer-events: none; z-index: 50; overflow: hidden;"></div>
+
+    <script>
+        // ── Security Helpers ─────────────────────────────────────────────
+        function sanitize(str) {
+            if (!str) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#x27;');
+        }
+        function safeUrl(url) {
+            if (!url) return '';
+            const u = String(url).trim();
+            // Allow relative paths (e.g. 'avatar.png') and http(s)
+            return /^(https?:\/\/|\/|\.)/i.test(u) ? u : u; // Be more permissive for local assets
+        }
+
+        function getNZDate() {
+            const tz = (window.MMR_CONFIG && window.MMR_CONFIG.TIMEZONE) || 'Pacific/Auckland';
+            const parts = new Intl.DateTimeFormat('en-US', {
+                timeZone: tz,
+                year: 'numeric', month: 'numeric', day: 'numeric',
+                hour: 'numeric', minute: 'numeric', second: 'numeric',
+                hourCycle: 'h23'
+            }).formatToParts(new Date());
+            const v = {};
+            parts.forEach(p => v[p.type] = p.value);
+            return new Date(v.year, v.month - 1, v.day, v.hour, v.minute, v.second);
+        }
+
+        function getNextThursday7PM() {
+            const nzDate = getNZDate();
+            const targetDay = (window.MMR_CONFIG && window.MMR_CONFIG.TARGET_DAY) ?? 4;
+            const targetHour = (window.MMR_CONFIG && window.MMR_CONFIG.TARGET_HOUR) ?? 19;
+            
+            let daysUntilTarget = (targetDay + 7 - nzDate.getDay()) % 7;
+            if (daysUntilTarget === 0 && nzDate.getHours() >= targetHour) {
+                daysUntilTarget = 7;
+            }
+            nzDate.setDate(nzDate.getDate() + daysUntilTarget);
+            
+            const yr = nzDate.getFullYear();
+            const mo = String(nzDate.getMonth() + 1).padStart(2, '0');
+            const da = String(nzDate.getDate()).padStart(2, '0');
+            const hr = String(targetHour).padStart(2, '0');
+            return `${yr}-${mo}-${da}T${hr}:00`;
+        }
+
+        // State
+        let slotsRolling = false;
+        let rollingPrize = null;
+        let congratsStartTime = null;
+        let currentSlideIdx = 0;
+        let isPaused = false;
+        function getActiveDrawData(drawState) {
+            if (!drawState) return {};
+            let evtName = drawState.activeEvent || 'thursday';
+            if (evtName === 'sunday' && drawState.sunday && drawState.sunday.enabled === false) {
+                evtName = 'thursday';
+            }
+            return drawState[evtName] || drawState.thursday || drawState;
+        }
+
+        let state = {
+            activeView: 'slides',
+            nextDrawTime: getNextThursday7PM(),
+            slides: [
+                { type: "countdown", title: "Time Until Draw", duration: 30000 }
+            ],
+            draw: {
+                activeEvent: 'thursday',
+                thursday: {
+                    cfgPrizes100: 20,
+                    cfgPrizes50: 12,
+                    cfgPrizes25: 16,
+                    prizes100: 20,
+                    prizes50: 12,
+                    prizes25: 16,
+                    drawnNumbers: [],
+                    prizesLeft: 48
+                },
+                isRolling: false,
+                currentNumber: '---',
+                drawnNumbers: [],
+                prizesLeft: 48
+            }
+        };
+
+        // DOM Elements
+        const views = {
+            slides: document.getElementById('view-slides'),
+            draw: document.getElementById('view-draw'),
+            congrats: document.getElementById('view-congrats'),
+            'winning-numbers': document.getElementById('view-winning-numbers'),
+            'congrats-video': document.getElementById('view-congrats-video')
+        };
+        const slidesWrapper = document.getElementById('slides-wrapper');
+        const progressBar = document.getElementById('progress-bar');
+        const lottoNumberEl = document.getElementById('lottery-number');
+        const drawnListEl = document.getElementById('drawn-list');
+        const prizesCountEl = document.getElementById('prizes-count');
+        const confettiContainer = document.getElementById('confetti-container');
+
+        // Broadcast Channel setup
+        const bc = new BroadcastChannel('mmr_sync_test');
+        bc.onmessage = (event) => {
+            const data = event.data;
+            if (data.type === 'STATE_UPDATE') {
+                const cleanPayload = { ...data.payload };
+                delete cleanPayload.slides;
+                updateState(cleanPayload);
+            }
+            if (data.type === 'START_ROLL') {
+                if (data.payload && data.payload.ts) lastFbCmdTs = Math.max(lastFbCmdTs, data.payload.ts);
+                startLotteryRoll(data.payload ? data.payload.prize : null, data.payload ? data.payload.speed : null);
+            }
+            if (data.type === 'STOP_ROLL') {
+                if (data.payload && data.payload.ts) lastFbCmdTs = Math.max(lastFbCmdTs, data.payload.ts);
+                stopLotteryRoll(data.payload ? data.payload.number : null, data.payload ? data.payload.prize : null, data.payload ? data.payload.speed : null);
+            }
+            if (data.type === 'CONFETTI') {
+                triggerConfetti();
+            }
+            if (data.type === 'VOICE_TOGGLE') {
+                localStorage.setItem('mmr_voice_on', data.payload.voiceOn);
+            }
+            if (data.type === 'SLIDE_CMD') {
+                handleSlideCmd(data.payload.cmd);
+            }
+            if (data.type === 'FORCE_SYNC') {
+                fetchAndApplySlides();
+            }
+            if (data.type === 'DEMO_MODE') {
+                showDemoBanner(data.payload);
+            }
+        };
+
+        function showDemoBanner(show) {
+            let banner = document.getElementById('demo-banner');
+            if (show) {
+                if (!banner) {
+                    banner = document.createElement('div');
+                    banner.id = 'demo-banner';
+                    banner.style.position = 'fixed';
+                    banner.style.top = '0';
+                    banner.style.width = '100%';
+                    banner.style.background = 'repeating-linear-gradient(45deg, #ef4444, #ef4444 20px, #f59e0b 20px, #f59e0b 40px)';
+                    banner.style.color = 'white';
+                    banner.style.fontWeight = 'bold';
+                    banner.style.textAlign = 'center';
+                    banner.style.padding = '10px';
+                    banner.style.zIndex = '999999';
+                    banner.style.fontSize = '1.5rem';
+                    banner.innerText = 'DEMO MODE - NOT A REAL DRAW';
+                    document.body.appendChild(banner);
+                }
+                banner.style.display = 'block';
+            } else if (banner) {
+                banner.style.display = 'none';
+            }
+        }
+
+        function handleSlideCmd(cmd) {
+            if (cmd === 'next') nextSlide(true);
+            if (cmd === 'prev') prevSlide(true);
+            if (cmd === 'toggle') toggleSlidePlay(true);
+        }
+
+        function nextSlide(fromRemote) {
+            const slides = document.querySelectorAll('.slide');
+            if (slides.length === 0) return;
+            slides[currentSlideIdx].classList.remove('active');
+            currentSlideIdx = (currentSlideIdx + 1) % slides.length;
+            slides[currentSlideIdx].classList.add('active');
+            playActiveCarousel();
+            const nextDur = parseInt(slides[currentSlideIdx].getAttribute('data-duration')) || 30000;
+            startSlideTimer(nextDur);
+            if (!fromRemote) {
+                bc.postMessage({ type: 'SLIDE_CMD', payload: { cmd: 'next' } });
+                writeFirebase({ slideCmd: { cmd: 'next', ts: Date.now() } });
+            }
+        }
+
+        function prevSlide(fromRemote) {
+            const slides = document.querySelectorAll('.slide');
+            if (slides.length === 0) return;
+            slides[currentSlideIdx].classList.remove('active');
+            currentSlideIdx = (currentSlideIdx - 1 + slides.length) % slides.length;
+            slides[currentSlideIdx].classList.add('active');
+            playActiveCarousel();
+            const nextDur = parseInt(slides[currentSlideIdx].getAttribute('data-duration')) || 30000;
+            startSlideTimer(nextDur);
+            if (!fromRemote) {
+                bc.postMessage({ type: 'SLIDE_CMD', payload: { cmd: 'prev' } });
+                writeFirebase({ slideCmd: { cmd: 'prev', ts: Date.now() } });
+            }
+        }
+
+        function toggleSlidePlay(fromRemote) {
+            isPaused = !isPaused;
+            const btn = document.getElementById('play-pause-btn');
+            if (btn) {
+                btn.innerText = isPaused ? '▶' : '⏸';
+            }
+            const slides = document.querySelectorAll('.slide');
+            if (slides.length === 0) return;
+            const nextDur = parseInt(slides[currentSlideIdx].getAttribute('data-duration')) || 30000;
+            startSlideTimer(nextDur);
+            if (!fromRemote) {
+                bc.postMessage({ type: 'SLIDE_CMD', payload: { cmd: 'toggle' } });
+                writeFirebase({ slideCmd: { cmd: 'toggle', ts: Date.now() } });
+            }
+        }
+
+        let winnersInterval = null;
+        function playActiveCarousel() {
+            clearInterval(winnersInterval);
+            const activeSlide = document.querySelector('.slide.active');
+            if (!activeSlide) return;
+            
+            const carousel = activeSlide.querySelector('.winners-carousel');
+            if (!carousel) return;
+            
+            const imgs = carousel.querySelectorAll('img');
+            if (imgs.length <= 1) {
+                if (imgs.length === 1) imgs[0].classList.add('active');
+                return;
+            }
+            
+            let activeIdx = 0;
+            imgs.forEach((img, i) => {
+                if (i === 0) img.classList.add('active');
+                else img.classList.remove('active');
+            });
+            
+            const slideDur = parseInt(activeSlide.getAttribute('data-duration')) || 30000;
+            const rotateInterval = Math.max(2500, Math.min(5000, slideDur / imgs.length));
+            
+            winnersInterval = setInterval(() => {
+                imgs[activeIdx].classList.remove('active');
+                activeIdx = (activeIdx + 1) % imgs.length;
+                imgs[activeIdx].classList.add('active');
+            }, rotateInterval);
+        }
+
+        let lastRenderedSlidesJson = '';
+        let lastActiveView = '';
+        let postDrawLoopInterval = null;
+
+        function updateState(newState) {
+            if (newState && newState !== state) {
+                const { draw, ...rest } = newState;
+                if (draw) {
+                    state.draw = { ...(state.draw || {}), ...draw };
+                }
+                state = { ...state, ...rest };
+                
+                // CRITICAL FIX: Rescue corrupted localStorage where state.draw was deleted
+                if (!state.draw) {
+                    state.draw = { thursday: {}, sunday: {} };
+                }
+            }
+
+            // Check total configured prizes
+            const activeEvtData = getActiveDrawData(state.draw);
+            const cfgPrizes100 = activeEvtData.cfgPrizes100 !== undefined ? activeEvtData.cfgPrizes100 : (activeEvtData.prizes100 ?? 12);
+            const cfgPrizes50 = activeEvtData.cfgPrizes50 !== undefined ? activeEvtData.cfgPrizes50 : (activeEvtData.prizes50 ?? 20);
+            const cfgPrizes25 = activeEvtData.cfgPrizes25 !== undefined ? activeEvtData.cfgPrizes25 : (activeEvtData.prizes25 ?? 30);
+            const hasPrizes = (cfgPrizes100 + cfgPrizes50 + cfgPrizes25) > 0;
+
+            // Intercept and auto-correct activeView if outside congrats window (only when prizes > 0)
+            if (hasPrizes && (state.activeView === 'congrats' || state.activeView === 'congrats-video')) {
+                const nzDate = getNZDate();
+                const day = nzDate.getDay();
+                const hour = nzDate.getHours();
+                const targetDay = (window.MMR_CONFIG && window.MMR_CONFIG.TARGET_DAY) ?? 4;
+                
+                let shouldTurnOff = false;
+                if (day === targetDay && hour >= 22) {
+                    shouldTurnOff = true;
+                } else if (day !== targetDay) {
+                    shouldTurnOff = true;
+                } else if (day === targetDay && hour < 18) {
+                    shouldTurnOff = true;
+                }
+                
+                if (shouldTurnOff) {
+                    console.log('[MMR] Auto-corrected activeView from congrats to slides.');
+                    state.activeView = 'slides';
+                    isPaused = false;
+                    const btn = document.getElementById('play-pause-btn');
+                    if (btn) btn.innerText = '⏸';
+                    setTimeout(() => {
+                        bc.postMessage({ type: 'STATE_UPDATE', payload: { activeView: 'slides' } });
+                        writeFirebase({ activeView: 'slides' });
+                    }, 0);
+                }
+            }
+            
+            // View switching
+            Object.keys(views).forEach(k => {
+                if (k === state.activeView) views[k].classList.add('active');
+                else views[k].classList.remove('active');
+            });
+
+            // Trigger congrats waving video sequence
+            if (state.activeView === 'congrats-video') {
+                startCongratsWavingSequence();
+            } else {
+                stopCongratsWavingLoop();
+            }
+
+            // Update draw view color category class
+            const drawView = document.getElementById('view-draw');
+            if (drawView) {
+                const activeDrawDataObj = getActiveDrawData(state.draw);
+                const hasDrawn = activeDrawDataObj && activeDrawDataObj.drawnNumbers && activeDrawDataObj.drawnNumbers.length > 0;
+                let curPrize = null;
+                if (slotsRolling) {
+                    curPrize = rollingPrize;
+                } else if (activeDrawDataObj) {
+                    if (hasDrawn || activeDrawDataObj.currentPrize === 'custom') {
+                        curPrize = activeDrawDataObj.currentPrize;
+                    }
+                }
+                setPrizeTheme(curPrize);
+            }
+
+            // Slides rendering (only when data or activeView changes to optimize timer performance)
+            const currentSlidesJson = JSON.stringify(state.slides || []) + '_' + JSON.stringify({
+                t100: cfgPrizes100,
+                t50: cfgPrizes50,
+                t25: cfgPrizes25
+            });
+            if (state.activeView === 'slides' && (state.activeView !== lastActiveView || currentSlidesJson !== lastRenderedSlidesJson)) {
+                renderSlides(state.slides);
+                lastRenderedSlidesJson = currentSlidesJson;
+            }
+            lastActiveView = state.activeView;
+
+            // Active Event State parsing
+            const activeDrawData = getActiveDrawData(state.draw);
+            const isSundayEnabled = !!(state.draw && state.draw.sunday && state.draw.sunday.enabled);
+            let activeEventName = (state.draw && state.draw.activeEvent) || 'thursday';
+            if (activeEventName === 'sunday' && !isSundayEnabled) {
+                activeEventName = 'thursday';
+            }
+            const isSunday = activeEventName === 'sunday' && isSundayEnabled;
+
+            // Compute remaining prizes dynamically from config minus drawn
+            let drawnNumbers = activeDrawData.drawnNumbers || [];
+            if (!Array.isArray(drawnNumbers)) drawnNumbers = Object.values(drawnNumbers);
+            const n100Drawn = drawnNumbers.filter(d => (typeof d === 'object' ? d.prize : 0) == 100).length;
+            const n50Drawn = drawnNumbers.filter(d => (typeof d === 'object' ? d.prize : 0) == 50).length;
+            const n25Drawn = drawnNumbers.filter(d => (typeof d === 'object' ? d.prize : 0) == 25).length;
+            const p100Val = Math.max(0, (activeDrawData.cfgPrizes100 ?? activeDrawData.prizes100 ?? 20) - n100Drawn);
+            const p50Val = Math.max(0, (activeDrawData.cfgPrizes50 ?? activeDrawData.prizes50 ?? 12) - n50Drawn);
+            const p25Val = Math.max(0, (activeDrawData.cfgPrizes25 ?? activeDrawData.prizes25 ?? 16) - n25Drawn);
+            const totalRemaining = p100Val + p50Val + p25Val;
+
+            const ptBar = document.getElementById('prizes-top-bar');
+            if (ptBar) {
+                let html = '';
+                if (p100Val > 0) {
+                    html += `<div class="prize-counter-pill" style="border-color: #ef4444; box-shadow: 0 0 10px rgba(239,68,68,0.4); animation: popIn 0.4s ease-out, pulseRed 2s infinite ease-in-out;">
+                                <span style="color: #ef4444;">$100 Prize</span>
+                                <span class="val">${p100Val}</span>
+                             </div>`;
+                }
+                if (p50Val > 0) {
+                    html += `<div class="prize-counter-pill" style="border-color: #3b82f6; box-shadow: 0 0 10px rgba(59,130,246,0.4); animation: popIn 0.4s ease-out, pulseBlue 2s infinite ease-in-out;">
+                                <span style="color: #3b82f6;">$50 Prize</span>
+                                <span class="val">${p50Val}</span>
+                             </div>`;
+                }
+                if (p25Val > 0) {
+                    html += `<div class="prize-counter-pill" style="border-color: #10b981; box-shadow: 0 0 10px rgba(16,185,129,0.4); animation: popIn 0.4s ease-out, pulseGreen 2s infinite ease-in-out;">
+                                <span style="color: #10b981;">$25 Prize</span>
+                                <span class="val">${p25Val}</span>
+                             </div>`;
+                }
+                if (totalRemaining > 0) {
+                    const alertColor = totalRemaining <= 5 ? '#f43f5e' : '#ffffff';
+                    html += `<div class="prize-counter-pill" style="border-color: ${alertColor}; box-shadow: 0 0 15px ${alertColor}66; margin-left: 2rem;">
+                                <span style="color: ${alertColor};">Total Left</span>
+                                <span class="val" style="color: ${alertColor};">${totalRemaining}</span>
+                             </div>`;
+                } else {
+                    html += `<div class="prize-counter-pill" style="border-color: #ef4444; box-shadow: 0 0 15px rgba(239,68,68,0.6);">
+                                <span style="color: #ef4444;">ALL PRIZES DRAWN</span>
+                             </div>`;
+                }
+                ptBar.innerHTML = html;
+            }
+            
+            // Update countdown slide prize counts if they exist in DOM
+            const c100 = document.getElementById('count-100');
+            const c50 = document.getElementById('count-50');
+            const c25 = document.getElementById('count-25');
+            if (c100) { c100.innerText = p100Val; }
+            if (c50) { c50.innerText = p50Val; }
+            if (c25) { c25.innerText = p25Val; }
+
+            // Render drawn numbers chronologically (first drawn to last drawn) with line connectors
+            let drawn = activeDrawData.drawnNumbers || [];
+            if (!Array.isArray(drawn)) drawn = Object.values(drawn);
+            
+            // If reels are spinning, hide the currently rolling number (drawn[0])
+            let displayDrawn = [...drawn];
+            if (slotsRolling && displayDrawn.length > 0) {
+                displayDrawn.shift();
+            }
+            
+            // Display newest on left
+            const displayOrder = [...displayDrawn];
+            
+            const renderDrawnNumberLine = (entry, i, arr, scale = 1.0) => {
+                const num = typeof entry === 'object' ? entry.number : entry;
+                const prize = typeof entry === 'object' ? entry.prize : 25;
+                const redrawn = typeof entry === 'object' ? entry.redrawn : false;
+                
+                let bg = '#10b981';
+                let glow = 'rgba(16,185,129,0.6)';
+                let prizeLabel = isSunday ? '$' + prize : '$' + prize + ' Pack';
+                if (prize === 100 || prize === '100') {
+                    bg = '#ef4444';
+                    glow = 'rgba(239,68,68,0.6)';
+                    prizeLabel = '$100 Pack';
+                } else if (prize === 50 || prize === '50') {
+                    bg = '#3b82f6';
+                    glow = 'rgba(59,130,246,0.6)';
+                    prizeLabel = '$50 Prize';
+                } else if (prize === 25 || prize === '25') {
+                    bg = '#10b981';
+                    glow = 'rgba(16,185,129,0.6)';
+                    prizeLabel = '$25 Prize';
+                } else if (prize === 'bonus') {
+                    bg = '#ffd700';
+                    glow = 'rgba(255,215,0,0.6)';
+                    prizeLabel = 'BONUS';
+                } else if (prize === 'meat') {
+                    bg = '#f97316';
+                    glow = 'rgba(249,115,22,0.6)';
+                    prizeLabel = 'Meat Tray';
+                } else if (prize === 'voucher') {
+                    bg = '#ffffff';
+                    glow = 'rgba(255,255,255,0.6)';
+                    prizeLabel = 'VOUCHER';
+                }
+                
+                const textColor = (prize === 'voucher' || prize === 'bonus') ? '#000000' : '#ffffff';
+                const isLastDrawn = drawn[0] && (typeof drawn[0] === 'object' ? drawn[0].number : drawn[0]) === num;
+                const extraClass = isLastDrawn && !redrawn ? 'class="last-drawn-glow"' : '';
+                
+                let style = `background: ${bg}; box-shadow: 0 0 15px ${glow}; padding: 0.5rem 1.4rem; border-radius: 0.75rem; color: ${textColor}; font-weight: 800; font-size: ${2.6 * scale}rem; position: relative; z-index: 2; animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.1; min-width: ${5 * scale}rem;`;
+                
+                if (redrawn) {
+                    style += `opacity: 0.4; filter: grayscale(100%); text-decoration: line-through; text-decoration-color: #ff0000; text-decoration-thickness: 3px;`;
+                }
+
+                // Connector line logic between drawn numbers
+                const hasNext = i < arr.length - 1;
+                const lineHtml = hasNext ? `<div style="width: ${2.2 * scale}rem; height: ${4 * scale}px; background: linear-gradient(90deg, ${glow}, rgba(255,255,255,0.6)); align-self: center; z-index: 1; flex-shrink: 0; box-shadow: 0 0 8px ${glow}; border-radius: 2px;"></div>` : '';
+
+                return `
+                    <div style="display: flex; align-items: center; margin-bottom: 0.8rem;">
+                        <div ${extraClass} style="${style}">
+                            <span>${sanitize(String(num))}</span>
+                            <span style="font-size: ${0.8 * scale}rem; font-weight: 600; opacity: 0.85; text-transform: uppercase;">${prizeLabel}</span>
+                        </div>
+                        ${lineHtml}
+                    </div>`;
+            };
+
+            const horizontalList = document.getElementById('drawn-horizontal-list');
+            if (horizontalList) {
+                let dynamicScale = 1.0;
+                if (displayOrder.length > 35) dynamicScale = 0.65;
+                else if (displayOrder.length > 25) dynamicScale = 0.75;
+                else if (displayOrder.length > 15) dynamicScale = 0.85;
+                
+                horizontalList.innerHTML = displayOrder.map((e, i, a) => renderDrawnNumberLine(e, i, a, dynamicScale)).join('');
+            }
+            
+            // Populate winning numbers view exactly the same, but bigger
+            const winningList = document.getElementById('winning-horizontal-list');
+            if (winningList) {
+                let winScale = 1.3;
+                if (displayOrder.length > 35) winScale = 0.8;
+                else if (displayOrder.length > 25) winScale = 0.95;
+                else if (displayOrder.length > 15) winScale = 1.1;
+                
+                winningList.innerHTML = displayOrder.map((e, i, a) => renderDrawnNumberLine(e, i, a, winScale)).join('');
+            }
+
+            // Update Robs Advert
+            const robsPrizes = document.getElementById('robs-prizes-list');
+            if (robsPrizes && state.draw && state.draw.sunday) {
+                let p = [];
+                let totalPrizes = 0;
+                let totalValue = 0;
+                
+                if (state.draw.sunday.cfgPrizes100 > 0) { p.push(`<div>${state.draw.sunday.cfgPrizes100}x $100 Packs</div>`); totalPrizes += state.draw.sunday.cfgPrizes100; totalValue += state.draw.sunday.cfgPrizes100 * 100; }
+                if (state.draw.sunday.cfgPrizes50 > 0) { p.push(`<div>${state.draw.sunday.cfgPrizes50}x $50 Prizes</div>`); totalPrizes += state.draw.sunday.cfgPrizes50; totalValue += state.draw.sunday.cfgPrizes50 * 50; }
+                if (state.draw.sunday.cfgPrizes25 > 0) { p.push(`<div>${state.draw.sunday.cfgPrizes25}x $25 Prizes</div>`); totalPrizes += state.draw.sunday.cfgPrizes25; totalValue += state.draw.sunday.cfgPrizes25 * 25; }
+                
+                p.push(`<div style="margin-top: 1rem; color: #fff; font-size: 0.8em;">TOTAL PRIZES: ${totalPrizes}</div>`);
+                p.push(`<div style="margin-top: 0.5rem; color: #10b981; font-size: 1.2em; text-shadow: 0 0 20px rgba(16,185,129,0.6);">TOTAL PRIZE POOL: $${totalValue.toLocaleString()}</div>`);
+                
+                robsPrizes.innerHTML = p.join('');
+            }
+
+            // Render last drawn number in slots if not currently rolling
+            const slotsContainer = document.querySelector('.slot-container');
+            if (slotsContainer && (!window.rollInterval || slotsContainer.querySelectorAll('.slot-strip').length === 0)) {
+                const activeEvtData = getActiveDrawData(state.draw);
+                const curNum = activeEvtData.currentNumber || state.draw.currentNumber || '-';
+                const curPrize = activeEvtData.currentPrize || state.draw.currentPrize;
+                const titleEl = document.getElementById('draw-view-title');
+                if (titleEl) {
+                    if (curPrize === 'bonus') {
+                        titleEl.innerText = "BONUS PRIZE DRAW";
+                        titleEl.style.color = "#ffd700";
+                    } else if (curPrize === 'voucher') {
+                        titleEl.innerText = "CLUB VOUCHER DRAW";
+                        titleEl.style.color = "#ffffff";
+                    } else if (curPrize === 100 || curPrize === '100') {
+                        titleEl.innerText = "WINNING $100 PACK";
+                        titleEl.style.color = "#ef4444";
+                    } else if (curPrize === 50 || curPrize === '50') {
+                        titleEl.innerText = "WINNING $50 PRIZE";
+                        titleEl.style.color = "#3b82f6";
+                    } else if (curPrize === 25 || curPrize === '25') {
+                        titleEl.innerText = "WINNING $25 PRIZE";
+                        titleEl.style.color = "#10b981";
+                    } else if (curPrize === 'custom') {
+                        titleEl.innerText = "WINNING NUMBER";
+                        titleEl.style.color = "#fbbf24";
+                    } else {
+                        titleEl.innerText = "Winning Number";
+                        titleEl.style.color = "white";
+                    }
+                }
+                
+                const maxTickets = window.MMR_CONFIG ? window.MMR_CONFIG.DEFAULT_TICKET_MAX : 999;
+                const digitsCount = String(maxTickets).length;
+
+                let html = '';
+                const displayStr = (curNum === '-') ? '-'.repeat(digitsCount) : String(curNum).padStart(digitsCount, '0');
+                for (let i = 0; i < displayStr.length; i++) {
+                    const isDash = displayStr[i] === '-';
+                    const cssClass = isDash ? 'slot-digit' : 'slot-digit locked';
+                    const content = isDash ? '<img src="logo-new.png" style="height: 0.8em; vertical-align: middle; filter: drop-shadow(0 2px 5px rgba(0,0,0,0.5));">' : displayStr[i];
+                    html += `<span class="${cssClass}">${content}</span>`;
+                }
+                slotsContainer.innerHTML = html;
+            }
+
+            // Persist to localStorage (excluding slides)
+            const stateToSave = { ...state };
+            delete stateToSave.slides;
+            localStorage.setItem('mmr_state_v5', JSON.stringify(stateToSave));
+        }
+
+        // Live Clock logic for dynamic values
+        function calculateTimeRemainingHTML() {
+            if (!state.nextDrawTime) return '<span>Starting Soon!</span>';
+            const target = new Date(state.nextDrawTime); 
+            const nzNow = getNZDate();
+            
+            const diff = target.getTime() - nzNow.getTime();
+            
+            // If the draw time was more than 2 hours ago, it's definitely over. 
+            // Auto-advance the state to the next Thursday.
+            if (diff < -(2 * 60 * 60 * 1000)) {
+                state.nextDrawTime = getNextThursday7PM();
+                localStorage.setItem('mmr_state_v5', JSON.stringify(state));
+                return '<span>Calculating next draw...</span>';
+            }
+
+            if (diff <= 0) return '<span class="meat-time-active">GET READY... IT\'S ... MEAT O\'CLOCK!</span>';
+            
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hrs = Math.floor((diff / (1000 * 60 * 60)) % 24);
+            const m = Math.floor((diff / 1000 / 60) % 60);
+            const s = Math.floor((diff / 1000) % 60);
+            
+            const c = '<span class="colon-flash">:</span>';
+            
+            const daysDiv = `<div>${String(days).padStart(2,'0')}<small>DAYS</small></div>`;
+            const hrsDiv = `<div>${String(hrs).padStart(2,'0')}<small>HOURS</small></div>`;
+            const minDiv = `<div>${String(m).padStart(2,'0')}<small>MINUTES</small></div>`;
+            const secDiv = `<div>${String(s).padStart(2,'0')}<small>SECONDS</small></div>`;
+
+            if (days > 0) return `${daysDiv}${c}${hrsDiv}${c}${minDiv}${c}${secDiv}`;
+            return `${hrsDiv}${c}${minDiv}${c}${secDiv}`;
+        }
+
+        let hasTriggeredCountdownFireworks = false;
+
+        setInterval(() => {
+            const nzNow = getNZDate();
+            const target = state.nextDrawTime ? new Date(state.nextDrawTime) : null;
+            const diff = target ? target.getTime() - nzNow.getTime() : 0;
+
+            const timeHtml = calculateTimeRemainingHTML();
+            const dynamicCounters = document.querySelectorAll('.slide-countdown-timer');
+            dynamicCounters.forEach(el => {
+                el.innerHTML = timeHtml;
+                // Add heartbeat pulse in the last minute
+                if (diff > 0 && diff <= 60 * 1000) {
+                    el.classList.add('last-minute');
+                } else {
+                    el.classList.remove('last-minute');
+                }
+            });
+
+            // Toggle cinematic mode on body during the last 10 minutes
+            if (diff > 0 && diff <= 10 * 60 * 1000) {
+                document.body.classList.add('cinematic-mode');
+            } else {
+                document.body.classList.remove('cinematic-mode');
+            }
+
+            // Trigger fireworks when countdown reaches 0 seconds
+            if (diff <= 0 && diff > -(2 * 60 * 60 * 1000)) {
+                if (!hasTriggeredCountdownFireworks) {
+                    triggerFireworks();
+                    hasTriggeredCountdownFireworks = true;
+                }
+            } else {
+                hasTriggeredCountdownFireworks = false;
+            }
+
+            // Removed congrats timeline transition to video per request
+            if (state.activeView !== 'congrats-video') {
+                congratsStartTime = null;
+            }
+
+            if (state.activeView === 'congrats' || state.activeView === 'winning-numbers' || state.activeView === 'view-robs-advert') {
+                if (!postDrawLoopInterval) {
+                    let steps = ['congrats'];
+                    const activeEvent = (state.draw && state.draw.activeEvent) ? state.draw.activeEvent : 'thursday';
+                    const activeDrawData = (state.draw && state.draw[activeEvent]) ? state.draw[activeEvent] : {};
+                    if (!activeDrawData.manualDraw) {
+                        steps.push('winning-numbers');
+                    }
+                    
+                    let currentStepIdx = steps.indexOf(state.activeView) !== -1 ? steps.indexOf(state.activeView) : 0;
+                    
+                    postDrawLoopInterval = setInterval(() => {
+                        currentStepIdx = (currentStepIdx + 1) % steps.length;
+                        const nextView = steps[currentStepIdx];
+                        bc.postMessage({ type: 'STATE_UPDATE', payload: { activeView: nextView } });
+                        writeFirebase({ activeView: nextView });
+                    }, 10000); // Switch every 10 seconds
+                }
+            } else {
+                if (typeof postDrawLoopInterval !== 'undefined' && postDrawLoopInterval) {
+                    clearInterval(postDrawLoopInterval);
+                    postDrawLoopInterval = null;
+                }
+            }
+
+            // Turn off congrats screen and resume slides if outside allowed time window
+            if (state.activeView === 'congrats') {
+                const nzDate = getNZDate();
+                const day = nzDate.getDay();
+                const hour = nzDate.getHours();
+                const targetDay = (window.MMR_CONFIG && window.MMR_CONFIG.TARGET_DAY) ?? 4;
+                
+                let shouldTurnOff = false;
+                if (day === targetDay && hour >= 22) {
+                    shouldTurnOff = true;
+                } else if (day !== targetDay) {
+                    shouldTurnOff = true;
+                } else if (day === targetDay && hour < 18) {
+                    shouldTurnOff = true;
+                }
+                
+                if (shouldTurnOff) {
+                    isPaused = false;
+                    const btn = document.getElementById('play-pause-btn');
+                    if (btn) btn.innerText = '⏸';
+                    updateState({ activeView: 'slides' });
+                    bc.postMessage({ type: 'STATE_UPDATE', payload: { activeView: 'slides' } });
+                    writeFirebase({ activeView: 'slides' });
+                }
+            }
+        }, 1000);
+
+        // Slide logic
+        let slideInterval;
+        let progressInterval;
+
+        function renderSlides(slidesData) {
+            slidesData = slidesData || [];
+            const disabledList = state.disabledSlides || [];
+            const visibleSlides = slidesData.filter(s => !disabledList.includes(s.title) && s.type !== 'avatar');
+            
+            const activeEvtData = getActiveDrawData(state.draw);
+            const t100 = Number(activeEvtData.cfgPrizes100 ?? activeEvtData.prizes100 ?? 12);
+            const t50 = Number(activeEvtData.cfgPrizes50 ?? activeEvtData.prizes50 ?? 20);
+            const t25 = Number(activeEvtData.cfgPrizes25 ?? activeEvtData.prizes25 ?? 30);
+            const totalPrizes = t100 + t50 + t25;
+            const totalPool = (t100 * 100) + (t50 * 50) + (t25 * 25);
+            
+            const isSundayEnabled = !!(state.draw && state.draw.sunday && state.draw.sunday.enabled);
+            let activeEvtName = (state.draw && state.draw.activeEvent) || 'thursday';
+            if (activeEvtName === 'sunday' && !isSundayEnabled) {
+                activeEvtName = 'thursday';
+            }
+            const isSunday = activeEvtName === 'sunday' && isSundayEnabled;
+            const targetDay = isSunday ? 0 : 4; // 0 = Sunday, 4 = Thursday
+            const dayNameUpper = isSunday ? 'SUNDAYS' : 'THURSDAYS';
+            const dayNameCap = isSunday ? "Sunday's" : "Thursday's";
+            const defaultSaleTime = isSunday ? "1:00PM" : "5:30PM";
+            const defaultDrawTime = isSunday ? "2:30PM" : "7:00PM";
+
+            const nzDate = getNZDate();
+            const day = nzDate.getDay();
+            const hour = nzDate.getHours();
+
+            const activeEvt = (state.draw && state.draw[activeEvtName]) || {};
+            const isDrawFinished = activeEvt.prizesLeft === 0 && (activeEvt.drawnNumbers || []).length > 0;
+            const isAfter8PM = hour >= 20;
+
+            let isTonight = (day === targetDay) && !isAfter8PM && !isDrawFinished;
+
+            const ticketsWording = isTonight ? `TONIGHT FROM ${defaultSaleTime}` : (day === (targetDay - 1 + 7) % 7) ? `TOMORROW FROM ${defaultSaleTime}` : `${dayNameUpper} FROM ${defaultSaleTime}`;
+            const drawWording = isTonight ? `TONIGHT AT ${defaultDrawTime}` : (day === (targetDay - 1 + 7) % 7) ? `TOMORROW AT ${defaultDrawTime}` : `${dayNameUpper} AT ${defaultDrawTime}`;
+            const poolWording = isTonight ? "tonight's" : (day === (targetDay - 1 + 7) % 7) ? "tomorrow's" : dayNameCap;
+
+            const advertSlides = [];
+            if (t100 > 0) {
+                advertSlides.push({
+                    title: `${t100} x $100`,
+                    subtitle: "🥩 Premium Assorted Meat Trays to be won!! 🥩",
+                    type: "advert",
+                    advertType: "p100",
+                    duration: 30000
+                });
+            }
+            if (t50 > 0) {
+                advertSlides.push({
+                    title: `${t50} x $50 TRAYS`,
+                    subtitle: "🍗 Premium Assorted Meat Trays to be won!! 🍗",
+                    type: "advert",
+                    advertType: "p50",
+                    duration: 30000
+                });
+            }
+            if (t25 > 0) {
+                advertSlides.push({
+                    title: `${t25} x $25 TRAYS`,
+                    subtitle: "🥓 Premium Assorted Meat Trays to be won!! 🥓",
+                    type: "advert",
+                    advertType: "p25",
+                    duration: 30000
+                });
+            }
+            if (totalPrizes > 0) {
+                advertSlides.push({
+                    title: `TOTAL PRIZES: ${totalPrizes}`,
+                    subtitle: "🍖 Premium Assorted Meat Trays must be won!! 🍖",
+                    type: "advert",
+                    advertType: "total",
+                    duration: 30000
+                });
+                advertSlides.push({
+                    title: `TOTAL PRIZE POOL: $${totalPool.toLocaleString('en-NZ', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+                    subtitle: `🔥 in ${poolWording} Monster Meat Raffle Draw! 🔥`,
+                    type: "advert",
+                    advertType: "pool",
+                    duration: 30000
+                });
+            }
+            advertSlides.push({
+                title: `TICKETS ON SALE`,
+                subtitle: `🎟️ ${ticketsWording} 🎟️`,
+                type: "advert",
+                advertType: "tickets",
+                duration: 30000
+            });
+            advertSlides.push({
+                title: `MONSTER MEAT RAFFLE`,
+                subtitle: `🔥 DRAW STARTS ${drawWording} 🔥`,
+                type: "advert",
+                advertType: "draw_time",
+                duration: 30000
+            });
+
+            const finalSlides = [...visibleSlides, ...advertSlides];
+
+            if (finalSlides.length === 0) return;
+
+            // Render ALL slides to DOM first
+            slidesWrapper.innerHTML = finalSlides.map((slide, i) => {
+                if (slide.type === 'advert') {
+                    let style = '';
+                    let badge = '';
+                    if (slide.advertType === 'p100') {
+                        style = `background: radial-gradient(circle at center, #78350f 0%, #030712 100%); --badge-glow: rgba(245, 158, 11, 0.6); --title-glow: rgba(245, 158, 11, 0.4);`;
+                        badge = '🥩';
+                    } else if (slide.advertType === 'p50') {
+                        style = `background: radial-gradient(circle at center, #1e3a8a 0%, #030712 100%); --badge-glow: rgba(59, 130, 246, 0.6); --title-glow: rgba(59, 130, 246, 0.4);`;
+                        badge = '🍗';
+                    } else if (slide.advertType === 'p25') {
+                        style = `background: radial-gradient(circle at center, #064e3b 0%, #030712 100%); --badge-glow: rgba(16, 185, 129, 0.6); --title-glow: rgba(16, 185, 129, 0.4);`;
+                        badge = '🥓';
+                    } else if (slide.advertType === 'total') {
+                        style = `background: radial-gradient(circle at center, #7c2d12 0%, #020617 100%); --badge-glow: rgba(239, 68, 68, 0.6); --title-glow: rgba(239, 68, 68, 0.4);`;
+                        badge = '🍖';
+                    } else if (slide.advertType === 'pool') {
+                        style = `background: radial-gradient(circle at center, #4c1d95 0%, #020617 100%); --badge-glow: rgba(168, 85, 247, 0.6); --title-glow: rgba(168, 85, 247, 0.4);`;
+                        badge = '💰';
+                    } else if (slide.advertType === 'tickets') {
+                        style = `background: radial-gradient(circle at center, #1e1b4b 0%, #030712 100%); --badge-glow: rgba(99, 102, 241, 0.6); --title-glow: rgba(99, 102, 241, 0.4);`;
+                        badge = '🎟️';
+                    } else if (slide.advertType === 'draw_time') {
+                        style = `background: radial-gradient(circle at center, #451a03 0%, #030712 100%); --badge-glow: rgba(249, 115, 22, 0.6); --title-glow: rgba(249, 115, 22, 0.4);`;
+                        badge = `
+                            <div class="custom-clock">
+                                <div class="clock-face">
+                                    <div class="clock-hand clock-hour"></div>
+                                    <div class="clock-hand clock-minute"></div>
+                                    <div class="clock-center"></div>
+                                </div>
+                            </div>
+                        `;
+                    }
+                    
+                    return `
+                        <div class="slide slide-advert ${i === currentSlideIdx ? 'active' : ''}" style="${style}" data-duration="${slide.duration}">
+                            <div class="slide-image-overlay"></div>
+                            <div class="advert-badge-container">${badge}</div>
+                            <h1 class="advert-title">${sanitize(slide.title).replace(/ x /gi, ' <span style="text-transform: none;">x</span> ')}</h1>
+                            <h2 class="advert-subtitle">${sanitize(slide.subtitle)}</h2>
+                        </div>
+                    `;
+                }
+
+                const timeHtml = slide.type === 'countdown' ? calculateTimeRemainingHTML() : '';
+                
+                // Use BackgroundImage if available, otherwise fallback to imageUrl
+                const bgImg = safeUrl((slide.type !== 'avatar' && slide.backgroundImage) || slide.imageUrl);
+                const overlayImg = safeUrl(slide.overlayImage);
+                const avatarImg = safeUrl(slide.avatarImage || (slide.type === 'avatar' && slide.backgroundImage) || slide.imageUrl); // For avatar type
+                
+                const bgStyle = bgImg ? `background-image: url('${bgImg}'); background-size: cover; background-position: center;` : '';
+                
+                return `
+                    <div class="slide ${i === currentSlideIdx ? 'active' : ''}" style="${bgStyle}" data-duration="${slide.duration}">
+                        ${bgImg ? '<div class="slide-image-overlay"></div>' : ''}
+                        
+                        ${overlayImg ? `<div class="slide-overlay-img-container" style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; z-index: 1;">
+                            <img src="${overlayImg}" style="max-width: 80%; max-height: 80%; object-fit: contain;">
+                        </div>` : ''}
+
+                        ${slide.title ? `<h1 style="position: relative; z-index: 2;">${sanitize(slide.title).replace(/\n/g, '<br>')}</h1>` : ''}
+                        ${slide.subtitle ? `<h2 class="slide-subtitle" style="position: relative; z-index: 2;">${sanitize(slide.subtitle).replace(/\n/g, '<br>')}</h2>` : ''}
+                        
+                        ${slide.type === 'countdown' 
+                            ? `<div class="slide-countdown slide-countdown-timer" style="position: relative; z-index: 2;">${timeHtml}</div>
+                               <div class="countdown-prizes-summary" style="position: relative; z-index: 2; margin-top: 3.5rem; display: flex; gap: clamp(1.5rem, 4vw, 5.5rem); justify-content: center; font-size: clamp(1.6rem, 3.8vw, 3.8rem); font-weight: bold; background: rgba(0,0,0,0.85); padding: 1.5rem clamp(1.5rem, 4vw, 4rem); border-radius: 2rem; border: 2px solid rgba(255,255,255,0.2); box-shadow: 0 15px 35px rgba(0,0,0,0.6), 0 0 25px rgba(255,255,255,0.05); max-width: 90%; margin-left: auto; margin-right: auto; box-sizing: border-box;">
+                                 <span style="color: #ef4444; text-shadow: 0 0 15px rgba(239, 68, 68, 0.85), 0 0 30px rgba(239, 68, 68, 0.45);"><span id="count-100">${activeEvtData.prizes100 ?? activeEvtData.cfgPrizes100 ?? 20}</span> x $100</span>
+                                 <span style="color: #3b82f6; text-shadow: 0 0 15px rgba(59, 130, 246, 0.85), 0 0 30px rgba(59, 130, 246, 0.45);"><span id="count-50">${activeEvtData.prizes50 ?? activeEvtData.cfgPrizes50 ?? 12}</span> x $50</span>
+                                 <span style="color: #10b981; text-shadow: 0 0 15px rgba(16, 185, 129, 0.85), 0 0 30px rgba(16, 185, 129, 0.45);"><span id="count-25">${activeEvtData.prizes25 ?? activeEvtData.cfgPrizes25 ?? 16}</span> x $25</span>
+                               </div>` 
+                            : ''
+                        }
+                        
+                        ${slide.type === 'avatar' 
+                            ? `<div class="avatar-container" style="position: relative; z-index: 5;">
+                                 ${(String(slide.bubbleText || '').trim() || String(slide.subtitle || '').trim()) 
+                                    ? `<div class="speech-bubble">${sanitize(slide.bubbleText || slide.subtitle).replace(/\n/g, '<br>')}</div>` 
+                                    : ''}
+                                 <img src="${avatarImg || (window.MMR_CONFIG && window.MMR_CONFIG.AVATAR_FALLBACK) || 'avatar.png'}" class="animated-avatar" alt="Character Avatar">
+                               </div>` 
+                            : ''
+                        }
+
+                        ${slide.type === 'winners' 
+                            ? `<div class="winners-carousel" style="position: relative; z-index: 3; width: 100%; height: 400px; display: flex; justify-content: center; align-items: center;">
+                                 ${(slide.winnerPhotos || '').split(',').map(url => url.trim()).filter(url => url).map((url, idx) => `
+                                    <img src="${safeUrl(url)}" style="border-radius: 2rem; border: 8px solid var(--primary); box-shadow: 0 0 50px var(--primary-glow);">
+                                 `).join('')}
+                               </div>` 
+                            : ''
+                        }
+                    </div>
+                `;
+            }).join('');
+
+            // Safety boundary check
+            if (currentSlideIdx >= finalSlides.length) currentSlideIdx = 0;
+
+            startSlideTimer(finalSlides[currentSlideIdx].duration);
+            playActiveCarousel();
+        }
+
+        function startSlideTimer(duration) {
+            clearInterval(slideInterval);
+            clearInterval(progressInterval);
+            
+            let start = Date.now();
+            progressBar.style.width = '0%';
+            
+            progressInterval = setInterval(() => {
+                if (isPaused) return;
+                let elapsed = Date.now() - start;
+                let percent = (elapsed / duration) * 100;
+                progressBar.style.width = Math.min(percent, 100) + '%';
+            }, 50);
+
+            if (isPaused) return;
+
+            slideInterval = setInterval(() => {
+                if (isPaused) return;
+                const slides = document.querySelectorAll('.slide');
+                if(slides.length === 0) return;
+                
+                slides[currentSlideIdx].classList.remove('active');
+                currentSlideIdx = (currentSlideIdx + 1) % slides.length;
+                slides[currentSlideIdx].classList.add('active');
+                
+                const nextDur = parseInt(slides[currentSlideIdx].getAttribute('data-duration')) || 30000;
+                startSlideTimer(nextDur);
+            }, duration);
+        }
+
+        // Draw Speed Helper
+        function getDrawSpeedConfig() {
+            let lsSpeed = 1;
+            try { lsSpeed = localStorage.getItem('mmr_draw_speed') || 1; } catch(e) {}
+            const val = parseInt((state.draw && state.draw.drawSpeed) || lsSpeed);
+            if (val === 3) {
+                return { mode: 3, name: 'Faster', rollDuration: 600, slotInterval: 15, digitBaseDelay: 150, digitStepDelay: 120 };
+            } else if (val === 2) {
+                return { mode: 2, name: 'Fast', rollDuration: 1500, slotInterval: 30, digitBaseDelay: 400, digitStepDelay: 300 };
+            } else {
+                return { mode: 1, name: 'Normal', rollDuration: 3000, slotInterval: 50, digitBaseDelay: 800, digitStepDelay: 600 };
+            }
+        }
+
+        // Draw Logic
+        let rollInterval;
+        let lockTimeouts = [];
+        
+        function setPrizeTheme(prizeType) {
+            const drawView = document.getElementById('view-draw');
+            if (!drawView) return;
+            drawView.classList.remove('prize-100', 'prize-50', 'prize-25', 'prize-bonus', 'prize-voucher', 'prize-custom');
+            if (!prizeType) return; // Clean dark neutral background with no color accent when null/start
+            const pKey = String(prizeType);
+            if (pKey === '100') drawView.classList.add('prize-100');
+            else if (pKey === '50') drawView.classList.add('prize-50');
+            else if (pKey === '25') drawView.classList.add('prize-25');
+            else if (pKey === 'bonus') drawView.classList.add('prize-bonus');
+            else if (pKey === 'voucher') drawView.classList.add('prize-voucher');
+            else if (pKey === 'custom') drawView.classList.add('prize-custom');
+        }
+
+        // Slot Machine Audio Context
+        let audioCtx = null;
+        function playSlotTick() {
+            if (!state || !state.soundEnabled) return;
+            try {
+                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+                
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(400, audioCtx.currentTime + 0.05);
+                
+                gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.05);
+                
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.05);
+            } catch (e) {
+                console.error('Audio play failed', e);
+            }
+        }
+
+        function startLotteryRoll(prizeType, speedParam) {
+            const speed = speedParam || getDrawSpeedConfig();
+            slotsRolling = true;
+            rollingPrize = prizeType;
+            setPrizeTheme(prizeType);
+            updateState(state); // Force re-render to hide the new number from list
+            
+            if (window.rollInterval) {
+                clearInterval(window.rollInterval);
+            }
+            if (window.lockTimeouts) {
+                window.lockTimeouts.forEach(t => clearTimeout(t));
+            }
+            window.lockTimeouts = [];
+            
+            const titleEl = document.getElementById('draw-view-title');
+            if (titleEl) {
+                const pKey = String(prizeType || '');
+                if (pKey === '100') {
+                    titleEl.innerText = "DRAWING $100 PACK";
+                    titleEl.style.color = "#ef4444";
+                } else if (pKey === '50') {
+                    titleEl.innerText = "DRAWING $50 PRIZE";
+                    titleEl.style.color = "#60a5fa";
+                } else if (pKey === '25') {
+                    titleEl.innerText = "DRAWING $25 PRIZE";
+                    titleEl.style.color = "#34d399";
+                } else if (pKey === 'bonus') {
+                    titleEl.innerText = "BONUS PRIZE DRAW";
+                    titleEl.style.color = "#ffd700";
+                } else if (pKey === 'custom') {
+                    titleEl.innerText = "DRAWING NUMBER";
+                    titleEl.style.color = "#fbbf24";
+                } else if (pKey === 'voucher') {
+                    titleEl.innerText = "CLUB VOUCHER DRAW";
+                    titleEl.style.color = "#ffffff";
+                } else {
+                    titleEl.innerText = "Winning Number";
+                    titleEl.style.color = "white";
+                }
+            }
+            
+            document.getElementById('view-draw').classList.add('draw-flash-bg');
+            
+            // Dynamic slot digits layout based on config
+            const maxTickets = window.MMR_CONFIG ? window.MMR_CONFIG.DEFAULT_TICKET_MAX : 999;
+            const digitsCount = String(maxTickets).length;
+            
+            const container = document.querySelector('.slot-container');
+            if (container) {
+                let html = '';
+                for (let i = 0; i < digitsCount; i++) {
+                    html += `
+                    <span class="slot-digit">
+                        <div class="slot-strip" id="slot-strip-${i}">
+                            ${Array(80).fill(0).map((_, j) => `<span class="slot-strip-num">${j % 10}</span>`).join('')}
+                        </div>
+                    </span>`;
+                }
+                container.innerHTML = html;
+                
+                // Start the initial spin animation by translating far down slowly
+                setTimeout(() => {
+                    for (let i = 0; i < digitsCount; i++) {
+                        const strip = document.getElementById(`slot-strip-${i}`);
+                        if (strip) {
+                            strip.style.transition = 'transform 10s cubic-bezier(0.2, 0, 1, 1)';
+                            // Move to around the 70th item
+                            strip.style.transform = `translateY(-${70 * 20}vmin)`;
+                        }
+                    }
+                }, 50);
+            }
+            
+            // Failsafe: if STOP_ROLL never arrives, auto-stop after 10s
+            if (window._rollFailsafe) clearTimeout(window._rollFailsafe);
+            window._rollFailsafe = setTimeout(() => {
+                if (slotsRolling) {
+                    console.warn('[Failsafe] STOP_ROLL not received! Auto-stopping draw to prevent infinite loop.');
+                    stopLotteryRoll('0'.repeat(digitsCount), prizeType, speed);
+                }
+            }, 10000);
+
+            // Tick sound loop
+            window.rollInterval = setInterval(() => {
+                playSlotTick();
+            }, 100);
+        }
+
+        function stopLotteryRoll(finalNumber, prizeType, speedParam) {
+            const speed = speedParam || getDrawSpeedConfig();
+            
+            if (window.rollInterval) {
+                clearInterval(window.rollInterval);
+            }
+            if (window.lockTimeouts) {
+                window.lockTimeouts.forEach(t => clearTimeout(t));
+            }
+            window.lockTimeouts = [];
+            
+            const maxTickets = window.MMR_CONFIG ? window.MMR_CONFIG.DEFAULT_TICKET_MAX : 999;
+            const digitsCount = String(maxTickets).length;
+            const numStr = String(finalNumber).padStart(digitsCount, '0');
+            
+            const slots = Array.from(document.querySelectorAll('.slot-digit'));
+            if (slots.length === 0) return;
+            
+            slots.forEach((slot, index) => {
+                const strip = slot.querySelector('.slot-strip');
+                if (!strip) return;
+                
+                const targetDigit = parseInt(numStr[index]);
+                // We want to land around the 50th item (so there's enough space to scroll without hitting the end)
+                const targetIndex = 50 + targetDigit;
+                
+                const delay = (speed.digitBaseDelay || 800) + index * (speed.digitStepDelay || 600);
+                
+                // Update transition to ease-out bounce to the target
+                const t1 = setTimeout(() => {
+                    strip.style.transition = 'transform 1.5s cubic-bezier(0.175, 0.885, 0.32, 1.1)';
+                    strip.style.transform = `translateY(-${targetIndex * 20}vmin)`;
+                    playSlotTick(); // Final click sound
+                    
+                    slot.classList.add('locked');
+                    
+                    if (index === slots.length - 1) {
+                        slotsRolling = false;
+                        rollingPrize = null;
+                        updateState(state);
+                        
+                        setPrizeTheme(prizeType); // Force correct color for winner flash
+
+                        const drawView = document.getElementById('view-draw');
+                        drawView.classList.remove('draw-flash-bg');
+                        drawView.classList.add('winner-flash-bg');
+                        setTimeout(() => {
+                            drawView.classList.remove('winner-flash-bg');
+                            // Re-apply state prize theme after flash to ensure consistency
+                            updateState(state);
+                        }, 2500);
+                        
+                        triggerConfetti();
+                        
+                        const cfg = window.MMR_CONFIG;
+                        const voiceOn = localStorage.getItem('mmr_voice_on') === 'true';
+                        if ('speechSynthesis' in window && voiceOn) {
+                            window.speechSynthesis.cancel();
+                            let label = "Ticket number ";
+                            if (prizeType === 'bonus') {
+                                label = "Bonus prize, ticket number ";
+                            }
+                            const msg = new SpeechSynthesisUtterance(label + finalNumber + "!");
+                            msg.volume = 1;
+                            msg.rate = (cfg && cfg.VOICE_RATE) || 0.9;
+                            msg.pitch = (cfg && cfg.VOICE_PITCH) || 0.8;
+                            setTimeout(() => window.speechSynthesis.speak(msg), 400);
+                        }
+                    }
+                }, delay);
+                window.lockTimeouts.push(t1);
+            });
+        }
+
+        // Confetti Logic
+        function triggerConfetti() {
+            confettiContainer.innerHTML = '';
+            const symbols = ['🥩', '🥓', '🍗', '🍖', 'LOGO'];
+            for (let i = 0; i < 60; i++) {
+                const symbol = symbols[Math.floor(Math.random() * symbols.length)];
+                const el = document.createElement('div');
+                el.style.position = 'absolute';
+                el.style.top = '-100px';
+                el.style.left = Math.random() * 100 + '%';
+                el.style.fontSize = '3rem';
+                el.style.filter = 'drop-shadow(0 5px 15px rgba(0,0,0,0.5))';
+                el.style.zIndex = Math.random() > 0.5 ? 60 : 40;
+                
+                if (symbol === 'LOGO') {
+                    const img = document.createElement('img');
+                    img.src = 'logo-new.png';
+                    img.style.width = '4rem';
+                    img.style.height = 'auto';
+                    el.appendChild(img);
+                } else {
+                    el.innerText = symbol;
+                }
+
+                // Animation
+                const duration = Math.random() * 3 + 2;
+                const delay = Math.random() * 2;
+                el.style.transition = `transform ${duration}s linear, opacity ${duration}s ease-in`;
+                
+                confettiContainer.appendChild(el);
+                
+                setTimeout(() => {
+                    el.style.transform = `translateY(120vh) rotate(${Math.random() * 360}deg)`;
+                    el.style.opacity = '0';
+                }, delay * 1000 + 50);
+
+                setTimeout(() => el.remove(), (duration + delay) * 1000 + 100);
+            }
+        }
+
+        // Fireworks Logic for countdown completion
+        function triggerFireworks() {
+            const container = document.getElementById('confetti-container');
+            if (!container) return;
+            container.innerHTML = '';
+            
+            // Spawn 8 separate fireworks over 6 seconds
+            for (let f = 0; f < 8; f++) {
+                setTimeout(() => {
+                    const centerX = 15 + Math.random() * 70; // 15% to 85% width
+                    const centerY = 20 + Math.random() * 50; // 20% to 70% height
+                    const colors = ['#ef4444', '#f59e0b', '#3b82f6', '#10b981', '#a855f7', '#ec4899', '#ffffff'];
+                    const fireworkColor = colors[Math.floor(Math.random() * colors.length)];
+                    const particles = 24;
+                    
+                    for (let i = 0; i < particles; i++) {
+                        const el = document.createElement('div');
+                        el.style.position = 'absolute';
+                        el.style.left = centerX + '%';
+                        el.style.top = centerY + 'vh';
+                        el.style.width = '12px';
+                        el.style.height = '12px';
+                        el.style.borderRadius = '50%';
+                        el.style.background = fireworkColor;
+                        el.style.boxShadow = `0 0 10px ${fireworkColor}, 0 0 20px ${fireworkColor}`;
+                        el.style.zIndex = '9999';
+                        el.style.transition = 'transform 1.8s cubic-bezier(0.1, 0.8, 0.3, 1), opacity 1.8s ease-out';
+                        
+                        // Add some meat emojis as special particles!
+                        if (i % 4 === 0) {
+                            el.innerText = ['🥩', '🥓', '🍗', '🍖'][Math.floor(Math.random() * 4)];
+                            el.style.background = 'none';
+                            el.style.boxShadow = 'none';
+                            el.style.fontSize = '2.5rem';
+                            el.style.lineHeight = '1';
+                        }
+                        
+                        container.appendChild(el);
+                        
+                        // Calculate explosion trajectory angle and distance
+                        const angle = (i / particles) * 2 * Math.PI + (Math.random() * 0.2 - 0.1);
+                        const distance = 120 + Math.random() * 180; // pixels
+                        const destX = Math.cos(angle) * distance;
+                        const destY = Math.sin(angle) * distance;
+                        
+                        // Trigger CSS animation frame
+                        setTimeout(() => {
+                            el.style.transform = `translate(${destX}px, ${destY}px) scale(0.5)`;
+                            el.style.opacity = '0';
+                        }, 50);
+                        
+                        // Clean up element
+                        setTimeout(() => el.remove(), 2000);
+                    }
+                }, f * 750);
+            }
+        }
+
+        // Ambient Slide Confetti
+        const ambientContainer = document.getElementById('ambient-confetti-container');
+        function spawnAmbientConfetti() {
+            if (state.activeView !== 'slides') return;
+            const symbols = ['🥩', '🥓', '🍗', '🍖', 'LOGO'];
+            const symbol = symbols[Math.floor(Math.random() * symbols.length)];
+            const el = document.createElement('div');
+            el.className = 'ambient-confetti';
+            el.style.top = '-80px';
+            el.style.left = Math.random() * 100 + '%';
+            el.style.fontSize = (Math.random() * 1 + 2.5) + 'rem'; // Narrower range: 2.5-3.5rem for consistency
+            el.style.filter = 'drop-shadow(0 5px 15px rgba(0,0,0,0.3))';
+            el.style.opacity = (Math.random() * 0.15 + 0.35).toFixed(2); // Tighter range: 0.35-0.50 for uniformity
+            
+            if (symbol === 'LOGO') {
+                const img = document.createElement('img');
+                img.src = 'logo-new.png';
+                img.style.width = '3rem';
+                img.style.height = 'auto';
+                img.style.opacity = '0.7';
+                el.appendChild(img);
+            } else {
+                el.innerText = symbol;
+            }
+
+            const duration = Math.random() * 3 + 12; // Tighter range: 12-15s for steadier fall
+            const rotation = Math.random() * 180 + 90; // 90-270deg rotation
+            const drift = (Math.random() - 0.5) * 100; // Horizontal drift for natural feel
+            el.style.transition = `transform ${duration}s linear`;
+            ambientContainer.appendChild(el);
+            
+            setTimeout(() => {
+                el.style.transform = `translateY(115vh) translateX(${drift}px) rotate(${rotation}deg)`;
+            }, 50);
+
+            setTimeout(() => el.remove(), duration * 1000 + 100);
+        }
+        setInterval(spawnAmbientConfetti, 500); // Steadier spawn rate for even distribution
+
+        // Initialization and Google Sheets Sync
+        function parseSlidesCSV(text) {
+            const result = [];
+            let row = [];
+            let col = '';
+            let inQuotes = false;
+
+            for (let i = 0; i < text.length; i++) {
+                const char = text[i];
+                const nextChar = text[i + 1];
+
+                if (inQuotes) {
+                    if (char === '"' && nextChar === '"') { col += '"'; i++; }
+                    else if (char === '"') { inQuotes = false; }
+                    else { col += char; }
+                } else {
+                    if (char === '"') { inQuotes = true; }
+                    else if (char === ',') { row.push(col.trim()); col = ''; }
+                    else if (char === '\n' || (char === '\r' && nextChar === '\n')) {
+                        if (char === '\r') i++;
+                        row.push(col.trim());
+                        result.push(row);
+                        row = []; col = '';
+                    } else { col += char; }
+                }
+            }
+            if (col || row.length > 0) { row.push(col.trim()); result.push(row); }
+
+            if (result.length < 2) return [];
+
+            const header = result[0].map(h => h.toLowerCase().trim());
+            const idxTitle = header.indexOf('title');
+            const idxSubtitle = header.indexOf('subtitle');
+            const idxType = header.indexOf('type');
+            const idxDuration = header.indexOf('duration');
+            
+            let idxBg = header.indexOf('backgroundimage');
+            if (idxBg === -1) idxBg = header.indexOf('backgroundimg');
+            
+            let idxOverlay = header.indexOf('overlayimage');
+            if (idxOverlay === -1) idxOverlay = header.indexOf('overlayimg');
+            
+            let idxAvatar = header.indexOf('avatarimage');
+            if (idxAvatar === -1) idxAvatar = header.indexOf('avatar');
+            if (idxAvatar === -1) idxAvatar = header.indexOf('avatarimg');
+
+            const idxBubble = header.indexOf('bubbletext');
+            const idxWinnerPhotos = header.indexOf('winnerphotos');
+
+            return result.slice(1).map(clean => {
+                const type = (idxType !== -1 ? clean[idxType] : 'normal').toLowerCase();
+                const title = idxTitle !== -1 ? clean[idxTitle] : '';
+                const subtitle = idxSubtitle !== -1 ? clean[idxSubtitle] : '';
+                const durationVal = idxDuration !== -1 ? parseInt(clean[idxDuration]) : 30000;
+                const bgImage = idxBg !== -1 ? clean[idxBg] : '';
+                const overlayImage = idxOverlay !== -1 ? clean[idxOverlay] : '';
+                const avatarImage = idxAvatar !== -1 ? clean[idxAvatar] : '';
+                const bubbleText = idxBubble !== -1 ? clean[idxBubble] : '';
+                const winnerPhotos = idxWinnerPhotos !== -1 ? clean[idxWinnerPhotos] : '';
+
+                if (!title && !subtitle && !bubbleText && !winnerPhotos && !bgImage && !overlayImage && !avatarImage && type !== 'countdown' && type !== 'avatar') return null;
+
+                const ruthlessString = [title, subtitle, type, bubbleText].join(' ').toLowerCase();
+                if (ruthlessString.includes('tbc') || ruthlessString.includes('tba') || 
+                    ruthlessString.includes('to be confirmed') || ruthlessString.includes('to be announced')) {
+                    return null;
+                }
+
+                return {
+                    title: title || '',
+                    subtitle: subtitle || '',
+                    type: type || 'normal',
+                    duration: durationVal || 30000,
+                    backgroundImage: bgImage || '',
+                    overlayImage: overlayImage || '',
+                    avatarImage: avatarImage || '',
+                    bubbleText: bubbleText || '',
+                    winnerPhotos: winnerPhotos || ''
+                };
+            }).filter(s => s !== null);
+        }
+
+        const DEFAULT_SLIDES_URL = (window.MMR_CONFIG && window.MMR_CONFIG.GSHEETS_URL) || '';
+
+        async function fetchAndApplySlides() {
+            const slidesUrl = DEFAULT_SLIDES_URL;
+            console.log('[MMR] Fetching slides from:', slidesUrl || 'local-backup.csv');
+            let success = false;
+            let csv = '';
+
+            if (slidesUrl) {
+                try {
+                    const res = await fetch(slidesUrl + (slidesUrl.includes('?') ? '&' : '?') + 't=' + Date.now(), { cache: 'no-store' });
+                    if (res.ok) {
+                        csv = await res.text();
+                        success = true;
+                    }
+                } catch (e) {
+                    console.warn('[MMR] Google Sheets fetch failed, falling back to local-backup.csv:', e);
+                }
+            }
+
+            if (!success) {
+                try {
+                    const res = await fetch('local-backup.csv?t=' + Date.now(), { cache: 'no-store' });
+                    if (res.ok) {
+                        csv = await res.text();
+                        success = true;
+                        console.log('[MMR] Loaded slides from local-backup.csv');
+                    }
+                } catch (e) {
+                    console.error('[MMR] Failed to load local-backup.csv via fetch:', e);
+                }
+            }
+
+            if (success && csv) {
+                let slides = parseSlidesCSV(csv);
+                if (window.MMR_CONFIG && Array.isArray(window.MMR_CONFIG.LOCAL_WINNERS_SLIDES)) {
+                    slides = [...slides, ...window.MMR_CONFIG.LOCAL_WINNERS_SLIDES];
+                }
+
+                if (slides.length > 0) {
+                    console.log('[MMR] Slides synced OK — ' + slides.length + ' slides loaded.');
+                    updateState({ slides: slides });
+                } else {
+                    console.warn('[MMR] Slides parse returned 0 rows — keeping current slides.');
+                }
+            }
+        }
+
+        async function init() {
+            // Apply Config Visuals
+            const cfg = window.MMR_CONFIG;
+            if (cfg) {
+                const root = document.documentElement;
+                if (cfg.COLORS.primary) root.style.setProperty('--cfg-primary', cfg.COLORS.primary);
+                if (cfg.COLORS.primaryGlow) root.style.setProperty('--cfg-primary-glow', cfg.COLORS.primaryGlow);
+                if (cfg.COLORS.bgDark) root.style.setProperty('--cfg-bg-dark', cfg.COLORS.bgDark);
+                if (cfg.COLORS.bgGrad) root.style.setProperty('--cfg-bg-grad', cfg.COLORS.bgGrad);
+                if (cfg.COLORS.textLight) root.style.setProperty('--cfg-text-light', cfg.COLORS.textLight);
+                if (cfg.PROGRESS_BAR_HEIGHT) root.style.setProperty('--cfg-progress-bar-height', cfg.PROGRESS_BAR_HEIGHT);
+                
+                const fixedTitle = document.getElementById('fixed-title-main');
+                if (fixedTitle) {
+                    fixedTitle.innerHTML = `${cfg.EVENT_NAME}<br><span style="font-size: 0.6em;">${cfg.EVENT_SUBTITLE}</span>`;
+                }
+                
+                const logo = document.getElementById('logo');
+                if (logo && cfg.LOGO_PATH) logo.src = cfg.LOGO_PATH;
+            }
+
+            // 1. Show stored state immediately
+            const storedState = localStorage.getItem('mmr_state_v5');
+            if (storedState) {
+                try { 
+                    const parsed = JSON.parse(storedState);
+                    // Force-clear slides from storage to ensure fresh fetch from CSV
+                    delete parsed.slides; 
+                    if (parsed.nextDrawTime && new Date(parsed.nextDrawTime).getTime() < getNZDate().getTime()) {
+                        parsed.nextDrawTime = getNextThursday7PM();
+                    }
+                    updateState(parsed); 
+                } catch(e){}
+            } else {
+                updateState({}); // Trigger re-render without mutating global state object destructively
+            }
+
+            // 2. Then immediately pull fresh slides from Sheets
+            await fetchAndApplySlides();
+
+            // 3. Re-sync every 5 minutes so slides stay current without a page reload
+            setInterval(fetchAndApplySlides, 5 * 60 * 1000);
+        }
+
+        init();
+
+        // ── Screen Wake Lock (Keep Screen On) ──────────────────────────────
+        let wakeLock = null;
+        async function requestWakeLock() {
+            try {
+                if ('wakeLock' in navigator) {
+                    wakeLock = await navigator.wakeLock.request('screen');
+                    console.log('[MMR] Screen Wake Lock acquired.');
+                    wakeLock.addEventListener('release', () => {
+                        console.log('[MMR] Screen Wake Lock released.');
+                    });
+                }
+            } catch (err) {
+                console.warn('[MMR] Screen Wake Lock request failed:', err);
+            }
+        }
+        
+        document.addEventListener('visibilitychange', async () => {
+            if (wakeLock !== null && document.visibilityState === 'visible') {
+                await requestWakeLock();
+            }
+        });
+        
+        requestWakeLock();
+
+        // ── Firebase cross-device sync (optional) ──────────────────────────
+        let fbDbUrl = (window.MMR_CONFIG && window.MMR_CONFIG.FIREBASE_DB_URL) || '';
+        let lastFbCmdTs = 0;
+        let isInitialFbLoad = true;
+
+        function initFirebase() {
+            return; // Disabled for test draw page
+            try {
+                if (!fbDbUrl) return;
+                listenFirebaseState();
+                console.log('[MMR] Firebase RTDB connected:', fbDbUrl);
+            } catch(e) { console.error('[MMR] Firebase init error:', e); }
+        }
+
+        function writeFirebase(data) {
+            if (!fbDbUrl) return;
+            fetch(`${fbDbUrl}/mmr.json`, {
+                method: 'PATCH',
+                body: JSON.stringify(data),
+                headers: { 'Content-Type': 'application/json' },
+                cache: 'no-store'
+            }).catch(e => console.warn('[MMR] Firebase write error:', e));
+        }
+
+        function listenFirebaseState() {
+            const es = new EventSource(`${fbDbUrl}/mmr.json`);
+            es.addEventListener('put', handleFbEvent);
+            es.addEventListener('patch', handleFbEvent);
+            es.onerror = () => { es.close(); setTimeout(listenFirebaseState, 5000); };
+        }
+
+        function handleFbEvent(e) {
+            try {
+                const eventData = JSON.parse(e.data);
+                const path = eventData.path || '/';
+                const rawData = eventData.data;
+                if (rawData === undefined || rawData === null) return;
+
+                if (path === '/voiceOn' || (path === '/' && rawData.voiceOn !== undefined)) {
+                    const voiceVal = path === '/voiceOn' ? rawData : rawData.voiceOn;
+                    localStorage.setItem('mmr_voice_on', voiceVal);
+                }
+
+                const slideCmdObj = path === '/slideCmd' ? rawData : (rawData && rawData.slideCmd);
+                if (slideCmdObj && slideCmdObj.ts > (state.lastSlideCmdTs || 0)) {
+                    state.lastSlideCmdTs = slideCmdObj.ts;
+                    handleSlideCmd(slideCmdObj.cmd);
+                }
+
+                const cmdObj = path === '/cmd' ? rawData : (rawData && rawData.cmd);
+                if (cmdObj && cmdObj.ts > lastFbCmdTs) {
+                    lastFbCmdTs = cmdObj.ts;
+                    if (!isInitialFbLoad) {
+                        if (cmdObj.type === 'START_ROLL') startLotteryRoll(cmdObj.prize, cmdObj.speed);
+                        else if (cmdObj.type === 'STOP_ROLL') stopLotteryRoll(cmdObj.number, cmdObj.prize, cmdObj.speed);
+                        else if (cmdObj.type === 'CONFETTI') triggerConfetti();
+                        else if (cmdObj.type === 'FORCE_SYNC') fetchAndApplySlides();
+                    }
+                }
+                
+                isInitialFbLoad = false;
+
+                if (path === '/') {
+                    const { cmd, slideCmd, voiceOn, ...stateData } = rawData;
+                    if (stateData.slides) delete stateData.slides;
+                    if (Object.keys(stateData).length) updateState(stateData);
+                } else if (path === '/activeView') {
+                    updateState({ activeView: rawData });
+                } else if (path.startsWith('/draw')) {
+                    if (path === '/draw') updateState({ draw: rawData });
+                    else {
+                        const key = path.replace('/draw/', '');
+                        updateState({ draw: { [key]: rawData } });
+                    }
+                }
+            } catch(err) {
+                console.error('[MMR] Firebase event processing error:', err);
+            }
+        }
+
+        var wavingLoopInterval = null;
+        var sequenceTimeout = null;
+        var wavingActive = false;
+
+        function startCongratsWavingSequence() {
+            if (wavingActive) return;
+            wavingActive = true;
+            
+            // Show video container
+            const containerView = document.getElementById('view-congrats-video');
+            if (containerView) containerView.classList.add('active');
+            
+            // Reset darkness overlay
+            const overlay = document.getElementById('darkness-overlay');
+            if (overlay) overlay.style.opacity = '0';
+            
+            // Loop between dark waving frames (250ms rate)
+            const img1 = document.getElementById('waving-frame-1');
+            const img2 = document.getElementById('waving-frame-2');
+            if (img1 && img2) {
+                let frameToggle = true;
+                clearInterval(wavingLoopInterval);
+                wavingLoopInterval = setInterval(() => {
+                    if (frameToggle) {
+                        img1.style.display = 'none';
+                        img2.style.display = 'block';
+                    } else {
+                        img2.style.display = 'none';
+                        img1.style.display = 'block';
+                    }
+                    frameToggle = !frameToggle;
+                }, 250);
+            }
+            
+            // Start dialogue and joke sequence
+            runWavingDialogSequence();
+        }
+
+        function stopCongratsWavingLoop() {
+            wavingActive = false;
+            clearInterval(wavingLoopInterval);
+            wavingLoopInterval = null;
+            clearTimeout(sequenceTimeout);
+            const overlay = document.getElementById('darkness-overlay');
+            if (overlay) overlay.style.opacity = '0';
+            const male = document.getElementById('avatar-bubble-male');
+            const female = document.getElementById('avatar-bubble-female');
+            if (male) male.style.display = 'none';
+            if (female) female.style.display = 'none';
+            const videoView = document.getElementById('view-congrats-video');
+            if (videoView) videoView.classList.remove('active');
+        }
+
+        function runWavingDialogSequence() {
+            const bubbleMale = document.getElementById('avatar-bubble-male');
+            const bubbleFemale = document.getElementById('avatar-bubble-female');
+            if (!bubbleMale || !bubbleFemale) return;
+            
+            const sequence = [
+                { speaker: 'both', text: 'Thank You, Everyone!', duration: 3000 },
+                { speaker: 'both', text: 'Nice to meat you!', duration: 3000 },
+                { speaker: 'both', text: 'Cheerio!', duration: 3000 },
+                { speaker: 'both', text: 'Saveloy', duration: 3000 },
+                { speaker: 'both', text: 'Good Gravy!', duration: 3000 },
+                { speaker: 'both', text: 'Meat-lovers!', duration: 3000 },
+                { speaker: 'both', text: 'Lettuce meat next Thursday!?!?', duration: 3500 },
+                // Joke starts
+                { speaker: 'male', text: 'Why did the steak blush?', duration: 4000 },
+                { speaker: 'female', text: "Don't know... Why?", duration: 3000 },
+                { speaker: 'male', text: 'It saw the Salad Undressing!!!', duration: 4500 },
+                { speaker: 'female', text: 'Oh, Well Done Robert! Well-Done!', duration: 4000 },
+                { speaker: 'female', text: "You're really bacon them laugh!", duration: 4000 },
+                // Fade to black
+                { speaker: 'fade', text: '', duration: 5000 }
+            ];
+            
+            let currentIdx = 0;
+            
+            function showNext() {
+                if (!wavingActive) return;
+                if (currentIdx >= sequence.length) return;
+                
+                const step = sequence[currentIdx];
+                
+                // Clear bubbles
+                bubbleMale.style.display = 'none';
+                bubbleFemale.style.display = 'none';
+                
+                if (step.speaker === 'both') {
+                    bubbleMale.innerText = step.text;
+                    bubbleFemale.innerText = step.text;
+                    bubbleMale.style.display = 'block';
+                    bubbleFemale.style.display = 'block';
+                } else if (step.speaker === 'male') {
+                    bubbleMale.innerText = step.text;
+                    bubbleMale.style.display = 'block';
+                } else if (step.speaker === 'female') {
+                    bubbleFemale.innerText = step.text;
+                    bubbleFemale.style.display = 'block';
+                } else if (step.speaker === 'fade') {
+                    const overlay = document.getElementById('darkness-overlay');
+                    if (overlay) overlay.style.opacity = '1';
+                }
+                
+                currentIdx++;
+                sequenceTimeout = setTimeout(showNext, step.duration);
+            }
+            
+            showNext();
+        }
+
+        initFirebase();
+
+        // Generate QR codes for TV display
+        function generateTVQRCodes() {
+            let baseUrl = window.location.href.split('?')[0].split('#')[0];
+            baseUrl = baseUrl.substring(0, baseUrl.lastIndexOf('/'));
+            const verifyUrl = encodeURIComponent(baseUrl + '/verify.html');
+            const archiveUrl = encodeURIComponent(baseUrl + '/archive.html');
+            
+            const verifyImg = document.getElementById('tv-qr-verify');
+            if (verifyImg) verifyImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&format=png&color=0f172a&bgcolor=ffffff&data=${verifyUrl}`;
+            
+            const archiveImg = document.getElementById('tv-qr-archive');
+            if (archiveImg) archiveImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&format=png&color=0f172a&bgcolor=ffffff&data=${archiveUrl}`;
+        }
+        window.addEventListener('DOMContentLoaded', generateTVQRCodes);
+
+
+
+
+
+
+    </script>
+
+<div style="position:fixed;bottom:10px;right:10px;z-index:9999;background:white;padding:10px;border-radius:10px;"><button onclick="switchView('view-draw')">Show Draw Page</button> <button onclick="startLotteryRoll('prizes25', 2)">Start Roll</button> <button onclick="stopLotteryRoll(1234, 'prizes25', 2)">Stop Roll (1234)</button></div></body>
+</html>
