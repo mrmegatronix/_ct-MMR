@@ -422,7 +422,7 @@
             --spotlight-bg-high: rgba(255, 255, 255, 0.2);
             background: radial-gradient(circle at center, rgba(255, 255, 255, 0.35) 0%, rgba(2,6,23,0.95) 75%, #020617 100%) !important;
         }
-        #view-draw.prize-custom {
+        #view-draw.prize-generic {
             --primary: #fbbf24;
             --primary-glow: rgba(251, 191, 36, 0.45);
             --spotlight-color-low: rgba(251, 191, 36, 0.3);
@@ -1315,7 +1315,7 @@
                 if (slotsRolling) {
                     curPrize = rollingPrize;
                 } else if (activeDrawDataObj) {
-                    if (hasDrawn || activeDrawDataObj.currentPrize === 'custom') {
+                    if (hasDrawn || activeDrawDataObj.currentPrize === 'generic') {
                         curPrize = activeDrawDataObj.currentPrize;
                     }
                 }
@@ -1323,10 +1323,18 @@
             }
 
             // Slides rendering (only when data or activeView changes to optimize timer performance)
+            const nzDateCache = getNZDate();
+            const activeDrawDataObjForCache = getActiveDrawData(state.draw);
+            const drawnNumbersCount = activeDrawDataObjForCache && activeDrawDataObjForCache.drawnNumbers ? activeDrawDataObjForCache.drawnNumbers.length : 0;
+            const prizesLeft = activeDrawDataObjForCache ? activeDrawDataObjForCache.prizesLeft : null;
             const currentSlidesJson = JSON.stringify(state.slides || []) + '_' + JSON.stringify({
                 t100: cfgPrizes100,
                 t50: cfgPrizes50,
-                t25: cfgPrizes25
+                t25: cfgPrizes25,
+                day: nzDateCache.getDay(),
+                hour: nzDateCache.getHours(),
+                drawnCount: drawnNumbersCount,
+                prizesLeft: prizesLeft
             });
             if (state.activeView === 'slides' && (state.activeView !== lastActiveView || currentSlidesJson !== lastRenderedSlidesJson)) {
                 renderSlides(state.slides);
@@ -1357,34 +1365,48 @@
             const ptBar = document.getElementById('prizes-top-bar');
             if (ptBar) {
                 let html = '';
-                if (p100Val > 0) {
-                    html += `<div class="prize-counter-pill" style="border-color: #ef4444; box-shadow: 0 0 10px rgba(239,68,68,0.4); animation: popIn 0.4s ease-out, pulseRed 2s infinite ease-in-out;">
-                                <span style="color: #ef4444;">$100 Prize</span>
-                                <span class="val">${p100Val}</span>
-                             </div>`;
-                }
-                if (p50Val > 0) {
-                    html += `<div class="prize-counter-pill" style="border-color: #3b82f6; box-shadow: 0 0 10px rgba(59,130,246,0.4); animation: popIn 0.4s ease-out, pulseBlue 2s infinite ease-in-out;">
-                                <span style="color: #3b82f6;">$50 Prize</span>
-                                <span class="val">${p50Val}</span>
-                             </div>`;
-                }
-                if (p25Val > 0) {
-                    html += `<div class="prize-counter-pill" style="border-color: #10b981; box-shadow: 0 0 10px rgba(16,185,129,0.4); animation: popIn 0.4s ease-out, pulseGreen 2s infinite ease-in-out;">
-                                <span style="color: #10b981;">$25 Prize</span>
-                                <span class="val">${p25Val}</span>
-                             </div>`;
-                }
-                if (totalRemaining > 0) {
-                    const alertColor = totalRemaining <= 5 ? '#f43f5e' : '#ffffff';
-                    html += `<div class="prize-counter-pill" style="border-color: ${alertColor}; box-shadow: 0 0 15px ${alertColor}66; margin-left: 2rem;">
-                                <span style="color: ${alertColor};">Total Left</span>
-                                <span class="val" style="color: ${alertColor};">${totalRemaining}</span>
-                             </div>`;
-                } else {
-                    html += `<div class="prize-counter-pill" style="border-color: #ef4444; box-shadow: 0 0 15px rgba(239,68,68,0.6);">
-                                <span style="color: #ef4444;">ALL PRIZES DRAWN</span>
-                             </div>`;
+                const drawType = activeDrawData.type || 'full';
+                const isGenericDrawBtn = activeDrawData.currentPrize === 'generic';
+                
+                if (drawType === 'generic' || isGenericDrawBtn) {
+                    const gen = (state.draw && state.draw.generic) || {};
+                    if (gen.showRemaining === 'yes') {
+                        const genLeft = gen.prizesLeft !== undefined ? gen.prizesLeft : (gen.cfgPrizes || 0);
+                        html += `<div class="prize-counter-pill" style="border-color: #f59e0b; box-shadow: 0 0 10px rgba(245,158,11,0.4); animation: popIn 0.4s ease-out, pillPulse 2s infinite ease-in-out;">
+                                    <span style="color: #f59e0b;">Generic Prizes Left</span>
+                                    <span class="val">${genLeft}</span>
+                                 </div>`;
+                    }
+                } else if (drawType === 'full') {
+                    if (p100Val > 0) {
+                        html += `<div class="prize-counter-pill" style="border-color: #ef4444; box-shadow: 0 0 10px rgba(239,68,68,0.4); animation: popIn 0.4s ease-out, pulseRed 2s infinite ease-in-out;">
+                                    <span style="color: #ef4444;">$100 Prize</span>
+                                    <span class="val">${p100Val}</span>
+                                 </div>`;
+                    }
+                    if (p50Val > 0) {
+                        html += `<div class="prize-counter-pill" style="border-color: #3b82f6; box-shadow: 0 0 10px rgba(59,130,246,0.4); animation: popIn 0.4s ease-out, pulseBlue 2s infinite ease-in-out;">
+                                    <span style="color: #3b82f6;">$50 Prize</span>
+                                    <span class="val">${p50Val}</span>
+                                 </div>`;
+                    }
+                    if (p25Val > 0) {
+                        html += `<div class="prize-counter-pill" style="border-color: #10b981; box-shadow: 0 0 10px rgba(16,185,129,0.4); animation: popIn 0.4s ease-out, pulseGreen 2s infinite ease-in-out;">
+                                    <span style="color: #10b981;">$25 Prize</span>
+                                    <span class="val">${p25Val}</span>
+                                 </div>`;
+                    }
+                    if (totalRemaining > 0) {
+                        const alertColor = totalRemaining <= 5 ? '#f43f5e' : '#ffffff';
+                        html += `<div class="prize-counter-pill" style="border-color: ${alertColor}; box-shadow: 0 0 15px ${alertColor}66; margin-left: 2rem;">
+                                    <span style="color: ${alertColor};">Total Left</span>
+                                    <span class="val" style="color: ${alertColor};">${totalRemaining}</span>
+                                 </div>`;
+                    } else {
+                        html += `<div class="prize-counter-pill" style="border-color: #ef4444; box-shadow: 0 0 15px rgba(239,68,68,0.6);">
+                                    <span style="color: #ef4444;">ALL PRIZES DRAWN</span>
+                                 </div>`;
+                    }
                 }
                 ptBar.innerHTML = html;
             }
@@ -1499,6 +1521,11 @@
                 if (state.draw.sunday.cfgPrizes100 > 0) { p.push(`<div>${state.draw.sunday.cfgPrizes100}x $100 Packs</div>`); totalPrizes += state.draw.sunday.cfgPrizes100; totalValue += state.draw.sunday.cfgPrizes100 * 100; }
                 if (state.draw.sunday.cfgPrizes50 > 0) { p.push(`<div>${state.draw.sunday.cfgPrizes50}x $50 Prizes</div>`); totalPrizes += state.draw.sunday.cfgPrizes50; totalValue += state.draw.sunday.cfgPrizes50 * 50; }
                 if (state.draw.sunday.cfgPrizes25 > 0) { p.push(`<div>${state.draw.sunday.cfgPrizes25}x $25 Prizes</div>`); totalPrizes += state.draw.sunday.cfgPrizes25; totalValue += state.draw.sunday.cfgPrizes25 * 25; }
+                if (state.draw.sunday.cfgVouchersCount > 0) {
+                    p.push(`<div>${state.draw.sunday.cfgVouchersCount}x Vouchers</div>`);
+                    totalPrizes += state.draw.sunday.cfgVouchersCount;
+                    totalValue += (state.draw.sunday.cfgVouchersValue || 0);
+                }
                 
                 p.push(`<div style="margin-top: 1rem; color: #fff; font-size: 0.8em;">TOTAL PRIZES: ${totalPrizes}</div>`);
                 p.push(`<div style="margin-top: 0.5rem; color: #10b981; font-size: 1.2em; text-shadow: 0 0 20px rgba(16,185,129,0.6);">TOTAL PRIZE POOL: $${totalValue.toLocaleString()}</div>`);
@@ -1510,7 +1537,12 @@
             const slotsContainer = document.querySelector('.slot-container');
             if (slotsContainer && (!window.rollInterval || slotsContainer.querySelectorAll('.slot-strip').length === 0)) {
                 const activeEvtData = getActiveDrawData(state.draw);
-                const curNum = activeEvtData.currentNumber || state.draw.currentNumber || '-';
+                let curNum = '-';
+                if (activeEvtData.currentNumber !== undefined && activeEvtData.currentNumber !== null) {
+                    curNum = activeEvtData.currentNumber;
+                } else if (state.draw.currentNumber !== undefined && state.draw.currentNumber !== null) {
+                    curNum = state.draw.currentNumber;
+                }
                 const curPrize = activeEvtData.currentPrize || state.draw.currentPrize;
                 const titleEl = document.getElementById('draw-view-title');
                 if (titleEl) {
@@ -1518,7 +1550,7 @@
                         titleEl.innerText = "BONUS PRIZE DRAW";
                         titleEl.style.color = "#ffd700";
                     } else if (curPrize === 'voucher') {
-                        titleEl.innerText = "CLUB VOUCHER DRAW";
+                        titleEl.innerText = "VOUCHER DRAW";
                         titleEl.style.color = "#ffffff";
                     } else if (curPrize === 100 || curPrize === '100') {
                         titleEl.innerText = "WINNING $100 PACK";
@@ -1529,7 +1561,7 @@
                     } else if (curPrize === 25 || curPrize === '25') {
                         titleEl.innerText = "WINNING $25 PRIZE";
                         titleEl.style.color = "#10b981";
-                    } else if (curPrize === 'custom') {
+                    } else if (curPrize === 'generic') {
                         titleEl.innerText = "WINNING NUMBER";
                         titleEl.style.color = "#fbbf24";
                     } else {
@@ -1543,13 +1575,16 @@
 
                 let html = '';
                 const displayStr = (curNum === '-') ? '-'.repeat(digitsCount) : String(curNum).padStart(digitsCount, '0');
-                for (let i = 0; i < displayStr.length; i++) {
-                    const isDash = displayStr[i] === '-';
-                    const cssClass = isDash ? 'slot-digit' : 'slot-digit locked';
-                    const content = isDash ? '<img src="logo-new.png" style="height: 0.8em; vertical-align: middle; filter: drop-shadow(0 2px 5px rgba(0,0,0,0.5));">' : displayStr[i];
-                    html += `<span class="${cssClass}">${content}</span>`;
+                if (slotsContainer.dataset.lastRendered !== displayStr) {
+                    for (let i = 0; i < displayStr.length; i++) {
+                        const isDash = displayStr[i] === '-';
+                        const cssClass = isDash ? 'slot-digit' : 'slot-digit locked';
+                        const content = isDash ? '<img src="logo-new.png" style="height: 0.8em; vertical-align: middle; filter: drop-shadow(0 2px 5px rgba(0,0,0,0.5));">' : displayStr[i];
+                        html += `<span class="${cssClass}">${content}</span>`;
+                    }
+                    slotsContainer.innerHTML = html;
+                    slotsContainer.dataset.lastRendered = displayStr;
                 }
-                slotsContainer.innerHTML = html;
             }
 
             // Persist to localStorage (excluding slides)
@@ -1698,8 +1733,6 @@
             const t100 = Number(activeEvtData.cfgPrizes100 ?? activeEvtData.prizes100 ?? 12);
             const t50 = Number(activeEvtData.cfgPrizes50 ?? activeEvtData.prizes50 ?? 20);
             const t25 = Number(activeEvtData.cfgPrizes25 ?? activeEvtData.prizes25 ?? 30);
-            const totalPrizes = t100 + t50 + t25;
-            const totalPool = (t100 * 100) + (t50 * 50) + (t25 * 25);
             
             const isSundayEnabled = !!(state.draw && state.draw.sunday && state.draw.sunday.enabled);
             let activeEvtName = (state.draw && state.draw.activeEvent) || 'thursday';
@@ -1721,6 +1754,20 @@
             const isDrawFinished = activeEvt.prizesLeft === 0 && (activeEvt.drawnNumbers || []).length > 0;
             const isAfter8PM = hour >= 20;
 
+            const vCount = Number(activeEvtData.cfgVouchersCount ?? 0);
+            const vValue = Number(activeEvtData.cfgVouchersValue ?? 0);
+            const totalPrizes = t100 + t50 + t25 + vCount;
+            const totalPool = (t100 * 100) + (t50 * 50) + (t25 * 25) + vValue;
+
+            const isTBC = isDrawFinished || (t100 === 0 && t50 === 0 && t25 === 0);
+
+            const t100Str = isTBC ? "T.B.C." : String(t100);
+            const t50Str = isTBC ? "T.B.C." : String(t50);
+            const t25Str = isTBC ? "T.B.C." : String(t25);
+            const vCountStr = isTBC ? "T.B.C." : String(vCount);
+            const totalPrizesStr = isTBC ? "T.B.C." : String(totalPrizes);
+            const totalPoolStr = isTBC ? "T.B.C." : "$" + totalPool.toLocaleString('en-NZ', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
             let isTonight = (day === targetDay) && !isAfter8PM && !isDrawFinished;
 
             const ticketsWording = isTonight ? `TONIGHT FROM ${defaultSaleTime}` : (day === (targetDay - 1 + 7) % 7) ? `TOMORROW FROM ${defaultSaleTime}` : `${dayNameUpper} FROM ${defaultSaleTime}`;
@@ -1728,63 +1775,57 @@
             const poolWording = isTonight ? "tonight's" : (day === (targetDay - 1 + 7) % 7) ? "tomorrow's" : dayNameCap;
 
             const advertSlides = [];
-            if (t100 > 0) {
-                advertSlides.push({
-                    title: `${t100} x $100`,
-                    subtitle: "🥩 Premium Assorted Meat Trays to be won!! 🥩",
-                    type: "advert",
-                    advertType: "p100",
-                    duration: 30000
-                });
+            
+            // Only show advert slides if it's a full draw AND not TBC
+            const drawType = activeEvt.type || 'full';
+            if (drawType === 'full' && !isTBC) {
+                if (t100 > 0) {
+                    advertSlides.push({
+                        title: `${t100Str} x $100`,
+                        subtitle: "🥩 Premium Assorted Meat Trays to be won!! 🥩",
+                        type: "advert",
+                        advertType: "p100",
+                        duration: 30000
+                    });
+                }
+                if (t50 > 0) {
+                    advertSlides.push({
+                        title: `${t50Str} x $50 TRAYS`,
+                        subtitle: "🍗 Premium Assorted Meat Trays to be won!! 🍗",
+                        type: "advert",
+                        advertType: "p50",
+                        duration: 30000
+                    });
+                }
+                if (t25 > 0) {
+                    advertSlides.push({
+                        title: `${t25Str} x $25 TRAYS`,
+                        subtitle: "🥓 Premium Assorted Meat Trays to be won!! 🥓",
+                        type: "advert",
+                        advertType: "p25",
+                        duration: 30000
+                    });
+                }
+                if (vCount > 0) {
+                    advertSlides.push({
+                        title: `${vCountStr} x VOUCHERS`,
+                        subtitle: "🎫 Vouchers to be won!! 🎫",
+                        type: "advert",
+                        advertType: "vouchers",
+                        duration: 30000
+                    });
+                }
+                if (totalPrizes > 0) {
+                    advertSlides.push({
+                        title: `A MASSIVE ${totalPoolStr}`,
+                        subtitle: `in ${poolWording} ${totalPrizesStr} prizes!`,
+                        type: "advert",
+                        advertType: "pool",
+                        duration: 30000
+                    });
+                }
             }
-            if (t50 > 0) {
-                advertSlides.push({
-                    title: `${t50} x $50 TRAYS`,
-                    subtitle: "🍗 Premium Assorted Meat Trays to be won!! 🍗",
-                    type: "advert",
-                    advertType: "p50",
-                    duration: 30000
-                });
-            }
-            if (t25 > 0) {
-                advertSlides.push({
-                    title: `${t25} x $25 TRAYS`,
-                    subtitle: "🥓 Premium Assorted Meat Trays to be won!! 🥓",
-                    type: "advert",
-                    advertType: "p25",
-                    duration: 30000
-                });
-            }
-            if (totalPrizes > 0) {
-                advertSlides.push({
-                    title: `TOTAL PRIZES: ${totalPrizes}`,
-                    subtitle: "🍖 Premium Assorted Meat Trays must be won!! 🍖",
-                    type: "advert",
-                    advertType: "total",
-                    duration: 30000
-                });
-                advertSlides.push({
-                    title: `TOTAL PRIZE POOL: $${totalPool.toLocaleString('en-NZ', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
-                    subtitle: `🔥 in ${poolWording} Monster Meat Raffle Draw! 🔥`,
-                    type: "advert",
-                    advertType: "pool",
-                    duration: 30000
-                });
-            }
-            advertSlides.push({
-                title: `TICKETS ON SALE`,
-                subtitle: `🎟️ ${ticketsWording} 🎟️`,
-                type: "advert",
-                advertType: "tickets",
-                duration: 30000
-            });
-            advertSlides.push({
-                title: `MONSTER MEAT RAFFLE`,
-                subtitle: `🔥 DRAW STARTS ${drawWording} 🔥`,
-                type: "advert",
-                advertType: "draw_time",
-                duration: 30000
-            });
+
 
             const finalSlides = [...visibleSlides, ...advertSlides];
 
@@ -1804,6 +1845,9 @@
                     } else if (slide.advertType === 'p25') {
                         style = `background: radial-gradient(circle at center, #064e3b 0%, #030712 100%); --badge-glow: rgba(16, 185, 129, 0.6); --title-glow: rgba(16, 185, 129, 0.4);`;
                         badge = '🥓';
+                    } else if (slide.advertType === 'vouchers') {
+                        style = `background: radial-gradient(circle at center, #831843 0%, #030712 100%); --badge-glow: rgba(236, 72, 153, 0.6); --title-glow: rgba(236, 72, 153, 0.4);`;
+                        badge = '🎫';
                     } else if (slide.advertType === 'total') {
                         style = `background: radial-gradient(circle at center, #7c2d12 0%, #020617 100%); --badge-glow: rgba(239, 68, 68, 0.6); --title-glow: rgba(239, 68, 68, 0.4);`;
                         badge = '🍖';
@@ -1946,7 +1990,7 @@
         function setPrizeTheme(prizeType) {
             const drawView = document.getElementById('view-draw');
             if (!drawView) return;
-            drawView.classList.remove('prize-100', 'prize-50', 'prize-25', 'prize-bonus', 'prize-voucher', 'prize-custom');
+            drawView.classList.remove('prize-100', 'prize-50', 'prize-25', 'prize-bonus', 'prize-voucher', 'prize-generic');
             if (!prizeType) return; // Clean dark neutral background with no color accent when null/start
             const pKey = String(prizeType);
             if (pKey === '100') drawView.classList.add('prize-100');
@@ -1954,7 +1998,7 @@
             else if (pKey === '25') drawView.classList.add('prize-25');
             else if (pKey === 'bonus') drawView.classList.add('prize-bonus');
             else if (pKey === 'voucher') drawView.classList.add('prize-voucher');
-            else if (pKey === 'custom') drawView.classList.add('prize-custom');
+            else if (pKey === 'generic') drawView.classList.add('prize-generic');
         }
 
         // Slot Machine Audio Context
@@ -2014,11 +2058,11 @@
                 } else if (pKey === 'bonus') {
                     titleEl.innerText = "BONUS PRIZE DRAW";
                     titleEl.style.color = "#ffd700";
-                } else if (pKey === 'custom') {
+                } else if (pKey === 'generic') {
                     titleEl.innerText = "DRAWING NUMBER";
                     titleEl.style.color = "#fbbf24";
                 } else if (pKey === 'voucher') {
-                    titleEl.innerText = "CLUB VOUCHER DRAW";
+                    titleEl.innerText = "VOUCHER DRAW";
                     titleEl.style.color = "#ffffff";
                 } else {
                     titleEl.innerText = "Winning Number";

@@ -7,6 +7,62 @@
     <title>MMR - Remote Control</title>
     <script>
         document.write('<script src="config.js?v=' + Date.now() + '"><\/script>');
+    
+        function toggleConfig(headerEl, bodyId) {
+            headerEl.classList.toggle('collapsed');
+            document.getElementById(bodyId).classList.toggle('collapsed');
+        }
+        function toggleConfigVisibility(bodyId, isEnabled) {
+            const body = document.getElementById(bodyId);
+            const header = body.previousElementSibling;
+            if (isEnabled) {
+                body.classList.remove('collapsed');
+                header.classList.remove('collapsed');
+            } else {
+                body.classList.add('collapsed');
+                header.classList.add('collapsed');
+            }
+        }
+        function finishAndEndDraw(day) {
+            if (confirm(`Are you sure you want to Finish & End the ${day} draw? This will trigger the Congrats screen.`)) {
+                let drawType = 'full';
+                if (day === 'thursday') {
+                    state.draw.thursday.isConfirmedFinished = true;
+                    state.draw.thursday.drawsFinishedTime = state.draw.thursday.drawsFinishedTime || new Date().toISOString();
+                    drawType = state.draw.thursday.type || 'full';
+                } else if (day === 'sunday') {
+                    state.draw.sunday.isConfirmedFinished = true;
+                    state.draw.sunday.drawsFinishedTime = state.draw.sunday.drawsFinishedTime || new Date().toISOString();
+                    drawType = state.draw.sunday.type || 'full';
+                }
+                
+                // If it's a full draw, show winning-numbers, otherwise show congrats
+                if (drawType === 'manual' || drawType === 'generic') {
+                    state.activeView = 'congrats';
+                } else {
+                    state.activeView = 'winning-numbers';
+                }
+                
+                updateState(state);
+                showGlobalStatus(`${day.toUpperCase()} Draw Finished! Congrats screen active.`, 'blue');
+            }
+        }
+        }
+        function updateGenericConfig() {
+            if (!state.draw) state.draw = {};
+            if (!state.draw.generic) state.draw.generic = {};
+            const gen = state.draw.generic;
+            gen.min = parseInt(document.getElementById('cfg-gen-min').value) || 1;
+            gen.max = parseInt(document.getElementById('cfg-gen-max').value) || 9999;
+            gen.cfgPrizes = parseInt(document.getElementById('cfg-gen-prizes').value) || 10;
+            gen.showRemaining = document.getElementById('cfg-gen-show-remaining').value;
+            if (!gen.drawnNumbers) gen.drawnNumbers = [];
+            gen.prizesLeft = Math.max(0, gen.cfgPrizes - gen.drawnNumbers.length);
+            if (gen.prizesLeft === 0 && gen.drawnNumbers.length > 0) gen.drawsFinishedTime = gen.drawsFinishedTime || new Date().toISOString();
+            else gen.drawsFinishedTime = null;
+            updateState(state);
+            showGlobalStatus('Generic Config Updated & Synced!', 'orange');
+        }
     </script>
     <style>
         :root {
@@ -326,6 +382,34 @@
         }
         #pin-submit-r:hover { background: #dc2626; }
         #pin-error-r { display: none; color: var(--primary); margin-top: 1rem; font-weight: 800; font-size: 0.9rem; }
+    
+        .collapsible-config {
+            cursor: pointer;
+            user-select: none;
+        }
+        .collapsible-config::after {
+            content: '\25BC';
+            float: right;
+            transition: transform 0.2s;
+        }
+        .collapsible-config.collapsed::after {
+            transform: rotate(-90deg);
+        }
+        .config-body {
+            transition: max-height 0.3s ease-out, opacity 0.3s ease-out;
+            max-height: 2000px;
+            opacity: 1;
+            overflow: hidden;
+        }
+        .config-body.collapsed {
+            max-height: 0;
+            opacity: 0;
+            padding-top: 0 !important;
+            padding-bottom: 0 !important;
+            margin-top: 0 !important;
+            margin-bottom: 0 !important;
+            border-top: none !important;
+        }
     </style>
 </head>
 <body>
@@ -425,7 +509,7 @@
                 </div>
 
                 <!-- BONUS PRIZE -->
-                <div class="draw-control-row" style="border-left: 4px solid #ffd700;">
+                <div id="row-prize-bonus" class="draw-control-row" style="border-left: 4px solid #ffd700;">
                     <div class="draw-control-info">
                         <div class="draw-control-title" style="color: #f59e0b;">🎁 Bonus</div>
                         <div class="draw-control-subtitle">Special Prize</div>
@@ -441,7 +525,7 @@
                 </div>
 
                 <!-- VOUCHER -->
-                <div class="draw-control-row" style="border-left: 4px solid #ffffff;">
+                <div id="row-prize-voucher" class="draw-control-row" style="border-left: 4px solid #ffffff;">
                     <div class="draw-control-info">
                         <div class="draw-control-title" style="color: #ffffff;">🎟️ Voucher</div>
                         <div class="draw-control-subtitle">Club Voucher</div>
@@ -456,17 +540,17 @@
                     </div>
                 </div>
 
-                <!-- CUSTOM NUMBER (Gold) -->
-                <div class="draw-control-row" style="border-left: 4px solid #fbbf24; margin-top: 0.5rem;">
+                <!-- Generic Number (Gold) -->
+                <div id="row-prize-generic" class="draw-control-row" style="border-left: 4px solid #fbbf24; margin-top: 0.5rem;">
                     <div class="draw-control-info">
-                        <div class="draw-control-title" style="color: #fbbf24;">⭐ Custom Draw</div>
+                        <div class="draw-control-title" style="color: #fbbf24;">⭐ Generic Draw</div>
                         <div class="draw-control-subtitle">No pre-set prize</div>
                     </div>
                     <div class="draw-control-actions">
-                        <button class="btn draw-btn btn-draw-main" onclick="runDraw('custom')" style="background-color: #fbbf24; border-color: #f59e0b; color: black;">
+                        <button class="btn draw-btn btn-draw-main" onclick="runDraw('generic')" style="background-color: #fbbf24; border-color: #f59e0b; color: black;">
                             ⭐ DRAW NUMBER
                         </button>
-                        <button class="btn draw-btn btn-redraw-icon" onclick="runRedraw('custom')" title="Redraw Custom" style="background-color: #1e293b; border-color: #fbbf24; color: #fbbf24;">
+                        <button class="btn draw-btn btn-redraw-icon" onclick="runRedraw('generic')" title="Redraw Generic" style="background-color: #1e293b; border-color: #fbbf24; color: #fbbf24;">
                             🔄 REDRAW
                         </button>
                     </div>
@@ -498,7 +582,7 @@
             <div class="btn-group">
                 <button class="btn" onclick="setView('slides')" id="btn-slides">📺 Slideshow</button>
                 <button class="btn" onclick="setView('draw')" id="btn-draw">🎯 Draw Screen</button>
-                <button class="btn" onclick="openCustomDrawPage()" id="btn-draw-custom" style="background: #fbbf24; border-color: #f59e0b; color: black; font-weight: bold;">⭐ Open Custom Draw (Gold)</button>
+                <button class="btn" onclick="openGenericDrawPage()" id="btn-draw-generic" style="background: #fbbf24; border-color: #f59e0b; color: black; font-weight: bold;">⭐ Open Generic Draw (Gold)</button>
                 <button class="btn" onclick="setView('congrats')" id="btn-congrats">🎉 Congrats (Full)</button>
             </div>
 
@@ -516,16 +600,20 @@
             
             <!-- Thursday Config -->
             <div style="background: rgba(59, 130, 246, 0.1); border: 1px solid #3b82f6; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1.5rem;">
-                <h3 style="margin-top: 0; color: #3b82f6; display: flex; justify-content: space-between;">
-                    Thursday Draw
-                    <div>
-                        <label style="display:inline; margin-right: 10px;">Enable</label>
-                        <input type="checkbox" id="cfg-thu-enabled" style="width: auto;" onchange="updateThursdayConfig()">
-                        <label style="display:inline; margin-left: 10px; margin-right: 10px;">Manual Draw</label>
-                        <input type="checkbox" id="cfg-thu-manual" style="width: auto;" onchange="updateThursdayConfig()">
-                    </div>
-                </h3>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 0.5rem;">
+                <h3 class="collapsible-config" onclick="toggleConfig(this, 'thu-config-body')" style="margin-top: 0; color: #3b82f6; display: flex; justify-content: space-between; align-items: center;">
+                Thursday Draw
+                <div onclick="event.stopPropagation()">
+                    <label style="display:inline; margin-right: 5px;">Enable</label>
+                    <input type="checkbox" id="cfg-thu-enabled" style="width: auto;" onchange="updateThursdayConfig(); toggleConfigVisibility('thu-config-body', this.checked)">
+                    <label style="display:inline; margin-left: 5px; margin-right: 5px;">Type:</label>
+                    <select id="cfg-thu-type" onchange="updateThursdayConfig()" style="padding: 2px 5px; border-radius: 4px; background: var(--bg); color: var(--text); border: 1px solid var(--border);">
+                        <option value="full">Full Draw</option>
+                        <option value="manual">Manual Draw</option>
+                        <option value="generic">Generic Draw</option>
+                    </select>
+                </div>
+            </h3>
+                <div id="thu-config-body" class="config-body"><div id="sun-config-body" class="config-body collapsed"><div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 0.5rem;">
                     <div class="form-group">
                         <label>Min Ticket</label>
                         <input type="number" id="cfg-thu-min" value="1" oninput="updateThursdayConfig()">
@@ -553,20 +641,24 @@
                     <div><label style="font-size:0.75rem;">Voucher Value ($)</label><input type="number" id="cfg-thu-vouchers-value" value="0" oninput="updateThursdayConfig()"></div>
                 </div>
                 <button class="btn" onclick="updateThursdayConfig()" style="background-color: #1e40af; color: white; border: none; width: 100%; margin-bottom: 0.5rem;">💾 Save Thursday Config</button>
-                <button class="btn" id="btn-confirm-thu" onclick="confirmThursday()" style="background-color: #3b82f6; color: white; border: none; width: 100%;">Confirm Finished</button>
+                <button class="btn" onclick="finishAndEndDraw('thursday')" style="background-color: #3b82f6; color: white; border: none; width: 100%;">Finish & End Draw</button></div>
             </div>
 
             <!-- Sunday Config -->
             <div style="background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1.5rem;">
-                <h3 style="margin-top: 0; color: #ef4444; display: flex; justify-content: space-between;">
-                    Sunday Draw
-                    <div>
-                        <label style="display:inline; margin-right: 10px;">Enable</label>
-                        <input type="checkbox" id="cfg-sun-enabled" style="width: auto;" onchange="updateSundayConfig()">
-                        <label style="display:inline; margin-left: 10px; margin-right: 10px;">Manual Draw</label>
-                        <input type="checkbox" id="cfg-sun-manual" style="width: auto;" onchange="updateSundayConfig()">
-                    </div>
-                </h3>
+                <h3 class="collapsible-config collapsed" onclick="toggleConfig(this, 'sun-config-body')" style="margin-top: 0; color: #ef4444; display: flex; justify-content: space-between; align-items: center;">
+                Sunday Draw
+                <div onclick="event.stopPropagation()">
+                    <label style="display:inline; margin-right: 5px;">Enable</label>
+                    <input type="checkbox" id="cfg-sun-enabled" style="width: auto;" onchange="updateSundayConfig(); toggleConfigVisibility('sun-config-body', this.checked)">
+                    <label style="display:inline; margin-left: 5px; margin-right: 5px;">Type:</label>
+                    <select id="cfg-sun-type" onchange="updateSundayConfig()" style="padding: 2px 5px; border-radius: 4px; background: var(--bg); color: var(--text); border: 1px solid var(--border);">
+                        <option value="full">Full Draw</option>
+                        <option value="manual">Manual Draw</option>
+                        <option value="generic">Generic Draw</option>
+                    </select>
+                </div>
+            </h3>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 0.5rem;">
                     <div class="form-group">
                         <label>Min Ticket</label>
@@ -591,7 +683,7 @@
                     <div><label style="font-size:0.75rem;">Voucher Value ($)</label><input type="number" id="cfg-sun-vouchers-value" value="0" oninput="updateSundayConfig()"></div>
                 </div>
                 <button class="btn" onclick="updateSundayConfig()" style="background-color: #991b1b; color: white; border: none; width: 100%; margin-bottom: 0.5rem;">💾 Save Sunday Config</button>
-                <button class="btn" id="btn-confirm-sun" onclick="confirmSunday()" style="background-color: #ef4444; color: white; border: none; width: 100%;">Confirm Finished</button>
+                <button class="btn" onclick="finishAndEndDraw('sunday')" style="background-color: #ef4444; color: white; border: none; width: 100%;">Finish & End Draw</button></div>
             </div>
             <span id="fb-status" style="font-size:0.8rem; color:#64748b;">🔴 Firebase: Not configured</span>
             <div class="voice-toggle-container">
@@ -1067,12 +1159,17 @@
             if (document.activeElement !== document.getElementById('cfg-thu-prizes-100')) document.getElementById('cfg-thu-prizes-100').value = thu.cfgPrizes100;
             if (document.activeElement !== document.getElementById('cfg-thu-prizes-50')) document.getElementById('cfg-thu-prizes-50').value = thu.cfgPrizes50;
             if (document.activeElement !== document.getElementById('cfg-thu-prizes-25')) document.getElementById('cfg-thu-prizes-25').value = thu.cfgPrizes25;
-            document.getElementById('cfg-thu-manual').checked = !!thu.manualDraw;
+            document.getElementById('cfg-thu-type').value = thu.type || (thu.manualDraw ? 'manual' : 'full');
 
             if (document.activeElement !== document.getElementById('cfg-sun-prizes-100')) document.getElementById('cfg-sun-prizes-100').value = sun.cfgPrizes100;
             if (document.activeElement !== document.getElementById('cfg-sun-prizes-50')) document.getElementById('cfg-sun-prizes-50').value = sun.cfgPrizes50;
             if (document.activeElement !== document.getElementById('cfg-sun-prizes-25')) document.getElementById('cfg-sun-prizes-25').value = sun.cfgPrizes25;
-            document.getElementById('cfg-sun-manual').checked = !!sun.manualDraw;
+            document.getElementById('cfg-sun-type').value = sun.type || (sun.manualDraw ? 'manual' : 'full');
+            const gen = (state.draw && state.draw.generic) || {};
+            if (document.activeElement !== document.getElementById('cfg-gen-min')) document.getElementById('cfg-gen-min').value = gen.min !== undefined ? gen.min : 1;
+            if (document.activeElement !== document.getElementById('cfg-gen-max')) document.getElementById('cfg-gen-max').value = gen.max !== undefined ? gen.max : 9999;
+            if (document.activeElement !== document.getElementById('cfg-gen-prizes')) document.getElementById('cfg-gen-prizes').value = gen.cfgPrizes !== undefined ? gen.cfgPrizes : 10;
+            if (document.activeElement !== document.getElementById('cfg-gen-show-remaining')) document.getElementById('cfg-gen-show-remaining').value = gen.showRemaining || 'yes';
             document.getElementById('cfg-sun-enabled').checked = !!sun.enabled;
 
             let activeEvtKey = state.draw.activeEvent || 'thursday';
@@ -1112,6 +1209,31 @@
         }
 
         function updateViewButtons() {
+            // Toggle visibility of draw controls based on type
+            let activeEvtKey = state.draw.activeEvent || 'thursday';
+            if (activeEvtKey === 'sunday' && (state.draw.sunday && state.draw.sunday.enabled === false)) {
+                activeEvtKey = 'thursday';
+            }
+            const activeEvt = state.draw[activeEvtKey] || {};
+            const type = activeEvt.type || 'full';
+            
+            const p100 = document.getElementById('row-prize-100');
+            const p50 = document.getElementById('row-prize-50');
+            const p25 = document.getElementById('row-prize-25');
+            const pb = document.getElementById('row-prize-bonus');
+            const pv = document.getElementById('row-prize-voucher');
+            const pg = document.getElementById('row-prize-generic');
+            
+            if (p100 && p50 && p25 && pb && pv && pg) {
+                if (type === 'full') {
+                    p100.style.display = ''; p50.style.display = ''; p25.style.display = ''; pb.style.display = ''; pv.style.display = ''; pg.style.display = '';
+                } else if (type === 'manual') {
+                    p100.style.display = 'none'; p50.style.display = 'none'; p25.style.display = 'none'; pb.style.display = 'none'; pv.style.display = 'none'; pg.style.display = 'none';
+                } else if (type === 'generic') {
+                    p100.style.display = 'none'; p50.style.display = 'none'; p25.style.display = 'none'; pb.style.display = 'none'; pv.style.display = 'none'; pg.style.display = '';
+                }
+            }
+
             const btnSlides = document.getElementById("btn-slides");
             const btnDraw = document.getElementById("btn-draw");
             const btnCongrats = document.getElementById("btn-congrats");
@@ -1119,8 +1241,8 @@
             if (btnSlides && btnDraw && btnCongrats && btnCongratsVideo) {
                 const active = state.activeView || 'slides';
                 const isSlides = active === 'slides';
-                const isDraw = active === 'draw' && (!state.draw || !state.draw.activeEvent || !state.draw[state.draw.activeEvent] || state.draw[state.draw.activeEvent].currentPrize !== 'custom');
-                const isDrawCustom = active === 'draw' && state.draw && state.draw.activeEvent && state.draw[state.draw.activeEvent] && state.draw[state.draw.activeEvent].currentPrize === 'custom';
+                const isDraw = active === 'draw' && (!state.draw || !state.draw.activeEvent || !state.draw[state.draw.activeEvent] || state.draw[state.draw.activeEvent].currentPrize !== 'generic');
+                const isDrawGeneric = active === 'draw' && state.draw && state.draw.activeEvent && state.draw[state.draw.activeEvent] && state.draw[state.draw.activeEvent].currentPrize === 'generic';
                 const isCongrats = active === 'congrats';
                 const isCongratsVideo = active === 'congrats-video';
 
@@ -1138,14 +1260,14 @@
                 btnDraw.style.fontWeight = isDraw ? 'bold' : 'normal';
                 btnDraw.style.transform = isDraw ? 'scale(1.03)' : 'none';
 
-                const btnDrawCustom = document.getElementById("btn-draw-custom");
-                if (btnDrawCustom) {
-                    btnDrawCustom.style.backgroundColor = isDrawCustom ? '#fbbf24' : 'rgba(30, 41, 59, 0.8)';
-                    btnDrawCustom.style.borderColor = isDrawCustom ? '#f59e0b' : 'var(--border)';
-                    btnDrawCustom.style.color = isDrawCustom ? 'black' : 'var(--text)';
-                    btnDrawCustom.style.boxShadow = isDrawCustom ? '0 0 16px rgba(251, 191, 36, 0.8)' : 'none';
-                    btnDrawCustom.style.fontWeight = isDrawCustom ? 'bold' : 'normal';
-                    btnDrawCustom.style.transform = isDrawCustom ? 'scale(1.03)' : 'none';
+                const btnDrawGeneric = document.getElementById("btn-draw-generic");
+                if (btnDrawGeneric) {
+                    btnDrawGeneric.style.backgroundColor = isDrawGeneric ? '#fbbf24' : 'rgba(30, 41, 59, 0.8)';
+                    btnDrawGeneric.style.borderColor = isDrawGeneric ? '#f59e0b' : 'var(--border)';
+                    btnDrawGeneric.style.color = isDrawGeneric ? 'black' : 'var(--text)';
+                    btnDrawGeneric.style.boxShadow = isDrawGeneric ? '0 0 16px rgba(251, 191, 36, 0.8)' : 'none';
+                    btnDrawGeneric.style.fontWeight = isDrawGeneric ? 'bold' : 'normal';
+                    btnDrawGeneric.style.transform = isDrawGeneric ? 'scale(1.03)' : 'none';
                 }
 
                 btnCongrats.style.backgroundColor = isCongrats ? '#10b981' : 'rgba(30, 41, 59, 0.8)';
@@ -1164,11 +1286,11 @@
             }
         }
 
-        function openCustomDrawPage() {
+        function openGenericDrawPage() {
             if (state && state.draw && state.draw.activeEvent) {
                 const activeEvent = state.draw.activeEvent;
                 if (state.draw[activeEvent]) {
-                    state.draw[activeEvent].currentPrize = 'custom';
+                    state.draw[activeEvent].currentPrize = 'generic';
                     state.draw[activeEvent].currentNumber = null;
                 }
             }
@@ -1220,7 +1342,8 @@
             thu.cfgPrizes25 = parseInt(document.getElementById('cfg-thu-prizes-25').value) || 0;
             thu.cfgVouchersCount = parseInt(document.getElementById('cfg-thu-vouchers-count').value) || 0;
             thu.cfgVouchersValue = parseInt(document.getElementById('cfg-thu-vouchers-value').value) || 0;
-            thu.manualDraw = document.getElementById('cfg-thu-manual').checked;
+            thu.type = document.getElementById('cfg-thu-type').value;
+            thu.manualDraw = (thu.type === 'manual');
             thu.enabled = document.getElementById('cfg-thu-enabled').checked;
 
             sun.min = parseInt(document.getElementById('cfg-sun-min').value) || 0;
@@ -1233,7 +1356,8 @@
             sun.cfgPrizes25 = parseInt(document.getElementById('cfg-sun-prizes-25').value) || 0;
             sun.cfgVouchersCount = parseInt(document.getElementById('cfg-sun-vouchers-count').value) || 0;
             sun.cfgVouchersValue = parseInt(document.getElementById('cfg-sun-vouchers-value').value) || 0;
-            sun.manualDraw = document.getElementById('cfg-sun-manual').checked;
+            sun.type = document.getElementById('cfg-sun-type').value;
+            sun.manualDraw = (sun.type === 'manual');
             sun.enabled = document.getElementById('cfg-sun-enabled').checked;
 
             if (thu.drawnNumbers && !Array.isArray(thu.drawnNumbers)) thu.drawnNumbers = Object.values(thu.drawnNumbers);
@@ -1467,7 +1591,7 @@
             if (prizeSize === 100 && evt.prizes100 <= 0) { alert('No $100 prizes left!'); return; }
             if (prizeSize === 50 && evt.prizes50 <= 0) { alert('No $50 prizes left!'); return; }
             if (prizeSize === 25 && evt.prizes25 <= 0) { alert('No $25 prizes left!'); return; }
-            if (prizeSize !== 'bonus' && prizeSize !== 'custom' && evt.prizesLeft <= 0) { alert('No prizes left to draw!'); return; }
+            if (prizeSize !== 'bonus' && prizeSize !== 'generic' && evt.prizesLeft <= 0) { alert('No prizes left to draw!'); return; }
 
             const min = evt.min !== undefined ? evt.min : (state.draw.min !== undefined ? state.draw.min : 0);
             const max = evt.max !== undefined ? evt.max : (state.draw.max !== undefined ? state.draw.max : 9999);
@@ -2142,7 +2266,43 @@
                     .bold { font-weight: bold; }
                     .footer { margin-top: 12px; font-family: monospace; font-size: 9px; color: #64748b; display: flex; justify-content: space-between; border-top: 1px solid #cbd5e1; padding-top: 4px; }
                 </style>
-                </head><body>` + content + `</body></html>
+                </head><body>` + content + `
+    <!-- Resume Draw Dialog -->
+    <div id="resume-dialog" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:9999; align-items:center; justify-content:center;">
+        <div style="background:var(--bg); border: 2px solid var(--primary); padding: 2rem; border-radius: 1rem; text-align: center; max-width: 400px;">
+            <h2 style="margin-top:0; color:var(--primary);">Draw In Progress</h2>
+            <p>It looks like a draw was interrupted or hasn't finished yet.</p>
+            <p>Would you like to continue the current draw, or archive it and start a new one with the current configuration?</p>
+            <div style="display: flex; gap: 1rem; justify-content: center; margin-top: 2rem;">
+                <button class="btn" onclick="document.getElementById('resume-dialog').style.display='none'" style="background: #3b82f6; border-color: #2563eb; color: white;">Continue Draw</button>
+                <button class="btn" onclick="startNewDrawFromDialog()" style="background: #ef4444; border-color: #dc2626; color: white;">Start New Draw</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function checkInProgressDraw() {
+            if (!state || !state.draw) return;
+            const evt = state.draw[state.draw.activeEvent || 'thursday'];
+            if (!evt) return;
+            
+            // If there are drawn numbers, it's not finished, and it's not a manual draw
+            if (evt.type !== 'manual' && (evt.drawnNumbers && evt.drawnNumbers.length > 0) && !evt.isConfirmedFinished) {
+                document.getElementById('resume-dialog').style.display = 'flex';
+            }
+        }
+        
+        function startNewDrawFromDialog() {
+            document.getElementById('resume-dialog').style.display = 'none';
+            // Actually call resetDraw logic (we will update resetDraw to do archiving!)
+            if (typeof resetDraw === 'function') resetDraw();
+            else if (typeof bc !== 'undefined') bc.postMessage({ type: 'CMD', payload: 'reset_draw' }); // For remote to ask admin?
+        }
+        
+        // Wait a second for state to load from FB/Local, then check
+        setTimeout(checkInProgressDraw, 1500);
+    </script>
+</body></html>
             `);
             win.document.close();
             win.focus();

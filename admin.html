@@ -7,6 +7,51 @@
     <title>MMR - Admin Panel</title>
     <script>
         document.write('<script src="config.js?v=' + Date.now() + '"><\/script>');
+    
+        function toggleConfig(headerEl, bodyId) {
+            headerEl.classList.toggle('collapsed');
+            document.getElementById(bodyId).classList.toggle('collapsed');
+        }
+        function toggleConfigVisibility(bodyId, isEnabled) {
+            const body = document.getElementById(bodyId);
+            const header = body.previousElementSibling;
+            if (isEnabled) {
+                body.classList.remove('collapsed');
+                header.classList.remove('collapsed');
+            } else {
+                body.classList.add('collapsed');
+                header.classList.add('collapsed');
+            }
+        }
+        function finishAndEndDraw(day) {
+            if (confirm(`Are you sure you want to Finish & End the ${day} draw? This will trigger the Congrats screen.`)) {
+                let drawType = 'full';
+                if (day === 'thursday') {
+                    state.draw.thursday.isConfirmedFinished = true;
+                    state.draw.thursday.drawsFinishedTime = state.draw.thursday.drawsFinishedTime || new Date().toISOString();
+                    drawType = state.draw.thursday.type || 'full';
+                } else if (day === 'sunday') {
+                    state.draw.sunday.isConfirmedFinished = true;
+                    state.draw.sunday.drawsFinishedTime = state.draw.sunday.drawsFinishedTime || new Date().toISOString();
+                    drawType = state.draw.sunday.type || 'full';
+                }
+                
+                // If it's a full draw, show winning-numbers, otherwise show congrats
+                if (drawType === 'manual' || drawType === 'generic') {
+                    state.activeView = 'congrats';
+                } else {
+                    state.activeView = 'winning-numbers';
+                }
+                
+                updateState(state);
+                showGlobalStatus(`${day.toUpperCase()} Draw Finished! Congrats screen active.`, 'blue');
+            }
+        }
+        }
+        function updateGenericConfig() {
+            updateDrawState();
+            showGlobalStatus('Generic Config Updated & Synced!', 'orange');
+        }
     </script>
     <style>
         :root {
@@ -262,6 +307,34 @@
         body.compact .btn { padding: 0.5rem 1rem; font-size: 0.85rem; }
         body.compact .voice-toggle-container { padding: 0.2rem 0.6rem; }
         body.compact .pip-toggle { display: none; }
+    
+        .collapsible-config {
+            cursor: pointer;
+            user-select: none;
+        }
+        .collapsible-config::after {
+            content: '\25BC';
+            float: right;
+            transition: transform 0.2s;
+        }
+        .collapsible-config.collapsed::after {
+            transform: rotate(-90deg);
+        }
+        .config-body {
+            transition: max-height 0.3s ease-out, opacity 0.3s ease-out;
+            max-height: 2000px;
+            opacity: 1;
+            overflow: hidden;
+        }
+        .config-body.collapsed {
+            max-height: 0;
+            opacity: 0;
+            padding-top: 0 !important;
+            padding-bottom: 0 !important;
+            margin-top: 0 !important;
+            margin-bottom: 0 !important;
+            border-top: none !important;
+        }
     </style>
 </head>
 <body>
@@ -393,16 +466,20 @@
 
         <!-- Thursday Config -->
         <div style="background: rgba(59, 130, 246, 0.1); border: 1px solid #3b82f6; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1.5rem;">
-            <h3 style="margin-top: 0; color: #3b82f6; display: flex; justify-content: space-between;">
+            <h3 class="collapsible-config" onclick="toggleConfig(this, 'thu-config-body')" style="margin-top: 0; color: #3b82f6; display: flex; justify-content: space-between; align-items: center;">
                 Thursday Draw
-                <div>
+                <div onclick="event.stopPropagation()">
                     <label style="display:inline; margin-right: 10px;">Enable</label>
-                    <input type="checkbox" id="cfg-thu-enabled" style="width: auto;" onchange="updateDrawState()">
-                    <label style="display:inline; margin-left: 10px; margin-right: 10px;">Manual Draw</label>
-                    <input type="checkbox" id="cfg-thu-manual" style="width: auto;" onchange="updateDrawState()">
+                    <input type="checkbox" id="cfg-thu-enabled" style="width: auto;" onchange="updateDrawState(); toggleConfigVisibility('thu-config-body', this.checked)">
+                    <label style="display:inline; margin-left: 10px; margin-right: 5px;">Type:</label>
+                    <select id="cfg-thu-type" onchange="updateDrawState()" style="padding: 2px 5px; border-radius: 4px; background: var(--bg); color: var(--text); border: 1px solid var(--border);">
+                        <option value="full">Full Draw</option>
+                        <option value="manual">Manual Draw</option>
+                        <option value="generic">Generic Draw</option>
+                    </select>
                 </div>
             </h3>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 0.5rem;">
+            <div id="thu-config-body" class="config-body"><div id="sun-config-body" class="config-body collapsed"><div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 0.5rem;">
                 <div class="form-group">
                     <label>Thursday Min Ticket</label>
                     <input type="number" id="cfg-thu-min" value="0" onchange="updateDrawState()">
@@ -426,18 +503,22 @@
                 <div><label style="font-size:0.75rem;">Thursday Voucher Value ($)</label><input type="number" id="cfg-thu-vouchers-value" value="0" oninput="updateDrawState()" onchange="updateDrawState()"></div>
             </div>
             <button class="btn" onclick="updateThursdayConfig()" style="background-color: #1e40af; color: white; border: none; width: 100%; margin-bottom: 0.5rem;">💾 Update Thursday Config</button>
-            <button class="btn" id="btn-confirm-thu" onclick="confirmThursday()" style="background-color: #3b82f6; color: white; border: none; width: 100%;">Confirm Finished</button>
+            <button class="btn" onclick="finishAndEndDraw('thursday')" style="background-color: #3b82f6; color: white; border: none; width: 100%;">Finish & End Draw</button></div>
         </div>
 
         <!-- Sunday Config -->
         <div style="background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1.5rem;">
-            <h3 style="margin-top: 0; color: #ef4444; display: flex; justify-content: space-between;">
+            <h3 class="collapsible-config collapsed" onclick="toggleConfig(this, 'sun-config-body')" style="margin-top: 0; color: #ef4444; display: flex; justify-content: space-between; align-items: center;">
                 Sunday Draw
-                <div>
+                <div onclick="event.stopPropagation()">
                     <label style="display:inline; margin-right: 10px;">Enable</label>
-                    <input type="checkbox" id="cfg-sun-enabled" style="width: auto;" onchange="updateDrawState()">
-                    <label style="display:inline; margin-left: 10px; margin-right: 10px;">Manual Draw</label>
-                    <input type="checkbox" id="cfg-sun-manual" style="width: auto;" onchange="updateDrawState()">
+                    <input type="checkbox" id="cfg-sun-enabled" style="width: auto;" onchange="updateDrawState(); toggleConfigVisibility('sun-config-body', this.checked)">
+                    <label style="display:inline; margin-left: 10px; margin-right: 5px;">Type:</label>
+                    <select id="cfg-sun-type" onchange="updateDrawState()" style="padding: 2px 5px; border-radius: 4px; background: var(--bg); color: var(--text); border: 1px solid var(--border);">
+                        <option value="full">Full Draw</option>
+                        <option value="manual">Manual Draw</option>
+                        <option value="generic">Generic Draw</option>
+                    </select>
                 </div>
             </h3>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 0.5rem;">
@@ -464,7 +545,7 @@
                 <div><label style="font-size:0.75rem;">Sunday Voucher Value ($)</label><input type="number" id="cfg-sun-vouchers-value" value="0" oninput="updateDrawState()" onchange="updateDrawState()"></div>
             </div>
             <button class="btn" onclick="updateSundayConfig()" style="background-color: #991b1b; color: white; border: none; width: 100%; margin-bottom: 0.5rem;">💾 Update Sunday Config</button>
-            <button class="btn" id="btn-confirm-sun" onclick="confirmSunday()" style="background-color: #ef4444; color: white; border: none; width: 100%;">Confirm Finished</button>
+            <button class="btn" onclick="finishAndEndDraw('sunday')" style="background-color: #ef4444; color: white; border: none; width: 100%;">Finish & End Draw</button></div>
         </div>
 
 
@@ -588,10 +669,10 @@
     <div class="card" style="margin-top: 2rem;">
         <h2>📋 End of Week & Print</h2>
         <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
-            <button class="btn btn-primary" onclick="printBlank()" style="flex:1;">🖨️ Blank</button>
-            <button class="btn btn-primary" onclick="printChecklist()" style="flex:1;">🖨️ Checklist</button>
-            <button class="btn btn-primary" onclick="printFinancialSheet()" style="flex:1; background-color: #10b981; border-color: #059669;">🖨️ Financials</button>
-            <button class="btn btn-primary" onclick="printAllPages()" style="flex:1; background-color: #ef4444; border-color: #dc2626;">🖨️ ALL</button>
+            <button class="btn btn-primary" onclick="printFullDraw()" style="flex:1;">🖨️ Full Draw Print</button>
+            <button class="btn btn-primary" onclick="printManualDraw()" style="flex:1; background-color: #6366f1; border-color: #4f46e5;">🖨️ Manual Draw Print</button>
+            <button class="btn btn-primary" onclick="printGenericDraw()" style="flex:1; background-color: #f59e0b; border-color: #d97706;">🖨️ Generic Draw Print</button>
+            <button class="btn btn-primary" onclick="printBlankDraw()" style="flex:1; background-color: #94a3b8; border-color: #64748b;">🖨️ Blank Draw Print</button>
         </div>
         <button class="btn btn-danger" onclick="archiveDraws()" style="width: 100%; background-color: #ef4444; border-color: #dc2626; color: white;">⚠️ Confirm End of Week Draws</button>
         <button class="btn btn-danger" onclick="resetAllData()" style="width: 100%; background-color: #7f1d1d; border-color: #450a0a; color: white; margin-top: 0.5rem;">🚨 Reset All Data (New Week)</button>
@@ -623,7 +704,38 @@
             </div>
         </div>
     </div>
-
+        <!-- Generic Draw Config -->
+        <div style="background: rgba(245, 158, 11, 0.1); border: 1px solid #f59e0b; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1.5rem;">
+            <h3 class="collapsible-config collapsed" onclick="toggleConfig(this, 'gen-config-body')" style="margin-top: 0; color: #f59e0b; display: flex; justify-content: space-between; align-items: center;">
+                Generic Draw Config
+            </h3>
+            <div id="gen-config-body" class="config-body collapsed">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 0.5rem;">
+                    <div class="form-group">
+                        <label>Min Ticket</label>
+                        <input type="number" id="cfg-gen-min" value="0" onchange="updateDrawState()">
+                    </div>
+                    <div class="form-group">
+                        <label>Max Ticket</label>
+                        <input type="number" id="cfg-gen-max" max="9999" value="9999" onchange="updateDrawState()">
+                    </div>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 0.5rem;">
+                    <div class="form-group">
+                        <label>Number of Prizes</label>
+                        <input type="number" id="cfg-gen-prizes" value="10" onchange="updateDrawState()">
+                    </div>
+                    <div class="form-group">
+                        <label>Show Remaining on Display?</label>
+                        <select id="cfg-gen-show-remaining" onchange="updateDrawState()" style="width: 100%; padding: 0.8rem; border-radius: 0.5rem; background: var(--bg); color: var(--text); border: 1px solid var(--border);">
+                            <option value="yes">Yes</option>
+                            <option value="no">No</option>
+                        </select>
+                    </div>
+                </div>
+                <button class="btn" onclick="updateGenericConfig()" style="background-color: #b45309; color: white; border: none; width: 100%; margin-bottom: 0.5rem;">💾 Update Generic Config</button>
+            </div>
+        </div>
     <!-- Firebase Config Card -->
     <div class="card" style="margin-top: 2rem;">
         <h2>🌐 Cross-Device Sync (Firebase)</h2>
@@ -654,7 +766,7 @@
         <div class="btn-group">
             <button class="btn" onclick="setView('slides')" id="btn-slides" style="border-width: 2px;">📺 Slideshow</button>
             <button class="btn" onclick="setView('draw')" id="btn-draw" style="border-width: 2px;">🎯 Draw Screen</button>
-            <button class="btn" onclick="openCustomDrawPage()" id="btn-draw-custom" style="border-width: 2px; background: #fbbf24; border-color: #f59e0b; color: black; font-weight: bold;">⭐ Open Custom Draw (Gold)</button>
+            <button class="btn" onclick="openGenericDrawPage()" id="btn-draw-generic" style="border-width: 2px; background: #fbbf24; border-color: #f59e0b; color: black; font-weight: bold;">⭐ Open Generic Draw (Gold)</button>
             <button class="btn" onclick="setView('congrats')" id="btn-congrats" style="border-width: 2px;">🎉 Congrats</button>
         </div>
     </div>
@@ -924,7 +1036,7 @@
             };
 
             syncEl('cfg-thu-enabled', thu.enabled !== false, true);
-            syncEl('cfg-thu-manual', thu.manualDraw === true, true);
+            syncEl('cfg-thu-type', thu.type || (thu.manualDraw ? 'manual' : 'full'), false);
             syncEl('cfg-thu-min', thu.min !== undefined ? thu.min : 1, false);
             syncEl('cfg-thu-max', thu.max !== undefined ? thu.max : 9999, false);
             syncEl('cfg-thu-excludes', (thu.excludes || []).join(','), false);
@@ -935,7 +1047,7 @@
             syncEl('cfg-thu-vouchers-value', thu.cfgVouchersValue !== undefined ? thu.cfgVouchersValue : 0, false);
 
             syncEl('cfg-sun-enabled', sun.enabled === true, true);
-            syncEl('cfg-sun-manual', sun.manualDraw === true, true);
+            syncEl('cfg-sun-type', sun.type || (sun.manualDraw ? 'manual' : 'full'), false);
             syncEl('cfg-sun-min', sun.min !== undefined ? sun.min : 1, false);
             syncEl('cfg-sun-max', sun.max !== undefined ? sun.max : 9999, false);
             syncEl('cfg-sun-excludes', (sun.excludes || []).join(','), false);
@@ -944,6 +1056,12 @@
             syncEl('cfg-sun-prizes-25', sun.cfgPrizes25 !== undefined ? sun.cfgPrizes25 : 0, false);
             syncEl('cfg-sun-vouchers-count', sun.cfgVouchersCount !== undefined ? sun.cfgVouchersCount : 0, false);
             syncEl('cfg-sun-vouchers-value', sun.cfgVouchersValue !== undefined ? sun.cfgVouchersValue : 0, false);
+            const gen = (state.draw && state.draw.generic) || {};
+            syncEl('cfg-gen-min', gen.min !== undefined ? gen.min : 1, false);
+            syncEl('cfg-gen-max', gen.max !== undefined ? gen.max : 9999, false);
+            syncEl('cfg-gen-prizes', gen.cfgPrizes !== undefined ? gen.cfgPrizes : 10, false);
+            syncEl('cfg-gen-show-remaining', gen.showRemaining || 'yes', false);
+    
 
             syncEl('drawTime', state.nextDrawTime, false);
         }
@@ -1014,9 +1132,10 @@
             const sun50 = parseInt(document.getElementById('cfg-sun-prizes-50').value) || 0;
             const sun25 = parseInt(document.getElementById('cfg-sun-prizes-25').value) || 0;
             const sunVouchers = parseInt(document.getElementById('cfg-sun-vouchers-value').value) || 0;
+            const thuVouchers = parseInt(document.getElementById('cfg-thu-vouchers-value').value) || 0;
             
-            const totalCount = thu100 + thu50 + thu25 + sun100 + sun50 + sun25 + (parseInt(document.getElementById('cfg-sun-vouchers-count').value) || 0);
-            const totalValue = ((thu100 + sun100) * 100) + ((thu50 + sun50) * 50) + ((thu25 + sun25) * 25) + sunVouchers;
+            const totalCount = thu100 + thu50 + thu25 + sun100 + sun50 + sun25 + (parseInt(document.getElementById('cfg-sun-vouchers-count').value) || 0) + (parseInt(document.getElementById('cfg-thu-vouchers-count').value) || 0);
+            const totalValue = ((thu100 + sun100) * 100) + ((thu50 + sun50) * 50) + ((thu25 + sun25) * 25) + sunVouchers + thuVouchers;
             
             const totalCountEl = document.getElementById('prizes-total-count');
             const totalValueEl = document.getElementById('prizes-total-value');
@@ -1052,7 +1171,8 @@
             thu.cfgPrizes25 = parseInt(document.getElementById('cfg-thu-prizes-25').value) || 0;
             thu.cfgVouchersCount = parseInt(document.getElementById('cfg-thu-vouchers-count').value) || 0;
             thu.cfgVouchersValue = parseInt(document.getElementById('cfg-thu-vouchers-value').value) || 0;
-            thu.manualDraw = document.getElementById('cfg-thu-manual').checked;
+            thu.type = document.getElementById('cfg-thu-type').value;
+            thu.manualDraw = (thu.type === 'manual');
             thu.enabled = document.getElementById('cfg-thu-enabled').checked;
 
             sun.min = sunMin;
@@ -1064,7 +1184,20 @@
             sun.cfgPrizes25 = parseInt(document.getElementById('cfg-sun-prizes-25').value) || 0;
             sun.cfgVouchersCount = parseInt(document.getElementById('cfg-sun-vouchers-count').value) || 0;
             sun.cfgVouchersValue = parseInt(document.getElementById('cfg-sun-vouchers-value').value) || 0;
-            sun.manualDraw = document.getElementById('cfg-sun-manual').checked;
+            sun.type = document.getElementById('cfg-sun-type').value;
+            sun.manualDraw = (sun.type === 'manual');
+            
+            if (!state.draw.generic) state.draw.generic = {};
+            const gen = state.draw.generic;
+            gen.min = parseInt(document.getElementById('cfg-gen-min').value) || 1;
+            gen.max = parseInt(document.getElementById('cfg-gen-max').value) || 9999;
+            gen.cfgPrizes = parseInt(document.getElementById('cfg-gen-prizes').value) || 10;
+            gen.showRemaining = document.getElementById('cfg-gen-show-remaining').value;
+            if (!gen.drawnNumbers) gen.drawnNumbers = [];
+            gen.prizesLeft = Math.max(0, gen.cfgPrizes - gen.drawnNumbers.length);
+            if (gen.prizesLeft === 0 && gen.drawnNumbers.length > 0) gen.drawsFinishedTime = gen.drawsFinishedTime || new Date().toISOString();
+            else gen.drawsFinishedTime = null;
+    
             sun.enabled = document.getElementById('cfg-sun-enabled').checked;
             
             if (!thu.drawnNumbers) thu.drawnNumbers = [];
@@ -1568,31 +1701,65 @@
         }
 
         function resetDraw() {
-            if (confirm('Are you sure you want to clear all drawn numbers and reset?')) {
-                if (confirm('CRITICAL: This will delete all draw history for tonight. Are you absolutely sure?')) {
-                    state.draw.drawnNumbers = [];
-                    state.draw.currentNumber = '---';
-                    state.draw.currentPrize = null;
-                    state.draw.drawsFinishedTime = null;
-                    
-                    document.getElementById('cfg-thu-prizes-100').value = 0;
-                    document.getElementById('cfg-thu-prizes-50').value = 0;
-                    document.getElementById('cfg-thu-prizes-25').value = 0;
-                    document.getElementById('cfg-sun-prizes-100').value = 0;
-                    document.getElementById('cfg-sun-prizes-50').value = 0;
-                    document.getElementById('cfg-sun-prizes-25').value = 0;
-                    
-                    if(state.draw.thursday) state.draw.thursday.cfgPrizes100 = 0; if(state.draw.sunday) state.draw.sunday.cfgPrizes100 = 0;
-                    if(state.draw.thursday) state.draw.thursday.cfgPrizes50 = 0; if(state.draw.sunday) state.draw.sunday.cfgPrizes50 = 0;
-                    if(state.draw.thursday) state.draw.thursday.cfgPrizes25 = 0; if(state.draw.sunday) state.draw.sunday.cfgPrizes25 = 0;
-                    state.draw.prizes100 = 0;
-                    state.draw.prizes50 = 0;
-                    state.draw.prizes25 = 0;
-                    state.draw.prizesLeft = 0;
-                    
-                    updateTotalsSummary();
-                    broadcast();
+            if (confirm('Archive this draw and start fresh? (This sets prizes to 0 / T.B.C.)')) {
+                // Archive current draw to firebase
+                if (fbDbUrl) {
+                    const activeEvtKey = state.draw.activeEvent || 'thursday';
+                    const activeEvt = state.draw[activeEvtKey] || {};
+                    const archiveData = {
+                        timestamp: new Date().toISOString(),
+                        event: activeEvtKey,
+                        drawData: activeEvt
+                    };
+                    fetch(`${fbDbUrl}/mmr_archive_draws.json`, {
+                        method: 'POST',
+                        body: JSON.stringify(archiveData)
+                    }).catch(e => console.error("Archive error:", e));
                 }
+                
+                // Now reset active event
+                const evt = state.draw.activeEvent || 'thursday';
+                if (state.draw[evt]) {
+                    state.draw[evt].drawnNumbers = [];
+                    state.draw[evt].currentNumber = '---';
+                    state.draw[evt].currentPrize = null;
+                    state.draw[evt].drawsFinishedTime = null;
+                    state.draw[evt].isConfirmedFinished = false;
+                    state.draw[evt].cfgPrizes100 = 0;
+                    state.draw[evt].cfgPrizes50 = 0;
+                    state.draw[evt].cfgPrizes25 = 0;
+                    state.draw[evt].prizes100 = 0;
+                    state.draw[evt].prizes50 = 0;
+                    state.draw[evt].prizes25 = 0;
+                    state.draw[evt].prizesLeft = 0;
+                }
+                
+                // If it's generic, reset that too
+                if (state.draw.generic) {
+                    state.draw.generic.drawnNumbers = [];
+                    state.draw.generic.cfgPrizes = 0;
+                    state.draw.generic.prizesLeft = 0;
+                    state.draw.generic.drawsFinishedTime = null;
+                }
+                
+                // Clear the top level display state
+                state.draw.drawnNumbers = [];
+                state.draw.currentNumber = '---';
+                state.draw.currentPrize = null;
+                state.draw.drawsFinishedTime = null;
+                
+                document.getElementById('cfg-thu-prizes-100').value = 0;
+                document.getElementById('cfg-thu-prizes-50').value = 0;
+                document.getElementById('cfg-thu-prizes-25').value = 0;
+                document.getElementById('cfg-sun-prizes-100').value = 0;
+                document.getElementById('cfg-sun-prizes-50').value = 0;
+                document.getElementById('cfg-sun-prizes-25').value = 0;
+                document.getElementById('cfg-gen-prizes').value = 0;
+                
+                updateDrawState();
+                state.activeView = 'slides'; // Go back to slides!
+                broadcast();
+                showGlobalStatus('Draw Archived & Reset to T.B.C.!', 'green');
             }
         }
 
@@ -1632,11 +1799,11 @@
             writeFirebase({ activeView: view });
         }
 
-        function openCustomDrawPage() {
+        function openGenericDrawPage() {
             if (state && state.draw && state.draw.activeEvent) {
                 const activeEvent = state.draw.activeEvent;
                 if (state.draw[activeEvent]) {
-                    state.draw[activeEvent].currentPrize = 'custom';
+                    state.draw[activeEvent].currentPrize = 'generic';
                     state.draw[activeEvent].currentNumber = null;
                 }
             }
@@ -1656,8 +1823,8 @@
             if (btnSlides && btnDraw && btnCongrats && btnCongratsVideo) {
                 const active = state.activeView || 'slides';
                 const isSlides = active === 'slides';
-                const isDraw = active === 'draw' && (!state.draw || !state.draw.activeEvent || !state.draw[state.draw.activeEvent] || state.draw[state.draw.activeEvent].currentPrize !== 'custom');
-                const isDrawCustom = active === 'draw' && state.draw && state.draw.activeEvent && state.draw[state.draw.activeEvent] && state.draw[state.draw.activeEvent].currentPrize === 'custom';
+                const isDraw = active === 'draw' && (!state.draw || !state.draw.activeEvent || !state.draw[state.draw.activeEvent] || state.draw[state.draw.activeEvent].currentPrize !== 'generic');
+                const isDrawGeneric = active === 'draw' && state.draw && state.draw.activeEvent && state.draw[state.draw.activeEvent] && state.draw[state.draw.activeEvent].currentPrize === 'generic';
                 const isCongrats = active === 'congrats';
                 const isCongratsVideo = active === 'congrats-video';
 
@@ -1675,14 +1842,14 @@
                 btnDraw.style.fontWeight = isDraw ? 'bold' : 'normal';
                 btnDraw.style.transform = isDraw ? 'scale(1.03)' : 'none';
 
-                const btnDrawCustom = document.getElementById("btn-draw-custom");
-                if (btnDrawCustom) {
-                    btnDrawCustom.style.backgroundColor = isDrawCustom ? '#fbbf24' : 'rgba(30, 41, 59, 0.8)';
-                    btnDrawCustom.style.borderColor = isDrawCustom ? '#f59e0b' : 'var(--border)';
-                    btnDrawCustom.style.color = isDrawCustom ? 'black' : 'var(--text)';
-                    btnDrawCustom.style.boxShadow = isDrawCustom ? '0 0 16px rgba(251, 191, 36, 0.8)' : 'none';
-                    btnDrawCustom.style.fontWeight = isDrawCustom ? 'bold' : 'normal';
-                    btnDrawCustom.style.transform = isDrawCustom ? 'scale(1.03)' : 'none';
+                const btnDrawGeneric = document.getElementById("btn-draw-generic");
+                if (btnDrawGeneric) {
+                    btnDrawGeneric.style.backgroundColor = isDrawGeneric ? '#fbbf24' : 'rgba(30, 41, 59, 0.8)';
+                    btnDrawGeneric.style.borderColor = isDrawGeneric ? '#f59e0b' : 'var(--border)';
+                    btnDrawGeneric.style.color = isDrawGeneric ? 'black' : 'var(--text)';
+                    btnDrawGeneric.style.boxShadow = isDrawGeneric ? '0 0 16px rgba(251, 191, 36, 0.8)' : 'none';
+                    btnDrawGeneric.style.fontWeight = isDrawGeneric ? 'bold' : 'normal';
+                    btnDrawGeneric.style.transform = isDrawGeneric ? 'scale(1.03)' : 'none';
                 }
 
                 btnCongrats.style.backgroundColor = isCongrats ? '#10b981' : 'rgba(30, 41, 59, 0.8)';
@@ -2058,13 +2225,49 @@
             printWin.document.write(`
                 <!DOCTYPE html><html><head><title>Tonight's Meat Raffle Prize Checklist & Financials</title><style>body{font-family:sans-serif; margin:20px; print-color-adjust:exact;}.print-container{max-width:1100px; border:3px solid #000; padding:20px;}.prize-row{border:3px solid #000; margin-bottom:15px; display:flex; padding:10px;}.prize-label{width:170px; font-weight:900;}.boxes-container{flex:1; display:flex; flex-wrap:wrap; gap:8px;}.remaining-col{width:140px; text-align:center; border-left:3px dashed #000; padding-left:15px;}.form-grid{display:grid; grid-template-columns:1fr 1fr; gap:15px;}.input-placeholder{border-bottom:2px solid #000; height:20px;}.financial-table{width:100%; border-collapse:collapse;}th,td{border:2px solid #000; padding:10px;}.text-right{text-align:right;}.bold{font-weight:bold;}.footer{margin-top:20px; font-family:monospace; font-size:10px; display:flex; justify-content:space-between;}</style></head><body>
     <div id="global-status-bar" style="background: var(--primary); color: white; text-align: center; padding: 0.5rem; font-weight: bold; position: sticky; top: 0; z-index: 1000; display: none;"></div>
-                    <div class="print-container"><h1>Tonight's Meat Raffle Prize Checklist</h1>
+                    <div class="print-container"><h1>${listTitle}</h1>
                         <div class="prize-row" style="background:#fef2f2;"><div>${total100} x $100<br>PACK</div><div class="boxes-container">${renderBoxes(total100, numbers100)}</div><div class="remaining-col"><div>${rem100}</div>REMAINING</div></div>
                         <div class="prize-row" style="background:#eff6ff;"><div>${total50} x $50<br>PACK</div><div class="boxes-container">${renderBoxes(total50, numbers50)}</div><div class="remaining-col"><div>${rem50}</div>REMAINING</div></div>
                         <div class="prize-row" style="background:#f0fdf4;"><div>${total25} x $25<br>PACK</div><div class="boxes-container">${renderBoxes(total25, numbers25)}</div><div class="remaining-col"><div>${rem25}</div>REMAINING</div></div>
                         <div class="footer"><span>${sessionHash}</span><span>${timestamp}</span></div>
                     </div>
-                <script>window.onload=()=>{window.print();window.close();}<\/script></body></html>
+                <script>window.onload=()=>{window.print();window.close();}<\/script>
+    <!-- Resume Draw Dialog -->
+    <div id="resume-dialog" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:9999; align-items:center; justify-content:center;">
+        <div style="background:var(--bg); border: 2px solid var(--primary); padding: 2rem; border-radius: 1rem; text-align: center; max-width: 400px;">
+            <h2 style="margin-top:0; color:var(--primary);">Draw In Progress</h2>
+            <p>It looks like a draw was interrupted or hasn't finished yet.</p>
+            <p>Would you like to continue the current draw, or archive it and start a new one with the current configuration?</p>
+            <div style="display: flex; gap: 1rem; justify-content: center; margin-top: 2rem;">
+                <button class="btn" onclick="document.getElementById('resume-dialog').style.display='none'" style="background: #3b82f6; border-color: #2563eb; color: white;">Continue Draw</button>
+                <button class="btn" onclick="startNewDrawFromDialog()" style="background: #ef4444; border-color: #dc2626; color: white;">Start New Draw</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function checkInProgressDraw() {
+            if (!state || !state.draw) return;
+            const evt = state.draw[state.draw.activeEvent || 'thursday'];
+            if (!evt) return;
+            
+            // If there are drawn numbers, it's not finished, and it's not a manual draw
+            if (evt.type !== 'manual' && (evt.drawnNumbers && evt.drawnNumbers.length > 0) && !evt.isConfirmedFinished) {
+                document.getElementById('resume-dialog').style.display = 'flex';
+            }
+        }
+        
+        function startNewDrawFromDialog() {
+            document.getElementById('resume-dialog').style.display = 'none';
+            // Actually call resetDraw logic (we will update resetDraw to do archiving!)
+            if (typeof resetDraw === 'function') resetDraw();
+            else if (typeof bc !== 'undefined') bc.postMessage({ type: 'CMD', payload: 'reset_draw' }); // For remote to ask admin?
+        }
+        
+        // Wait a second for state to load from FB/Local, then check
+        setTimeout(checkInProgressDraw, 1500);
+    </script>
+</body></html>
             `);
             printWin.document.close();
         }
@@ -2214,7 +2417,8 @@
             return Array.isArray(activeEvt.drawnNumbers) ? activeEvt.drawnNumbers : [];
         }
 
-        function buildChecklistHTML() {
+        function buildChecklistHTML(titleOverride) {
+            const listTitle = titleOverride ? `Monster Meat Raffle — ${titleOverride} Checklist` : `Tonight's Meat Raffle Prize Checklist`;
             const draw = getDrawStateData();
             const activeEvt = (draw && draw[draw.activeEvent || 'thursday']) || draw.thursday || draw || {};
             const drawn = getActiveDrawnNumbers(draw);
@@ -2586,9 +2790,11 @@
             `;
         }
 
-        function printBlank() { printHTML(buildBlankFinancialsHTML()); }
-        function printChecklist() { printHTML(buildChecklistHTML()); }
-        function printFinancialSheet() { printHTML(buildFinancialSheetHTML()); }
+        function printFullDraw() { printHTML(buildChecklistHTML('Full Draw')); }
+        function printManualDraw() { printHTML(buildChecklistHTML('Manual Draw (Write Numbers Below)')); }
+        function printGenericDraw() { printHTML(buildChecklistHTML('Generic Draw')); }
+        function printBlankDraw() { printHTML(buildChecklistHTML('Blank Draw')); }
+        
         function printAllPages() {
             printHTML(
                 buildChecklistHTML() + 
