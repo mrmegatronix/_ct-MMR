@@ -478,7 +478,7 @@
 </select>
 </div>
 </h3>
-<div class="config-body" id="thu-config-body"><div class="config-body collapsed" id="sun-config-body"><div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 0.5rem;">
+<div class="config-body" id="thu-config-body"><div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 0.5rem;">
 <div class="form-group">
 <label>Thursday Min Ticket</label>
 <input id="cfg-thu-min" onchange="updateDrawState()" type="number" value="0"/>
@@ -519,6 +519,7 @@
 </select>
 </div>
 </h3>
+<div class="config-body collapsed" id="sun-config-body">
 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 0.5rem;">
 <div class="form-group">
 <label>Sunday Min Ticket</label>
@@ -561,6 +562,8 @@
 <!-- Financials & Audit Breakdown Card -->
 <!-- End of Week & Print Actions -->
 <!-- QR Codes -->
+</div>
+
 <!-- Generic Draw Config -->
 <div style="background: rgba(245, 158, 11, 0.1); border: 1px solid #f59e0b; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1.5rem;">
 <h3 class="collapsible-config collapsed" onclick="toggleConfig(this, 'gen-config-body')" style="margin-top: 0; color: #f59e0b; display: flex; justify-content: space-between; align-items: center;">
