@@ -1216,7 +1216,7 @@ button, .btn { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
             const btnDraw = document.getElementById("btn-draw");
             const btnCongrats = document.getElementById("btn-congrats");
             const btnCongratsVideo = document.getElementById("btn-congrats-video");
-            if (btnSlides && btnDraw && btnCongrats && btnCongratsVideo) {
+            if (btnSlides && btnDraw && btnCongrats) {
                 const active = state.activeView || 'slides';
                 const isSlides = active === 'slides';
                 const isDraw = active === 'draw' && (!state.draw || !state.draw.activeEvent || !state.draw[state.draw.activeEvent] || state.draw[state.draw.activeEvent].currentPrize !== 'generic');
@@ -1277,12 +1277,14 @@ button, .btn { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
                 btnCongrats.style.fontWeight = isCongrats ? 'bold' : 'normal';
                 btnCongrats.style.transform = isCongrats ? 'scale(1.03)' : 'none';
                 
-                btnCongratsVideo.style.backgroundColor = isCongratsVideo ? '#a855f7' : 'rgba(30, 41, 59, 0.8)';
-                btnCongratsVideo.style.borderColor = isCongratsVideo ? '#d8b4fe' : 'var(--border)';
-                btnCongratsVideo.style.color = isCongratsVideo ? '#ffffff' : 'var(--text)';
-                btnCongratsVideo.style.boxShadow = isCongratsVideo ? '0 0 16px rgba(168, 85, 247, 0.8)' : 'none';
-                btnCongratsVideo.style.fontWeight = isCongratsVideo ? 'bold' : 'normal';
-                btnCongratsVideo.style.transform = isCongratsVideo ? 'scale(1.03)' : 'none';
+                if (btnCongratsVideo) {
+                    btnCongratsVideo.style.backgroundColor = isCongratsVideo ? '#a855f7' : 'rgba(30, 41, 59, 0.8)';
+                    btnCongratsVideo.style.borderColor = isCongratsVideo ? '#d8b4fe' : 'var(--border)';
+                    btnCongratsVideo.style.color = isCongratsVideo ? '#ffffff' : 'var(--text)';
+                    btnCongratsVideo.style.boxShadow = isCongratsVideo ? '0 0 16px rgba(168, 85, 247, 0.8)' : 'none';
+                    btnCongratsVideo.style.fontWeight = isCongratsVideo ? 'bold' : 'normal';
+                    btnCongratsVideo.style.transform = isCongratsVideo ? 'scale(1.03)' : 'none';
+                }
             }
         }
 
@@ -1322,15 +1324,8 @@ button, .btn { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
             state.activeView = view;
             updateViewButtons();
             checkCongratsAutoOff();
-            updateViewButtons();
-            // Call updateDrawState UI sync instead of undefined updateUI
-            // We'll define a dummy updateUI to prevent crashes from broadcast receiver
-            window.updateUI = function() {
-                // UI update logic is mostly handled inline in broadcast receiver
-            };
-            window.updateDrawState(); updateViewButtons();;
-            broadcast();
-            showStatus();
+            bc.postMessage({ type: 'STATE_UPDATE', payload: { activeView: view } });
+            if (typeof writeFirebase === 'function') writeFirebase({ activeView: view });
         }
 
         function updateTime() {
