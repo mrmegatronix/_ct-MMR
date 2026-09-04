@@ -1,9 +1,10 @@
-<!DOCTYPE html><html lang="en"><head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' https://*.google.com https://*.googleusercontent.com https://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebaseio.com wss://*.firebasedatabase.app https://api.qrserver.com https://quickchart.io https://chart.googleapis.com; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https:; media-src 'self' data: blob:; connect-src 'self' https://*.google.com https://*.googleusercontent.com https://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebaseio.com wss://*.firebasedatabase.app https://api.qrserver.com https://quickchart.io https://chart.googleapis.com;">
-    <title>MMR - Admin Panel</title>
-    <script>
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta content="default-src 'self' 'unsafe-inline' https://*.google.com https://*.googleusercontent.com https://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebaseio.com wss://*.firebasedatabase.app https://api.qrserver.com https://quickchart.io https://chart.googleapis.com; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https:; media-src 'self' data: blob:; connect-src 'self' https://*.google.com https://*.googleusercontent.com https://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebaseio.com wss://*.firebasedatabase.app https://api.qrserver.com https://quickchart.io https://chart.googleapis.com;" http-equiv="Content-Security-Policy"/>
+<title>MMR - Admin Panel</title>
+<script>
         document.write('<script src="config.js?v=' + Date.now() + '"><\/script>');
     
         function toggleConfig(headerEl, bodyId) {
@@ -50,7 +51,7 @@
             showGlobalStatus('Generic Config Updated & Synced!', 'orange');
         }
     </script>
-    <style>
+<style>
         :root {
             --bg: var(--cfg-bg-dark, #0f172a);
             --surface: #1e293b;
@@ -333,9 +334,7 @@
             border-top: none !important;
         }
     
-        @media (max-width: 768px) {
-            body { padding: 1rem; }
-            .card { padding: 1rem; }
+        
             div[style*="display: grid"] {
                 grid-template-columns: 1fr !important;
                 gap: 0.5rem !important;
@@ -378,9 +377,32 @@
         .tab-content.active {
             display: block;
         }
-    </style>
-
-    <script>
+    
+        @media (max-width: 1024px) {
+            div[style*="display: grid"] {
+                grid-template-columns: repeat(2, 1fr) !important;
+                gap: 0.75rem !important;
+            }
+        }
+        @media (max-width: 640px) {
+            body { padding: 0.5rem; }
+            .card { padding: 1rem; }
+            div[style*="display: grid"] {
+                grid-template-columns: 1fr !important;
+                gap: 0.5rem !important;
+            }
+            .header {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+            .tab-btn {
+                padding: 0.5rem 1rem;
+                font-size: 0.9rem;
+            }
+        }
+        </style>
+<script>
         function switchAdminTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
@@ -390,241 +412,212 @@
     </script>
 </head>
 <body>
-    
-
-    <!-- PIN Access Overlay -->
-    <div id="pin-overlay">
-        <div id="pin-modal">
-            <div style="font-size: 3rem; margin-bottom: 1rem;">🔐</div>
-            <h2 style="color: #f8fafc; margin: 0 0 0.5rem;">Restricted Access</h2>
-            <p style="color: #94a3b8; margin: 0 0 2rem; font-size: 0.9rem;">Enter PIN to access Admin Panel</p>
-            <input type="password" id="pin-input" maxlength="8" placeholder="Enter PIN" autocomplete="off" readonly="">
-            <div class="pin-pad">
-                <button type="button" class="pin-btn" onclick="appendPin('1')">1</button>
-                <button type="button" class="pin-btn" onclick="appendPin('2')">2</button>
-                <button type="button" class="pin-btn" onclick="appendPin('3')">3</button>
-                <button type="button" class="pin-btn" onclick="appendPin('4')">4</button>
-                <button type="button" class="pin-btn" onclick="appendPin('5')">5</button>
-                <button type="button" class="pin-btn" onclick="appendPin('6')">6</button>
-                <button type="button" class="pin-btn" onclick="appendPin('7')">7</button>
-                <button type="button" class="pin-btn" onclick="appendPin('8')">8</button>
-                <button type="button" class="pin-btn" onclick="appendPin('9')">9</button>
-                <button type="button" class="pin-btn" onclick="clearPin()">C</button>
-                <button type="button" class="pin-btn" onclick="appendPin('0')">0</button>
-                <button type="button" class="pin-btn" onclick="backspacePin()">⌫</button>
-            </div>
-
-            <div id="pin-error">❌ Incorrect PIN. Try again.</div>
-        </div>
-    </div>
-
-    <div class="header">
-        <h1 id="header-title">MMR Admin</h1>
-        <div style="display: flex; gap: 10px; align-items: center;">
-            <span id="fb-status" style="font-size:0.8rem; color:#64748b;">🔴 Firebase: Not configured</span>
-            <div class="voice-toggle-container">
-                <label style="cursor:pointer; display:flex; align-items:center; gap:5px; font-size:0.8rem; font-weight:bold;">
-                    <input type="checkbox" id="voice-toggle" onchange="toggleVoice(this)"> 🔊 Auto-Voice
+<!-- PIN Access Overlay -->
+<div id="pin-overlay">
+<div id="pin-modal">
+<div style="font-size: 3rem; margin-bottom: 1rem;">🔐</div>
+<h2 style="color: #f8fafc; margin: 0 0 0.5rem;">Restricted Access</h2>
+<p style="color: #94a3b8; margin: 0 0 2rem; font-size: 0.9rem;">Enter PIN to access Admin Panel</p>
+<input autocomplete="off" id="pin-input" maxlength="8" placeholder="Enter PIN" readonly="" type="password"/>
+<div class="pin-pad">
+<button class="pin-btn" onclick="appendPin('1')" type="button">1</button>
+<button class="pin-btn" onclick="appendPin('2')" type="button">2</button>
+<button class="pin-btn" onclick="appendPin('3')" type="button">3</button>
+<button class="pin-btn" onclick="appendPin('4')" type="button">4</button>
+<button class="pin-btn" onclick="appendPin('5')" type="button">5</button>
+<button class="pin-btn" onclick="appendPin('6')" type="button">6</button>
+<button class="pin-btn" onclick="appendPin('7')" type="button">7</button>
+<button class="pin-btn" onclick="appendPin('8')" type="button">8</button>
+<button class="pin-btn" onclick="appendPin('9')" type="button">9</button>
+<button class="pin-btn" onclick="clearPin()" type="button">C</button>
+<button class="pin-btn" onclick="appendPin('0')" type="button">0</button>
+<button class="pin-btn" onclick="backspacePin()" type="button">⌫</button>
+</div>
+<div id="pin-error">❌ Incorrect PIN. Try again.</div>
+</div>
+</div>
+<div class="header">
+<h1 id="header-title">MMR Admin</h1>
+<div style="display: flex; gap: 10px; align-items: center;">
+<span id="fb-status" style="font-size:0.8rem; color:#64748b;">🔴 Firebase: Not configured</span>
+<div class="voice-toggle-container">
+<label style="cursor:pointer; display:flex; align-items:center; gap:5px; font-size:0.8rem; font-weight:bold;">
+<input id="voice-toggle" onchange="toggleVoice(this)" type="checkbox"/> 🔊 Auto-Voice
                 </label>
-            </div>
-            <div class="voice-toggle-container">
-                <label style="cursor:pointer; display:flex; align-items:center; gap:5px; font-size:0.8rem; font-weight:bold;">
-                    <input type="checkbox" id="sound-toggle" onchange="toggleSound(this)"> 🎰 Slot Sounds
+</div>
+<div class="voice-toggle-container">
+<label style="cursor:pointer; display:flex; align-items:center; gap:5px; font-size:0.8rem; font-weight:bold;">
+<input id="sound-toggle" onchange="toggleSound(this)" type="checkbox"/> 🎰 Slot Sounds
                 </label>
-            </div>
-            <button class="btn btn-primary" id="btn-demo-mode" onclick="toggleDemoMode()" style="background-color: #8b5cf6; border-color: #7c3aed; padding: 0.5rem 1rem;">Demo Mode: OFF</button>
-            <a href="index.html" class="btn">TV Display</a>
-            <a href="remote.html" class="btn btn-primary">Remote Control</a>
-        </div>
-    </div><div class="tab-bar">
-    <button id="btn-tab-config" class="tab-btn active" onclick="switchAdminTab('tab-config')">⚙️ Draw Config</button>
-    <button id="btn-tab-financials" class="tab-btn" onclick="switchAdminTab('tab-financials')">💰 Financials</button>
-    <button id="btn-tab-actions" class="tab-btn" onclick="switchAdminTab('tab-actions')">🛠️ Admin Actions</button>
-</div><div id="global-status-bar" style="background: #10b981; color: white; text-align: center; padding: 0.5rem; font-weight: bold; position: fixed; top: 0; left: 0; right: 0; z-index: 1000; transition: transform 0.3s ease-in-out; transform: translateY(-100%);">✅ Ready</div><div id="tabs-container"><div id="tab-config" class="tab-content active"><div class="card" style="margin-top: 2rem;">
-        <h2>🎰 Draw Configuration &amp; Prizes</h2>
-        <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1.5rem;">
+</div>
+<button class="btn btn-primary" id="btn-demo-mode" onclick="toggleDemoMode()" style="background-color: #8b5cf6; border-color: #7c3aed; padding: 0.5rem 1rem;">Demo Mode: OFF</button>
+<a class="btn" href="index.html">TV Display</a>
+<a class="btn btn-primary" href="remote.html">Remote Control</a>
+</div>
+</div><div class="tab-bar">
+<button class="tab-btn active" id="btn-tab-config" onclick="switchAdminTab('tab-config')">⚙️ Draw Config</button>
+<button class="tab-btn" id="btn-tab-financials" onclick="switchAdminTab('tab-financials')">💰 Financials</button>
+<button class="tab-btn" id="btn-tab-actions" onclick="switchAdminTab('tab-actions')">🛠️ Admin Actions</button>
+</div><div id="global-status-bar" style="background: #10b981; color: white; text-align: center; padding: 0.5rem; font-weight: bold; position: fixed; top: 0; left: 0; right: 0; z-index: 1000; transition: transform 0.3s ease-in-out; transform: translateY(-100%);">✅ Ready</div><div id="tabs-container"><div class="tab-content active" id="tab-config"><div class="card" style="margin-top: 2rem;">
+<h2>🎰 Draw Configuration &amp; Prizes</h2>
+<p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1.5rem;">
             Set ticket range bounds, prize packs, excluded numbers, and draw date/time.
         </p>
-
-        <!-- Thursday Config -->
-        <div style="background: rgba(59, 130, 246, 0.1); border: 1px solid #3b82f6; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1.5rem;">
-            <h3 class="collapsible-config" onclick="toggleConfig(this, 'thu-config-body')" style="margin-top: 0; color: #3b82f6; display: flex; justify-content: space-between; align-items: center;">
+<!-- Thursday Config -->
+<div style="background: rgba(59, 130, 246, 0.1); border: 1px solid #3b82f6; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1.5rem;">
+<h3 class="collapsible-config" onclick="toggleConfig(this, 'thu-config-body')" style="margin-top: 0; color: #3b82f6; display: flex; justify-content: space-between; align-items: center;">
                 Thursday Draw
                 <div onclick="event.stopPropagation()">
-                    <label style="display:inline; margin-right: 10px;">Enable</label>
-                    <input type="checkbox" id="cfg-thu-enabled" style="width: auto;" onchange="updateDrawState(); toggleConfigVisibility('thu-config-body', this.checked)">
-                    <label style="display:inline; margin-left: 10px; margin-right: 5px;">Type:</label>
-                    <select id="cfg-thu-type" onchange="updateDrawState()" style="padding: 2px 5px; border-radius: 4px; background: var(--bg); color: var(--text); border: 1px solid var(--border);">
-                        <option value="full">Full Draw</option>
-                        <option value="manual">Manual Draw</option>
-                        <option value="generic">Generic Draw</option>
-                    </select>
-                </div>
-            </h3>
-            <div id="thu-config-body" class="config-body"><div id="sun-config-body" class="config-body collapsed"><div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 0.5rem;">
-                <div class="form-group">
-                    <label>Thursday Min Ticket</label>
-                    <input type="number" id="cfg-thu-min" value="0" onchange="updateDrawState()">
-                </div>
-                <div class="form-group">
-                    <label>Thursday Max Ticket</label>
-                    <input type="number" id="cfg-thu-max" max="9999" value="9999" onchange="updateDrawState()">
-                </div>
-            </div>
-            <div class="form-group" style="margin-bottom: 0.5rem;">
-                <label>Thursday Excluded Numbers (comma separated)</label>
-                <input type="text" id="cfg-thu-excludes" placeholder="e.g. 5,12,45" onchange="updateDrawState()">
-            </div>
-            <div class="form-group" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 0.5rem;">
-                <div><label style="font-size:0.75rem;">Thursday $100</label><input type="number" id="cfg-thu-prizes-100" value="4" oninput="updateDrawState()" onchange="updateDrawState()"></div>
-                <div><label style="font-size:0.75rem;">Thursday $50</label><input type="number" id="cfg-thu-prizes-50" value="8" oninput="updateDrawState()" onchange="updateDrawState()"></div>
-                <div><label style="font-size:0.75rem;">Thursday $25</label><input type="number" id="cfg-thu-prizes-25" value="52" oninput="updateDrawState()" onchange="updateDrawState()"></div>
-            </div>
-            <div class="form-group" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 1rem;">
-                <div><label style="font-size:0.75rem;">Thursday Vouchers Count</label><input type="number" id="cfg-thu-vouchers-count" value="0" oninput="updateDrawState()" onchange="updateDrawState()"></div>
-                <div><label style="font-size:0.75rem;">Thursday Voucher Value ($)</label><input type="number" id="cfg-thu-vouchers-value" value="0" oninput="updateDrawState()" onchange="updateDrawState()"></div>
-            </div>
-            <button class="btn" onclick="updateThursdayConfig()" style="background-color: #1e40af; color: white; border: none; width: 100%; margin-bottom: 0.5rem;">💾 Update Thursday Config</button>
-            <button class="btn" onclick="finishAndEndDraw('thursday')" style="background-color: #3b82f6; color: white; border: none; width: 100%;">Finish &amp; End Draw</button></div>
-        </div>
-
-        <!-- Sunday Config -->
-        <div style="background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1.5rem;">
-            <h3 class="collapsible-config collapsed" onclick="toggleConfig(this, 'sun-config-body')" style="margin-top: 0; color: #ef4444; display: flex; justify-content: space-between; align-items: center;">
+<label style="display:inline; margin-right: 10px;">Enable</label>
+<input id="cfg-thu-enabled" onchange="updateDrawState(); toggleConfigVisibility('thu-config-body', this.checked)" style="width: auto;" type="checkbox"/>
+<label style="display:inline; margin-left: 10px; margin-right: 5px;">Type:</label>
+<select id="cfg-thu-type" onchange="updateDrawState()" style="padding: 2px 5px; border-radius: 4px; background: var(--bg); color: var(--text); border: 1px solid var(--border);">
+<option value="full">Full Draw</option>
+<option value="manual">Manual Draw</option>
+<option value="generic">Generic Draw</option>
+</select>
+</div>
+</h3>
+<div class="config-body" id="thu-config-body"><div class="config-body collapsed" id="sun-config-body"><div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 0.5rem;">
+<div class="form-group">
+<label>Thursday Min Ticket</label>
+<input id="cfg-thu-min" onchange="updateDrawState()" type="number" value="0"/>
+</div>
+<div class="form-group">
+<label>Thursday Max Ticket</label>
+<input id="cfg-thu-max" max="9999" onchange="updateDrawState()" type="number" value="9999"/>
+</div>
+</div>
+<div class="form-group" style="margin-bottom: 0.5rem;">
+<label>Thursday Excluded Numbers (comma separated)</label>
+<input id="cfg-thu-excludes" onchange="updateDrawState()" placeholder="e.g. 5,12,45" type="text"/>
+</div>
+<div class="form-group" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 0.5rem;">
+<div><label style="font-size:0.75rem;">Thursday $100</label><input id="cfg-thu-prizes-100" onchange="updateDrawState()" oninput="updateDrawState()" type="number" value="4"/></div>
+<div><label style="font-size:0.75rem;">Thursday $50</label><input id="cfg-thu-prizes-50" onchange="updateDrawState()" oninput="updateDrawState()" type="number" value="8"/></div>
+<div><label style="font-size:0.75rem;">Thursday $25</label><input id="cfg-thu-prizes-25" onchange="updateDrawState()" oninput="updateDrawState()" type="number" value="52"/></div>
+</div>
+<div class="form-group" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 1rem;">
+<div><label style="font-size:0.75rem;">Thursday Vouchers Count</label><input id="cfg-thu-vouchers-count" onchange="updateDrawState()" oninput="updateDrawState()" type="number" value="0"/></div>
+<div><label style="font-size:0.75rem;">Thursday Voucher Value ($)</label><input id="cfg-thu-vouchers-value" onchange="updateDrawState()" oninput="updateDrawState()" type="number" value="0"/></div>
+</div>
+<button class="btn" onclick="updateThursdayConfig()" style="background-color: #1e40af; color: white; border: none; width: 100%; margin-bottom: 0.5rem;">💾 Update Thursday Config</button>
+<button class="btn" onclick="finishAndEndDraw('thursday')" style="background-color: #3b82f6; color: white; border: none; width: 100%;">Finish &amp; End Draw</button></div>
+</div>
+<!-- Sunday Config -->
+<div style="background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1.5rem;">
+<h3 class="collapsible-config collapsed" onclick="toggleConfig(this, 'sun-config-body')" style="margin-top: 0; color: #ef4444; display: flex; justify-content: space-between; align-items: center;">
                 Sunday Draw
                 <div onclick="event.stopPropagation()">
-                    <label style="display:inline; margin-right: 10px;">Enable</label>
-                    <input type="checkbox" id="cfg-sun-enabled" style="width: auto;" onchange="updateDrawState(); toggleConfigVisibility('sun-config-body', this.checked)">
-                    <label style="display:inline; margin-left: 10px; margin-right: 5px;">Type:</label>
-                    <select id="cfg-sun-type" onchange="updateDrawState()" style="padding: 2px 5px; border-radius: 4px; background: var(--bg); color: var(--text); border: 1px solid var(--border);">
-                        <option value="full">Full Draw</option>
-                        <option value="manual">Manual Draw</option>
-                        <option value="generic">Generic Draw</option>
-                    </select>
-                </div>
-            </h3>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 0.5rem;">
-                <div class="form-group">
-                    <label>Sunday Min Ticket</label>
-                    <input type="number" id="cfg-sun-min" value="0" onchange="updateDrawState()">
-                </div>
-                <div class="form-group">
-                    <label>Sunday Max Ticket</label>
-                    <input type="number" id="cfg-sun-max" max="9999" value="9999" onchange="updateDrawState()">
-                </div>
-            </div>
-            <div class="form-group" style="margin-bottom: 0.5rem;">
-                <label>Sunday Excluded Numbers (comma separated)</label>
-                <input type="text" id="cfg-sun-excludes" placeholder="e.g. 5,12,45" onchange="updateDrawState()">
-            </div>
-            <div class="form-group" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 0.5rem;">
-                <div><label style="font-size:0.75rem;">Sunday $100</label><input type="number" id="cfg-sun-prizes-100" value="4" oninput="updateDrawState()" onchange="updateDrawState()"></div>
-                <div><label style="font-size:0.75rem;">Sunday $50</label><input type="number" id="cfg-sun-prizes-50" value="8" oninput="updateDrawState()" onchange="updateDrawState()"></div>
-                <div><label style="font-size:0.75rem;">Sunday $25</label><input type="number" id="cfg-sun-prizes-25" value="52" oninput="updateDrawState()" onchange="updateDrawState()"></div>
-            </div>
-            <div class="form-group" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 1rem;">
-                <div><label style="font-size:0.75rem;">Sunday Vouchers Count</label><input type="number" id="cfg-sun-vouchers-count" value="0" oninput="updateDrawState()" onchange="updateDrawState()"></div>
-                <div><label style="font-size:0.75rem;">Sunday Voucher Value ($)</label><input type="number" id="cfg-sun-vouchers-value" value="0" oninput="updateDrawState()" onchange="updateDrawState()"></div>
-            </div>
-            <button class="btn" onclick="updateSundayConfig()" style="background-color: #991b1b; color: white; border: none; width: 100%; margin-bottom: 0.5rem;">💾 Update Sunday Config</button>
-            <button class="btn" onclick="finishAndEndDraw('sunday')" style="background-color: #ef4444; color: white; border: none; width: 100%;">Finish &amp; End Draw</button></div>
-        </div>
-
-
-
-        <div style="background: rgba(0,0,0,0.2); padding: 0.75rem; border-radius: 0.5rem; margin-bottom: 1rem; font-size: 0.85rem; display: flex; justify-content: space-between; margin-top: 1rem;">
-            <div>Total Prizes: <span id="prizes-total-count" style="font-weight:bold; color: var(--primary);">0</span></div>
-            <div>Prize Pool Total: <span id="prizes-total-value" style="font-weight:bold; color: var(--primary);">$0</span></div>
-        </div>
-
-        <div class="form-group" style="margin-bottom: 1.5rem;">
-            <label>Next Draw Time</label>
-            <input type="datetime-local" id="drawTime" onchange="updateTime()" style="margin-bottom: 0.5rem; width: 100%; box-sizing: border-box;">
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
-                <button class="btn" onclick="startSimulatedCountdown()" style="font-size: 0.8rem; padding: 0.4rem; white-space: nowrap;">⏱️ Preview 6m</button>
-                <button class="btn" onclick="resetCountdownClock()" style="font-size: 0.8rem; padding: 0.4rem; white-space: nowrap;">🔄 Reset Clock</button>
-            </div>
-        </div>
-        
-    </div><div class="card" style="margin-top: 2rem;">
-    <!-- Financials & Audit Breakdown Card -->
-    
-
-    <!-- End of Week & Print Actions -->
-    
-
-    <!-- QR Codes -->
-    
-        <!-- Generic Draw Config -->
-        <div style="background: rgba(245, 158, 11, 0.1); border: 1px solid #f59e0b; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1.5rem;">
-            <h3 class="collapsible-config collapsed" onclick="toggleConfig(this, 'gen-config-body')" style="margin-top: 0; color: #f59e0b; display: flex; justify-content: space-between; align-items: center;">
+<label style="display:inline; margin-right: 10px;">Enable</label>
+<input id="cfg-sun-enabled" onchange="updateDrawState(); toggleConfigVisibility('sun-config-body', this.checked)" style="width: auto;" type="checkbox"/>
+<label style="display:inline; margin-left: 10px; margin-right: 5px;">Type:</label>
+<select id="cfg-sun-type" onchange="updateDrawState()" style="padding: 2px 5px; border-radius: 4px; background: var(--bg); color: var(--text); border: 1px solid var(--border);">
+<option value="full">Full Draw</option>
+<option value="manual">Manual Draw</option>
+<option value="generic">Generic Draw</option>
+</select>
+</div>
+</h3>
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 0.5rem;">
+<div class="form-group">
+<label>Sunday Min Ticket</label>
+<input id="cfg-sun-min" onchange="updateDrawState()" type="number" value="0"/>
+</div>
+<div class="form-group">
+<label>Sunday Max Ticket</label>
+<input id="cfg-sun-max" max="9999" onchange="updateDrawState()" type="number" value="9999"/>
+</div>
+</div>
+<div class="form-group" style="margin-bottom: 0.5rem;">
+<label>Sunday Excluded Numbers (comma separated)</label>
+<input id="cfg-sun-excludes" onchange="updateDrawState()" placeholder="e.g. 5,12,45" type="text"/>
+</div>
+<div class="form-group" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 0.5rem;">
+<div><label style="font-size:0.75rem;">Sunday $100</label><input id="cfg-sun-prizes-100" onchange="updateDrawState()" oninput="updateDrawState()" type="number" value="4"/></div>
+<div><label style="font-size:0.75rem;">Sunday $50</label><input id="cfg-sun-prizes-50" onchange="updateDrawState()" oninput="updateDrawState()" type="number" value="8"/></div>
+<div><label style="font-size:0.75rem;">Sunday $25</label><input id="cfg-sun-prizes-25" onchange="updateDrawState()" oninput="updateDrawState()" type="number" value="52"/></div>
+</div>
+<div class="form-group" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 1rem;">
+<div><label style="font-size:0.75rem;">Sunday Vouchers Count</label><input id="cfg-sun-vouchers-count" onchange="updateDrawState()" oninput="updateDrawState()" type="number" value="0"/></div>
+<div><label style="font-size:0.75rem;">Sunday Voucher Value ($)</label><input id="cfg-sun-vouchers-value" onchange="updateDrawState()" oninput="updateDrawState()" type="number" value="0"/></div>
+</div>
+<button class="btn" onclick="updateSundayConfig()" style="background-color: #991b1b; color: white; border: none; width: 100%; margin-bottom: 0.5rem;">💾 Update Sunday Config</button>
+<button class="btn" onclick="finishAndEndDraw('sunday')" style="background-color: #ef4444; color: white; border: none; width: 100%;">Finish &amp; End Draw</button></div>
+</div>
+<div style="background: rgba(0,0,0,0.2); padding: 0.75rem; border-radius: 0.5rem; margin-bottom: 1rem; font-size: 0.85rem; display: flex; justify-content: space-between; margin-top: 1rem;">
+<div>Total Prizes: <span id="prizes-total-count" style="font-weight:bold; color: var(--primary);">0</span></div>
+<div>Prize Pool Total: <span id="prizes-total-value" style="font-weight:bold; color: var(--primary);">$0</span></div>
+</div>
+<div class="form-group" style="margin-bottom: 1.5rem;">
+<label>Next Draw Time</label>
+<input id="drawTime" onchange="updateTime()" style="margin-bottom: 0.5rem; width: 100%; box-sizing: border-box;" type="datetime-local"/>
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+<button class="btn" onclick="startSimulatedCountdown()" style="font-size: 0.8rem; padding: 0.4rem; white-space: nowrap;">⏱️ Preview 6m</button>
+<button class="btn" onclick="resetCountdownClock()" style="font-size: 0.8rem; padding: 0.4rem; white-space: nowrap;">🔄 Reset Clock</button>
+</div>
+</div>
+</div><div class="card" style="margin-top: 2rem;">
+<!-- Financials & Audit Breakdown Card -->
+<!-- End of Week & Print Actions -->
+<!-- QR Codes -->
+<!-- Generic Draw Config -->
+<div style="background: rgba(245, 158, 11, 0.1); border: 1px solid #f59e0b; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1.5rem;">
+<h3 class="collapsible-config collapsed" onclick="toggleConfig(this, 'gen-config-body')" style="margin-top: 0; color: #f59e0b; display: flex; justify-content: space-between; align-items: center;">
                 Generic Draw Config
             </h3>
-            <div id="gen-config-body" class="config-body collapsed">
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 0.5rem;">
-                    <div class="form-group">
-                        <label>Min Ticket</label>
-                        <input type="number" id="cfg-gen-min" value="0" oninput="updateDrawState()" onchange="updateDrawState()">
-                    </div>
-                    <div class="form-group">
-                        <label>Max Ticket</label>
-                        <input type="number" id="cfg-gen-max" max="9999" value="9999" oninput="updateDrawState()" onchange="updateDrawState()">
-                    </div>
-                </div>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 0.5rem;">
-                    <div class="form-group">
-                        <label>Number of Prizes</label>
-                        <input type="number" id="cfg-gen-prizes" value="10" oninput="updateDrawState()" onchange="updateDrawState()">
-                    </div>
-                    <div class="form-group">
-                        <label>Show Remaining on Display?</label>
-                        <select id="cfg-gen-show-remaining" onchange="updateDrawState()" style="width: 100%; padding: 0.8rem; border-radius: 0.5rem; background: var(--bg); color: var(--text); border: 1px solid var(--border);">
-                            <option value="yes">Yes</option>
-                            <option value="no">No</option>
-                        </select>
-                    </div>
-                </div>
-                <button class="btn" onclick="updateGenericConfig()" style="background-color: #b45309; color: white; border: none; width: 100%; margin-bottom: 0.5rem;">💾 Update Generic Config</button>
-            </div>
-        </div>
-    <!-- Firebase Config Card -->
-    
-
-    <!-- Manual Slide Control Card -->
-    
-
-    <!-- Display View Mode Card -->
-    
-
-
-    <!-- Checklist Print Card -->
-    
-
-    <!-- Change PIN Card -->
-    
-
-    <!-- Navigation Hub -->
-    <nav class="nav-hub" style="margin-top: 3rem; display: flex; justify-content: center; gap: 20px; border-top: 1px solid var(--border); padding-top: 20px;">
-        <a href="index.html" class="nav-link" style="color: var(--text-muted); text-decoration: none; font-size: 0.8rem; font-weight: 700; text-transform: uppercase;">📺 Display</a>
-        <a href="admin.html" class="nav-link" style="color: var(--primary); text-decoration: none; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; border-bottom: 2px solid var(--primary);">🛠 Admin</a>
-        <a href="remote.html" class="nav-link" style="color: var(--text-muted); text-decoration: none; font-size: 0.8rem; font-weight: 700; text-transform: uppercase;">📱 Remote</a>
-        <span style="color: var(--border)">|</span>
-        <a href="../_ct-MATRIX/index.html" class="nav-link" style="color: var(--text-muted); text-decoration: none; font-size: 0.8rem; font-weight: 700; text-transform: uppercase;">MATRIX</a>
-        <a href="../_ct-MOM/index.html" class="nav-link" style="color: var(--text-muted); text-decoration: none; font-size: 0.8rem; font-weight: 700; text-transform: uppercase;">MOM</a>
-        <a href="../__auto-dash/index.html" class="nav-link" style="color: var(--text-muted); text-decoration: none; font-size: 0.8rem; font-weight: 700; text-transform: uppercase;">Auto-Dash</a>
-        <a href="../__sec-DASH/index.html" class="nav-link" style="color: var(--text-muted); text-decoration: none; font-size: 0.8rem; font-weight: 700; text-transform: uppercase;">Sec-Dash</a>
-    </nav>
-
-    <!-- PiP Elements -->
-    <div id="pip-window" class="pip-window">
-        <iframe id="pip-frame" src=""></iframe>
-    </div>
-    <button class="pip-toggle" onclick="togglePip()">
-        <span style="font-size: 1.2rem;">🖼️</span> 
-        <span>LIVE PREVIEW</span>
-    </button>
-
-    <script>
+<div class="config-body collapsed" id="gen-config-body">
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 0.5rem;">
+<div class="form-group">
+<label>Min Ticket</label>
+<input id="cfg-gen-min" onchange="updateDrawState()" oninput="updateDrawState()" type="number" value="0"/>
+</div>
+<div class="form-group">
+<label>Max Ticket</label>
+<input id="cfg-gen-max" max="9999" onchange="updateDrawState()" oninput="updateDrawState()" type="number" value="9999"/>
+</div>
+</div>
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 0.5rem;">
+<div class="form-group">
+<label>Number of Prizes</label>
+<input id="cfg-gen-prizes" onchange="updateDrawState()" oninput="updateDrawState()" type="number" value="10"/>
+</div>
+<div class="form-group">
+<label>Show Remaining on Display?</label>
+<select id="cfg-gen-show-remaining" onchange="updateDrawState()" style="width: 100%; padding: 0.8rem; border-radius: 0.5rem; background: var(--bg); color: var(--text); border: 1px solid var(--border);">
+<option value="yes">Yes</option>
+<option value="no">No</option>
+</select>
+</div>
+</div>
+<button class="btn" onclick="updateGenericConfig()" style="background-color: #b45309; color: white; border: none; width: 100%; margin-bottom: 0.5rem;">💾 Update Generic Config</button>
+</div>
+</div>
+<!-- Firebase Config Card -->
+<!-- Manual Slide Control Card -->
+<!-- Display View Mode Card -->
+<!-- Checklist Print Card -->
+<!-- Change PIN Card -->
+<!-- Navigation Hub -->
+<nav class="nav-hub" style="margin-top: 3rem; display: flex; justify-content: center; gap: 20px; border-top: 1px solid var(--border); padding-top: 20px;">
+<a class="nav-link" href="index.html" style="color: var(--text-muted); text-decoration: none; font-size: 0.8rem; font-weight: 700; text-transform: uppercase;">📺 Display</a>
+<a class="nav-link" href="admin.html" style="color: var(--primary); text-decoration: none; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; border-bottom: 2px solid var(--primary);">🛠 Admin</a>
+<a class="nav-link" href="remote.html" style="color: var(--text-muted); text-decoration: none; font-size: 0.8rem; font-weight: 700; text-transform: uppercase;">📱 Remote</a>
+<span style="color: var(--border)">|</span>
+<a class="nav-link" href="../_ct-MATRIX/index.html" style="color: var(--text-muted); text-decoration: none; font-size: 0.8rem; font-weight: 700; text-transform: uppercase;">MATRIX</a>
+<a class="nav-link" href="../_ct-MOM/index.html" style="color: var(--text-muted); text-decoration: none; font-size: 0.8rem; font-weight: 700; text-transform: uppercase;">MOM</a>
+<a class="nav-link" href="../__auto-dash/index.html" style="color: var(--text-muted); text-decoration: none; font-size: 0.8rem; font-weight: 700; text-transform: uppercase;">Auto-Dash</a>
+<a class="nav-link" href="../__sec-DASH/index.html" style="color: var(--text-muted); text-decoration: none; font-size: 0.8rem; font-weight: 700; text-transform: uppercase;">Sec-Dash</a>
+</nav>
+<!-- PiP Elements -->
+<div class="pip-window" id="pip-window">
+<iframe id="pip-frame" src=""></iframe>
+</div>
+<button class="pip-toggle" onclick="togglePip()">
+<span style="font-size: 1.2rem;">🖼️</span>
+<span>LIVE PREVIEW</span>
+</button>
+<script>
         // ── Security Helpers ─────────────────────────────────────────────
         function sanitize(str) {
             if (!str) return '';
@@ -2800,279 +2793,251 @@
             }
         }
     </script>
-
-
 </div><div class="card" style="margin-top: 2rem;">
-        <h2>📺 Display View Mode</h2>
-        <div class="btn-group">
-            <button class="btn" onclick="setView('slides')" id="btn-slides" style="border-width: 2px;">📺 Slideshow</button>
-            <button class="btn" onclick="setView('draw')" id="btn-draw" style="border-width: 2px;">🎯 Draw Screen</button>
-            <button class="btn" onclick="openGenericDrawPage()" id="btn-draw-generic" style="border-width: 2px; background: #fbbf24; border-color: #f59e0b; color: black; font-weight: bold;">⭐ Open Generic Draw (Gold)</button>
-            <button class="btn" onclick="setView('congrats')" id="btn-congrats" style="border-width: 2px;">🎉 Congrats</button>
-        </div>
-    </div></div><div id="tab-financials" class="tab-content"></div><div id="tab-actions" class="tab-content"><div class="card" style="margin-top: 2rem;">
-        <h2>🔍 Public Verification Audit</h2>
-        <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1.5rem;">
+<h2>📺 Display View Mode</h2>
+<div class="btn-group">
+<button class="btn" id="btn-slides" onclick="setView('slides')" style="border-width: 2px;">📺 Slideshow</button>
+<button class="btn" id="btn-draw" onclick="setView('draw')" style="border-width: 2px;">🎯 Draw Screen</button>
+<button class="btn" id="btn-draw-generic" onclick="openGenericDrawPage()" style="border-width: 2px; background: #fbbf24; border-color: #f59e0b; color: black; font-weight: bold;">⭐ Open Generic Draw (Gold)</button>
+<button class="btn" id="btn-congrats" onclick="setView('congrats')" style="border-width: 2px;">🎉 Congrats</button>
+</div>
+</div></div><div class="tab-content" id="tab-financials"><div class="card" style="margin-top: 1.5rem;">
+<div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.75rem;">
+<h2 style="margin: 0;">💰 Financials &amp; Raffle Audit</h2>
+<div style="display: flex; align-items: center; gap: 0.5rem;">
+<label style="font-size: 0.85rem; font-weight: bold; color: var(--text-muted);">Saved Raffles:</label>
+<select id="fin-saved-dates" onchange="onSelectSavedFinancialDate()" style="padding: 0.4rem 0.75rem; border-radius: 0.375rem; background: #0f172a; color: white; border: 1px solid #334155; font-weight: bold; font-size: 0.85rem;">
+<option value="current">-- Current Active Raffle --</option>
+</select>
+<button class="btn" id="btn-toggle-fin-lock" onclick="toggleFinancialsLock()" style="background: #334155; color: white; font-size: 0.85rem; padding: 0.4rem 0.75rem;" type="button">🔒 Locked (Click to Edit)</button>
+</div>
+</div>
+<p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1rem;">
+            Select a saved raffle date to view or edit previous figures. All day totals and weekly summary auto-calculate.
+        </p>
+<!-- Thursday Financials -->
+<div style="background: rgba(59, 130, 246, 0.1); border: 1px solid #3b82f6; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem;">
+<h3 style="margin-top: 0; color: #3b82f6;">Thursday Raffle Financials</h3>
+<div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; margin-bottom: 0.75rem;">
+<div class="form-group"><label style="font-size:0.75rem;">Ticket Start (#)</label><input class="fin-field" id="fin-thu-ticket-start" oninput="calcFinancials()" readonly="" type="number" value="1"/></div>
+<div class="form-group"><label style="font-size:0.75rem;">Ticket Finish (#)</label><input class="fin-field" id="fin-thu-ticket-finish" oninput="calcFinancials()" readonly="" type="number" value="0"/></div>
+<div class="form-group"><label style="font-size:0.75rem;">Tickets Sold</label><input class="fin-field" id="fin-thu-tickets" oninput="calcFinancials()" readonly="" type="number" value="0"/></div>
+<div class="form-group"><label style="font-size:0.75rem;">Prize Pool Total ($)</label><input class="fin-field" id="fin-thu-prizepool" oninput="calcFinancials()" readonly="" step="0.01" type="number" value="0"/></div>
+</div>
+<div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; margin-bottom: 0.75rem;">
+<div class="form-group"><label style="font-size:0.75rem;">Ticket Price Single ($)</label><input class="fin-field" id="fin-thu-price-single" oninput="calcFinancials()" readonly="" step="0.01" type="number" value="5.00"/></div>
+<div class="form-group"><label style="font-size:0.75rem;">Singles Sold</label><input class="fin-field" id="fin-thu-singles" oninput="calcFinancials()" readonly="" type="number" value="0"/></div>
+<div class="form-group"><label style="font-size:0.75rem;">Ticket Price Strip ($)</label><input class="fin-field" id="fin-thu-price-strip" oninput="calcFinancials()" readonly="" step="0.01" type="number" value="20.00"/></div>
+<div class="form-group"><label style="font-size:0.75rem;">Strips Sold</label><input class="fin-field" id="fin-thu-strips" oninput="calcFinancials()" readonly="" type="number" value="0"/></div>
+</div>
+<div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; margin-bottom: 0.75rem;">
+<div class="form-group"><label style="font-size:0.75rem;">Cash Total ($)</label><input class="fin-field" id="fin-thu-cash" oninput="calcFinancials()" readonly="" step="0.01" type="number" value="0"/></div>
+<div class="form-group"><label style="font-size:0.75rem;">EFTPOS Total ($)</label><input class="fin-field" id="fin-thu-eftpos" oninput="calcFinancials()" readonly="" step="0.01" type="number" value="0"/></div>
+<div class="form-group"><label style="font-size:0.75rem;">Reimbursements ($)</label><input class="fin-field" id="fin-thu-reimb" oninput="calcFinancials()" readonly="" step="0.01" type="number" value="0"/></div>
+<div class="form-group"><label style="font-size:0.75rem;">Thursday Total ($)</label><input id="fin-thu-total" readonly="" style="background: #0d1526; font-weight: bold; color: #3b82f6; font-size: 1rem;" type="text" value="$0.00"/></div>
+</div>
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+<div class="form-group"><label style="font-size:0.75rem;">General Notes</label><input class="fin-field" id="fin-thu-notes-gen" placeholder="Thursday general notes" readonly="" type="text"/></div>
+<div class="form-group"><label style="font-size:0.75rem;">Reimbursements Notes</label><input class="fin-field" id="fin-thu-notes-reimb" placeholder="Thursday reimbursement notes" readonly="" type="text"/></div>
+</div>
+</div>
+<!-- Sunday Financials -->
+<div style="background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem;">
+<h3 style="margin-top: 0; color: #ef4444;">Sunday Raffle Financials</h3>
+<div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; margin-bottom: 0.75rem;">
+<div class="form-group"><label style="font-size:0.75rem;">Ticket Start (#)</label><input class="fin-field" id="fin-sun-ticket-start" oninput="calcFinancials()" readonly="" type="number" value="1"/></div>
+<div class="form-group"><label style="font-size:0.75rem;">Ticket Finish (#)</label><input class="fin-field" id="fin-sun-ticket-finish" oninput="calcFinancials()" readonly="" type="number" value="0"/></div>
+<div class="form-group"><label style="font-size:0.75rem;">Tickets Sold</label><input class="fin-field" id="fin-sun-tickets" oninput="calcFinancials()" readonly="" type="number" value="0"/></div>
+<div class="form-group"><label style="font-size:0.75rem;">Prize Pool Total ($)</label><input class="fin-field" id="fin-sun-prizepool" oninput="calcFinancials()" readonly="" step="0.01" type="number" value="0"/></div>
+</div>
+<div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; margin-bottom: 0.75rem;">
+<div class="form-group"><label style="font-size:0.75rem;">Ticket Price Single ($)</label><input class="fin-field" id="fin-sun-price-single" oninput="calcFinancials()" readonly="" step="0.01" type="number" value="5.00"/></div>
+<div class="form-group"><label style="font-size:0.75rem;">Singles Sold</label><input class="fin-field" id="fin-sun-singles" oninput="calcFinancials()" readonly="" type="number" value="0"/></div>
+<div class="form-group"><label style="font-size:0.75rem;">Ticket Price Strip ($)</label><input class="fin-field" id="fin-sun-price-strip" oninput="calcFinancials()" readonly="" step="0.01" type="number" value="20.00"/></div>
+<div class="form-group"><label style="font-size:0.75rem;">Strips Sold</label><input class="fin-field" id="fin-sun-strips" oninput="calcFinancials()" readonly="" type="number" value="0"/></div>
+</div>
+<div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; margin-bottom: 0.75rem;">
+<div class="form-group"><label style="font-size:0.75rem;">Cash Total ($)</label><input class="fin-field" id="fin-sun-cash" oninput="calcFinancials()" readonly="" step="0.01" type="number" value="0"/></div>
+<div class="form-group"><label style="font-size:0.75rem;">EFTPOS Total ($)</label><input class="fin-field" id="fin-sun-eftpos" oninput="calcFinancials()" readonly="" step="0.01" type="number" value="0"/></div>
+<div class="form-group"><label style="font-size:0.75rem;">Reimbursements ($)</label><input class="fin-field" id="fin-sun-reimb" oninput="calcFinancials()" readonly="" step="0.01" type="number" value="0"/></div>
+<div class="form-group"><label style="font-size:0.75rem;">Sunday Total ($)</label><input id="fin-sun-total" readonly="" style="background: #0d1526; font-weight: bold; color: #ef4444; font-size: 1rem;" type="text" value="$0.00"/></div>
+</div>
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+<div class="form-group"><label style="font-size:0.75rem;">General Notes</label><input class="fin-field" id="fin-sun-notes-gen" placeholder="Sunday general notes" readonly="" type="text"/></div>
+<div class="form-group"><label style="font-size:0.75rem;">Reimbursements Notes</label><input class="fin-field" id="fin-sun-notes-reimb" placeholder="Sunday reimbursement notes" readonly="" type="text"/></div>
+</div>
+</div>
+<!-- Weekly Summary & Grand Totals -->
+<div style="background: rgba(16, 185, 129, 0.1); border: 1px solid #10b981; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem;">
+<h3 style="margin-top: 0; color: #10b981;">Weekly Summary &amp; Grand Totals</h3>
+<div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem;">
+<div class="form-group"><label style="font-size:0.75rem;">Combined Cash Total ($)</label><input id="fin-total-cash" readonly="" style="background: #0d1526; font-weight: bold; color: #10b981;" type="text" value="$0.00"/></div>
+<div class="form-group"><label style="font-size:0.75rem;">Combined EFTPOS Total ($)</label><input id="fin-total-eftpos" readonly="" style="background: #0d1526; font-weight: bold; color: #10b981;" type="text" value="$0.00"/></div>
+<div class="form-group"><label style="font-size:0.75rem;">Combined Reimbursements ($)</label><input id="fin-total-reimb" readonly="" style="background: #0d1526; font-weight: bold; color: #f59e0b;" type="text" value="$0.00"/></div>
+<div class="form-group"><label style="font-size:0.75rem;">Weekly Grand Total ($)</label><input id="fin-grand-total" readonly="" style="background: #0d1526; font-weight: bold; color: #10b981; font-size: 1.1rem;" type="text" value="$0.00"/></div>
+</div>
+<div style="display: grid; grid-template-columns: 1fr 1fr 2fr; gap: 1rem; margin-top: 0.5rem;">
+<div class="form-group"><label style="font-size:0.75rem;">Combined Tickets Sold</label><input id="fin-total-tickets" readonly="" style="background: #0d1526; font-weight: bold; color: #10b981;" type="text" value="0"/></div>
+<div class="form-group"><label style="font-size:0.75rem;">Combined Prize Pool Total ($)</label><input id="fin-total-prizepool" readonly="" style="background: #0d1526; font-weight: bold; color: #f59e0b;" type="text" value="$0.00"/></div>
+<div class="form-group"><label style="font-size:0.75rem;">Weekly Summary Notes</label><input class="fin-field" id="fin-weekly-notes" placeholder="Weekly summary notes" readonly="" type="text"/></div>
+</div>
+</div>
+<button class="btn btn-primary" onclick="saveFinancials()" style="width: 100%; background-color: #10b981; border-color: #059669;">💾 Save Financials &amp; Update</button>
+</div></div><div class="tab-content" id="tab-actions"><div class="card" style="margin-top: 2rem;">
+<h2>🔍 Public Verification Audit</h2>
+<p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1.5rem;">
             Patrons can scan this QR code on their phones to view the live, cryptographically-verifiable audit log of tonight's drawn numbers.
         </p>
-        <div style="text-align: center; padding: 1rem 0;">
-            <img id="qr-verify-admin" alt="Verify QR Code" style="background: white; padding: 0.5rem; border-radius: 0.5rem; width: 140px; height: 140px; border: 1.5px solid var(--border);">
-            <div style="margin-top: 0.75rem; font-size: 0.95rem; font-weight: 700; display: flex; flex-direction: column; gap: 0.5rem; align-items: center;">
-                <a href="verify.html" target="_blank" class="btn" style="width: auto; padding: 0.5rem 1rem;">Open in New Window ↗</a>
-                <button class="btn" onclick="setView('qr-verify')" style="width: auto; padding: 0.5rem 1rem; background-color: #3b82f6; border-color: #2563eb;">📺 Open on TV Screen</button>
-            </div>
-        </div>
-    </div><div class="card" style="margin-top: 2rem;">
-        <h2>🏛️ Past Results Archive</h2>
-        <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1.5rem;">
+<div style="text-align: center; padding: 1rem 0;">
+<img alt="Verify QR Code" id="qr-verify-admin" style="background: white; padding: 0.5rem; border-radius: 0.5rem; width: 140px; height: 140px; border: 1.5px solid var(--border);"/>
+<div style="margin-top: 0.75rem; font-size: 0.95rem; font-weight: 700; display: flex; flex-direction: column; gap: 0.5rem; align-items: center;">
+<a class="btn" href="verify.html" style="width: auto; padding: 0.5rem 1rem;" target="_blank">Open in New Window ↗</a>
+<button class="btn" onclick="setView('qr-verify')" style="width: auto; padding: 0.5rem 1rem; background-color: #3b82f6; border-color: #2563eb;">📺 Open on TV Screen</button>
+</div>
+</div>
+</div><div class="card" style="margin-top: 2rem;">
+<h2>🏛️ Past Results Archive</h2>
+<p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1.5rem;">
             Patrons can scan this QR code to view historical draw results.
         </p>
-        <div style="text-align: center; padding: 1rem 0;">
-            <img id="qr-archive-admin" alt="Archive QR Code" style="background: white; padding: 0.5rem; border-radius: 0.5rem; width: 140px; height: 140px; border: 1.5px solid var(--border);">
-            <div style="margin-top: 0.75rem; font-size: 0.95rem; font-weight: 700; display: flex; flex-direction: column; gap: 0.5rem; align-items: center;">
-                <a href="archive.html" target="_blank" class="btn" style="width: auto; padding: 0.5rem 1rem;">Open in New Window ↗</a>
-                <button class="btn" onclick="setView('qr-archive')" style="width: auto; padding: 0.5rem 1rem; background-color: #3b82f6; border-color: #2563eb;">📺 Open on TV Screen</button>
-            </div>
-        </div>
-    </div><div class="card">
-        <div style="display: flex; justify-content: space-between; align-items: start;">
-            <h2>Google Sheets Synchronization</h2>
-            <a id="open-sheet-link" href="#" target="_blank" onclick="return openSheet()" style="font-size:0.8rem; color:var(--primary); text-decoration:none; font-weight:bold;">
+<div style="text-align: center; padding: 1rem 0;">
+<img alt="Archive QR Code" id="qr-archive-admin" style="background: white; padding: 0.5rem; border-radius: 0.5rem; width: 140px; height: 140px; border: 1.5px solid var(--border);"/>
+<div style="margin-top: 0.75rem; font-size: 0.95rem; font-weight: 700; display: flex; flex-direction: column; gap: 0.5rem; align-items: center;">
+<a class="btn" href="archive.html" style="width: auto; padding: 0.5rem 1rem;" target="_blank">Open in New Window ↗</a>
+<button class="btn" onclick="setView('qr-archive')" style="width: auto; padding: 0.5rem 1rem; background-color: #3b82f6; border-color: #2563eb;">📺 Open on TV Screen</button>
+</div>
+</div>
+</div><div class="card">
+<div style="display: flex; justify-content: space-between; align-items: start;">
+<h2>Google Sheets Synchronization</h2>
+<a href="#" id="open-sheet-link" onclick="return openSheet()" style="font-size:0.8rem; color:var(--primary); text-decoration:none; font-weight:bold;" target="_blank">
                 📊 Open Google Sheet ↗
             </a>
-        </div>
-        <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem;">
+</div>
+<p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem;">
             Data is securely fetched from the hardcoded spreadsheet. Click Sync to pull the latest changes.
         </p>
-
-        <button class="btn btn-primary" onclick="syncFromSheets()">🔄 SYNC EVERYTHING NOW</button>
-        
-        <div id="status" class="status"></div>
-
-        <div id="slides-management" style="margin-top: 1.5rem; display: none;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                <label style="margin:0;">Manage Slide Visibility</label>
-                <button class="btn" style="width: auto; padding: 0.2rem 0.8rem; font-size: 0.7rem; background: var(--bg);" onclick="resetVisibility()">RESET ALL</button>
-            </div>
-            <div id="slides-list" style="background: var(--bg); border: 1px solid var(--border); border-radius: 0.5rem; padding: 1rem; max-height: 250px; overflow-y: auto;">
-                <!-- Slides injected here -->
-            </div>
-            <button class="btn btn-primary" style="margin-top: 1rem;" onclick="saveDisabledSlides()">💾 Apply Visibility Changes</button>
-            <div id="slide-status" class="status"></div>
-        </div>
-
-        <div style="margin-top: 2rem;">
-            <label>Slides Sheet — Columns Required</label>
-            <pre>Title, Subtitle, Type, Duration, BackgroundImg, OverlayImg, BubbleText, WinnerPhotos
+<button class="btn btn-primary" onclick="syncFromSheets()">🔄 SYNC EVERYTHING NOW</button>
+<div class="status" id="status"></div>
+<div id="slides-management" style="margin-top: 1.5rem; display: none;">
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+<label style="margin:0;">Manage Slide Visibility</label>
+<button class="btn" onclick="resetVisibility()" style="width: auto; padding: 0.2rem 0.8rem; font-size: 0.7rem; background: var(--bg);">RESET ALL</button>
+</div>
+<div id="slides-list" style="background: var(--bg); border: 1px solid var(--border); border-radius: 0.5rem; padding: 1rem; max-height: 250px; overflow-y: auto;">
+<!-- Slides injected here -->
+</div>
+<button class="btn btn-primary" onclick="saveDisabledSlides()" style="margin-top: 1rem;">💾 Apply Visibility Changes</button>
+<div class="status" id="slide-status"></div>
+</div>
+<div style="margin-top: 2rem;">
+<label>Slides Sheet — Columns Required</label>
+<pre>Title, Subtitle, Type, Duration, BackgroundImg, OverlayImg, BubbleText, WinnerPhotos
 "Time Until Draw", "", "countdown", 30000, "", "", "", ""
 "Sponsor", "Coasters Tavern", "normal", 30000, "bg.jpg", "logo.png", "", ""
 "Avatar", "Enjoy!", "avatar", 15000, "office.jpg", "avatar.png", "Hello!", ""
 "Winners", "Recent!", "winners", 20000, "wall.jpg", "", "", "w1.jpg,w2.jpg"</pre>
-            <p style="font-size:0.75rem; color:var(--text-muted); margin-top:0.5rem;">
+<p style="font-size:0.75rem; color:var(--text-muted); margin-top:0.5rem;">
                 Columns must exactly match this order. <strong>WinnerPhotos</strong> expects comma-separated URLs.
             </p>
-        </div>
-    </div><div class="card" style="margin-top: 1.5rem;">
-        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.75rem;">
-            <h2 style="margin: 0;">💰 Financials &amp; Raffle Audit</h2>
-            <div style="display: flex; align-items: center; gap: 0.5rem;">
-                <label style="font-size: 0.85rem; font-weight: bold; color: var(--text-muted);">Saved Raffles:</label>
-                <select id="fin-saved-dates" onchange="onSelectSavedFinancialDate()" style="padding: 0.4rem 0.75rem; border-radius: 0.375rem; background: #0f172a; color: white; border: 1px solid #334155; font-weight: bold; font-size: 0.85rem;">
-                    <option value="current">-- Current Active Raffle --</option>
-                </select>
-                <button type="button" class="btn" id="btn-toggle-fin-lock" onclick="toggleFinancialsLock()" style="background: #334155; color: white; font-size: 0.85rem; padding: 0.4rem 0.75rem;">🔒 Locked (Click to Edit)</button>
-            </div>
-        </div>
-        <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1rem;">
-            Select a saved raffle date to view or edit previous figures. All day totals and weekly summary auto-calculate.
-        </p>
-
-        <!-- Thursday Financials -->
-        <div style="background: rgba(59, 130, 246, 0.1); border: 1px solid #3b82f6; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem;">
-            <h3 style="margin-top: 0; color: #3b82f6;">Thursday Raffle Financials</h3>
-            
-            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; margin-bottom: 0.75rem;">
-                <div class="form-group"><label style="font-size:0.75rem;">Ticket Start (#)</label><input type="number" id="fin-thu-ticket-start" value="1" readonly="" class="fin-field" oninput="calcFinancials()"></div>
-                <div class="form-group"><label style="font-size:0.75rem;">Ticket Finish (#)</label><input type="number" id="fin-thu-ticket-finish" value="0" readonly="" class="fin-field" oninput="calcFinancials()"></div>
-                <div class="form-group"><label style="font-size:0.75rem;">Tickets Sold</label><input type="number" id="fin-thu-tickets" value="0" readonly="" class="fin-field" oninput="calcFinancials()"></div>
-                <div class="form-group"><label style="font-size:0.75rem;">Prize Pool Total ($)</label><input type="number" id="fin-thu-prizepool" value="0" step="0.01" readonly="" class="fin-field" oninput="calcFinancials()"></div>
-            </div>
-
-            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; margin-bottom: 0.75rem;">
-                <div class="form-group"><label style="font-size:0.75rem;">Ticket Price Single ($)</label><input type="number" id="fin-thu-price-single" value="5.00" step="0.01" readonly="" class="fin-field" oninput="calcFinancials()"></div>
-                <div class="form-group"><label style="font-size:0.75rem;">Singles Sold</label><input type="number" id="fin-thu-singles" value="0" readonly="" class="fin-field" oninput="calcFinancials()"></div>
-                <div class="form-group"><label style="font-size:0.75rem;">Ticket Price Strip ($)</label><input type="number" id="fin-thu-price-strip" value="20.00" step="0.01" readonly="" class="fin-field" oninput="calcFinancials()"></div>
-                <div class="form-group"><label style="font-size:0.75rem;">Strips Sold</label><input type="number" id="fin-thu-strips" value="0" readonly="" class="fin-field" oninput="calcFinancials()"></div>
-            </div>
-
-            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; margin-bottom: 0.75rem;">
-                <div class="form-group"><label style="font-size:0.75rem;">Cash Total ($)</label><input type="number" id="fin-thu-cash" value="0" step="0.01" readonly="" class="fin-field" oninput="calcFinancials()"></div>
-                <div class="form-group"><label style="font-size:0.75rem;">EFTPOS Total ($)</label><input type="number" id="fin-thu-eftpos" value="0" step="0.01" readonly="" class="fin-field" oninput="calcFinancials()"></div>
-                <div class="form-group"><label style="font-size:0.75rem;">Reimbursements ($)</label><input type="number" id="fin-thu-reimb" value="0" step="0.01" readonly="" class="fin-field" oninput="calcFinancials()"></div>
-                <div class="form-group"><label style="font-size:0.75rem;">Thursday Total ($)</label><input type="text" id="fin-thu-total" value="$0.00" readonly="" style="background: #0d1526; font-weight: bold; color: #3b82f6; font-size: 1rem;"></div>
-            </div>
-
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
-                <div class="form-group"><label style="font-size:0.75rem;">General Notes</label><input type="text" id="fin-thu-notes-gen" readonly="" class="fin-field" placeholder="Thursday general notes"></div>
-                <div class="form-group"><label style="font-size:0.75rem;">Reimbursements Notes</label><input type="text" id="fin-thu-notes-reimb" readonly="" class="fin-field" placeholder="Thursday reimbursement notes"></div>
-            </div>
-        </div>
-
-        <!-- Sunday Financials -->
-        <div style="background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem;">
-            <h3 style="margin-top: 0; color: #ef4444;">Sunday Raffle Financials</h3>
-
-            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; margin-bottom: 0.75rem;">
-                <div class="form-group"><label style="font-size:0.75rem;">Ticket Start (#)</label><input type="number" id="fin-sun-ticket-start" value="1" readonly="" class="fin-field" oninput="calcFinancials()"></div>
-                <div class="form-group"><label style="font-size:0.75rem;">Ticket Finish (#)</label><input type="number" id="fin-sun-ticket-finish" value="0" readonly="" class="fin-field" oninput="calcFinancials()"></div>
-                <div class="form-group"><label style="font-size:0.75rem;">Tickets Sold</label><input type="number" id="fin-sun-tickets" value="0" readonly="" class="fin-field" oninput="calcFinancials()"></div>
-                <div class="form-group"><label style="font-size:0.75rem;">Prize Pool Total ($)</label><input type="number" id="fin-sun-prizepool" value="0" step="0.01" readonly="" class="fin-field" oninput="calcFinancials()"></div>
-            </div>
-
-            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; margin-bottom: 0.75rem;">
-                <div class="form-group"><label style="font-size:0.75rem;">Ticket Price Single ($)</label><input type="number" id="fin-sun-price-single" value="5.00" step="0.01" readonly="" class="fin-field" oninput="calcFinancials()"></div>
-                <div class="form-group"><label style="font-size:0.75rem;">Singles Sold</label><input type="number" id="fin-sun-singles" value="0" readonly="" class="fin-field" oninput="calcFinancials()"></div>
-                <div class="form-group"><label style="font-size:0.75rem;">Ticket Price Strip ($)</label><input type="number" id="fin-sun-price-strip" value="20.00" step="0.01" readonly="" class="fin-field" oninput="calcFinancials()"></div>
-                <div class="form-group"><label style="font-size:0.75rem;">Strips Sold</label><input type="number" id="fin-sun-strips" value="0" readonly="" class="fin-field" oninput="calcFinancials()"></div>
-            </div>
-
-            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; margin-bottom: 0.75rem;">
-                <div class="form-group"><label style="font-size:0.75rem;">Cash Total ($)</label><input type="number" id="fin-sun-cash" value="0" step="0.01" readonly="" class="fin-field" oninput="calcFinancials()"></div>
-                <div class="form-group"><label style="font-size:0.75rem;">EFTPOS Total ($)</label><input type="number" id="fin-sun-eftpos" value="0" step="0.01" readonly="" class="fin-field" oninput="calcFinancials()"></div>
-                <div class="form-group"><label style="font-size:0.75rem;">Reimbursements ($)</label><input type="number" id="fin-sun-reimb" value="0" step="0.01" readonly="" class="fin-field" oninput="calcFinancials()"></div>
-                <div class="form-group"><label style="font-size:0.75rem;">Sunday Total ($)</label><input type="text" id="fin-sun-total" value="$0.00" readonly="" style="background: #0d1526; font-weight: bold; color: #ef4444; font-size: 1rem;"></div>
-            </div>
-
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
-                <div class="form-group"><label style="font-size:0.75rem;">General Notes</label><input type="text" id="fin-sun-notes-gen" readonly="" class="fin-field" placeholder="Sunday general notes"></div>
-                <div class="form-group"><label style="font-size:0.75rem;">Reimbursements Notes</label><input type="text" id="fin-sun-notes-reimb" readonly="" class="fin-field" placeholder="Sunday reimbursement notes"></div>
-            </div>
-        </div>
-
-        <!-- Weekly Summary & Grand Totals -->
-        <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid #10b981; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem;">
-            <h3 style="margin-top: 0; color: #10b981;">Weekly Summary &amp; Grand Totals</h3>
-            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem;">
-                <div class="form-group"><label style="font-size:0.75rem;">Combined Cash Total ($)</label><input type="text" id="fin-total-cash" value="$0.00" readonly="" style="background: #0d1526; font-weight: bold; color: #10b981;"></div>
-                <div class="form-group"><label style="font-size:0.75rem;">Combined EFTPOS Total ($)</label><input type="text" id="fin-total-eftpos" value="$0.00" readonly="" style="background: #0d1526; font-weight: bold; color: #10b981;"></div>
-                <div class="form-group"><label style="font-size:0.75rem;">Combined Reimbursements ($)</label><input type="text" id="fin-total-reimb" value="$0.00" readonly="" style="background: #0d1526; font-weight: bold; color: #f59e0b;"></div>
-                <div class="form-group"><label style="font-size:0.75rem;">Weekly Grand Total ($)</label><input type="text" id="fin-grand-total" value="$0.00" readonly="" style="background: #0d1526; font-weight: bold; color: #10b981; font-size: 1.1rem;"></div>
-            </div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr 2fr; gap: 1rem; margin-top: 0.5rem;">
-                <div class="form-group"><label style="font-size:0.75rem;">Combined Tickets Sold</label><input type="text" id="fin-total-tickets" value="0" readonly="" style="background: #0d1526; font-weight: bold; color: #10b981;"></div>
-                <div class="form-group"><label style="font-size:0.75rem;">Combined Prize Pool Total ($)</label><input type="text" id="fin-total-prizepool" value="$0.00" readonly="" style="background: #0d1526; font-weight: bold; color: #f59e0b;"></div>
-                <div class="form-group"><label style="font-size:0.75rem;">Weekly Summary Notes</label><input type="text" id="fin-weekly-notes" readonly="" class="fin-field" placeholder="Weekly summary notes"></div>
-            </div>
-        </div>
-
-        <button class="btn btn-primary" onclick="saveFinancials()" style="width: 100%; background-color: #10b981; border-color: #059669;">💾 Save Financials &amp; Update</button>
-    </div><div class="card" style="margin-top: 2rem;">
-        <h2>📋 End of Week &amp; Print</h2>
-        <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
-            <button class="btn btn-primary" onclick="printFullDraw()" style="flex:1;">🖨️ Full Draw Print</button>
-            <button class="btn btn-primary" onclick="printManualDraw()" style="flex:1; background-color: #6366f1; border-color: #4f46e5;">🖨️ Manual Draw Print</button>
-            <button class="btn btn-primary" onclick="printGenericDraw()" style="flex:1; background-color: #f59e0b; border-color: #d97706;">🖨️ Generic Draw Print</button>
-            <button class="btn btn-primary" onclick="printBlankDraw()" style="flex:1; background-color: #94a3b8; border-color: #64748b;">🖨️ Blank Draw Print</button>
-        </div>
-        <button class="btn btn-danger" onclick="archiveDraws()" style="width: 100%; background-color: #ef4444; border-color: #dc2626; color: white;">⚠️ Confirm End of Week Draws</button>
-        <button class="btn btn-danger" onclick="resetAllData()" style="width: 100%; background-color: #7f1d1d; border-color: #450a0a; color: white; margin-top: 0.5rem;">🚨 Reset All Data (New Week)</button>
-    </div><div class="card" style="margin-top: 2rem;">
-        <h2>📱 Quick Access QR Codes</h2>
-        <div style="display: flex; justify-content: space-between; gap: 1rem; margin-top: 1rem;">
-            <div style="text-align: center; flex: 1;">
-                <img id="qr-display" alt="TV Display QR" style="background: white; padding: 0.5rem; display: inline-block; border-radius: 0.5rem; width: 120px; height: 120px; border: 1.5px solid var(--border);">
-                <div style="margin-top: 0.5rem; font-size: 0.8rem;">TV Display</div>
-                <a id="link-display" href="#" target="_blank" style="color: var(--primary); font-size: 0.7rem;">Open ↗</a>
-            </div>
-            <div style="text-align: center; flex: 1;">
-                <img id="qr-remote" alt="Remote App QR" style="background: white; padding: 0.5rem; display: inline-block; border-radius: 0.5rem; width: 120px; height: 120px; border: 1.5px solid var(--border);">
-                <div style="margin-top: 0.5rem; font-size: 0.8rem;">Remote App</div>
-                <a id="link-remote" href="#" target="_blank" style="color: var(--primary); font-size: 0.7rem;">Open ↗</a>
-            </div>
-            <div style="text-align: center; flex: 1;">
-                <img id="qr-admin" alt="Admin Portal QR" style="background: white; padding: 0.5rem; display: inline-block; border-radius: 0.5rem; width: 120px; height: 120px; border: 1.5px solid var(--border);">
-                <div style="margin-top: 0.5rem; font-size: 0.8rem;">Admin Portal</div>
-                <a id="link-admin" href="#" target="_blank" style="color: var(--primary); font-size: 0.7rem;">Open ↗</a>
-            </div>
-            <div style="text-align: center; flex: 1;">
-                <img id="qr-archive" alt="Archive List QR" style="background: white; padding: 0.5rem; display: inline-block; border-radius: 0.5rem; width: 120px; height: 120px; border: 1.5px solid var(--border);">
-                <div style="margin-top: 0.5rem; font-size: 0.8rem;">Archive List</div>
-                <a id="link-archive" href="#" target="_blank" style="color: var(--primary); font-size: 0.7rem;">Open ↗</a>
-            </div>
-        </div>
-    </div><div class="card" style="margin-top: 2rem;">
-        <h2>🌐 Cross-Device Sync (Firebase)</h2>
-        <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1rem;">
+</div>
+</div><div class="card" style="margin-top: 2rem;">
+<h2>📋 End of Week &amp; Print</h2>
+<div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
+<button class="btn btn-primary" onclick="printFullDraw()" style="flex:1;">🖨️ Full Draw Print</button>
+<button class="btn btn-primary" onclick="printManualDraw()" style="flex:1; background-color: #6366f1; border-color: #4f46e5;">🖨️ Manual Draw Print</button>
+<button class="btn btn-primary" onclick="printGenericDraw()" style="flex:1; background-color: #f59e0b; border-color: #d97706;">🖨️ Generic Draw Print</button>
+<button class="btn btn-primary" onclick="printBlankDraw()" style="flex:1; background-color: #94a3b8; border-color: #64748b;">🖨️ Blank Draw Print</button>
+</div>
+<button class="btn btn-danger" onclick="archiveDraws()" style="width: 100%; background-color: #ef4444; border-color: #dc2626; color: white;">⚠️ Confirm End of Week Draws</button>
+<button class="btn btn-danger" onclick="resetAllData()" style="width: 100%; background-color: #7f1d1d; border-color: #450a0a; color: white; margin-top: 0.5rem;">🚨 Reset All Data (New Week)</button>
+</div><div class="card" style="margin-top: 2rem;">
+<h2>📱 Quick Access QR Codes</h2>
+<div style="display: flex; justify-content: space-between; gap: 1rem; margin-top: 1rem;">
+<div style="text-align: center; flex: 1;">
+<img alt="TV Display QR" id="qr-display" style="background: white; padding: 0.5rem; display: inline-block; border-radius: 0.5rem; width: 120px; height: 120px; border: 1.5px solid var(--border);"/>
+<div style="margin-top: 0.5rem; font-size: 0.8rem;">TV Display</div>
+<a href="#" id="link-display" style="color: var(--primary); font-size: 0.7rem;" target="_blank">Open ↗</a>
+</div>
+<div style="text-align: center; flex: 1;">
+<img alt="Remote App QR" id="qr-remote" style="background: white; padding: 0.5rem; display: inline-block; border-radius: 0.5rem; width: 120px; height: 120px; border: 1.5px solid var(--border);"/>
+<div style="margin-top: 0.5rem; font-size: 0.8rem;">Remote App</div>
+<a href="#" id="link-remote" style="color: var(--primary); font-size: 0.7rem;" target="_blank">Open ↗</a>
+</div>
+<div style="text-align: center; flex: 1;">
+<img alt="Admin Portal QR" id="qr-admin" style="background: white; padding: 0.5rem; display: inline-block; border-radius: 0.5rem; width: 120px; height: 120px; border: 1.5px solid var(--border);"/>
+<div style="margin-top: 0.5rem; font-size: 0.8rem;">Admin Portal</div>
+<a href="#" id="link-admin" style="color: var(--primary); font-size: 0.7rem;" target="_blank">Open ↗</a>
+</div>
+<div style="text-align: center; flex: 1;">
+<img alt="Archive List QR" id="qr-archive" style="background: white; padding: 0.5rem; display: inline-block; border-radius: 0.5rem; width: 120px; height: 120px; border: 1.5px solid var(--border);"/>
+<div style="margin-top: 0.5rem; font-size: 0.8rem;">Archive List</div>
+<a href="#" id="link-archive" style="color: var(--primary); font-size: 0.7rem;" target="_blank">Open ↗</a>
+</div>
+</div>
+</div><div class="card" style="margin-top: 2rem;">
+<h2>🌐 Cross-Device Sync (Firebase)</h2>
+<p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1rem;">
             Enter your Firebase Realtime Database URL to sync controls across devices on different networks.
         </p>
-        <div class="form-group">
-            <label>Database URL</label>
-            <input type="text" id="fb-url" placeholder="https://your-project.firebaseio.com">
-        </div>
-        <button class="btn btn-primary" onclick="saveFirebaseConfig()">💾 Save Firebase Config</button>
-        <div id="fb-status" class="status"></div>
-    </div><div class="card" style="margin-top: 2rem;">
-        <h2>🎮 Slide Navigation</h2>
-        <div class="btn-group">
-            <button class="btn" onclick="remoteSlide('prev')">⏮ Previous</button>
-            <button class="btn" onclick="remoteSlide('toggle')" id="btn-play-pause">⏸ Pause</button>
-            <button class="btn" onclick="remoteSlide('next')">Next ⏭</button>
-        </div>
-    </div><div class="card" style="margin-top: 2rem;">
-        <h2>🖨️ Meat Raffle Record Sheets</h2>
-        <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1.5rem;">
+<div class="form-group">
+<label>Database URL</label>
+<input id="fb-url" placeholder="https://your-project.firebaseio.com" type="text"/>
+</div>
+<button class="btn btn-primary" onclick="saveFirebaseConfig()">💾 Save Firebase Config</button>
+<div class="status" id="fb-status"></div>
+</div><div class="card" style="margin-top: 2rem;">
+<h2>🎮 Slide Navigation</h2>
+<div class="btn-group">
+<button class="btn" onclick="remoteSlide('prev')">⏮ Previous</button>
+<button class="btn" id="btn-play-pause" onclick="remoteSlide('toggle')">⏸ Pause</button>
+<button class="btn" onclick="remoteSlide('next')">Next ⏭</button>
+</div>
+</div><div class="card" style="margin-top: 2rem;">
+<h2>🖨️ Meat Raffle Record Sheets</h2>
+<p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1.5rem;">
             Print Tonight's Meat Raffle Prize Checklist or an empty financial sheet for manual tracking.
         </p>
-        <div style="display: flex; gap: 1rem;">
-            <button class="btn btn-primary" onclick="printManualRecordSheet()" style="flex: 1; padding: 0.8rem; font-size: 1rem; background-color: #2563eb; border-color: #1d4ed8; color: white;">🖨️ Print Checklist &amp; Financials</button>
-            <button class="btn btn-primary" onclick="printEmptyFinancialSheetOnly()" style="flex: 1; padding: 0.8rem; font-size: 1rem; background-color: #10b981; border-color: #059669; color: white;">🖨️ Print Empty Financial Sheet</button>
-        </div>
-    </div><div class="card" style="margin-top: 2rem;">
-        <h2>🔑 Access PIN</h2>
-        <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1.5rem;">
-            Set the PIN required to access Admin and Remote pages.<br>
+<div style="display: flex; gap: 1rem;">
+<button class="btn btn-primary" onclick="printManualRecordSheet()" style="flex: 1; padding: 0.8rem; font-size: 1rem; background-color: #2563eb; border-color: #1d4ed8; color: white;">🖨️ Print Checklist &amp; Financials</button>
+<button class="btn btn-primary" onclick="printEmptyFinancialSheetOnly()" style="flex: 1; padding: 0.8rem; font-size: 1rem; background-color: #10b981; border-color: #059669; color: white;">🖨️ Print Empty Financial Sheet</button>
+</div>
+</div><div class="card" style="margin-top: 2rem;">
+<h2>🔑 Access PIN</h2>
+<p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1.5rem;">
+            Set the PIN required to access Admin and Remote pages.<br/>
             Default PIN is <code style="background: var(--bg); padding: 0.2rem 0.5rem; border-radius: 0.3rem;">5551</code>
-        </p>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-            <div class="form-group">
-                <label>New PIN</label>
-                <input type="password" id="new-pin" maxlength="8" placeholder="Min. 4 characters" autocomplete="new-password">
-            </div>
-            <div class="form-group">
-                <label>Confirm PIN</label>
-                <input type="password" id="confirm-pin" maxlength="8" placeholder="Re-enter PIN" autocomplete="new-password">
-            </div>
-        </div>
-        <button class="btn btn-primary" onclick="changePin()">💾 Save PIN</button>
-        <div id="pin-change-status" class="status"></div>
-    </div></div></div>
-
-    <!-- Verification QR Code -->
-    
-
-    <!-- Archive QR Code -->
-    
-
-    
-
-    <!-- Draw Configuration -->
-    
-    
-    <!-- Financial Entry -->
-        <!-- Resume Draw Dialog -->
-    <div id="resume-dialog" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:9999; align-items:center; justify-content:center;">
-        <div style="background:var(--bg); border: 2px solid var(--primary); padding: 2rem; border-radius: 1rem; text-align: center; max-width: 400px;">
-            <h2 style="margin-top:0; color:var(--primary);">Draw In Progress</h2>
-            <p>It looks like a draw was interrupted or hasn't finished yet.</p>
-            <p>Would you like to continue the current draw, or archive it and start a new one with the current configuration?</p>
-            <div style="display: flex; gap: 1rem; justify-content: center; margin-top: 2rem;">
-                <button class="btn" onclick="document.getElementById('resume-dialog').style.display='none'" style="background: #3b82f6; border-color: #2563eb; color: white;">Continue Draw</button>
-                <button class="btn" onclick="startNewDrawFromDialog()" style="background: #ef4444; border-color: #dc2626; color: white;">Start New Draw</button>
-            </div>
-        </div>
-    </div>
-    
-    <script>
+</p>
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+<div class="form-group">
+<label>New PIN</label>
+<input autocomplete="new-password" id="new-pin" maxlength="8" placeholder="Min. 4 characters" type="password"/>
+</div>
+<div class="form-group">
+<label>Confirm PIN</label>
+<input autocomplete="new-password" id="confirm-pin" maxlength="8" placeholder="Re-enter PIN" type="password"/>
+</div>
+</div>
+<button class="btn btn-primary" onclick="changePin()">💾 Save PIN</button>
+<div class="status" id="pin-change-status"></div>
+</div></div></div>
+<!-- Verification QR Code -->
+<!-- Archive QR Code -->
+<!-- Draw Configuration -->
+<!-- Financial Entry -->
+<!-- Resume Draw Dialog -->
+<div id="resume-dialog" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:9999; align-items:center; justify-content:center;">
+<div style="background:var(--bg); border: 2px solid var(--primary); padding: 2rem; border-radius: 1rem; text-align: center; max-width: 400px;">
+<h2 style="margin-top:0; color:var(--primary);">Draw In Progress</h2>
+<p>It looks like a draw was interrupted or hasn't finished yet.</p>
+<p>Would you like to continue the current draw, or archive it and start a new one with the current configuration?</p>
+<div style="display: flex; gap: 1rem; justify-content: center; margin-top: 2rem;">
+<button class="btn" onclick="document.getElementById('resume-dialog').style.display='none'" style="background: #3b82f6; border-color: #2563eb; color: white;">Continue Draw</button>
+<button class="btn" onclick="startNewDrawFromDialog()" style="background: #ef4444; border-color: #dc2626; color: white;">Start New Draw</button>
+</div>
+</div>
+</div>
+<script>
         function checkInProgressDraw() {
             if (!state || !state.draw) return;
             const evt = state.draw[state.draw.activeEvent || 'thursday'];
