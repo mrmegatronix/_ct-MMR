@@ -1594,6 +1594,13 @@ button, .btn { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         }
 
         function setView(view) {
+            if (view === 'draw') {
+                if (state && state.draw && state.draw.activeEvent && state.draw[state.draw.activeEvent]) {
+                    if (state.draw[state.draw.activeEvent].currentPrize === 'generic') {
+                        state.draw[state.draw.activeEvent].currentPrize = 100;
+                    }
+                }
+            }
             state.activeView = view;
             updateViewButtons();
             bc.postMessage({ type: 'STATE_UPDATE', payload: { activeView: view } });
@@ -1628,6 +1635,28 @@ button, .btn { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
                 const isDrawGeneric = active === 'draw' && state.draw && state.draw.activeEvent && state.draw[state.draw.activeEvent] && state.draw[state.draw.activeEvent].currentPrize === 'generic';
                 const isCongrats = active === 'congrats';
                 const isCongratsVideo = active === 'congrats-video';
+            const valBtns = [
+                document.getElementById('btn-draw-100'), document.getElementById('btn-redraw-100'),
+                document.getElementById('btn-draw-50'), document.getElementById('btn-redraw-50'),
+                document.getElementById('btn-draw-25'), document.getElementById('btn-redraw-25'),
+                document.getElementById('btn-draw-act-bonus'), document.getElementById('btn-redraw-act-bonus'),
+                document.getElementById('btn-draw-act-voucher'), document.getElementById('btn-redraw-act-voucher')
+            ];
+            const genBtns = [
+                document.getElementById('btn-draw-act-generic'), document.getElementById('btn-redraw-act-generic')
+            ];
+            
+            if (isDrawGeneric) {
+                valBtns.forEach(b => { if(b) b.disabled = true; });
+                genBtns.forEach(b => { if(b) b.disabled = false; });
+            } else if (isDraw) {
+                valBtns.forEach(b => { if(b) b.disabled = false; });
+                genBtns.forEach(b => { if(b) b.disabled = true; });
+            } else {
+                valBtns.forEach(b => { if(b) b.disabled = false; });
+                genBtns.forEach(b => { if(b) b.disabled = false; });
+            }
+
 
                 btnSlides.style.backgroundColor = isSlides ? '#2563eb' : 'rgba(30, 41, 59, 0.8)';
                 btnSlides.style.borderColor = isSlides ? '#60a5fa' : 'var(--border)';

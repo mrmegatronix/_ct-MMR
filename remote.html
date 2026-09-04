@@ -509,10 +509,10 @@ button, .btn { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 <div class="draw-control-subtitle">Special Prize</div>
 </div>
 <div class="draw-control-actions">
-<button class="btn draw-btn btn-draw-main" onclick="runDraw('bonus')" style="background-color: #eab308; border-color: #ca8a04; color: black;">
+<button class="btn draw-btn btn-draw-main" id="btn-draw-act-bonus" onclick="runDraw('bonus')" style="background-color: #eab308; border-color: #ca8a04; color: black;">
                             🎁 DRAW BONUS
                         </button>
-<button class="btn draw-btn btn-redraw-icon" onclick="runRedraw('bonus')" style="background-color: #1e293b; border-color: #eab308; color: #eab308;" title="Redraw Bonus">
+<button class="btn draw-btn btn-redraw-icon" id="btn-redraw-act-bonus" onclick="runRedraw('bonus')" style="background-color: #1e293b; border-color: #eab308; color: #eab308;" title="Redraw Bonus">
                             🔄 REDRAW
                         </button>
 </div>
@@ -524,10 +524,10 @@ button, .btn { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 <div class="draw-control-subtitle">Voucher</div>
 </div>
 <div class="draw-control-actions">
-<button class="btn draw-btn btn-draw-main" onclick="runDraw('voucher')" style="background-color: #ffffff; border-color: #cbd5e1; color: black;">
+<button class="btn draw-btn btn-draw-main" id="btn-draw-act-voucher" onclick="runDraw('voucher')" style="background-color: #ffffff; border-color: #cbd5e1; color: black;">
                             🎟️ DRAW VOUCHER
                         </button>
-<button class="btn draw-btn btn-redraw-icon" onclick="runRedraw('voucher')" style="background-color: #1e293b; border-color: #ffffff; color: #ffffff;" title="Redraw Voucher">
+<button class="btn draw-btn btn-redraw-icon" id="btn-redraw-act-voucher" onclick="runRedraw('voucher')" style="background-color: #1e293b; border-color: #ffffff; color: #ffffff;" title="Redraw Voucher">
                             🔄 REDRAW
                         </button>
 </div>
@@ -539,10 +539,10 @@ button, .btn { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 <div class="draw-control-subtitle">No pre-set prize</div>
 </div>
 <div class="draw-control-actions">
-<button class="btn draw-btn btn-draw-main" onclick="runDraw('generic')" style="background-color: #fbbf24; border-color: #f59e0b; color: black;">
+<button class="btn draw-btn btn-draw-main" id="btn-draw-act-generic" onclick="runDraw('generic')" style="background-color: #fbbf24; border-color: #f59e0b; color: black;">
                             ⭐ DRAW NUMBER
                         </button>
-<button class="btn draw-btn btn-redraw-icon" onclick="runRedraw('generic')" style="background-color: #1e293b; border-color: #fbbf24; color: #fbbf24;" title="Redraw Generic">
+<button class="btn draw-btn btn-redraw-icon" id="btn-redraw-act-generic" onclick="runRedraw('generic')" style="background-color: #1e293b; border-color: #fbbf24; color: #fbbf24;" title="Redraw Generic">
                             🔄 REDRAW
                         </button>
 </div>
@@ -1223,6 +1223,28 @@ button, .btn { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
                 const isDrawGeneric = active === 'draw' && state.draw && state.draw.activeEvent && state.draw[state.draw.activeEvent] && state.draw[state.draw.activeEvent].currentPrize === 'generic';
                 const isCongrats = active === 'congrats';
                 const isCongratsVideo = active === 'congrats-video';
+            const valBtns = [
+                document.getElementById('btn-draw-100'), document.getElementById('btn-redraw-100'),
+                document.getElementById('btn-draw-50'), document.getElementById('btn-redraw-50'),
+                document.getElementById('btn-draw-25'), document.getElementById('btn-redraw-25'),
+                document.getElementById('btn-draw-act-bonus'), document.getElementById('btn-redraw-act-bonus'),
+                document.getElementById('btn-draw-act-voucher'), document.getElementById('btn-redraw-act-voucher')
+            ];
+            const genBtns = [
+                document.getElementById('btn-draw-act-generic'), document.getElementById('btn-redraw-act-generic')
+            ];
+            
+            if (isDrawGeneric) {
+                valBtns.forEach(b => { if(b) b.disabled = true; });
+                genBtns.forEach(b => { if(b) b.disabled = false; });
+            } else if (isDraw) {
+                valBtns.forEach(b => { if(b) b.disabled = false; });
+                genBtns.forEach(b => { if(b) b.disabled = true; });
+            } else {
+                valBtns.forEach(b => { if(b) b.disabled = false; });
+                genBtns.forEach(b => { if(b) b.disabled = false; });
+            }
+
 
                 btnSlides.style.backgroundColor = isSlides ? '#2563eb' : 'rgba(30, 41, 59, 0.8)';
                 btnSlides.style.borderColor = isSlides ? '#60a5fa' : 'var(--border)';
@@ -1281,6 +1303,13 @@ button, .btn { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         }
 
         function setView(view) {
+            if (view === 'draw') {
+                if (state && state.draw && state.draw.activeEvent && state.draw[state.draw.activeEvent]) {
+                    if (state.draw[state.draw.activeEvent].currentPrize === 'generic') {
+                        state.draw[state.draw.activeEvent].currentPrize = 100;
+                    }
+                }
+            }
             state.activeView = view;
             updateViewButtons();
             checkCongratsAutoOff();
