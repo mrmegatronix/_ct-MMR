@@ -1054,7 +1054,11 @@
             if (evtName === 'sunday' && drawState.sunday && drawState.sunday.enabled === false) {
                 evtName = 'thursday';
             }
-            return drawState[evtName] || drawState.thursday || drawState;
+            const evt = drawState[evtName] || drawState.thursday || drawState;
+            if (evt.currentPrize === 'generic' && drawState.generic) {
+                return { ...drawState.generic, currentPrize: 'generic', type: 'generic' };
+            }
+            return evt;
         }
 
         let state = {

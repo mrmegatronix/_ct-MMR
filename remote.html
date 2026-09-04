@@ -1287,6 +1287,15 @@ button, .btn { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         }
 
         function openGenericDrawPage() {
+            if (state && state.draw && state.draw.generic && state.draw.generic.drawnNumbers && state.draw.generic.drawnNumbers.length > 0) {
+                if (confirm('You are opening the Generic Draw. Do you want to reset the generic draw numbers from the previous session? (OK to reset, Cancel to keep them)')) {
+                    state.draw.generic.drawnNumbers = [];
+                    state.draw.generic.prizesLeft = state.draw.generic.cfgPrizes || 10;
+                    state.draw.generic.currentNumber = null;
+                    if (typeof writeFirebase === 'function') writeFirebase({ draw: state.draw });
+                }
+            }
+
             if (state && state.draw && state.draw.activeEvent) {
                 const activeEvent = state.draw.activeEvent;
                 if (state.draw[activeEvent]) {
@@ -1590,7 +1599,7 @@ button, .btn { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         function runDraw(prizeSize) {
             if (isDrawing) return;
             
-            const evt = state.draw[state.draw.activeEvent];
+            const evt = prizeSize === 'generic' ? (state.draw.generic || {}) : state.draw[state.draw.activeEvent];
             if (evt.prizes100 === undefined) evt.prizes100 = 0;
             if (evt.prizes50 === undefined) evt.prizes50 = 0;
             if (evt.prizes25 === undefined) evt.prizes25 = 0;
@@ -1603,7 +1612,7 @@ button, .btn { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
             const min = evt.min !== undefined ? evt.min : (state.draw.min !== undefined ? state.draw.min : 0);
             const max = evt.max !== undefined ? evt.max : (state.draw.max !== undefined ? state.draw.max : 9999);
             const isSunday = state.draw.activeEvent === 'sunday';
-            const excludeStr = document.getElementById(isSunday ? 'cfg-sun-excludes' : 'cfg-thu-excludes').value;
+            const excludeStr = prizeSize === 'generic' ? '' : document.getElementById(isSunday ? 'cfg-sun-excludes' : 'cfg-thu-excludes').value;
             const excludes = excludeStr.split(',').map(n => parseInt(n.trim())).filter(n => !isNaN(n));
             
             // Available numbers
@@ -1705,7 +1714,7 @@ button, .btn { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
             if (isDrawing) return;
             const label = prizeSize === 'bonus' ? 'Bonus' : `$${prizeSize}`;
             if (confirm(`Are you sure you want to invalidate the last drawn ${label} ticket and redraw a new winner?`)) {
-                const evt = state.draw[state.draw.activeEvent];
+                const evt = prizeSize === 'generic' ? (state.draw.generic || {}) : state.draw[state.draw.activeEvent];
                 const index = evt.drawnNumbers.findIndex(d => (typeof d === 'object' ? d.prize : 0) === prizeSize);
                 if (index !== -1) {
                     evt.drawnNumbers.splice(index, 1);
@@ -1743,7 +1752,7 @@ button, .btn { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
             const min = evt.min !== undefined ? evt.min : 0;
             const max = evt.max !== undefined ? evt.max : 9999;
             const isSunday = state.draw.activeEvent === 'sunday';
-            const excludeStr = document.getElementById(isSunday ? 'cfg-sun-excludes' : 'cfg-thu-excludes').value;
+            const excludeStr = prizeSize === 'generic' ? '' : document.getElementById(isSunday ? 'cfg-sun-excludes' : 'cfg-thu-excludes').value;
             const t100 = evt.cfgPrizes100 || 0;
             const t50 = evt.cfgPrizes50 || 0;
             const t25 = evt.cfgPrizes25 || 0;
@@ -1786,7 +1795,7 @@ button, .btn { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
                 const min = evt.min !== undefined ? evt.min : 0;
                 const max = evt.max !== undefined ? evt.max : 9999;
                 const isSunday = state.draw.activeEvent === 'sunday';
-                const excludeStr = document.getElementById(isSunday ? 'cfg-sun-excludes' : 'cfg-thu-excludes').value;
+                const excludeStr = prizeSize === 'generic' ? '' : document.getElementById(isSunday ? 'cfg-sun-excludes' : 'cfg-thu-excludes').value;
                 prct.innerHTML = `
                     <h1 style="color:black; margin-bottom: 0;">Monster Meat Raffle Report - ${state.draw.activeEvent.toUpperCase()}</h1>
                     <p style="color:#555; margin-top: 0;">Date: ${new Date().toLocaleDateString()}</p>

@@ -816,6 +816,10 @@ button, .btn { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
                     if (parsed.nextDrawTime) state.nextDrawTime = parsed.nextDrawTime;
                 } catch(e){}
             }
+        const thuInit = (state.draw && state.draw.thursday) || {};
+            const sunInit = (state.draw && state.draw.sunday) || {};
+            toggleConfigVisibility('thu-config-body', thuInit.enabled !== false);
+            toggleConfigVisibility('sun-config-body', sunInit.enabled === true);
         } // Close init() here!
 
         function syncDrawFormFromState() {
@@ -859,8 +863,7 @@ button, .btn { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
             syncEl('cfg-gen-prizes', gen.cfgPrizes !== undefined ? gen.cfgPrizes : 10, false);
             syncEl('cfg-gen-show-remaining', gen.showRemaining || 'yes', false);
             
-            toggleConfigVisibility('thu-config-body', thu.enabled !== false);
-            toggleConfigVisibility('sun-config-body', sun.enabled === true);
+            
     
 
             syncEl('drawTime', state.nextDrawTime, false);
@@ -1608,6 +1611,15 @@ button, .btn { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         }
 
         function openGenericDrawPage() {
+            if (state && state.draw && state.draw.generic && state.draw.generic.drawnNumbers && state.draw.generic.drawnNumbers.length > 0) {
+                if (confirm('You are opening the Generic Draw. Do you want to reset the generic draw numbers from the previous session? (OK to reset, Cancel to keep them)')) {
+                    state.draw.generic.drawnNumbers = [];
+                    state.draw.generic.prizesLeft = state.draw.generic.cfgPrizes || 10;
+                    state.draw.generic.currentNumber = null;
+                    if (typeof writeFirebase === 'function') writeFirebase({ draw: state.draw });
+                }
+            }
+
             if (state && state.draw && state.draw.activeEvent) {
                 const activeEvent = state.draw.activeEvent;
                 if (state.draw[activeEvent]) {
