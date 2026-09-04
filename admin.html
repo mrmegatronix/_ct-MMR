@@ -1597,17 +1597,19 @@ button, .btn { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         }
 
         function setView(view) {
+            let payload = { activeView: view };
             if (view === 'draw') {
                 if (state && state.draw && state.draw.activeEvent && state.draw[state.draw.activeEvent]) {
                     if (state.draw[state.draw.activeEvent].currentPrize === 'generic') {
                         state.draw[state.draw.activeEvent].currentPrize = 100;
+                        payload.draw = state.draw;
                     }
                 }
             }
             state.activeView = view;
             updateViewButtons();
-            bc.postMessage({ type: 'STATE_UPDATE', payload: { activeView: view } });
-            writeFirebase({ activeView: view });
+            bc.postMessage({ type: 'STATE_UPDATE', payload: payload });
+            if (typeof writeFirebase === 'function') writeFirebase(payload);
         }
 
         function openGenericDrawPage() {
