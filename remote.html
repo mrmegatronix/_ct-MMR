@@ -521,7 +521,7 @@ button, .btn { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 <div class="draw-control-row" id="row-prize-voucher" style="border-left: 4px solid #ffffff;">
 <div class="draw-control-info">
 <div class="draw-control-title" style="color: #ffffff;">🎟️ Voucher</div>
-<div class="draw-control-subtitle">Club Voucher</div>
+<div class="draw-control-subtitle">Voucher</div>
 </div>
 <div class="draw-control-actions">
 <button class="btn draw-btn btn-draw-main" onclick="runDraw('voucher')" style="background-color: #ffffff; border-color: #cbd5e1; color: black;">
@@ -2292,8 +2292,8 @@ button, .btn { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            init();
             generateQRCodes();
+            try { init(); } catch (e) { console.error("init error:", e); }
             
             document.addEventListener('click', (e) => {
                 const btn = e.target.closest('button');

@@ -2676,8 +2676,8 @@ button, .btn { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            init();
             generateQRCodes();
+            try { init(); } catch (e) { console.error("init error:", e); }
             loadFinancials();
             
             document.addEventListener('click', (e) => {
