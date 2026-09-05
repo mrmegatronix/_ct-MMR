@@ -33,7 +33,7 @@ window.MMR_CONFIG = {
     // ── LOTTERY LOGIC ───────────────────────────────────────────────────
     DEFAULT_PRIZE_COUNT: 48,
     DEFAULT_TICKET_MIN: 1,
-    DEFAULT_TICKET_MAX: 999,
+    DEFAULT_TICKET_MAX: 99999,
     
     // ── DATE LOGIC ──────────────────────────────────────────────────────
     TARGET_DAY: 4,               // 0=Sun, 1=Mon, ..., 4=Thu

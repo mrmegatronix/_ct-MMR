@@ -309,14 +309,15 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            gap: 1.5vmin;
+            gap: 1.8vmin;
+            max-width: 95vw;
         }
         .slot-digit {
             display: inline-block;
-            width: 14vmin;
-            height: 20vmin;
-            line-height: 20vmin;
-            font-size: 16vmin;
+            width: clamp(12vmin, 16.5vmin, 17vw);
+            height: 25vmin;
+            line-height: 25vmin;
+            font-size: 21vmin;
             font-weight: 900;
             font-family: 'Outfit', sans-serif;
             color: white;
@@ -342,8 +343,8 @@
             will-change: transform;
         }
         .slot-strip-num {
-            height: 20vmin;
-            line-height: 20vmin;
+            height: 25vmin;
+            line-height: 25vmin;
             display: block;
             text-align: center;
         }
@@ -1370,11 +1371,12 @@
             if (ptBar) {
                 let html = '';
                 const drawType = activeDrawData.type || 'full';
-                const isGenericDrawBtn = activeDrawData.currentPrize === 'generic';
+                const isGenericDrawBtn = activeDrawData.currentPrize === 'generic' || activeDrawData.currentPrize === 'generic-countdown' || activeDrawData.currentPrize === 'generic-no-countdown';
                 
                 if (drawType === 'generic' || isGenericDrawBtn) {
                     const gen = (state.draw && state.draw.generic) || {};
-                    if (gen.showRemaining === 'yes') {
+                    const isNoCountdown = activeDrawData.currentPrize === 'generic-no-countdown' || (gen.showRemaining === 'no');
+                    if (!isNoCountdown) {
                         const genLeft = gen.prizesLeft !== undefined ? gen.prizesLeft : (gen.cfgPrizes || 0);
                         html += `<div class="prize-counter-pill" style="border-color: #f59e0b; box-shadow: 0 0 10px rgba(245,158,11,0.4); animation: popIn 0.4s ease-out, pillPulse 2s infinite ease-in-out;">
                                     <span style="color: #f59e0b;">Generic Prizes Left</span>
@@ -1565,7 +1567,7 @@
                     } else if (curPrize === 25 || curPrize === '25') {
                         titleEl.innerText = "WINNING $25 PRIZE";
                         titleEl.style.color = "#10b981";
-                    } else if (curPrize === 'generic') {
+                    } else if (curPrize === 'generic' || curPrize === 'generic-countdown' || curPrize === 'generic-no-countdown') {
                         titleEl.innerText = "WINNING NUMBER";
                         titleEl.style.color = "#fbbf24";
                     } else {
@@ -1574,8 +1576,8 @@
                     }
                 }
                 
-                const maxTickets = window.MMR_CONFIG ? window.MMR_CONFIG.DEFAULT_TICKET_MAX : 999;
-                const digitsCount = String(maxTickets).length;
+                const cfgMax = (activeEvtData && activeEvtData.max) ? parseInt(activeEvtData.max) : ((window.MMR_CONFIG && window.MMR_CONFIG.DEFAULT_TICKET_MAX) || 99999);
+                const digitsCount = Math.max(3, String(cfgMax).length);
 
                 let html = '';
                 const displayStr = (curNum === '-') ? '-'.repeat(digitsCount) : String(curNum).padStart(digitsCount, '0');
@@ -1978,12 +1980,16 @@
             let lsSpeed = 1;
             try { lsSpeed = localStorage.getItem('mmr_draw_speed') || 1; } catch(e) {}
             const val = parseInt((state.draw && state.draw.drawSpeed) || lsSpeed);
-            if (val === 3) {
-                return { mode: 3, name: 'Faster', rollDuration: 600, slotInterval: 15, digitBaseDelay: 150, digitStepDelay: 120 };
+            if (val === 5) {
+                return { mode: 5, name: 'Ludicrous', rollDuration: 250, slotInterval: 10, digitBaseDelay: 60, digitStepDelay: 45, stopDuration: 0.35 };
+            } else if (val === 4) {
+                return { mode: 4, name: 'Turbo', rollDuration: 500, slotInterval: 12, digitBaseDelay: 120, digitStepDelay: 90, stopDuration: 0.6 };
+            } else if (val === 3) {
+                return { mode: 3, name: 'Faster', rollDuration: 900, slotInterval: 15, digitBaseDelay: 220, digitStepDelay: 170, stopDuration: 0.9 };
             } else if (val === 2) {
-                return { mode: 2, name: 'Fast', rollDuration: 1500, slotInterval: 30, digitBaseDelay: 400, digitStepDelay: 300 };
+                return { mode: 2, name: 'Fast', rollDuration: 1600, slotInterval: 30, digitBaseDelay: 400, digitStepDelay: 300, stopDuration: 1.2 };
             } else {
-                return { mode: 1, name: 'Normal', rollDuration: 3000, slotInterval: 50, digitBaseDelay: 800, digitStepDelay: 600 };
+                return { mode: 1, name: 'Normal', rollDuration: 3000, slotInterval: 50, digitBaseDelay: 800, digitStepDelay: 600, stopDuration: 1.5 };
             }
         }
 
@@ -2002,7 +2008,7 @@
             else if (pKey === '25') drawView.classList.add('prize-25');
             else if (pKey === 'bonus') drawView.classList.add('prize-bonus');
             else if (pKey === 'voucher') drawView.classList.add('prize-voucher');
-            else if (pKey === 'generic') drawView.classList.add('prize-generic');
+            else if (pKey === 'generic' || pKey === 'generic-countdown' || pKey === 'generic-no-countdown') drawView.classList.add('prize-generic');
         }
 
         // Slot Machine Audio Context
@@ -2077,8 +2083,9 @@
             document.getElementById('view-draw').classList.add('draw-flash-bg');
             
             // Dynamic slot digits layout based on config
-            const maxTickets = window.MMR_CONFIG ? window.MMR_CONFIG.DEFAULT_TICKET_MAX : 999;
-            const digitsCount = String(maxTickets).length;
+            const activeEvtData = getActiveDrawData(state.draw);
+            const cfgMax = (activeEvtData && activeEvtData.max) ? parseInt(activeEvtData.max) : ((window.MMR_CONFIG && window.MMR_CONFIG.DEFAULT_TICKET_MAX) || 99999);
+            const digitsCount = Math.max(3, String(cfgMax).length);
             
             const container = document.querySelector('.slot-container');
             if (container) {
@@ -2086,24 +2093,23 @@
                 for (let i = 0; i < digitsCount; i++) {
                     html += `
                     <span class="slot-digit">
-                        <div class="slot-strip" id="slot-strip-${i}">
+                        <div class="slot-strip" id="slot-strip-${i}" style="transform: translateY(-1750vmin);">
                             ${Array(80).fill(0).map((_, j) => `<span class="slot-strip-num">${j % 10}</span>`).join('')}
                         </div>
                     </span>`;
                 }
                 container.innerHTML = html;
                 
-                // Start the initial spin animation by translating far down slowly
+                // Start spin downwards by translating from -1750vmin towards 0vmin
                 setTimeout(() => {
                     for (let i = 0; i < digitsCount; i++) {
                         const strip = document.getElementById(`slot-strip-${i}`);
                         if (strip) {
-                            strip.style.transition = 'transform 10s cubic-bezier(0.2, 0, 1, 1)';
-                            // Move to around the 70th item
-                            strip.style.transform = `translateY(-${70 * 20}vmin)`;
+                            strip.style.transition = 'transform 10s linear';
+                            strip.style.transform = 'translateY(0vmin)';
                         }
                     }
-                }, 50);
+                }, 40);
             }
             
             // Failsafe: if STOP_ROLL never arrives, auto-stop after 10s
@@ -2132,8 +2138,9 @@
             }
             window.lockTimeouts = [];
             
-            const maxTickets = window.MMR_CONFIG ? window.MMR_CONFIG.DEFAULT_TICKET_MAX : 999;
-            const digitsCount = String(maxTickets).length;
+            const activeEvtData = getActiveDrawData(state.draw);
+            const cfgMax = (activeEvtData && activeEvtData.max) ? parseInt(activeEvtData.max) : ((window.MMR_CONFIG && window.MMR_CONFIG.DEFAULT_TICKET_MAX) || 99999);
+            const digitsCount = Math.max(3, String(cfgMax).length);
             const numStr = String(finalNumber).padStart(digitsCount, '0');
             
             const slots = Array.from(document.querySelectorAll('.slot-digit'));
@@ -2144,15 +2151,15 @@
                 if (!strip) return;
                 
                 const targetDigit = parseInt(numStr[index]);
-                // We want to land around the 50th item (so there's enough space to scroll without hitting the end)
-                const targetIndex = 50 + targetDigit;
+                const targetIndex = 10 + targetDigit;
                 
                 const delay = (speed.digitBaseDelay || 800) + index * (speed.digitStepDelay || 600);
                 
-                // Update transition to ease-out bounce to the target
+                // Update transition to ease-out bounce to target in downward direction
                 const t1 = setTimeout(() => {
-                    strip.style.transition = 'transform 1.5s cubic-bezier(0.175, 0.885, 0.32, 1.1)';
-                    strip.style.transform = `translateY(-${targetIndex * 20}vmin)`;
+                    const stopDur = speed.stopDuration || 1.4;
+                    strip.style.transition = `transform ${stopDur}s cubic-bezier(0.175, 0.885, 0.32, 1.1)`;
+                    strip.style.transform = `translateY(-${targetIndex * 25}vmin)`;
                     playSlotTick(); // Final click sound
                     
                     slot.classList.add('locked');
