@@ -56,40 +56,104 @@
 button, .btn { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
         :root {
-            --bg: var(--cfg-bg-dark, #0f172a);
-            --surface: #1e293b;
+            --bg: var(--cfg-bg-dark, #070a13);
+            --surface: #111827;
+            --surface-glass: rgba(17, 24, 39, 0.85);
             --primary: var(--cfg-primary, #ef4444);
             --text: var(--cfg-text-light, #f8fafc);
             --text-muted: #94a3b8;
-            --border: #334155;
+            --border: #1f293d;
+            --border-highlight: rgba(255, 255, 255, 0.08);
         }
 
         body {
-            background: var(--bg);
+            background: radial-gradient(circle at 50% 0%, #151d30 0%, var(--bg) 75%);
             color: var(--text);
-            font-family: -apple-system, system-ui, sans-serif;
+            font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             margin: 0;
-            padding: 2rem;
+            padding: 1.5rem;
+            min-height: 100vh;
+            box-sizing: border-box;
         }
 
         .header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 2rem;
+            margin-bottom: 1.5rem;
             border-bottom: 1px solid var(--border);
             padding-bottom: 1rem;
+            max-width: 1440px;
+            margin-left: auto;
+            margin-right: auto;
+            gap: 1rem;
+            flex-wrap: wrap;
         }
         
-        .header h1 { margin: 0; color: var(--primary); }
+        .header h1 { 
+            margin: 0; 
+            color: var(--primary); 
+            font-size: 1.75rem; 
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            white-space: nowrap;
+        }
+
+        .live-clock-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: rgba(15, 23, 42, 0.85);
+            border: 1px solid var(--border);
+            border-radius: 9999px;
+            padding: 0.35rem 0.85rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.95rem;
+            font-weight: 800;
+            color: #38bdf8;
+            letter-spacing: 0.5px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            white-space: nowrap;
+        }
+        .colon-flash {
+            animation: blink-colon 1s step-start infinite;
+            display: inline-block;
+            opacity: 0.9;
+        }
+        @keyframes blink-colon {
+            50% { opacity: 0; }
+        }
+
+        #tabs-container {
+            max-width: 1440px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .tab-bar {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 0.5rem;
+            overflow-x: auto;
+            max-width: 1440px;
+            margin-left: auto;
+            margin-right: auto;
+        }
 
         .card {
-            background: var(--surface);
+            background: var(--surface-glass);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
             border: 1px solid var(--border);
-            border-radius: 1rem;
+            border-top: 1px solid var(--border-highlight);
+            border-radius: 1.15rem;
             padding: 1.5rem;
-            max-width: 800px;
-            margin: 0 auto;
+            max-width: 100%;
+            margin: 0 auto 1.5rem auto;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+            box-sizing: border-box;
         }
 
         .card h2 {
@@ -337,26 +401,7 @@ button, .btn { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
             border-top: none !important;
         }
     
-        
-            div[style*="display: grid"] {
-                grid-template-columns: 1fr !important;
-                gap: 0.5rem !important;
-            }
-            .header {
-                flex-direction: column;
-                gap: 1rem;
-                text-align: center;
-            }
-        }
-    
-        .tab-bar {
-            display: flex;
-            gap: 0.5rem;
-            margin-bottom: 2rem;
-            border-bottom: 1px solid var(--border);
-            padding-bottom: 0.5rem;
-            overflow-x: auto;
-        }
+
         .tab-btn {
             background: var(--surface);
             color: var(--text-muted);
@@ -381,28 +426,39 @@ button, .btn { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
             display: block;
         }
     
-        @media (max-width: 1024px) {
-            div[style*="display: grid"] {
-                grid-template-columns: repeat(2, 1fr) !important;
-                gap: 0.75rem !important;
+        /* 1080p Multi-column Grid Layouts */
+        @media (min-width: 1080px) {
+            .draw-configs-split {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 1.5rem;
+                align-items: start;
+            }
+            .admin-actions-grid {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 1.5rem;
+                align-items: start;
+            }
+            .admin-actions-grid > .card-full-span {
+                grid-column: 1 / -1 !important;
             }
         }
-        @media (max-width: 640px) {
-            .btn-group { grid-template-columns: 1fr !important; gap: 0.5rem !important; }
-            body { padding: 0.5rem; }
-            .card { padding: 1rem; }
-            div[style*="display: grid"] {
-                grid-template-columns: 1fr !important;
-                gap: 0.5rem !important;
-            }
+
+        @media (max-width: 768px) {
+            body { padding: 0.75rem; }
+            .card { padding: 1rem; border-radius: 0.85rem; }
             .header {
                 flex-direction: column;
-                gap: 1rem;
-                text-align: center;
+                gap: 0.75rem;
+                align-items: flex-start;
             }
             .tab-btn {
-                padding: 0.5rem 1rem;
-                font-size: 0.9rem;
+                padding: 0.5rem 0.85rem;
+                font-size: 0.85rem;
+            }
+            .btn-group {
+                flex-wrap: wrap;
             }
         }
         </style>
@@ -441,8 +497,11 @@ button, .btn { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 </div>
 </div>
 <div class="header">
+<div style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap;">
 <h1 id="header-title">MMR Admin</h1>
-<div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap; justify-content: center;">
+<div class="live-clock-badge" id="admin-clock">--<span class="colon-flash">:</span>--<span class="colon-flash">:</span>--</div>
+</div>
+<div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap; justify-content: flex-end;">
 <span id="fb-status" style="font-size:0.8rem; color:#64748b;">🔴 Firebase: Not configured</span>
 <div class="voice-toggle-container">
 <label style="cursor:pointer; display:flex; align-items:center; gap:5px; font-size:0.8rem; font-weight:bold;">
@@ -467,6 +526,7 @@ button, .btn { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1.5rem;">
             Set ticket range bounds, prize packs, excluded numbers, and draw date/time.
         </p>
+<div class="draw-configs-split">
 <!-- Thursday Config -->
 <div style="background: rgba(59, 130, 246, 0.08); border: 2px solid #3b82f6; padding: 1.25rem; border-radius: 0.75rem; margin-bottom: 1.5rem; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
     <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 1rem; border-bottom: 1px solid rgba(59, 130, 246, 0.3); padding-bottom: 0.75rem;">
@@ -608,6 +668,7 @@ button, .btn { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         <button class="btn" onclick="finishAndEndDraw('sunday')" style="background-color: #ef4444; color: white; border: none; padding: 0.6rem;">Finish &amp; End Draw</button>
     </div>
 </div>
+</div>
 <!-- Firebase Config Card -->
 <!-- Manual Slide Control Card -->
 <!-- Display View Mode Card -->
@@ -709,6 +770,19 @@ button, .btn { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
                 document.getElementById('pin-input').focus();
             }
         }
+
+        function updateAdminLiveClock() {
+            const clockEl = document.getElementById('admin-clock');
+            if (!clockEl) return;
+            const now = new Date();
+            const pad = n => String(n).padStart(2, '0');
+            const h = pad(now.getHours());
+            const m = pad(now.getMinutes());
+            const s = pad(now.getSeconds());
+            clockEl.innerHTML = h + '<span class="colon-flash">:</span>' + m + '<span class="colon-flash">:</span>' + s;
+        }
+        setInterval(updateAdminLiveClock, 1000);
+        updateAdminLiveClock();
 
         function changePin() {
             const newPin = document.getElementById('new-pin').value.trim();
@@ -3088,7 +3162,8 @@ button, .btn { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 </div>
 </div>
 <button class="btn btn-primary" onclick="saveFinancials()" style="width: 100%; background-color: #10b981; border-color: #059669;">💾 Save Financials &amp; Update</button>
-</div></div><div class="tab-content" id="tab-actions"><div class="card" style="margin-top: 2rem;">
+</div></div><div class="tab-content" id="tab-actions"><div class="admin-actions-grid">
+<div class="card" style="margin-top: 2rem;">
 <h2>🔍 Public Verification Audit</h2>
 <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1.5rem;">
             Patrons can scan this QR code on their phones to view the live, cryptographically-verifiable audit log of tonight's drawn numbers.
@@ -3225,6 +3300,7 @@ button, .btn { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 </div>
 <button class="btn btn-primary" onclick="changePin()">💾 Save PIN</button>
 <div class="status" id="pin-change-status"></div>
+</div>
 </div></div>
 <!-- Verification QR Code -->
 <!-- Archive QR Code -->

@@ -54,25 +54,28 @@
 button, .btn { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
         :root {
-            --bg: var(--cfg-bg-dark, #0b0f19);
-            --surface: #1e293b;
+            --bg: var(--cfg-bg-dark, #070a13);
+            --surface: #111827;
+            --surface-glass: rgba(17, 24, 39, 0.75);
             --primary: var(--cfg-primary, #ef4444);
             --text: var(--cfg-text-light, #f8fafc);
-            --text-muted: #64748b;
-            --border: #334155;
+            --text-muted: #94a3b8;
+            --border: #1f293d;
+            --border-highlight: rgba(255, 255, 255, 0.08);
             --accent-100: #ef4444;
             --accent-50: #2563eb;
             --accent-25: #10b981;
         }
 
         body {
-            background: var(--bg);
+            background: radial-gradient(circle at 50% 0%, #151d30 0%, var(--bg) 75%);
             color: var(--text);
-            font-family: 'Outfit', -apple-system, system-ui, sans-serif;
+            font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             margin: 0;
-            padding: 1.5rem;
+            padding: 1.25rem;
             box-sizing: border-box;
             line-height: 1.5;
+            min-height: 100vh;
         }
 
         /* Host Mode Hiding */
@@ -85,26 +88,86 @@ button, .btn { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
             justify-content: space-between;
             align-items: center;
             margin-bottom: 1.5rem;
-            border-bottom: 2px solid var(--border);
+            border-bottom: 1px solid var(--border);
             padding-bottom: 1rem;
             gap: 1rem;
+            flex-wrap: wrap;
+            max-width: 1440px;
+            margin-left: auto;
+            margin-right: auto;
         }
         
-        .header h1 { margin: 0; color: var(--primary); font-size: 1.8rem; font-weight: 800; }
+        .header h1 { 
+            margin: 0; 
+            color: var(--primary); 
+            font-size: 1.75rem; 
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            white-space: nowrap;
+        }
+
+        .live-clock-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: rgba(15, 23, 42, 0.85);
+            border: 1px solid var(--border);
+            border-radius: 9999px;
+            padding: 0.35rem 0.85rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.95rem;
+            font-weight: 800;
+            color: #38bdf8;
+            letter-spacing: 0.5px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            white-space: nowrap;
+        }
+        .colon-flash {
+            animation: blink-colon 1s step-start infinite;
+            display: inline-block;
+            opacity: 0.9;
+        }
+        @keyframes blink-colon {
+            50% { opacity: 0; }
+        }
 
         .grid {
             display: flex;
             flex-direction: column;
-            gap: 1.5rem;
+            gap: 1.25rem;
+            max-width: 1440px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        @media (min-width: 900px) {
+            .grid {
+                display: grid;
+                grid-template-columns: 1.15fr 0.85fr;
+                gap: 1.5rem;
+                align-items: start;
+            }
+            .grid > .card:first-child {
+                grid-column: 1;
+            }
+            .grid > .card:not(:first-child) {
+                grid-column: 2;
+            }
+            .grid > .card-full-span {
+                grid-column: 1 / -1 !important;
+            }
         }
 
         .card {
-            background: rgba(30, 41, 59, 0.7);
-            backdrop-filter: blur(8px);
+            background: var(--surface-glass);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
             border: 1px solid var(--border);
-            border-radius: 1.25rem;
+            border-top: 1px solid var(--border-highlight);
+            border-radius: 1.15rem;
             padding: 1.25rem;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+            box-sizing: border-box;
         }
 
         .card h2 {
@@ -428,8 +491,11 @@ button, .btn { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 </div>
 </div>
 <div class="header">
+<div style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap;">
 <h1 id="header-title">MMR Remote</h1>
-<div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap; justify-content: center;">
+<div class="live-clock-badge" id="remote-clock">--<span class="colon-flash">:</span>--<span class="colon-flash">:</span>--</div>
+</div>
+<div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap; justify-content: flex-end;">
 <span id="fb-status" style="font-size:0.8rem; color:#64748b;">🔴 Firebase: Not configured</span>
 <button class="btn btn-primary" id="btn-demo-mode" onclick="toggleDemoMode()" style="background-color: #8b5cf6; border-color: #7c3aed; padding: 0.5rem 1rem; min-height: 36px; height: 36px;">Demo Mode: OFF</button>
 </div>
@@ -561,6 +627,7 @@ button, .btn { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
                             🔄 REDRAW
                         </button>
 </div>
+</div>
 <!-- Manual Draw Active Notice -->
 <div class="draw-control-row" id="row-prize-manual" style="border-left: 4px solid #8b5cf6; display: none; background: rgba(139, 92, 246, 0.1); padding: 0.85rem; text-align: center; flex-direction: column; gap: 8px;">
 <div style="font-size: 0.95rem; font-weight: 800; color: #a78bfa;">📝 MANUAL BARREL DRAW ACTIVE</div>
@@ -618,6 +685,7 @@ button, .btn { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
                 </label>
 </div>
 </div>
+</div>
 <!-- End of Week & Print Actions -->
 <div class="card">
 <h2>📋 End of Week &amp; Print</h2>
@@ -630,7 +698,7 @@ button, .btn { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 <button class="btn btn-danger" onclick="archiveDraws()" style="width: 100%; background-color: #ef4444; border-color: #dc2626; color: white;">⚠️ Confirm End of Week Draws</button>
 </div>
 <!-- QR Codes Links -->
-<div class="card no-print">
+<div class="card no-print card-full-span">
 <h2>Quick Access QR Codes</h2>
 <p style="font-size: 0.9rem; color: var(--text-muted); margin-top: -0.5rem; margin-bottom: 1rem;">
                 Scan these codes on any smartphone or tablet connected to your network to instantly open the interface!
@@ -665,7 +733,7 @@ button, .btn { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 </div>
 </div>
 <!-- Moved TV Display button to bottom -->
-<div class="card" style="text-align: center; margin-top: 1rem;">
+<div class="card card-full-span" style="text-align: center; margin-top: 0.5rem;">
 <a class="btn btn-primary" href="index.html" style="font-size: 1.2rem; padding: 1rem; width: 100%;" target="_blank">Display TV ↗</a>
 </div>
 </div>
@@ -727,6 +795,19 @@ button, .btn { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
                 return;
             }
         })();
+
+        function updateRemoteLiveClock() {
+            const clockEl = document.getElementById('remote-clock');
+            if (!clockEl) return;
+            const now = new Date();
+            const pad = n => String(n).padStart(2, '0');
+            const h = pad(now.getHours());
+            const m = pad(now.getMinutes());
+            const s = pad(now.getSeconds());
+            clockEl.innerHTML = h + '<span class="colon-flash">:</span>' + m + '<span class="colon-flash">:</span>' + s;
+        }
+        setInterval(updateRemoteLiveClock, 1000);
+        updateRemoteLiveClock();
 
         function checkPin() {
             const entered = document.getElementById('pin-input-r').value.trim();
