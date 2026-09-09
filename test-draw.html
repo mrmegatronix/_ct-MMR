@@ -677,40 +677,41 @@
         }
 
         /* Advert Slides Styling */
+        /* Advert Slides Styling */
         .slide-advert {
-            padding: 3rem !important;
+            padding: 1rem !important;
             box-sizing: border-box !important;
             overflow: hidden !important;
             word-wrap: break-word;
         }
         .advert-badge-container {
-            font-size: 11rem;
-            margin-bottom: 1rem;
-            filter: drop-shadow(0 0 25px var(--badge-glow));
+            font-size: clamp(14rem, 18vw, 20rem) !important;
+            margin-bottom: 1.5rem !important;
+            filter: drop-shadow(0 0 35px var(--badge-glow));
             animation: pulse-badge 2s infinite ease-in-out;
             z-index: 2;
             line-height: 1;
         }
         .advert-title {
-            font-size: clamp(2.5rem, 6.5vw, 6rem) !important;
+            font-size: clamp(4.5rem, 8.8vw, 9.5rem) !important;
             font-weight: 900 !important;
             text-transform: uppercase !important;
             margin: 0 0 1.5rem 0 !important;
-            letter-spacing: -2px !important;
+            letter-spacing: -1px !important;
             color: #fff !important;
-            text-shadow: 0 0 40px var(--title-glow);
+            text-shadow: 0 0 45px var(--title-glow);
             z-index: 2;
-            line-height: 1.1 !important;
+            line-height: 1.05 !important;
             text-align: center !important;
             max-width: 95% !important;
             box-sizing: border-box;
-            word-wrap: break-word;
+            white-space: nowrap !important;
+            text-overflow: ellipsis;
         }
         .advert-subtitle {
-            font-size: clamp(1.5rem, 3.8vw, 2.8rem) !important;
+            font-size: clamp(2.2rem, 3.4vw, 4.0rem) !important;
             max-width: 95% !important;
             box-sizing: border-box;
-            word-wrap: break-word;
             font-weight: bold !important;
             color: #e2e8f0 !important;
             text-shadow: 0 2px 10px rgba(0,0,0,0.8);
@@ -718,15 +719,15 @@
             z-index: 2;
             letter-spacing: 0.5px !important;
             text-align: center !important;
-            max-width: 95% !important;
-            box-sizing: border-box;
-            word-wrap: break-word;
+            white-space: nowrap !important;
+            text-overflow: ellipsis;
+            line-height: 1.2 !important;
         }
         /* Custom Animated Clock */
         .custom-clock {
-            width: 150px;
-            height: 150px;
-            border: 8px solid #f59e0b; /* Golden border */
+            width: 260px;
+            height: 260px;
+            border: 12px solid #f59e0b; /* Golden border */
             border-radius: 50%;
             position: relative;
             background: #0f172a; /* Slate background */
@@ -1059,6 +1060,7 @@
 
         let state = {
             activeView: 'slides',
+            lastSlideCmdTs: Date.now(),
             nextDrawTime: getNextThursday7PM(),
             slides: [
                 { type: "countdown", title: "Time Until Draw", duration: 30000 }
@@ -1066,19 +1068,19 @@
             draw: {
                 activeEvent: 'thursday',
                 thursday: {
-                    cfgPrizes100: 20,
-                    cfgPrizes50: 12,
-                    cfgPrizes25: 16,
-                    prizes100: 20,
-                    prizes50: 12,
-                    prizes25: 16,
+                    cfgPrizes100: 10,
+                    cfgPrizes50: 16,
+                    cfgPrizes25: 40,
+                    prizes100: 10,
+                    prizes50: 16,
+                    prizes25: 40,
                     drawnNumbers: [],
-                    prizesLeft: 48
+                    prizesLeft: 66
                 },
                 isRolling: false,
                 currentNumber: '---',
                 drawnNumbers: [],
-                prizesLeft: 48
+                prizesLeft: 66
             }
         };
 
@@ -1259,9 +1261,9 @@
 
             // Check total configured prizes
             const activeEvtData = getActiveDrawData(state.draw);
-            const cfgPrizes100 = activeEvtData.cfgPrizes100 !== undefined ? activeEvtData.cfgPrizes100 : (activeEvtData.prizes100 ?? 12);
-            const cfgPrizes50 = activeEvtData.cfgPrizes50 !== undefined ? activeEvtData.cfgPrizes50 : (activeEvtData.prizes50 ?? 20);
-            const cfgPrizes25 = activeEvtData.cfgPrizes25 !== undefined ? activeEvtData.cfgPrizes25 : (activeEvtData.prizes25 ?? 30);
+            const cfgPrizes100 = activeEvtData.cfgPrizes100 !== undefined ? activeEvtData.cfgPrizes100 : (activeEvtData.prizes100 ?? 10);
+            const cfgPrizes50 = activeEvtData.cfgPrizes50 !== undefined ? activeEvtData.cfgPrizes50 : (activeEvtData.prizes50 ?? 16);
+            const cfgPrizes25 = activeEvtData.cfgPrizes25 !== undefined ? activeEvtData.cfgPrizes25 : (activeEvtData.prizes25 ?? 40);
             const hasPrizes = (cfgPrizes100 + cfgPrizes50 + cfgPrizes25) > 0;
 
             // Intercept and auto-correct activeView if outside congrats window (only when prizes > 0)
@@ -1349,9 +1351,9 @@
             const n100Drawn = drawnNumbers.filter(d => (typeof d === 'object' ? d.prize : 0) == 100).length;
             const n50Drawn = drawnNumbers.filter(d => (typeof d === 'object' ? d.prize : 0) == 50).length;
             const n25Drawn = drawnNumbers.filter(d => (typeof d === 'object' ? d.prize : 0) == 25).length;
-            const p100Val = Math.max(0, (activeDrawData.cfgPrizes100 ?? activeDrawData.prizes100 ?? 20) - n100Drawn);
-            const p50Val = Math.max(0, (activeDrawData.cfgPrizes50 ?? activeDrawData.prizes50 ?? 12) - n50Drawn);
-            const p25Val = Math.max(0, (activeDrawData.cfgPrizes25 ?? activeDrawData.prizes25 ?? 16) - n25Drawn);
+            const p100Val = Math.max(0, (activeDrawData.cfgPrizes100 ?? activeDrawData.prizes100 ?? 10) - n100Drawn);
+            const p50Val = Math.max(0, (activeDrawData.cfgPrizes50 ?? activeDrawData.prizes50 ?? 16) - n50Drawn);
+            const p25Val = Math.max(0, (activeDrawData.cfgPrizes25 ?? activeDrawData.prizes25 ?? 40) - n25Drawn);
             const totalRemaining = p100Val + p50Val + p25Val;
 
             const ptBar = document.getElementById('prizes-top-bar');
@@ -1393,9 +1395,9 @@
             const c100 = document.getElementById('count-100');
             const c50 = document.getElementById('count-50');
             const c25 = document.getElementById('count-25');
-            if (c100) { c100.innerText = p100Val; }
-            if (c50) { c50.innerText = p50Val; }
-            if (c25) { c25.innerText = p25Val; }
+            if (c100) { c100.innerText = cfgPrizes100; }
+            if (c50) { c50.innerText = cfgPrizes50; }
+            if (c25) { c25.innerText = cfgPrizes25; }
 
             // Render drawn numbers chronologically (first drawn to last drawn) with line connectors
             let drawn = activeDrawData.drawnNumbers || [];
@@ -1695,9 +1697,9 @@
             const visibleSlides = slidesData.filter(s => !disabledList.includes(s.title) && s.type !== 'avatar');
             
             const activeEvtData = getActiveDrawData(state.draw);
-            const t100 = Number(activeEvtData.cfgPrizes100 ?? activeEvtData.prizes100 ?? 12);
-            const t50 = Number(activeEvtData.cfgPrizes50 ?? activeEvtData.prizes50 ?? 20);
-            const t25 = Number(activeEvtData.cfgPrizes25 ?? activeEvtData.prizes25 ?? 30);
+            const t100 = Number(activeEvtData.cfgPrizes100 ?? activeEvtData.prizes100 ?? 10);
+            const t50 = Number(activeEvtData.cfgPrizes50 ?? activeEvtData.prizes50 ?? 16);
+            const t25 = Number(activeEvtData.cfgPrizes25 ?? activeEvtData.prizes25 ?? 40);
             const totalPrizes = t100 + t50 + t25;
             const totalPool = (t100 * 100) + (t50 * 50) + (t25 * 25);
             
@@ -1859,9 +1861,9 @@
                         ${slide.type === 'countdown' 
                             ? `<div class="slide-countdown slide-countdown-timer" style="position: relative; z-index: 2;">${timeHtml}</div>
                                <div class="countdown-prizes-summary" style="position: relative; z-index: 2; margin-top: 3.5rem; display: flex; gap: clamp(1.5rem, 4vw, 5.5rem); justify-content: center; font-size: clamp(1.6rem, 3.8vw, 3.8rem); font-weight: bold; background: rgba(0,0,0,0.85); padding: 1.5rem clamp(1.5rem, 4vw, 4rem); border-radius: 2rem; border: 2px solid rgba(255,255,255,0.2); box-shadow: 0 15px 35px rgba(0,0,0,0.6), 0 0 25px rgba(255,255,255,0.05); max-width: 90%; margin-left: auto; margin-right: auto; box-sizing: border-box;">
-                                 <span style="color: #ef4444; text-shadow: 0 0 15px rgba(239, 68, 68, 0.85), 0 0 30px rgba(239, 68, 68, 0.45);"><span id="count-100">${activeEvtData.prizes100 ?? activeEvtData.cfgPrizes100 ?? 20}</span> x $100</span>
-                                 <span style="color: #3b82f6; text-shadow: 0 0 15px rgba(59, 130, 246, 0.85), 0 0 30px rgba(59, 130, 246, 0.45);"><span id="count-50">${activeEvtData.prizes50 ?? activeEvtData.cfgPrizes50 ?? 12}</span> x $50</span>
-                                 <span style="color: #10b981; text-shadow: 0 0 15px rgba(16, 185, 129, 0.85), 0 0 30px rgba(16, 185, 129, 0.45);"><span id="count-25">${activeEvtData.prizes25 ?? activeEvtData.cfgPrizes25 ?? 16}</span> x $25</span>
+                                 <span style="color: #ef4444; text-shadow: 0 0 15px rgba(239, 68, 68, 0.85), 0 0 30px rgba(239, 68, 68, 0.45);"><span id="count-100">${activeEvtData.cfgPrizes100 ?? activeEvtData.prizes100 ?? 10}</span> x $100</span>
+                                 <span style="color: #3b82f6; text-shadow: 0 0 15px rgba(59, 130, 246, 0.85), 0 0 30px rgba(59, 130, 246, 0.45);"><span id="count-50">${activeEvtData.cfgPrizes50 ?? activeEvtData.prizes50 ?? 16}</span> x $50</span>
+                                 <span style="color: #10b981; text-shadow: 0 0 15px rgba(16, 185, 129, 0.85), 0 0 30px rgba(16, 185, 129, 0.45);"><span id="count-25">${activeEvtData.cfgPrizes25 ?? activeEvtData.prizes25 ?? 40}</span> x $25</span>
                                </div>` 
                             : ''
                         }
@@ -2529,8 +2531,11 @@
 
                 const slideCmdObj = path === '/slideCmd' ? rawData : (rawData && rawData.slideCmd);
                 if (slideCmdObj && slideCmdObj.ts > (state.lastSlideCmdTs || 0)) {
+                    const shouldExec = !isInitialFbLoad && (Date.now() - slideCmdObj.ts < 15000);
                     state.lastSlideCmdTs = slideCmdObj.ts;
-                    handleSlideCmd(slideCmdObj.cmd);
+                    if (shouldExec) {
+                        handleSlideCmd(slideCmdObj.cmd);
+                    }
                 }
 
                 const cmdObj = path === '/cmd' ? rawData : (rawData && rawData.cmd);

@@ -31,7 +31,7 @@ window.MMR_CONFIG = {
     PROGRESS_BAR_HEIGHT: '12px',   // Thicker for TV visibility
     
     // ── LOTTERY LOGIC ───────────────────────────────────────────────────
-    DEFAULT_PRIZE_COUNT: 48,
+    DEFAULT_PRIZE_COUNT: 66,
     DEFAULT_TICKET_MIN: 1,
     DEFAULT_TICKET_MAX: 99999,
     

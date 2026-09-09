@@ -1851,9 +1851,9 @@ button, .btn { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
             const numbers100 = drawn.filter(d => (typeof d === 'object' ? d.prize : 0) === 100).map(d => typeof d === 'object' ? d.number : d).reverse();
             const numbers50 = drawn.filter(d => (typeof d === 'object' ? d.prize : 0) === 50).map(d => typeof d === 'object' ? d.number : d).reverse();
             const numbers25 = drawn.filter(d => (typeof d === 'object' ? d.prize === 25 : false)).map(d => typeof d === 'object' ? d.number : d).reverse();
-            const total100 = activeEvt.cfgPrizes100 ?? 20;
-            const total50 = activeEvt.cfgPrizes50 ?? 12;
-            const total25 = activeEvt.cfgPrizes25 ?? 16;
+            const total100 = activeEvt.cfgPrizes100 ?? 10;
+            const total50 = activeEvt.cfgPrizes50 ?? 16;
+            const total25 = activeEvt.cfgPrizes25 ?? 40;
             const rem100 = activeEvt.prizes100 !== undefined ? activeEvt.prizes100 : Math.max(0, total100 - numbers100.length);
             const rem50 = activeEvt.prizes50 !== undefined ? activeEvt.prizes50 : Math.max(0, total50 - numbers50.length);
             const rem25 = activeEvt.prizes25 !== undefined ? activeEvt.prizes25 : Math.max(0, total25 - numbers25.length);

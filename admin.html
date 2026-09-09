@@ -583,9 +583,9 @@ button, .btn { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         <input id="cfg-thu-excludes" onchange="updateDrawState()" placeholder="e.g. 5,12,45" type="text"/>
     </div>
     <div class="form-group" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 0.5rem;">
-        <div><label style="font-size:0.75rem;">Thursday $100</label><input id="cfg-thu-prizes-100" onchange="updateDrawState()" oninput="updateDrawState()" type="number" value="4"/></div>
-        <div><label style="font-size:0.75rem;">Thursday $50</label><input id="cfg-thu-prizes-50" onchange="updateDrawState()" oninput="updateDrawState()" type="number" value="8"/></div>
-        <div><label style="font-size:0.75rem;">Thursday $25</label><input id="cfg-thu-prizes-25" onchange="updateDrawState()" oninput="updateDrawState()" type="number" value="52"/></div>
+        <div><label style="font-size:0.75rem;">Thursday $100</label><input id="cfg-thu-prizes-100" onchange="updateDrawState()" oninput="updateDrawState()" type="number" value="10"/></div>
+        <div><label style="font-size:0.75rem;">Thursday $50</label><input id="cfg-thu-prizes-50" onchange="updateDrawState()" oninput="updateDrawState()" type="number" value="16"/></div>
+        <div><label style="font-size:0.75rem;">Thursday $25</label><input id="cfg-thu-prizes-25" onchange="updateDrawState()" oninput="updateDrawState()" type="number" value="40"/></div>
     </div>
     <div class="form-group" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 1rem;">
         <div><label style="font-size:0.75rem;">Thursday Vouchers Count</label><input id="cfg-thu-vouchers-count" onchange="updateDrawState()" oninput="updateDrawState()" type="number" value="0"/></div>
@@ -825,13 +825,13 @@ button, .btn { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
                     min: 1,
                     max: 9999,
                     excludes: [],
-                    prizes100: 20,
-                    prizes50: 12,
-                    prizes25: 16,
-                    cfgPrizes100: 20,
-                    cfgPrizes50: 12,
-                    cfgPrizes25: 16,
-                    prizesLeft: 48,
+                    prizes100: 10,
+                    prizes50: 16,
+                    prizes25: 40,
+                    cfgPrizes100: 10,
+                    cfgPrizes50: 16,
+                    cfgPrizes25: 40,
+                    prizesLeft: 66,
                     drawnNumbers: []
                 },
                 sunday: {
@@ -852,13 +852,13 @@ button, .btn { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
                 min: 1,
                 max: 9999,
                 excludes: [],
-                prizes100: 20,
-                prizes50: 12,
-                prizes25: 16,
-                cfgPrizes100: 20,
-                cfgPrizes50: 12,
-                cfgPrizes25: 16,
-                prizesLeft: 48,
+                prizes100: 10,
+                prizes50: 16,
+                prizes25: 40,
+                cfgPrizes100: 10,
+                cfgPrizes50: 16,
+                cfgPrizes25: 40,
+                prizesLeft: 66,
                 isRolling: false,
                 currentNumber: '---',
                 drawnNumbers: []
@@ -2281,9 +2281,9 @@ button, .btn { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
             const numbers100 = drawn.filter(d => (typeof d === 'object' ? d.prize : 0) === 100).map(d => typeof d === 'object' ? d.number : d).reverse();
             const numbers50 = drawn.filter(d => (typeof d === 'object' ? d.prize : 0) === 50).map(d => typeof d === 'object' ? d.number : d).reverse();
             const numbers25 = drawn.filter(d => (typeof d === 'object' ? d.prize === 25 : false)).map(d => typeof d === 'object' ? d.number : d).reverse();
-            const total100 = activeEvt.cfgPrizes100 || 20;
-            const total50 = activeEvt.cfgPrizes50 || 12;
-            const total25 = activeEvt.cfgPrizes25 || 16;
+            const total100 = activeEvt.cfgPrizes100 || 10;
+            const total50 = activeEvt.cfgPrizes50 || 16;
+            const total25 = activeEvt.cfgPrizes25 || 40;
             const rem100 = draw.prizes100 !== undefined ? draw.prizes100 : Math.max(0, total100 - numbers100.length);
             const rem50 = draw.prizes50 !== undefined ? draw.prizes50 : Math.max(0, total50 - numbers50.length);
             const rem25 = draw.prizes25 !== undefined ? draw.prizes25 : Math.max(0, total25 - numbers25.length);
@@ -2465,9 +2465,9 @@ button, .btn { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
             const numbers100 = drawn.filter(d => (typeof d === 'object' ? d.prize : 0) === 100).map(d => typeof d === 'object' ? d.number : d).reverse();
             const numbers50 = drawn.filter(d => (typeof d === 'object' ? d.prize : 0) === 50).map(d => typeof d === 'object' ? d.number : d).reverse();
             const numbers25 = drawn.filter(d => (typeof d === 'object' ? d.prize === 25 : false)).map(d => typeof d === 'object' ? d.number : d).reverse();
-            const total100 = activeEvt.cfgPrizes100 ?? 20;
-            const total50 = activeEvt.cfgPrizes50 ?? 12;
-            const total25 = activeEvt.cfgPrizes25 ?? 16;
+            const total100 = activeEvt.cfgPrizes100 ?? 10;
+            const total50 = activeEvt.cfgPrizes50 ?? 16;
+            const total25 = activeEvt.cfgPrizes25 ?? 40;
             const rem100 = activeEvt.prizes100 !== undefined ? activeEvt.prizes100 : Math.max(0, total100 - numbers100.length);
             const rem50 = activeEvt.prizes50 !== undefined ? activeEvt.prizes50 : Math.max(0, total50 - numbers50.length);
             const rem25 = activeEvt.prizes25 !== undefined ? activeEvt.prizes25 : Math.max(0, total25 - numbers25.length);
