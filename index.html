@@ -1049,6 +1049,8 @@
         let congratsStartTime = null;
         let currentSlideIdx = 0;
         let isPaused = false;
+        let isLocked = false;
+        let customSlideDuration = null;
         function getActiveDrawData(drawState) {
             if (!drawState) return {};
             let evtName = drawState.activeEvent || 'thursday';
@@ -1970,21 +1972,23 @@
         function startSlideTimer(duration) {
             clearInterval(slideInterval);
             clearInterval(progressInterval);
+            if (isLocked) return;
+            const effectiveDuration = customSlideDuration || duration;
             
             let start = Date.now();
             progressBar.style.width = '0%';
             
             progressInterval = setInterval(() => {
-                if (isPaused) return;
+                if (isPaused || isLocked) return;
                 let elapsed = Date.now() - start;
-                let percent = (elapsed / duration) * 100;
+                let percent = (elapsed / effectiveDuration) * 100;
                 progressBar.style.width = Math.min(percent, 100) + '%';
             }, 50);
 
-            if (isPaused) return;
+            if (isPaused || isLocked) return;
 
             slideInterval = setInterval(() => {
-                if (isPaused) return;
+                if (isPaused || isLocked) return;
                 const slides = document.querySelectorAll('.slide');
                 if(slides.length === 0) return;
                 
@@ -1992,9 +1996,9 @@
                 currentSlideIdx = (currentSlideIdx + 1) % slides.length;
                 slides[currentSlideIdx].classList.add('active');
                 
-                const nextDur = parseInt(slides[currentSlideIdx].getAttribute('data-duration')) || 30000;
+                const nextDur = customSlideDuration || parseInt(slides[currentSlideIdx].getAttribute('data-duration')) || 30000;
                 startSlideTimer(nextDur);
-            }, duration);
+            }, effectiveDuration);
         }
 
         // Draw Speed Helper
@@ -2769,13 +2773,117 @@
             const archiveImg = document.getElementById('tv-qr-archive');
             if (archiveImg) archiveImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&format=png&color=0f172a&bgcolor=ffffff&data=${archiveUrl}`;
         }
-        window.addEventListener('DOMContentLoaded', generateTVQRCodes);
+        // Slideshow Keyboard Navigation
+        function showKeyboardHud(text) {
+            let hud = document.getElementById('keyboard-hud-toast');
+            if (!hud) {
+                hud = document.createElement('div');
+                hud.id = 'keyboard-hud-toast';
+                hud.style.cssText = 'position:fixed; bottom:2.5rem; right:2.5rem; z-index:999999; background:rgba(0,0,0,0.85); color:#fbbf24; border:1px solid rgba(251,191,36,0.5); padding:0.6rem 1.4rem; border-radius:9999px; font-family:sans-serif; font-size:1.1rem; font-weight:700; pointer-events:none; box-shadow:0 10px 30px rgba(0,0,0,0.7); backdrop-filter:blur(10px); transition:opacity 0.25s ease, transform 0.25s ease; opacity:0; transform:translateY(10px);';
+                document.body.appendChild(hud);
+            }
+            hud.innerText = text;
+            hud.style.opacity = '1';
+            hud.style.transform = 'translateY(0)';
+            clearTimeout(hud._t);
+            hud._t = setTimeout(() => {
+                hud.style.opacity = '0';
+                hud.style.transform = 'translateY(10px)';
+            }, 2000);
+        }
 
+        window.addEventListener('keydown', (e) => {
+            const target = e.target;
+            if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT' || target.isContentEditable)) {
+                return;
+            }
 
+            switch (e.key) {
+                case 'ArrowLeft':
+                    e.preventDefault();
+                    prevSlide();
+                    break;
+                case 'ArrowRight':
+                    e.preventDefault();
+                    nextSlide();
+                    break;
+                case 'ArrowUp':
+                    e.preventDefault();
+                    const slides = document.querySelectorAll('.slide');
+                    if (slides.length > 0) {
+                        slides[currentSlideIdx]?.classList.remove('active');
+                        currentSlideIdx = 0;
+                        slides[0]?.classList.add('active');
+                        playActiveCarousel();
+                        const dur = customSlideDuration || parseInt(slides[0].getAttribute('data-duration')) || 30000;
+                        startSlideTimer(dur);
+                        showKeyboardHud('⏮ Slide 1');
+                    }
+                    break;
+                case 'ArrowDown':
+                    e.preventDefault();
+                    if (window.parent && window.parent !== window) {
+                        window.parent.postMessage({ type: 'SKIP_MODULE' }, '*');
+                    } else {
+                        nextSlide();
+                    }
+                    break;
+                case ' ':
+                case 'Space':
+                    e.preventDefault();
+                    toggleSlidePlay();
+                    break;
+                case 'a':
+                case 'A':
+                    e.preventDefault();
+                    window.open('admin.html', '_blank');
+                    break;
+                case 'r':
+                case 'R':
+                    e.preventDefault();
+                    window.open('remote.html', '_blank');
+                    break;
+                case '0':
+                    e.preventDefault();
+                    isLocked = !isLocked;
+                    if (isLocked) {
+                        clearInterval(slideInterval);
+                        clearInterval(progressInterval);
+                        showKeyboardHud('🔒 SLIDE LOCKED (0 to unlock)');
+                    } else {
+                        showKeyboardHud('🔓 SLIDE UNLOCKED');
+                        if (!isPaused) {
+                            const curDur = customSlideDuration || parseInt(document.querySelectorAll('.slide')[currentSlideIdx]?.getAttribute('data-duration')) || 30000;
+                            startSlideTimer(curDur);
+                        }
+                    }
+                    break;
+                default:
+                    if (e.key >= '1' && e.key <= '9') {
+                        e.preventDefault();
+                        const secs = parseInt(e.key, 10) * 10;
+                        customSlideDuration = secs * 1000;
+                        startSlideTimer(customSlideDuration);
+                        showKeyboardHud(`⏱ Duration: ${secs}s`);
+                    }
+                    break;
+            }
+        });
 
-
-
-
+        window.addEventListener('message', (e) => {
+            if (!e.data) return;
+            if (e.data.type === 'GOTO_FIRST') {
+                const s = document.querySelectorAll('.slide');
+                if (s.length > 0) {
+                    s[currentSlideIdx]?.classList.remove('active');
+                    currentSlideIdx = 0;
+                    s[0]?.classList.add('active');
+                    playActiveCarousel();
+                    const dur = customSlideDuration || parseInt(s[0].getAttribute('data-duration')) || 30000;
+                    startSlideTimer(dur);
+                }
+            }
+        });
     </script>
 
 </body>
