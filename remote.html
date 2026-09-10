@@ -660,7 +660,8 @@ button, .btn { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 <button class="btn" id="btn-slides" onclick="setView('slides')">📺 Slideshow</button>
 <button class="btn" id="btn-draw" onclick="setView('draw')">🎯 Draw Screen</button>
 <button class="btn" id="btn-draw-generic" onclick="openGenericDrawPage()" style="background: #fbbf24; border-color: #f59e0b; color: black; font-weight: bold;">⭐ Generic Draw</button>
-<button class="btn" id="btn-congrats" onclick="setView('congrats')">🎉 Congrats</button>
+<button class="btn" id="btn-congrats" onclick="setView('congrats')" >🎉 Winners Grid</button>
+<button class="btn" id="btn-congrats-video" onclick="setView('congrats-video')"  style="background: #ef4444; color: white;">🎬 Congrats Video</button>
 </div>
 <label>Slideshow Navigation</label>
 <div class="btn-group">
@@ -1327,8 +1328,9 @@ button, .btn { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
                 if (state && state.draw && state.draw.activeEvent && state.draw[state.draw.activeEvent]) {
                     if (state.draw[state.draw.activeEvent].currentPrize === 'generic') {
                         state.draw[state.draw.activeEvent].currentPrize = 100;
-                        payload.draw = state.draw;
                     }
+                    state.draw[state.draw.activeEvent].currentNumber = null;
+                    payload.draw = state.draw;
                 }
             }
             state.activeView = view;

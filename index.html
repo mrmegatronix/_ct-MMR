@@ -1682,7 +1682,8 @@
                     let steps = ['congrats'];
                     const activeEvent = (state.draw && state.draw.activeEvent) ? state.draw.activeEvent : 'thursday';
                     const activeDrawData = (state.draw && state.draw[activeEvent]) ? state.draw[activeEvent] : {};
-                    if (!activeDrawData.manualDraw) {
+                    const drawnNums = getActiveDrawnNumbers(state.draw);
+                    if (!activeDrawData.manualDraw && drawnNums && drawnNums.length > 0) {
                         steps.push('winning-numbers');
                     }
                     
@@ -1920,7 +1921,7 @@
                 const bgStyle = bgImg ? `background-image: url('${bgImg}'); background-size: cover; background-position: center;` : '';
                 
                 return `
-                    <div class="slide ${i === currentSlideIdx ? 'active' : ''}" style="${bgStyle}" data-duration="${slide.duration}">
+                    <div class="slide ${i === currentSlideIdx ? 'active' : ''}" style="${bgStyle}" data-duration="${slide.duration}" data-type="${slide.type}">
                         ${bgImg ? '<div class="slide-image-overlay"></div>' : ''}
                         
                         ${overlayImg ? `<div class="slide-overlay-img-container" style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; z-index: 1;">
@@ -1986,6 +1987,21 @@
             }, 50);
 
             if (isPaused || isLocked) return;
+            
+            const currentSlide = document.querySelectorAll('.slide')[currentSlideIdx];
+            if (currentSlide) {
+                const type = currentSlide.getAttribute('data-type');
+                if (type === 'countdown') {
+                    const nzNow = getNZDate();
+                    const target = state.nextDrawTime ? new Date(state.nextDrawTime) : null;
+                    const diff = target ? target.getTime() - nzNow.getTime() : 0;
+                    if (diff <= 2 * 60 * 60 * 1000 && diff > - (30 * 60 * 1000)) {
+                        console.log('[Carousel] Locking onto countdown slide.');
+                        clearInterval(progressInterval);
+                        return; // Lock!
+                    }
+                }
+            }
 
             slideInterval = setInterval(() => {
                 if (isPaused || isLocked) return;
@@ -1997,6 +2013,12 @@
                 slides[currentSlideIdx].classList.add('active');
                 
                 const nextDur = customSlideDuration || parseInt(slides[currentSlideIdx].getAttribute('data-duration')) || 30000;
+                const nextType = slides[currentSlideIdx].getAttribute('data-type');
+                
+                // If it's a countdown slide and draw hasn't happened yet (or just recently started), lock it
+                
+                }
+                
                 startSlideTimer(nextDur);
             }, effectiveDuration);
         }

@@ -53,7 +53,7 @@
         }
     </script>
 <style>html, body { overflow-x: hidden; }
-button, .btn { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+button, .btn { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex-shrink: 0; }
 
         :root {
             --bg: var(--cfg-bg-dark, #070a13);
@@ -338,11 +338,7 @@ button, .btn { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         input:checked + .slider { background-color: var(--primary); }
         input:checked + .slider:before { transform: translateX(26px); }
 
-        .btn-group {
-            display: flex;
-            gap: 0.5rem;
-            margin-bottom: 1rem;
-        }
+        .btn-group { display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap; }
 
         /* PiP Styling */
         .pip-toggle {
@@ -1030,6 +1026,10 @@ button, .btn { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
             syncEl('cfg-sun-vouchers-count', sun.cfgVouchersCount !== undefined ? sun.cfgVouchersCount : 0, false);
             syncEl('cfg-sun-vouchers-value', sun.cfgVouchersValue !== undefined ? sun.cfgVouchersValue : 0, false);
 
+            const gen = (state.draw && state.draw.generic) || {};
+            syncEl('cfg-gen-prizes', gen.cfgPrizes !== undefined ? gen.cfgPrizes : 10, false);
+            syncEl('cfg-gen-title', gen.title || '', false);
+            syncEl('cfg-gen-countdown', gen.showRemaining || 'yes', false);
             syncEl('drawTime', state.nextDrawTime, false);
         }
 
@@ -1042,6 +1042,15 @@ button, .btn { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         // Call updateUIFromState inside updateUI
         const origUpdateUI = typeof updateUI === 'function' ? updateUI : null;
         function updateUI() {
+            if (state && state.draw) {
+                // If legacy properties exist directly on state.draw, migrate them
+                if (state.draw.cfgPrizes100 !== undefined && !state.draw.thursday) {
+                    state.draw.thursday = { ...state.draw };
+                    delete state.draw.thursday.thursday;
+                    delete state.draw.thursday.sunday;
+                    delete state.draw.thursday.generic;
+                }
+            }
             syncDrawFormFromState();
             updateTotalsSummary();
             calcFinancials();
@@ -1171,6 +1180,15 @@ button, .btn { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
             if (!state.draw.generic) {
                 state.draw.generic = { drawnNumbers: [], prizesLeft: 10, cfgPrizes: 10, currentNumber: null };
             }
+            const genPrizesEl = document.getElementById('cfg-gen-prizes');
+            if (genPrizesEl) state.draw.generic.cfgPrizes = parseInt(genPrizesEl.value) || 0;
+            
+            const genTitleEl = document.getElementById('cfg-gen-title');
+            if (genTitleEl) state.draw.generic.title = genTitleEl.value;
+            
+            const genCountEl = document.getElementById('cfg-gen-countdown');
+            if (genCountEl) state.draw.generic.showRemaining = genCountEl.value;
+            
             
             if (!thu.drawnNumbers) thu.drawnNumbers = [];
             if (!sun.drawnNumbers) sun.drawnNumbers = [];
@@ -1830,8 +1848,9 @@ button, .btn { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
                 if (state && state.draw && state.draw.activeEvent && state.draw[state.draw.activeEvent]) {
                     if (state.draw[state.draw.activeEvent].currentPrize === 'generic') {
                         state.draw[state.draw.activeEvent].currentPrize = 100;
-                        payload.draw = state.draw;
                     }
+                    state.draw[state.draw.activeEvent].currentNumber = null;
+                    payload.draw = state.draw;
                 }
             }
             state.activeView = view;
@@ -2290,6 +2309,7 @@ button, .btn { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
             let sessionHash = localStorage.getItem('mmr_session_hash') || (Math.random().toString(36).substring(2, 10));
             const timestamp = new Date().toLocaleString('en-NZ', { dateStyle: 'medium', timeStyle: 'short' });
             const printedDate = new Date().toLocaleDateString('en-NZ', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+            const listTitle = "Tonight's Meat Raffle Prize Checklist & Financials";
             const printWin = window.open('', '_blank');
             const renderBoxes = (total, numbers) => {
                 let html = '';
@@ -3078,7 +3098,8 @@ button, .btn { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 <button class="btn" id="btn-slides" onclick="setView('slides')" style="border-width: 2px;">📺 Slideshow</button>
 <button class="btn" id="btn-draw" onclick="setView('draw')" style="border-width: 2px;">🎯 Draw Screen</button>
 <button class="btn" id="btn-draw-generic" onclick="openGenericDrawPage()" style="border-width: 2px; background: #fbbf24; border-color: #f59e0b; color: black; font-weight: bold;">⭐ Open Generic Draw (Gold)</button>
-<button class="btn" id="btn-congrats" onclick="setView('congrats')" style="border-width: 2px;">🎉 Congrats</button>
+<button class="btn" id="btn-congrats" onclick="setView('congrats')"  style="border-width: 2px;">🎉 Winners Grid</button>
+<button class="btn" id="btn-congrats-video" onclick="setView('congrats-video')"  style="border-width: 2px;" style="background: #ef4444; color: white;">🎬 Congrats Video</button>
 </div>
 </div></div><div class="tab-content" id="tab-financials"><div class="card" style="margin-top: 1.5rem;">
 <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.75rem;">
@@ -3097,19 +3118,19 @@ button, .btn { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 <!-- Thursday Financials -->
 <div style="background: rgba(59, 130, 246, 0.1); border: 1px solid #3b82f6; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem;">
 <h3 style="margin-top: 0; color: #3b82f6;">Thursday Raffle Financials</h3>
-<div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; margin-bottom: 0.75rem;">
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0.75rem; margin-bottom: 0.75rem;">
 <div class="form-group"><label style="font-size:0.75rem;">Ticket Start (#)</label><input class="fin-field" id="fin-thu-ticket-start" oninput="calcFinancials()" readonly="" type="number" value="1"/></div>
 <div class="form-group"><label style="font-size:0.75rem;">Ticket Finish (#)</label><input class="fin-field" id="fin-thu-ticket-finish" oninput="calcFinancials()" readonly="" type="number" value="0"/></div>
 <div class="form-group"><label style="font-size:0.75rem;">Tickets Sold</label><input class="fin-field" id="fin-thu-tickets" oninput="calcFinancials()" readonly="" type="number" value="0"/></div>
 <div class="form-group"><label style="font-size:0.75rem;">Prize Pool Total ($)</label><input class="fin-field" id="fin-thu-prizepool" oninput="calcFinancials()" readonly="" step="0.01" type="number" value="0"/></div>
 </div>
-<div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; margin-bottom: 0.75rem;">
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0.75rem; margin-bottom: 0.75rem;">
 <div class="form-group"><label style="font-size:0.75rem;">Ticket Price Single ($)</label><input class="fin-field" id="fin-thu-price-single" oninput="calcFinancials()" readonly="" step="0.01" type="number" value="5.00"/></div>
 <div class="form-group"><label style="font-size:0.75rem;">Singles Sold</label><input class="fin-field" id="fin-thu-singles" oninput="calcFinancials()" readonly="" type="number" value="0"/></div>
 <div class="form-group"><label style="font-size:0.75rem;">Ticket Price Strip ($)</label><input class="fin-field" id="fin-thu-price-strip" oninput="calcFinancials()" readonly="" step="0.01" type="number" value="20.00"/></div>
 <div class="form-group"><label style="font-size:0.75rem;">Strips Sold</label><input class="fin-field" id="fin-thu-strips" oninput="calcFinancials()" readonly="" type="number" value="0"/></div>
 </div>
-<div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; margin-bottom: 0.75rem;">
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0.75rem; margin-bottom: 0.75rem;">
 <div class="form-group"><label style="font-size:0.75rem;">Cash Total ($)</label><input class="fin-field" id="fin-thu-cash" oninput="calcFinancials()" readonly="" step="0.01" type="number" value="0"/></div>
 <div class="form-group"><label style="font-size:0.75rem;">EFTPOS Total ($)</label><input class="fin-field" id="fin-thu-eftpos" oninput="calcFinancials()" readonly="" step="0.01" type="number" value="0"/></div>
 <div class="form-group"><label style="font-size:0.75rem;">Reimbursements ($)</label><input class="fin-field" id="fin-thu-reimb" oninput="calcFinancials()" readonly="" step="0.01" type="number" value="0"/></div>
@@ -3123,19 +3144,19 @@ button, .btn { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 <!-- Sunday Financials -->
 <div style="background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem;">
 <h3 style="margin-top: 0; color: #ef4444;">Sunday Raffle Financials</h3>
-<div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; margin-bottom: 0.75rem;">
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0.75rem; margin-bottom: 0.75rem;">
 <div class="form-group"><label style="font-size:0.75rem;">Ticket Start (#)</label><input class="fin-field" id="fin-sun-ticket-start" oninput="calcFinancials()" readonly="" type="number" value="1"/></div>
 <div class="form-group"><label style="font-size:0.75rem;">Ticket Finish (#)</label><input class="fin-field" id="fin-sun-ticket-finish" oninput="calcFinancials()" readonly="" type="number" value="0"/></div>
 <div class="form-group"><label style="font-size:0.75rem;">Tickets Sold</label><input class="fin-field" id="fin-sun-tickets" oninput="calcFinancials()" readonly="" type="number" value="0"/></div>
 <div class="form-group"><label style="font-size:0.75rem;">Prize Pool Total ($)</label><input class="fin-field" id="fin-sun-prizepool" oninput="calcFinancials()" readonly="" step="0.01" type="number" value="0"/></div>
 </div>
-<div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; margin-bottom: 0.75rem;">
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0.75rem; margin-bottom: 0.75rem;">
 <div class="form-group"><label style="font-size:0.75rem;">Ticket Price Single ($)</label><input class="fin-field" id="fin-sun-price-single" oninput="calcFinancials()" readonly="" step="0.01" type="number" value="5.00"/></div>
 <div class="form-group"><label style="font-size:0.75rem;">Singles Sold</label><input class="fin-field" id="fin-sun-singles" oninput="calcFinancials()" readonly="" type="number" value="0"/></div>
 <div class="form-group"><label style="font-size:0.75rem;">Ticket Price Strip ($)</label><input class="fin-field" id="fin-sun-price-strip" oninput="calcFinancials()" readonly="" step="0.01" type="number" value="20.00"/></div>
 <div class="form-group"><label style="font-size:0.75rem;">Strips Sold</label><input class="fin-field" id="fin-sun-strips" oninput="calcFinancials()" readonly="" type="number" value="0"/></div>
 </div>
-<div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; margin-bottom: 0.75rem;">
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0.75rem; margin-bottom: 0.75rem;">
 <div class="form-group"><label style="font-size:0.75rem;">Cash Total ($)</label><input class="fin-field" id="fin-sun-cash" oninput="calcFinancials()" readonly="" step="0.01" type="number" value="0"/></div>
 <div class="form-group"><label style="font-size:0.75rem;">EFTPOS Total ($)</label><input class="fin-field" id="fin-sun-eftpos" oninput="calcFinancials()" readonly="" step="0.01" type="number" value="0"/></div>
 <div class="form-group"><label style="font-size:0.75rem;">Reimbursements ($)</label><input class="fin-field" id="fin-sun-reimb" oninput="calcFinancials()" readonly="" step="0.01" type="number" value="0"/></div>
@@ -3149,7 +3170,7 @@ button, .btn { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 <!-- Weekly Summary & Grand Totals -->
 <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid #10b981; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem;">
 <h3 style="margin-top: 0; color: #10b981;">Weekly Summary &amp; Grand Totals</h3>
-<div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem;">
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem;">
 <div class="form-group"><label style="font-size:0.75rem;">Combined Cash Total ($)</label><input id="fin-total-cash" readonly="" style="background: #0d1526; font-weight: bold; color: #10b981;" type="text" value="$0.00"/></div>
 <div class="form-group"><label style="font-size:0.75rem;">Combined EFTPOS Total ($)</label><input id="fin-total-eftpos" readonly="" style="background: #0d1526; font-weight: bold; color: #10b981;" type="text" value="$0.00"/></div>
 <div class="form-group"><label style="font-size:0.75rem;">Combined Reimbursements ($)</label><input id="fin-total-reimb" readonly="" style="background: #0d1526; font-weight: bold; color: #f59e0b;" type="text" value="$0.00"/></div>

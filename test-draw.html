@@ -1848,7 +1848,7 @@
                 const bgStyle = bgImg ? `background-image: url('${bgImg}'); background-size: cover; background-position: center;` : '';
                 
                 return `
-                    <div class="slide ${i === currentSlideIdx ? 'active' : ''}" style="${bgStyle}" data-duration="${slide.duration}">
+                    <div class="slide ${i === currentSlideIdx ? 'active' : ''}" style="${bgStyle}" data-duration="${slide.duration}" data-type="${slide.type}">
                         ${bgImg ? '<div class="slide-image-overlay"></div>' : ''}
                         
                         ${overlayImg ? `<div class="slide-overlay-img-container" style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; z-index: 1;">
