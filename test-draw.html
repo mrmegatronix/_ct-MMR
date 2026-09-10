@@ -1913,6 +1913,21 @@
 
             if (isPaused) return;
 
+            const currentSlide = document.querySelectorAll('.slide')[currentSlideIdx];
+            if (currentSlide) {
+                const type = currentSlide.getAttribute('data-type');
+                if (type === 'countdown') {
+                    const nzNow = getNZDate();
+                    const target = state.nextDrawTime ? new Date(state.nextDrawTime) : null;
+                    const diff = target ? target.getTime() - nzNow.getTime() : 0;
+                    if (diff <= 15 * 60 * 1000 && diff > - (30 * 60 * 1000)) {
+                        console.log('[Carousel] Locking onto countdown slide.');
+                        clearInterval(progressInterval);
+                        return; // Lock!
+                    }
+                }
+            }
+
             slideInterval = setInterval(() => {
                 if (isPaused) return;
                 const slides = document.querySelectorAll('.slide');
