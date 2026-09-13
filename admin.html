@@ -626,11 +626,11 @@ button, .btn { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; f
             </div>
             <div class="form-group">
                 <label style="font-size:0.75rem; color:#94a3b8;">End Ticket Sold</label>
-                <input id="cfg-sun-sold-end" min="0" max="99999" onchange="calculateSunTicketsSold()" oninput="calculateSunTicketsSold()" placeholder="e.g. 999" type="number" value="999"/>
+                <input id="cfg-sun-sold-end" min="0" max="99999" onchange="calculateSunTicketsSold()" oninput="calculateSunTicketsSold()" placeholder="e.g. 100" type="number" value="100"/>
             </div>
             <div class="form-group">
                 <label style="font-size:0.75rem; color:#94a3b8;">Total Sold</label>
-                <input id="cfg-sun-sold-total" readonly style="background: rgba(30, 41, 59, 0.8); color: #f87171; font-weight: 800;" type="number" value="999"/>
+                <input id="cfg-sun-sold-total" readonly style="background: rgba(30, 41, 59, 0.8); color: #f87171; font-weight: 800;" type="number" value="100"/>
             </div>
         </div>
     </div>
@@ -642,7 +642,7 @@ button, .btn { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; f
         </div>
         <div class="form-group">
             <label>Sunday Max Ticket (Draw Bound)</label>
-            <input id="cfg-sun-max" min="1" max="99999" onchange="updateDrawState()" type="number" value="999"/>
+            <input id="cfg-sun-max" min="1" max="99999" onchange="updateDrawState()" type="number" value="100"/>
         </div>
     </div>
     <div class="form-group" style="margin-bottom: 0.5rem;">
@@ -1008,7 +1008,7 @@ button, .btn { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; f
             syncEl('cfg-thu-vouchers-value', thu.cfgVouchersValue !== undefined ? thu.cfgVouchersValue : 0, false);
 
             syncEl('cfg-sun-sold-start', sun.soldStart !== undefined ? sun.soldStart : (sun.min !== undefined ? sun.min : 1), false);
-            syncEl('cfg-sun-sold-end', sun.soldEnd !== undefined ? sun.soldEnd : (sun.max !== undefined ? sun.max : 999), false);
+            syncEl('cfg-sun-sold-end', sun.soldEnd !== undefined ? sun.soldEnd : (sun.max !== undefined ? sun.max : 100), false);
             const sStart = parseInt(document.getElementById('cfg-sun-sold-start')?.value);
             const sEnd = parseInt(document.getElementById('cfg-sun-sold-end')?.value);
             if (!isNaN(sStart) && !isNaN(sEnd) && sEnd >= sStart) {
@@ -1018,7 +1018,7 @@ button, .btn { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; f
             syncEl('cfg-sun-enabled', sun.enabled === true, true);
             syncEl('cfg-sun-type', sun.type || (sun.manualDraw ? 'manual' : 'full'), false);
             syncEl('cfg-sun-min', sun.min !== undefined ? sun.min : 1, false);
-            syncEl('cfg-sun-max', sun.max !== undefined ? sun.max : 999, false);
+            syncEl('cfg-sun-max', sun.max !== undefined ? sun.max : 100, false);
             syncEl('cfg-sun-excludes', (sun.excludes || []).join(','), false);
             syncEl('cfg-sun-prizes-100', sun.cfgPrizes100 !== undefined ? sun.cfgPrizes100 : 0, false);
             syncEl('cfg-sun-prizes-50', sun.cfgPrizes50 !== undefined ? sun.cfgPrizes50 : 0, false);
