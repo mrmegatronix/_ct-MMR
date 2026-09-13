@@ -1638,7 +1638,7 @@
             
             // If the draw time was more than 2 hours ago, it's definitely over. 
             // Auto-advance the state to the next Thursday.
-            if (diff < -(2 * 60 * 60 * 1000)) {
+            if (diff < -(14 * 60 * 60 * 1000)) {
                 state.nextDrawTime = getNextDrawTime();
                 localStorage.setItem('mmr_state_v5', JSON.stringify(state));
                 return '<span>Calculating next draw...</span>';
@@ -2029,7 +2029,7 @@
                     const nzNow = getNZDate();
                     const target = state.nextDrawTime ? new Date(state.nextDrawTime) : null;
                     const diff = target ? target.getTime() - nzNow.getTime() : 0;
-                    if (diff <= 15 * 60 * 1000 && diff > - (30 * 60 * 1000)) {
+                    if (diff <= 15 * 60 * 1000 && diff > - (120 * 60 * 1000)) {
                         console.log('[Carousel] Locking onto countdown slide.');
                         clearInterval(progressInterval);
                         return; // Lock!
