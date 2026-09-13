@@ -1777,7 +1777,7 @@
             const isDrawFinished = activeEvt.prizesLeft === 0 && (activeEvt.drawnNumbers || []).length > 0;
             const isAfter8PM = hour >= 20;
 
-            const vCount = Number(activeDrawDataObjForCache.cfgVouchersCount ?? 0);
+            const vCount = Number(activeEvtData.cfgVouchersCount ?? 0);
             const vValue = Number(activeEvtData.cfgVouchersValue ?? 0);
             const totalPrizes = t100 + t50 + t25 + vCount;
             const totalPool = (t100 * 100) + (t50 * 50) + (t25 * 25) + vValue;
