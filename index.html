@@ -861,6 +861,14 @@
             100% { transform: scale(1); opacity: 1; }
         }
 
+    
+        body.theme-sunday #view-draw {
+            background: radial-gradient(circle at center, rgba(69, 10, 10, 0.8) 0%, rgba(24, 0, 0, 0.98) 75%, #050000 100%) !important;
+        }
+        body.theme-sunday .slide[data-type="advert"] {
+            background: radial-gradient(circle at center, rgba(153, 27, 27, 0.85) 0%, #220505 75%, #000 100%) !important;
+        }
+
     </style>
 </head>
 <body>
@@ -1358,6 +1366,7 @@
                 activeEventName = 'thursday';
             }
             const isSunday = activeEventName === 'sunday' && isSundayEnabled;
+            document.body.classList.toggle('theme-sunday', isSunday);
 
             // Compute remaining prizes dynamically from config minus drawn
             let drawnNumbers = activeDrawData.drawnNumbers || [];
@@ -1769,7 +1778,7 @@
             const totalPrizes = t100 + t50 + t25 + vCount;
             const totalPool = (t100 * 100) + (t50 * 50) + (t25 * 25) + vValue;
 
-            const isTBC = isDrawFinished || (t100 === 0 && t50 === 0 && t25 === 0);
+            const isTBC = isDrawFinished || (t100 === 0 && t50 === 0 && t25 === 0 && vCount === 0);
 
             const t100Str = isTBC ? "T.B.C." : String(t100);
             const t50Str = isTBC ? "T.B.C." : String(t50);
