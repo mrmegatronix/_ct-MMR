@@ -865,7 +865,7 @@
         body.theme-sunday #view-draw {
             background: radial-gradient(circle at center, rgba(69, 10, 10, 0.8) 0%, rgba(24, 0, 0, 0.98) 75%, #050000 100%) !important;
         }
-        body.theme-sunday .slide[data-type="advert"] {
+        body.theme-sunday .slide {
             background: radial-gradient(circle at center, rgba(153, 27, 27, 0.85) 0%, #220505 75%, #000 100%) !important;
         }
 
@@ -1033,10 +1033,23 @@
             return new Date(v.year, v.month - 1, v.day, v.hour, v.minute, v.second);
         }
 
-        function getNextThursday7PM() {
+        function getNextDrawTime() {
             const nzDate = getNZDate();
-            const targetDay = (window.MMR_CONFIG && window.MMR_CONFIG.TARGET_DAY) ?? 4;
-            const targetHour = (window.MMR_CONFIG && window.MMR_CONFIG.TARGET_HOUR) ?? 19;
+            let isSun = false;
+            try {
+                if (typeof state !== 'undefined' && state.draw) {
+                    const isSundayEnabled = !!(state.draw.sunday && state.draw.sunday.enabled);
+                    let evtName = state.draw.activeEvent || 'thursday';
+                    if (evtName === 'sunday' && !isSundayEnabled) evtName = 'thursday';
+                    isSun = (evtName === 'sunday');
+                } else if (typeof document !== 'undefined') {
+                    const sunEl = document.getElementById('cfg-sun-active');
+                    if (sunEl && sunEl.checked) isSun = true;
+                }
+            } catch(e){}
+            
+            let targetDay = isSun ? 0 : 4;
+            let targetHour = isSun ? 17 : 19; // 5pm Sunday or 7pm Thursday
             
             let daysUntilTarget = (targetDay + 7 - nzDate.getDay()) % 7;
             if (daysUntilTarget === 0 && nzDate.getHours() >= targetHour) {
@@ -1075,7 +1088,7 @@
         let state = {
             activeView: 'slides',
             lastSlideCmdTs: Date.now(),
-            nextDrawTime: getNextThursday7PM(),
+            nextDrawTime: getNextDrawTime(),
             slides: [
                 { type: "countdown", title: "Time Until Draw", duration: 30000 }
             ],
@@ -1626,7 +1639,7 @@
             // If the draw time was more than 2 hours ago, it's definitely over. 
             // Auto-advance the state to the next Thursday.
             if (diff < -(2 * 60 * 60 * 1000)) {
-                state.nextDrawTime = getNextThursday7PM();
+                state.nextDrawTime = getNextDrawTime();
                 localStorage.setItem('mmr_state_v5', JSON.stringify(state));
                 return '<span>Calculating next draw...</span>';
             }
@@ -2566,7 +2579,7 @@
                     // Force-clear slides from storage to ensure fresh fetch from CSV
                     delete parsed.slides; 
                     if (parsed.nextDrawTime && new Date(parsed.nextDrawTime).getTime() < getNZDate().getTime()) {
-                        parsed.nextDrawTime = getNextThursday7PM();
+                        parsed.nextDrawTime = getNextDrawTime();
                     }
                     updateState(parsed); 
                 } catch(e){}

@@ -1701,7 +1701,7 @@ button, .btn { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; f
             return new Date(v.year, v.month - 1, v.day, v.hour, v.minute, v.second);
         }
 
-        function getNextThursday7PM() {
+        function getNextDrawTime() {
             const nzDate = getNZDate();
             let daysUntilThursday = (4 + 7 - nzDate.getDay()) % 7;
             if (daysUntilThursday === 0 && nzDate.getHours() >= 19) {
@@ -1737,7 +1737,7 @@ button, .btn { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; f
         }
 
         function resetCountdownClock() {
-            const targetStr = getNextThursday7PM();
+            const targetStr = getNextDrawTime();
             document.getElementById('drawTime').value = targetStr;
             state.nextDrawTime = targetStr;
             
