@@ -1218,7 +1218,6 @@ button, .btn { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; f
             let activeEvtName = state.draw.activeEvent || 'thursday';
             if (activeEvtName === 'sunday' && sun.enabled === false) {
                 activeEvtName = 'thursday';
-                state.draw.activeEvent = 'thursday';
             }
             const activeEvt = state.draw[activeEvtName] || thu;
             state.draw.prizes100 = activeEvt.prizes100;
