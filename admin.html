@@ -2517,7 +2517,8 @@ button, .btn { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; f
             const listTitle = titleOverride ? `Monster Meat Raffle — ${titleOverride} Checklist` : `Tonight's Meat Raffle Prize Checklist`;
             const draw = getDrawStateData();
             const activeEvt = (draw && draw[draw.activeEvent || 'thursday']) || draw.thursday || draw || {};
-            const drawn = getActiveDrawnNumbers(draw);
+            const isBlank = titleOverride && (titleOverride.includes('Blank') || titleOverride.includes('Manual'));
+            const drawn = isBlank ? [] : getActiveDrawnNumbers(draw);
             const numbers100 = drawn.filter(d => (typeof d === 'object' ? d.prize : 0) === 100).map(d => typeof d === 'object' ? d.number : d).reverse();
             const numbers50 = drawn.filter(d => (typeof d === 'object' ? d.prize : 0) === 50).map(d => typeof d === 'object' ? d.number : d).reverse();
             const numbers25 = drawn.filter(d => (typeof d === 'object' ? d.prize === 25 : false)).map(d => typeof d === 'object' ? d.number : d).reverse();
@@ -2837,9 +2838,9 @@ button, .btn { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; f
             `;
         }
 
-        function buildDrawResultsHTML() {
+        function buildDrawResultsHTML(isBlank = false) {
             const draw = getDrawStateData();
-            const drawn = getActiveDrawnNumbers(draw);
+            const drawn = isBlank ? [] : getActiveDrawnNumbers(draw);
             const printedDate = formatDDMMYYYY(new Date());
             
             let leftRows = '';
@@ -2863,7 +2864,7 @@ button, .btn { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; f
             return `
                 <div class="print-page print-page-single" style="page-break-after: avoid; break-after: avoid; page-break-inside: avoid;">
                     <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #0284c7; padding-bottom: 4px; margin-bottom: 8px;">
-                        <h1 style="margin: 0; border: none; padding: 0; font-size: 1.4rem;">Official Draw Results Sheet</h1>
+                        <h1 style="margin: 0; border: none; padding: 0; font-size: 1.4rem;">${isBlank ? 'Manual Draw Results Sheet' : 'Official Draw Results Sheet'}</h1>
                         <span style="font-weight: bold; color: #475569; font-size: 0.9rem;">${printedDate}</span>
                     </div>
                     <div style="font-size: 0.8rem; color: #64748b; margin-bottom: 8px;">Total Prizes: 48 | Guaranteed 1-Page Official Audit Record</div>
@@ -2897,7 +2898,9 @@ button, .btn { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; f
                 '<div style="page-break-before: always;"></div>' + 
                 buildFinancialSheetHTML() + 
                 '<div style="page-break-before: always;"></div>' + 
-                buildDrawResultsHTML()
+                buildDrawResultsHTML() +
+                '<div style="page-break-before: always;"></div>' + 
+                buildDrawResultsHTML(true)
             );
         }
 
