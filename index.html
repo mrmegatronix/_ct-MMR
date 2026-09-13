@@ -1343,14 +1343,18 @@
             const activeDrawDataObjForCache = getActiveDrawData(state.draw);
             const drawnNumbersCount = activeDrawDataObjForCache && activeDrawDataObjForCache.drawnNumbers ? activeDrawDataObjForCache.drawnNumbers.length : 0;
             const prizesLeft = activeDrawDataObjForCache ? activeDrawDataObjForCache.prizesLeft : null;
+            const vCountForCache = Number(activeEvtData.cfgVouchersCount ?? 0);
             const currentSlidesJson = JSON.stringify(state.slides || []) + '_' + JSON.stringify({
                 t100: cfgPrizes100,
                 t50: cfgPrizes50,
                 t25: cfgPrizes25,
+                vCount: vCountForCache,
                 day: nzDateCache.getDay(),
                 hour: nzDateCache.getHours(),
                 drawnCount: drawnNumbersCount,
-                prizesLeft: prizesLeft
+                prizesLeft: prizesLeft,
+                activeEvent: state.draw.activeEvent,
+                sunEnabled: !!(state.draw.sunday && state.draw.sunday.enabled)
             });
             if (state.activeView === 'slides' && (state.activeView !== lastActiveView || currentSlidesJson !== lastRenderedSlidesJson)) {
                 renderSlides(state.slides);
@@ -1866,6 +1870,22 @@
                 });
             }
 
+            // Always add the requested avatar animations
+            advertSlides.push({
+                title: " ",
+                subtitle: " ",
+                type: "video",
+                videoUrl: "https://mrmegatronix.github.io/_ct-AVATAR/_media/chasing_across_screen.mp4",
+                duration: 6000
+            });
+            advertSlides.push({
+                title: " ",
+                subtitle: " ",
+                type: "video",
+                videoUrl: "https://mrmegatronix.github.io/_ct-AVATAR/_media/chicken_dance_video.mp4",
+                duration: 8000
+            });
+
 
             const finalSlides = [...visibleSlides, ...advertSlides];
 
@@ -1956,6 +1976,12 @@
                                     ? `<div class="speech-bubble">${sanitize(slide.bubbleText || slide.subtitle).replace(/\n/g, '<br>')}</div>` 
                                     : ''}
                                  <img src="${avatarImg || (window.MMR_CONFIG && window.MMR_CONFIG.AVATAR_FALLBACK) || 'avatar.png'}" class="animated-avatar" alt="Character Avatar">
+                               </div>` 
+                            : ''
+                        }
+                        ${slide.type === 'video' 
+                            ? `<div class="video-container" style="position: absolute; top:0; left:0; width:100%; height:100%; z-index: 1;">
+                                 <video src="${safeUrl(slide.videoUrl)}" autoplay loop muted playsinline style="width:100%; height:100%; object-fit:cover; opacity: 0.8;"></video>
                                </div>` 
                             : ''
                         }
