@@ -1887,7 +1887,6 @@ button, .btn { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; f
             const btnSlides = document.getElementById('btn-slides');
             const btnDraw = document.getElementById('btn-draw');
             const btnCongrats = document.getElementById('btn-congrats');
-            const btnCongratsVideo = document.getElementById('btn-congrats-video');
             if (btnSlides && btnDraw && btnCongrats) {
                 const active = state.activeView || 'slides';
                 const isSlides = active === 'slides';
@@ -3138,7 +3137,6 @@ button, .btn { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; f
 <button class="btn" id="btn-draw" onclick="setView('draw')" style="border-width: 2px;">🎯 Draw Screen</button>
 <button class="btn" id="btn-draw-generic" onclick="openGenericDrawPage()" style="border-width: 2px; background: #fbbf24; border-color: #f59e0b; color: black; font-weight: bold;">⭐ Open Generic Draw (Gold)</button>
 <button class="btn" id="btn-congrats" onclick="setView('congrats')"  style="border-width: 2px;">🎉 Winners Grid</button>
-<button class="btn" id="btn-congrats-video" onclick="setView('congrats-video')"  style="border-width: 2px;" style="background: #ef4444; color: white;">🎬 Congrats Video</button>
 </div>
 </div></div><div class="tab-content" id="tab-financials"><div class="card" style="margin-top: 1.5rem;">
 <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.75rem;">
