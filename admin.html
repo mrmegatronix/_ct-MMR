@@ -1750,7 +1750,7 @@ button, .btn { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; f
         }
 
         function resetDraw() {
-            if (confirm('Archive this draw and start fresh? (This sets prizes to 0 / T.B.C.)')) {
+            if (confirm('Archive this draw and start fresh? (Your prize counts will be retained for next week)')) {
                 // Archive current draw to firebase
                 if (fbDbUrl) {
                     const activeEvtKey = state.draw.activeEvent || 'thursday';
@@ -1774,12 +1774,12 @@ button, .btn { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; f
                     state.draw[evt].currentPrize = null;
                     state.draw[evt].drawsFinishedTime = null;
                     state.draw[evt].isConfirmedFinished = false;
-                    state.draw[evt].cfgPrizes100 = 0;
-                    state.draw[evt].cfgPrizes50 = 0;
-                    state.draw[evt].cfgPrizes25 = 0;
-                    state.draw[evt].prizes100 = 0;
-                    state.draw[evt].prizes50 = 0;
-                    state.draw[evt].prizes25 = 0;
+                    // state.draw[evt].cfgPrizes100 = 0;
+                    // state.draw[evt].cfgPrizes50 = 0;
+                    // state.draw[evt].cfgPrizes25 = 0;
+                    // state.draw[evt].prizes100 = 0;
+                    // state.draw[evt].prizes50 = 0;
+                    // state.draw[evt].prizes25 = 0;
                     state.draw[evt].prizesLeft = 0;
                 }
                 
@@ -1797,13 +1797,13 @@ button, .btn { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; f
                 state.draw.currentPrize = null;
                 state.draw.drawsFinishedTime = null;
                 
-                document.getElementById('cfg-thu-prizes-100').value = 0;
-                document.getElementById('cfg-thu-prizes-50').value = 0;
-                document.getElementById('cfg-thu-prizes-25').value = 0;
-                document.getElementById('cfg-sun-prizes-100').value = 0;
-                document.getElementById('cfg-sun-prizes-50').value = 0;
-                document.getElementById('cfg-sun-prizes-25').value = 0;
-                if (document.getElementById('cfg-gen-prizes')) document.getElementById('cfg-gen-prizes').value = 0;
+                // document.getElementById('cfg-thu-prizes-100').value = 0;
+                // document.getElementById('cfg-thu-prizes-50').value = 0;
+                // document.getElementById('cfg-thu-prizes-25').value = 0;
+                // document.getElementById('cfg-sun-prizes-100').value = 0;
+                // document.getElementById('cfg-sun-prizes-50').value = 0;
+                // document.getElementById('cfg-sun-prizes-25').value = 0;
+                // if (document.getElementById('cfg-gen-prizes')) document.getElementById('cfg-gen-prizes').value = 0;
                 
                 updateDrawState();
                 state.activeView = 'slides'; // Go back to slides!

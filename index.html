@@ -1814,8 +1814,8 @@
             
             // Only show advert slides if it's a full draw AND not TBC
             const drawType = activeEvt.type || 'full';
-            if (drawType === 'full' && !isTBC) {
-                if (t100 > 0) {
+            if (drawType === 'full') {
+                if (t100 > 0 || isTBC) {
                     advertSlides.push({
                         title: `${t100Str} x $100`,
                         subtitle: "🥩 Premium Assorted Meat Trays to be won!! 🥩",
@@ -1824,7 +1824,7 @@
                         duration: 30000
                     });
                 }
-                if (t50 > 0) {
+                if (t50 > 0 || isTBC) {
                     advertSlides.push({
                         title: `${t50Str} x $50 TRAYS`,
                         subtitle: "🍗 Premium Assorted Meat Trays to be won!! 🍗",
@@ -1833,7 +1833,7 @@
                         duration: 30000
                     });
                 }
-                if (t25 > 0) {
+                if (t25 > 0 || isTBC) {
                     advertSlides.push({
                         title: `${t25Str} x $25 TRAYS`,
                         subtitle: "🥓 Premium Assorted Meat Trays to be won!! 🥓",
@@ -1851,7 +1851,7 @@
                         duration: 30000
                     });
                 }
-                if (totalPrizes > 0) {
+                if (totalPrizes > 0 || isTBC) {
                     advertSlides.push({
                         title: `TOTAL PRIZES: ${totalPrizesStr}`,
                         subtitle: "🍖 Premium Assorted Meat Trays must be won!! 🍖",
