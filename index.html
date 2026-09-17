@@ -1412,7 +1412,7 @@
                                     <span class="val">${genLeft}</span>
                                  </div>`;
                     }
-                } else if (drawType === 'full') {
+                } else if (drawType === 'full' || drawType === 'manual') {
                     if (p100Val > 0) {
                         html += `<div class="prize-counter-pill" style="border-color: #ef4444; box-shadow: 0 0 10px rgba(239,68,68,0.4); animation: popIn 0.4s ease-out, pulseRed 2s infinite ease-in-out;">
                                     <span style="color: #ef4444;">$100 Prize</span>
@@ -1814,7 +1814,7 @@
             
             // Only show advert slides if it's a full draw AND not TBC
             const drawType = activeEvt.type || 'full';
-            if (drawType === 'full') {
+            if (drawType === 'full' || drawType === 'manual') {
                 if (t100 > 0 || isTBC) {
                     advertSlides.push({
                         title: `${t100Str} x $100`,
