@@ -866,11 +866,17 @@
             background: radial-gradient(circle at center, rgba(69, 10, 10, 0.8) 0%, rgba(24, 0, 0, 0.98) 75%, #050000 100%) !important;
         }
         
-        body.theme-generic #view-draw {
+        body.theme-generic-silver #view-draw {
             background: radial-gradient(circle at center, rgba(148, 163, 184, 0.6) 0%, rgba(15, 23, 42, 0.95) 75%, #000000 100%) !important;
         }
-        body.theme-generic .slide {
+        body.theme-generic-silver .slide {
             background: radial-gradient(circle at center, rgba(148, 163, 184, 0.7) 0%, rgba(30, 41, 59, 0.95) 75%, #000 100%) !important;
+        }
+        body.theme-generic-gold #view-draw {
+            background: radial-gradient(circle at center, rgba(251, 191, 36, 0.5) 0%, rgba(69, 26, 3, 0.95) 75%, #000000 100%) !important;
+        }
+        body.theme-generic-gold .slide {
+            background: radial-gradient(circle at center, rgba(251, 191, 36, 0.6) 0%, rgba(69, 26, 3, 0.95) 75%, #000 100%) !important;
         }
 
         body.theme-sunday .slide {
@@ -1392,8 +1398,16 @@
             }
             const isSunday = activeEventName === 'sunday' && isSundayEnabled;
             document.body.classList.toggle('theme-sunday', isSunday);
-            const isGeneric = activeEventName === 'generic';
-            document.body.classList.toggle('theme-generic', isGeneric);
+            
+            const isDrawTypeGeneric = (activeDrawData && activeDrawData.type === 'generic');
+            const isGenericDrawBtn = (activeDrawData && (activeDrawData.currentPrize === 'generic' || activeDrawData.currentPrize === 'generic-countdown' || activeDrawData.currentPrize === 'generic-no-countdown'));
+            const isAnyGeneric = isDrawTypeGeneric || isGenericDrawBtn;
+            
+            const genConfig = (state.draw && state.draw.generic) || {};
+            const isNoCount = (activeDrawData && activeDrawData.currentPrize === 'generic-no-countdown') || (genConfig.showRemaining === 'no');
+            
+            document.body.classList.toggle('theme-generic-silver', isAnyGeneric && isNoCount);
+            document.body.classList.toggle('theme-generic-gold', isAnyGeneric && !isNoCount);
 
             // Compute remaining prizes dynamically from config minus drawn
             let drawnNumbers = activeDrawData.drawnNumbers || [];
