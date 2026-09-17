@@ -419,8 +419,50 @@ button, .btn { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; f
             display: none;
         }
         .tab-content.active {
-            display: block;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(480px, 1fr));
+            gap: 1.5rem;
+            align-items: start;
+            animation: fadeIn 0.4s ease;
         }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .card {
+            background: var(--surface-glass);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--border);
+            border-top: 1px solid var(--border-highlight);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+            margin: 0 !important; /* Override inline margins for grid */
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        .card > *:last-child {
+            margin-bottom: 0 !important;
+        }
+        .card h2 {
+            margin-top: 0;
+            font-size: 1.3rem;
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 0.8rem;
+            margin-bottom: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .card-footer-mt {
+            margin-top: auto;
+            padding-top: 1rem;
+        }
+        /* Make sure btn-group flows nicely */
+        .btn-group { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+        .btn-group .btn { flex: 1 1 calc(50% - 0.5rem); }
     
         /* 1080p Multi-column Grid Layouts */
         @media (min-width: 1080px) {
@@ -430,12 +472,7 @@ button, .btn { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; f
                 gap: 1.5rem;
                 align-items: start;
             }
-            .admin-actions-grid {
-                display: grid;
-                grid-template-columns: repeat(2, 1fr);
-                gap: 1.5rem;
-                align-items: start;
-            }
+            
             .admin-actions-grid > .card-full-span {
                 grid-column: 1 / -1 !important;
             }
@@ -517,7 +554,7 @@ button, .btn { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; f
 <button class="tab-btn active" id="btn-tab-config" onclick="switchAdminTab('tab-config')">⚙️ Draw Config</button>
 <button class="tab-btn" id="btn-tab-financials" onclick="switchAdminTab('tab-financials')">💰 Financials</button>
 <button class="tab-btn" id="btn-tab-actions" onclick="switchAdminTab('tab-actions')">🛠️ Admin Actions</button>
-</div><div id="global-status-bar" style="background: #10b981; color: white; text-align: center; padding: 0.5rem; font-weight: bold; position: fixed; top: 0; left: 0; right: 0; z-index: 1000; transition: transform 0.3s ease-in-out; transform: translateY(-100%);">✅ Ready</div><div id="tabs-container"><div class="tab-content active" id="tab-config"><div class="card" style="margin-top: 2rem;">
+</div><div id="global-status-bar" style="background: #10b981; color: white; text-align: center; padding: 0.5rem; font-weight: bold; position: fixed; top: 0; left: 0; right: 0; z-index: 1000; transition: transform 0.3s ease-in-out; transform: translateY(-100%);">✅ Ready</div><div id="tabs-container"><div class="tab-content active" id="tab-config"><div class="card">
 <h2>🎰 Draw Configuration &amp; Prizes</h2>
 <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1.5rem;">
             Set ticket range bounds, prize packs, excluded numbers, and draw date/time.
@@ -3131,7 +3168,7 @@ button, .btn { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; f
             }
         }
     </script>
-</div><div class="card" style="margin-top: 2rem;">
+</div><div class="card">
 <h2>📺 Display View Mode</h2>
 <div class="btn-group">
 <button class="btn" id="btn-slides" onclick="setView('slides')" style="border-width: 2px;">📺 Slideshow</button>
@@ -3139,7 +3176,7 @@ button, .btn { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; f
 <button class="btn" id="btn-draw-generic" onclick="openGenericDrawPage()" style="border-width: 2px; background: #fbbf24; border-color: #f59e0b; color: black; font-weight: bold;">⭐ Open Generic Draw (Gold)</button>
 <button class="btn" id="btn-congrats" onclick="setView('congrats')"  style="border-width: 2px;">🎉 Winners Grid</button>
 </div>
-</div></div><div class="tab-content" id="tab-financials"><div class="card" style="margin-top: 1.5rem;">
+</div></div><div class="tab-content" id="tab-financials"><div class="card">
 <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.75rem;">
 <h2 style="margin: 0;">💰 Financials &amp; Raffle Audit</h2>
 <div style="display: flex; align-items: center; gap: 0.5rem;">
@@ -3221,8 +3258,8 @@ button, .btn { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; f
 </div>
 </div>
 <button class="btn btn-primary" onclick="saveFinancials()" style="width: 100%; background-color: #10b981; border-color: #059669;">💾 Save Financials &amp; Update</button>
-</div></div><div class="tab-content" id="tab-actions"><div class="admin-actions-grid">
-<div class="card" style="margin-top: 2rem;">
+</div><div class="tab-content" id="tab-actions">
+<div class="card">
 <h2>🔍 Public Verification Audit</h2>
 <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1.5rem;">
             Patrons can scan this QR code on their phones to view the live, cryptographically-verifiable audit log of tonight's drawn numbers.
@@ -3234,7 +3271,7 @@ button, .btn { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; f
 <button class="btn" onclick="setView('qr-verify')" style="width: auto; padding: 0.5rem 1rem; background-color: #3b82f6; border-color: #2563eb;">📺 Open on TV Screen</button>
 </div>
 </div>
-</div><div class="card" style="margin-top: 2rem;">
+</div><div class="card">
 <h2>🏛️ Past Results Archive</h2>
 <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1.5rem;">
             Patrons can scan this QR code to view historical draw results.
@@ -3280,7 +3317,7 @@ button, .btn { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; f
                 Columns must exactly match this order. <strong>WinnerPhotos</strong> expects comma-separated URLs.
             </p>
 </div>
-</div><div class="card" style="margin-top: 2rem;">
+</div><div class="card">
 <h2>📋 End of Week &amp; Print</h2>
 <div style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem;">
 <button class="btn btn-primary" onclick="printFullDraw()" style="flex:1;">🖨️ Full Draw Print</button>
@@ -3294,7 +3331,7 @@ button, .btn { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; f
 </div>
 <button class="btn btn-danger" onclick="archiveDraws()" style="width: 100%; background-color: #ef4444; border-color: #dc2626; color: white;">⚠️ Confirm End of Week Draws</button>
 <button class="btn btn-danger" onclick="resetAllData()" style="width: 100%; background-color: #7f1d1d; border-color: #450a0a; color: white; margin-top: 0.5rem;">🚨 Reset All Data (New Week)</button>
-</div><div class="card" style="margin-top: 2rem;">
+</div><div class="card">
 <h2>📱 Quick Access QR Codes</h2>
 <div style="display: flex; justify-content: space-between; gap: 1rem; margin-top: 1rem;">
 <div style="text-align: center; flex: 1;">
@@ -3318,7 +3355,7 @@ button, .btn { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; f
 <a href="#" id="link-archive" style="color: var(--primary); font-size: 0.7rem;" target="_blank">Open ↗</a>
 </div>
 </div>
-</div><div class="card" style="margin-top: 2rem;">
+</div><div class="card">
 <h2>🌐 Cross-Device Sync (Firebase)</h2>
 <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1rem;">
             Enter your Firebase Realtime Database URL to sync controls across devices on different networks.
@@ -3329,14 +3366,14 @@ button, .btn { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; f
 </div>
 <button class="btn btn-primary" onclick="saveFirebaseConfig()">💾 Save Firebase Config</button>
 <div class="status" id="fb-status"></div>
-</div><div class="card" style="margin-top: 2rem;">
+</div><div class="card">
 <h2>🎮 Slide Navigation</h2>
 <div class="btn-group">
 <button class="btn" onclick="remoteSlide('prev')">⏮ Previous</button>
 <button class="btn" id="btn-play-pause" onclick="remoteSlide('toggle')">⏸ Pause</button>
 <button class="btn" onclick="remoteSlide('next')">Next ⏭</button>
 </div>
-</div><div class="card" style="margin-top: 2rem;">
+</div><div class="card">
 <h2>🖨️ Meat Raffle Record Sheets</h2>
 <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1.5rem;">
             Print Tonight's Meat Raffle Prize Checklist or an empty financial sheet for manual tracking.
@@ -3345,7 +3382,7 @@ button, .btn { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; f
 <button class="btn btn-primary" onclick="printManualRecordSheet()" style="flex: 1; padding: 0.8rem; font-size: 1rem; background-color: #2563eb; border-color: #1d4ed8; color: white;">🖨️ Print Checklist &amp; Financials</button>
 <button class="btn btn-primary" onclick="printEmptyFinancialSheetOnly()" style="flex: 1; padding: 0.8rem; font-size: 1rem; background-color: #10b981; border-color: #059669; color: white;">🖨️ Print Empty Financial Sheet</button>
 </div>
-</div><div class="card" style="margin-top: 2rem;">
+</div><div class="card">
 <h2>🔑 Access PIN</h2>
 <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1.5rem;">
             Set the PIN required to access Admin and Remote pages.<br/>
