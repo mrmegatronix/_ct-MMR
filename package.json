@@ -1,6 +1,41 @@
 {
   "dependencies": {
-    "jsdom": "^30.0.1",
-    "puppeteer": "^25.8.0"
+    "jsdom": "^30.0.1"
+  },
+  "name": "_ct-mmr",
+  "version": "1.0.0",
+  "description": "<div align=\"center\">\r <img width=\"1200\" height=\"475\" alt=\"GHBanner\" src=\"https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6\" />\r </div>",
+  "main": "config.js",
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.11.0",
+    "globals": "^17.12.0",
+    "htmlhint": "^1.9.2",
+    "husky": "^9.1.7",
+    "jest": "^30.5.2",
+    "lint-staged": "^17.5.1"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "eslint . && htmlhint \"*.html\"",
+    "test:unit": "jest",
+    "test:e2e": "playwright test",
+    "prepare": "husky install"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mrmegatronix/_ct-MMR.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/mrmegatronix/_ct-MMR/issues"
+  },
+  "homepage": "https://github.com/mrmegatronix/_ct-MMR#readme",
+  "lint-staged": {
+    "*.js": "eslint --cache --fix",
+    "*.html": "htmlhint"
   }
 }

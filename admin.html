@@ -720,7 +720,7 @@ button, .btn { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; f
 </nav>
 <!-- PiP Elements -->
 <div class="pip-window" id="pip-window">
-<iframe id="pip-frame" src=""></iframe>
+<iframe id="pip-frame" src="about:blank"></iframe>
 </div>
 <button class="pip-toggle" onclick="togglePip()">
 <span style="font-size: 1.2rem;">🖼️</span>
@@ -2380,6 +2380,7 @@ button, .btn { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; f
                         <div class="footer"><span>${sessionHash}</span><span>${timestamp}</span></div>
                     </div>
                 <script>window.onload=()=>{window.print();window.close();}<\/script>
+</div>
 </body>
 
             `);
@@ -2439,7 +2440,8 @@ button, .btn { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; f
                             </tbody>
                         </table>
                         <div class="footer"><span>Printed: ${timestamp}</span></div>
-                    </div><script>window.onload=()=>{window.print();window.close();}<\/script></body></html>
+                    </div><script>window.onload=()=>{window.print();window.close();}<\/script></div>
+</body></html>
             `);
             printWin.document.close();
         }
@@ -2996,7 +2998,8 @@ button, .btn { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; f
                     .bold { font-weight: bold; }
                     .footer { margin-top: 12px; font-family: monospace; font-size: 9px; color: #64748b; display: flex; justify-content: space-between; border-top: 1px solid #cbd5e1; padding-top: 4px; }
                 </style>
-                </head><body>` + content + `</body></html>
+                </head><body>` + content + `</div>
+</body></html>
             `);
             win.document.close();
             win.focus();
@@ -3393,7 +3396,7 @@ button, .btn { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; f
 <input id="fb-url" placeholder="https://your-project.firebaseio.com" type="text"/>
 </div>
 <button class="btn btn-primary" onclick="saveFirebaseConfig()">💾 Save Firebase Config</button>
-<div class="status" id="fb-status"></div>
+<div class="status" id="fb-status-2"></div>
 </div><div class="card">
 <h2>🎮 Slide Navigation</h2>
 <div class="btn-group">
@@ -3468,4 +3471,5 @@ button, .btn { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; f
         // Wait a second for state to load from FB/Local, then check
         setTimeout(checkInProgressDraw, 1500);
     </script>
+</div>
 </body></html>
