@@ -1499,7 +1499,12 @@
                 let bg = '#10b981';
                 let glow = 'rgba(16,185,129,0.6)';
                 let prizeLabel = isSunday ? '$' + prize : '$' + prize + ' Pack';
-                if (prize === 100 || prize === '100') {
+                if (prize === 'generic' || prize === 'generic-countdown' || prize === 'generic-no-countdown') {
+                    const genConfig = (state.draw && state.draw.generic) || {};
+                    prizeLabel = genConfig.title ? genConfig.title.toUpperCase() : 'GENERIC PRIZE';
+                    bg = '#f59e0b';
+                    glow = 'rgba(245, 158, 11, 0.6)';
+                } else if (prize === 100 || prize === '100') {
                     bg = '#ef4444';
                     glow = 'rgba(239,68,68,0.6)';
                     prizeLabel = '$100 Pack';

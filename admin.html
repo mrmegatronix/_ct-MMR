@@ -3168,7 +3168,35 @@ button, .btn { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; f
             }
         }
     </script>
-</div><div class="card">
+</div>
+<div class="card">
+<h2 style="color: #fbbf24;">⭐ Generic Draw Configuration</h2>
+<p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1.5rem;">
+    Set the number of generic prizes and custom display title for special events.
+</p>
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+    <div class="form-group">
+        <label>Number of Prizes</label>
+        <input id="cfg-gen-prizes" onchange="updateGenericConfig()" oninput="updateGenericConfig()" type="number" value="10"/>
+    </div>
+    <div class="form-group">
+        <label>Draw Title/Name</label>
+        <input id="cfg-gen-title" onchange="updateGenericConfig()" oninput="updateGenericConfig()" type="text" placeholder="e.g. Easter Hamper"/>
+    </div>
+</div>
+<div class="form-group" style="margin-bottom: 1rem;">
+    <label>Countdown Display</label>
+    <select id="cfg-gen-countdown" onchange="updateGenericConfig()">
+        <option value="yes">Show Remaining Prizes (Gold background)</option>
+        <option value="no">Hide Remaining Prizes (Silver background)</option>
+    </select>
+</div>
+<div style="display: flex; gap: 0.5rem; margin-top: auto;">
+    <button class="btn" onclick="updateGenericConfig()" style="background-color: #d97706; color: white; border: none; padding: 0.6rem; flex: 1;">💾 Save Generic Config</button>
+</div>
+</div>
+
+<div class="card">
 <h2>📺 Display View Mode</h2>
 <div class="btn-group">
 <button class="btn" id="btn-slides" onclick="setView('slides')" style="border-width: 2px;">📺 Slideshow</button>
