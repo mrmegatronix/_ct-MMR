@@ -254,10 +254,10 @@
 
             const finalSlides = [...visibleSlides, ...advertSlides];
             const wrapper = document.getElementById('slides-wrapper');
-            if (drawType === 'generic') {
+            if (!isCurrentEventEnabled) {
+                document.querySelector('.preview-header p').innerHTML += '<br><strong style="color:#ef4444;">(Note: ALL draws are currently disabled in Admin. The system will ONLY cycle through your custom uploaded slides.)</strong>';
+            } else if (drawType === 'generic') {
                 document.querySelector('.preview-header p').innerHTML += '<br><strong style="color:#fbbf24;">(Note: You are currently set to a Generic Draw, so the Meat Pack advert slides are automatically hidden.)</strong>';
-            } else if (!isCurrentEventEnabled) {
-                document.querySelector('.preview-header p').innerHTML += '<br><strong style="color:#ef4444;">(Note: The active draw is currently disabled in Admin, so Prize advert slides are hidden.)</strong>';
             }
 
             
