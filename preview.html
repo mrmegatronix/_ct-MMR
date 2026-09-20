@@ -254,6 +254,12 @@
 
             const finalSlides = [...visibleSlides, ...advertSlides];
             const wrapper = document.getElementById('slides-wrapper');
+            if (drawType === 'generic') {
+                document.querySelector('.preview-header p').innerHTML += '<br><strong style="color:#fbbf24;">(Note: You are currently set to a Generic Draw, so the Meat Pack advert slides are automatically hidden.)</strong>';
+            } else if (!isCurrentEventEnabled) {
+                document.querySelector('.preview-header p').innerHTML += '<br><strong style="color:#ef4444;">(Note: The active draw is currently disabled in Admin, so Prize advert slides are hidden.)</strong>';
+            }
+
             
             if (finalSlides.length === 0) {
                 wrapper.innerHTML = '<h2 style="color:#ef4444;">No slides are currently active or generated.</h2>';
@@ -270,12 +276,19 @@
                             <p class="slide-subtitle">${s.subtitle || ''}</p>
                         </div>
                     `;
+                } else if (s.type === 'countdown') {
+                    innerHtml = `
+                        <div class="slide-content">
+                            <h2 class="slide-title" style="color:#fbbf24; font-size:4rem;">LIVE COUNTDOWN CLOCK</h2>
+                            <p class="slide-subtitle" style="color:#fff;">(Timer will display here on TV)</p>
+                        </div>
+                    `;
                 } else {
                     const src = s.src || (s.file ? `assets/${s.file}` : '');
                     if (s.type === 'video' || (src && src.match(/\.(mp4|webm|mov)$/i))) {
-                        innerHtml = `<video class="image-slide" src="${src}" loop muted autoplay playsinline></video><div class="slide-content" style="background: rgba(0,0,0,0.4);"><h2 class="slide-title" style="color:white;">${s.title}</h2></div>`;
+                        innerHtml = `<video class="image-slide" src="${src}" loop muted autoplay playsinline></video><div class="slide-content" style="background: rgba(0,0,0,0.4);"><h2 class="slide-title" style="color:white; text-shadow: 0 4px 10px black;">${s.title}</h2></div>`;
                     } else {
-                        innerHtml = `<img class="image-slide" src="${src}" alt="${s.title}"><div class="slide-content" style="background: rgba(0,0,0,0.4);"><h2 class="slide-title" style="color:white;">${s.title}</h2></div>`;
+                        innerHtml = `<img class="image-slide" src="${src}" alt="${s.title}" onerror="this.style.display='none'"><div class="slide-content" style="background: rgba(0,0,0,0.4);"><h2 class="slide-title" style="color:white; text-shadow: 0 4px 10px black;">${s.title}</h2></div>`;
                     }
                 }
 
