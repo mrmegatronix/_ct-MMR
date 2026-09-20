@@ -1799,11 +1799,20 @@
             const t25 = Number(activeEvtData.cfgPrizes25 ?? activeEvtData.prizes25 ?? 40);
             
             const isSundayEnabled = !!(state.draw && state.draw.sunday && state.draw.sunday.enabled);
+            const isThursdayEnabled = !!(state.draw && state.draw.thursday && state.draw.thursday.enabled !== false);
             let activeEvtName = (state.draw && state.draw.activeEvent) || 'thursday';
-            if (activeEvtName === 'sunday' && !isSundayEnabled) {
+            
+            let isCurrentEventEnabled = activeEvtName === 'sunday' ? isSundayEnabled : isThursdayEnabled;
+            
+            if (activeEvtName === 'sunday' && !isSundayEnabled && isThursdayEnabled) {
                 activeEvtName = 'thursday';
+                isCurrentEventEnabled = true;
+            } else if (activeEvtName === 'thursday' && !isThursdayEnabled && isSundayEnabled) {
+                activeEvtName = 'sunday';
+                isCurrentEventEnabled = true;
             }
-            const isSunday = activeEvtName === 'sunday' && isSundayEnabled;
+            
+            const isSunday = activeEvtName === 'sunday';
             const targetDay = isSunday ? 0 : 4; // 0 = Sunday, 4 = Thursday
             const dayNameUpper = isSunday ? 'SUNDAYS' : 'THURSDAYS';
             const dayNameCap = isSunday ? "Sunday's" : "Thursday's";
@@ -1840,9 +1849,9 @@
 
             const advertSlides = [];
             
-            // Only show advert slides if it's a full draw AND not TBC
+            // Only show advert slides if a raffle config is actually enabled and it's a full/manual draw
             const drawType = activeEvt.type || 'full';
-            if (drawType === 'full' || drawType === 'manual') {
+            if (isCurrentEventEnabled && (drawType === 'full' || drawType === 'manual')) {
                 if (t100 > 0 || isTBC) {
                     advertSlides.push({
                         title: `${t100Str} x $100`,
