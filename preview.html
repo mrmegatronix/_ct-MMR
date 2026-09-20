@@ -133,7 +133,7 @@
         const bc = new BroadcastChannel('mmr_channel');
         bc.onmessage = (event) => {
             if (event.data.type === 'state_update') {
-                localState = event.data.state;
+                localState = { ...localState, ...event.data.state };
                 renderPreviews();
             }
         };
@@ -165,7 +165,7 @@
             const ls = localStorage.getItem('mmr_state_v5');
             if (ls) {
                 try {
-                    localState = JSON.parse(ls);
+                    localState = { ...localState, ...JSON.parse(ls) };
                 } catch(e) {}
             }
             renderPreviews();
