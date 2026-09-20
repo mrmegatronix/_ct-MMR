@@ -106,7 +106,38 @@
         import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
         let db = null;
-        let localState = {};
+        
+        let localState = {
+            slides: [
+                { type: "countdown", title: "Time Until Draw", duration: 30000 }
+            ],
+            draw: {
+                activeEvent: 'thursday',
+                thursday: {
+                    cfgPrizes100: 10,
+                    cfgPrizes50: 16,
+                    cfgPrizes25: 40,
+                    prizes100: 10,
+                    prizes50: 16,
+                    prizes25: 40,
+                    drawnNumbers: [],
+                    prizesLeft: 66,
+                    enabled: true
+                },
+                sunday: {
+                    enabled: false
+                }
+            }
+        };
+
+        const bc = new BroadcastChannel('mmr_channel');
+        bc.onmessage = (event) => {
+            if (event.data.type === 'state_update') {
+                localState = event.data.state;
+                renderPreviews();
+            }
+        };
+
 
         function loadFirebaseConfig() {
             const fbConfig = localStorage.getItem('mmr_firebase_config');
