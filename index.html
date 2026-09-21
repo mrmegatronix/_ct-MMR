@@ -1849,79 +1849,25 @@
 
             const advertSlides = [];
             
-            // Only show advert slides if a raffle config is actually enabled and it's a full/manual draw
             const drawType = activeEvt.type || 'full';
             if (isCurrentEventEnabled && (drawType === 'full' || drawType === 'manual')) {
-                if (t100 > 0 || isTBC) {
-                    advertSlides.push({
-                        title: `${t100Str} x $100`,
-                        subtitle: "🥩 Premium Assorted Meat Trays to be won!! 🥩",
-                        type: "advert",
-                        advertType: "p100",
-                        duration: 30000
-                    });
-                }
-                if (t50 > 0 || isTBC) {
-                    advertSlides.push({
-                        title: `${t50Str} x $50 TRAYS`,
-                        subtitle: "🍗 Premium Assorted Meat Trays to be won!! 🍗",
-                        type: "advert",
-                        advertType: "p50",
-                        duration: 30000
-                    });
-                }
-                if (t25 > 0 || isTBC) {
-                    advertSlides.push({
-                        title: `${t25Str} x $25 TRAYS`,
-                        subtitle: "🥓 Premium Assorted Meat Trays to be won!! 🥓",
-                        type: "advert",
-                        advertType: "p25",
-                        duration: 30000
-                    });
-                }
-                if (vCount > 0) {
-                    advertSlides.push({
-                        title: `${vCountStr} x VOUCHERS`,
-                        subtitle: "🎫 Vouchers to be won!! 🎫",
-                        type: "advert",
-                        advertType: "vouchers",
-                        duration: 30000
-                    });
-                }
+                if (t100 > 0 || isTBC) advertSlides.push({ title: `${t100Str} x $100`, subtitle: "🥩 Premium Assorted Meat Trays to be won!! 🥩", type: "advert", advertType: "p100", duration: 30000 });
+                if (t50 > 0 || isTBC) advertSlides.push({ title: `${t50Str} x $50 TRAYS`, subtitle: "🍗 Premium Assorted Meat Trays to be won!! 🍗", type: "advert", advertType: "p50", duration: 30000 });
+                if (t25 > 0 || isTBC) advertSlides.push({ title: `${t25Str} x $25 TRAYS`, subtitle: "🥓 Premium Assorted Meat Trays to be won!! 🥓", type: "advert", advertType: "p25", duration: 30000 });
+                if (vCount > 0) advertSlides.push({ title: `${vCountStr} x VOUCHERS`, subtitle: "🎫 Vouchers to be won!! 🎫", type: "advert", advertType: "vouchers", duration: 30000 });
+                
                 if (totalPrizes > 0 || isTBC) {
-                    advertSlides.push({
-                        title: `TOTAL PRIZES: ${totalPrizesStr}`,
-                        subtitle: "🍖 Premium Assorted Meat Trays must be won!! 🍖",
-                        type: "advert",
-                        advertType: "total",
-                        duration: 30000
-                    });
-                    advertSlides.push({
-                        title: `A MASSIVE ${totalPoolStr}`,
-                        subtitle: `in ${poolWording} ${totalPrizesStr} prizes!`,
-                        type: "advert",
-                        advertType: "pool",
-                        duration: 30000
-                    });
+                    advertSlides.push({ title: `TOTAL PRIZES: ${totalPrizesStr}`, subtitle: "🍖 Premium Assorted Meat Trays must be won!! 🍖", type: "advert", advertType: "total", duration: 20000 });
+                    advertSlides.push({ title: `A MASSIVE ${totalPoolStr}`, subtitle: `in ${poolWording} ${totalPrizesStr} prizes!`, type: "advert", advertType: "pool", duration: 25000 });
                 }
-                advertSlides.push({
-                    title: "TICKETS ON SALE",
-                    subtitle: `🎟️ ${ticketsWording} 🎟️`,
-                    type: "advert",
-                    advertType: "tickets",
-                    duration: 30000
-                });
-                advertSlides.push({
-                    title: "MONSTER MEAT RAFFLE",
-                    subtitle: `🔥 DRAW STARTS ${drawWording} 🔥`,
-                    type: "advert",
-                    advertType: "draw_time",
-                    duration: 30000
-                });
+                advertSlides.push({ title: "TICKETS ON SALE", subtitle: `🎟️ ${ticketsWording} 🎟️`, type: "advert", advertType: "tickets", duration: 25000 });
+                advertSlides.push({ title: "MONSTER MEAT RAFFLE", subtitle: `🔥 DRAW STARTS ${drawWording} 🔥`, type: "advert", advertType: "draw_time", duration: 25000 });
+                advertSlides.push({ title: "MEAT TRAYS", subtitle: `🥩 Proudly supplied by Hibbard's Butchery 🥩`, type: "advert", advertType: "sponsor", duration: 25000 });
+            } else if (!isCurrentEventEnabled) {
+                // User requested fallback slides when completely disabled
+                advertSlides.push({ title: "TICKETS ON SALE", subtitle: `🎟️ ${ticketsWording} 🎟️`, type: "advert", advertType: "tickets", duration: 25000 });
+                advertSlides.push({ title: "MEAT TRAYS", subtitle: `🥩 Proudly supplied by Hibbard's Butchery 🥩`, type: "advert", advertType: "sponsor", duration: 25000 });
             }
-
-
-
 
             const finalSlides = [...visibleSlides, ...advertSlides];
 

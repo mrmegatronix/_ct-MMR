@@ -250,6 +250,10 @@
                 }
                 advertSlides.push({ title: "TICKETS ON SALE", subtitle: `🎟️ ${ticketsWording} 🎟️`, type: "advert", advertType: "tickets" });
                 advertSlides.push({ title: "MONSTER MEAT RAFFLE", subtitle: `🔥 DRAW STARTS ${drawWording} 🔥`, type: "advert", advertType: "draw_time" });
+                advertSlides.push({ title: "MEAT TRAYS", subtitle: `🥩 Proudly supplied by Hibbard's Butchery 🥩`, type: "advert", advertType: "sponsor" });
+            } else if (!isCurrentEventEnabled) {
+                advertSlides.push({ title: "TICKETS ON SALE", subtitle: `🎟️ ${ticketsWording} 🎟️`, type: "advert", advertType: "tickets" });
+                advertSlides.push({ title: "MEAT TRAYS", subtitle: `🥩 Proudly supplied by Hibbard's Butchery 🥩`, type: "advert", advertType: "sponsor" });
             }
 
             const finalSlides = [...visibleSlides, ...advertSlides];

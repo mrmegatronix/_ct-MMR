@@ -1320,15 +1320,17 @@ button, .btn { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; f
                 state.draw.drawsFinishedTime = null;
             }
 
+            state.activeView = 'slides';
             updateDrawState();
-            writeFirebase({ draw: state.draw });
+            writeFirebase({ draw: state.draw, activeView: 'slides' });
             broadcast();
             showGlobalStatus(`${day.toUpperCase()} Draw Reset & Ready for New Week!`, 'green');
         }
 
         function forceUpdateConfig() {
+            state.activeView = 'slides';
             updateDrawState();
-            writeFirebase({ draw: state.draw });
+            writeFirebase({ draw: state.draw, activeView: 'slides' });
             showGlobalStatus('Configuration Saved & Synced!', 'green');
         }
 
@@ -1341,8 +1343,9 @@ button, .btn { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; f
                     return;
                 }
             }
+            state.activeView = 'slides';
             updateDrawState();
-            writeFirebase({ draw: state.draw });
+            writeFirebase({ draw: state.draw, activeView: 'slides' });
             showGlobalStatus('Thursday Config Updated & Synced!', 'blue');
         }
 
@@ -1355,8 +1358,9 @@ button, .btn { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; f
                     return;
                 }
             }
+            state.activeView = 'slides';
             updateDrawState();
-            writeFirebase({ draw: state.draw });
+            writeFirebase({ draw: state.draw, activeView: 'slides' });
             showGlobalStatus('Sunday Config Updated & Synced!', 'red');
         }
 
@@ -1710,6 +1714,7 @@ button, .btn { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; f
                 const btnSun = document.getElementById('btn-confirm-sun');
                 if (btnSun) { btnSun.disabled = false; btnSun.innerText = 'Confirm Finished'; }
 
+                state.activeView = 'slides';
                 updateDrawState(); 
                 updateViewButtons();
                 calcFinancials();
