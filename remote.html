@@ -50,419 +50,274 @@
         }
         function updateGenericConfig() {}
     </script>
-<style>html, body { overflow-x: hidden; }
-button, .btn { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+<style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
         :root {
-            --bg: var(--cfg-bg-dark, #070a13);
-            --surface: #111827;
-            --surface-glass: rgba(17, 24, 39, 0.75);
-            --primary: var(--cfg-primary, #ef4444);
-            --text: var(--cfg-text-light, #f8fafc);
-            --text-muted: #94a3b8;
-            --border: #1f293d;
-            --border-highlight: rgba(255, 255, 255, 0.08);
-            --accent-100: #ef4444;
-            --accent-50: #2563eb;
-            --accent-25: #10b981;
+            --background: #09090b;
+            --foreground: #fafafa;
+            --card: #09090b;
+            --card-foreground: #fafafa;
+            --border: #27272a;
+            --input: #27272a;
+            --primary: #fafafa;
+            --primary-foreground: #18181b;
+            --secondary: #27272a;
+            --secondary-foreground: #fafafa;
+            --muted: #27272a;
+            --muted-foreground: #a1a1aa;
+            --accent: #27272a;
+            --accent-foreground: #fafafa;
+            --destructive: #7f1d1d;
+            --destructive-foreground: #fafafa;
+            --ring: #d4d4d8;
+            --radius: 0.5rem;
         }
 
-        body {
-            background: radial-gradient(circle at 50% 0%, #151d30 0%, var(--bg) 75%);
-            color: var(--text);
-            font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            margin: 0;
-            padding: 1.25rem;
-            box-sizing: border-box;
-            line-height: 1.5;
-            min-height: 100vh;
+        html, body { 
+            background-color: var(--background); 
+            color: var(--foreground); 
+            font-family: 'Inter', sans-serif; 
+            margin: 0; 
+            padding: 0;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
         }
 
-        /* Host Mode Hiding */
-        body.role-host .admin-only {
-            display: none !important;
+        /* Prevent ugly text wrapping as per rule, but allow flex layout to accommodate */
+        button, .btn { 
+            white-space: nowrap; 
+            overflow: hidden; 
+            text-overflow: ellipsis; 
+            font-size: 0.9rem; /* Reduce font size slightly to prevent clipping */
         }
 
         .header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 1.5rem;
+            padding: 1rem 1.5rem;
+            background: var(--background);
             border-bottom: 1px solid var(--border);
-            padding-bottom: 1rem;
-            gap: 1rem;
-            flex-wrap: wrap;
-            max-width: 1440px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-        
-        .header h1 { 
-            margin: 0; 
-            color: var(--primary); 
-            font-size: 1.75rem; 
-            font-weight: 800;
-            letter-spacing: -0.5px;
-            white-space: nowrap;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            backdrop-filter: blur(8px);
+            background: rgba(9, 9, 11, 0.8);
         }
 
-        .live-clock-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            background: rgba(15, 23, 42, 0.85);
+        .header h1 {
+            margin: 0;
+            font-size: 1.25rem;
+            font-weight: 600;
+            letter-spacing: -0.025em;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem;
+            display: grid;
+            gap: 1.5rem;
+        }
+
+        /* Shadcn Card */
+        .card {
+            background: var(--card);
+            color: var(--card-foreground);
             border: 1px solid var(--border);
-            border-radius: 9999px;
-            padding: 0.35rem 0.85rem;
-            font-family: 'Courier New', monospace;
-            font-size: 0.95rem;
-            font-weight: 800;
-            color: #38bdf8;
-            letter-spacing: 0.5px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-            white-space: nowrap;
-        }
-        .colon-flash {
-            animation: blink-colon 1s step-start infinite;
-            display: inline-block;
-            opacity: 0.9;
-        }
-        @keyframes blink-colon {
-            50% { opacity: 0; }
-        }
-
-        .grid {
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.4);
             display: flex;
             flex-direction: column;
-            gap: 1.25rem;
-            max-width: 1440px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        @media (min-width: 900px) {
-            .grid {
-                display: grid;
-                grid-template-columns: 1.15fr 0.85fr;
-                gap: 1.5rem;
-                align-items: start;
-            }
-            .grid > .card:first-child {
-                grid-column: 1;
-            }
-            .grid > .card:not(:first-child) {
-                grid-column: 2;
-            }
-            .grid > .card-full-span {
-                grid-column: 1 / -1 !important;
-            }
-        }
-
-        .card {
-            background: var(--surface-glass);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid var(--border);
-            border-top: 1px solid var(--border-highlight);
-            border-radius: 1.15rem;
-            padding: 1.25rem;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
-            box-sizing: border-box;
+            gap: 1rem;
         }
 
         .card h2 {
-            margin-top: 0;
-            font-size: 1.25rem;
+            margin: 0;
+            font-size: 1.125rem;
+            font-weight: 600;
+            letter-spacing: -0.025em;
             border-bottom: 1px solid var(--border);
-            padding-bottom: 0.6rem;
-            margin-bottom: 1.25rem;
-            font-weight: 800;
-            letter-spacing: 0.5px;
+            padding-bottom: 0.75rem;
         }
 
+        /* Shadcn Button */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: var(--radius);
+            font-weight: 500;
+            transition: colors 0.15s;
+            cursor: pointer;
+            border: 1px solid var(--border);
+            background: var(--secondary);
+            color: var(--secondary-foreground);
+            padding: 0.5rem 1rem;
+            height: 2.5rem;
+            text-decoration: none;
+        }
+        
+        .btn:hover {
+            background: var(--accent);
+        }
+        
+        .btn-primary {
+            background: var(--primary);
+            color: var(--primary-foreground);
+            border: transparent;
+        }
+        
+        .btn-primary:hover {
+            background: #e4e4e7;
+        }
+        
+        .btn-danger {
+            background: var(--destructive);
+            color: var(--destructive-foreground);
+            border: transparent;
+        }
+        
+        .btn-danger:hover {
+            background: #991b1b;
+        }
+
+        /* Forms & Inputs */
         .form-group {
-            margin-bottom: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
         }
 
         label {
-            display: block;
-            font-size: 0.75rem;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            font-weight: 800;
-            margin-bottom: 0.4rem;
-            letter-spacing: 0.5px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--foreground);
         }
 
         input, textarea, select {
-            width: 100%;
-            background: #0f172a;
-            border: 1.5px solid var(--border);
-            color: var(--text);
-            padding: 0.85rem;
-            border-radius: 0.75rem;
+            background: var(--background);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 0.5rem 0.75rem;
+            color: var(--foreground);
             font-family: inherit;
+            font-size: 0.875rem;
+            height: 2.5rem;
+            width: 100%;
             box-sizing: border-box;
-            font-size: 1rem;
-            font-weight: 600;
-            transition: border-color 0.2s;
         }
-
-        input:focus, textarea:focus, select:focus {
+        
+        input:focus, select:focus {
             outline: none;
-            border-color: var(--primary);
+            border-color: var(--ring);
+            box-shadow: 0 0 0 2px rgba(212,212,216,0.2);
         }
 
-        .btn {
-            background: #334155;
-            color: var(--text);
-            border: 1.5px solid var(--border);
-            padding: 0.9rem 1.25rem;
-            border-radius: 0.75rem;
-            cursor: pointer;
-            font-weight: 800;
-            font-size: 1rem;
-            transition: all 0.2s;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            min-height: 48px;
-            box-sizing: border-box;
-        }
-
-        .btn:hover { background: #475569; }
-        
-        .btn-primary { background: var(--primary); border-color: var(--primary); }
-        .btn-primary:hover { background: #dc2626; }
-        
-        .btn-success { background: #22c55e; border-color: #22c55e; }
-        .btn-success:hover { background: #16a34a; }
-
+        /* Grid for buttons to prevent clipping */
         .btn-group {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 0.5rem;
-            margin-bottom: 1.25rem;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 0.75rem;
+        }
+        
+        .draw-configs-split {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 1.5rem;
         }
 
-        .voice-toggle-container {
+        .tab-bar {
             display: flex;
-            align-items: center;
-            gap: 8px;
-            background: #0f172a;
-            padding: 0.5rem 0.85rem;
-            border-radius: 0.75rem;
-            border: 1.5px solid var(--border);
-            min-height: 48px;
-            box-sizing: border-box;
-        }
-        .switch {
-            position: relative;
-            display: inline-block;
-            width: 44px;
-            height: 22px;
-        }
-        .switch input { opacity: 0; width: 0; height: 0; }
-        .slider {
-            position: absolute; cursor: pointer; inset: 0;
-            background-color: #475569; transition: .3s; border-radius: 22px;
-        }
-        .slider:before {
-            position: absolute; content: ""; height: 14px; width: 14px; 
-            left: 4px; bottom: 4px; background-color: white; transition: .3s; border-radius: 50%;
-        }
-        input:checked + .slider { background-color: var(--primary); }
-        input:checked + .slider:before { transform: translateX(22px); }
-
-        /* Mobile-Optimized Draw Control Panel */
-        .draw-control-container {
-            display: flex;
-            flex-direction: column;
             gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 0.5rem;
+            overflow-x: auto;
         }
-        .draw-control-row {
-            background: rgba(15, 23, 42, 0.6);
-            border: 1.5px solid var(--border);
-            border-radius: 0.75rem;
-            padding: 0.45rem 0.65rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.55rem;
+
+        .tab-btn {
+            background: transparent;
+            border: none;
+            color: var(--muted-foreground);
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius);
+            cursor: pointer;
         }
-        .draw-control-info {
-            display: flex;
-            flex-direction: column;
-            min-width: 85px;
-            text-align: center;
-            align-items: center;
+
+        .tab-btn:hover {
+            background: var(--secondary);
+            color: var(--secondary-foreground);
         }
-        .draw-control-title {
-            font-size: 0.85rem;
-            font-weight: 800;
-            line-height: 1.1;
+
+        .tab-btn.active {
+            background: var(--secondary);
+            color: var(--foreground);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.1);
         }
-        .draw-control-subtitle {
-            font-size: 0.75rem;
-            color: #94a3b8;
+
+        .tab-content { display: none; }
+        .tab-content.active { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 1.5rem;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .live-clock-badge {
+            background: var(--secondary);
+            border: 1px solid var(--border);
+            padding: 0.25rem 0.75rem;
+            border-radius: 1rem;
+            font-family: monospace;
+            font-size: 0.875rem;
             font-weight: 600;
-        }
-        .draw-control-actions {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.4rem;
-            flex: 1;
-        }
-        .btn-draw-main {
-            flex: 1;
-            max-width: 180px;
-            min-height: 40px !important;
-            height: 40px !important;
-            padding: 0.35rem 0.6rem !important;
-            font-size: 0.82rem !important;
-            font-weight: 800 !important;
-            border-radius: 0.5rem !important;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            white-space: nowrap;
-        }
-        .btn-redraw-icon {
-            min-height: 40px !important;
-            height: 40px !important;
-            padding: 0.35rem 0.55rem !important;
-            font-size: 0.78rem !important;
-            font-weight: 800 !important;
-            border-radius: 0.5rem !important;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.2rem;
-            flex-shrink: 0;
-            white-space: nowrap;
+            color: #fbbf24;
         }
 
-        @media (max-width: 768px) {
-            body { padding: 0.5rem; }
-            .header { flex-direction: row; justify-content: space-between; align-items: center; gap: 0.5rem; margin-bottom: 1rem; }
-            .header h1 { font-size: 1.25rem; text-align: left; }
-            .card { padding: 0.75rem; border-radius: 0.85rem; }
-            .btn-group { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem; }
-            .btn-group .btn { width: 100%; min-height: 40px; padding: 0.4rem 0.2rem; font-size: 0.8rem; }
+        .status {
+            font-size: 0.875rem;
+            color: var(--muted-foreground);
+            margin-top: 0.5rem;
         }
-
-        @media print {
-            body * { visibility: hidden; }
-            #print-report, #print-report * { visibility: visible; }
-            #print-report { position: absolute; left: 0; top: 0; width: 100%; color: black; background: white; padding: 2rem; }
-            .no-print { display: none !important; }
-        }
-
-        /* ── PIN Access Overlay ── */
+        
+        /* PIN Overlay */
         #pin-overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(11, 15, 25, 0.98);
-            backdrop-filter: blur(20px);
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            position: fixed; inset: 0;
+            background: rgba(9, 9, 11, 0.95);
+            backdrop-filter: blur(10px);
             z-index: 9999;
+            display: flex; align-items: center; justify-content: center;
         }
         #pin-modal {
-            background: #1e293b;
-            border: 2px solid var(--border);
-            border-radius: 1.5rem;
-            padding: 2.5rem 2rem;
-            width: 90%;
-            max-width: 380px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 2rem;
             text-align: center;
-            box-shadow: 0 0 60px rgba(239,68,68,0.15), 0 20px 60px rgba(0,0,0,0.8);
-            box-sizing: border-box;
-        }
-        #pin-input-r {
-            width: 100%;
-            background: #0f172a;
-            border: 2px solid var(--border);
-            color: var(--text);
-            padding: 1rem;
-            border-radius: 0.75rem;
-            font-size: 1.6rem;
-            text-align: center;
-            letter-spacing: 0.4em;
-            box-sizing: border-box;
-            margin-bottom: 1.25rem;
-            outline: none;
-            transition: border-color 0.2s;
-            pointer-events: none;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            width: 90%; max-width: 320px;
         }
         .pin-pad {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 0.5rem;
-            margin-bottom: 1.25rem;
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem;
         }
         .pin-btn {
-            background: #0f172a;
-            color: var(--text);
-            border: 1.5px solid var(--border);
-            padding: 1rem;
-            font-size: 1.25rem;
-            border-radius: 0.75rem;
-            cursor: pointer;
-            transition: background 0.2s;
-            font-family: inherit;
-            font-weight: 800;
+            background: var(--secondary);
+            border: 1px solid var(--border);
+            color: var(--foreground);
+            height: 3.5rem; font-size: 1.25rem; font-weight: 600;
+            border-radius: var(--radius); cursor: pointer;
         }
-        .pin-btn:hover { background: var(--border); }
-        #pin-input-r:focus { border-color: var(--primary); }
-        #pin-submit-r {
-            width: 100%;
-            background: var(--primary);
-            color: white;
-            border: none;
-            padding: 1rem;
-            border-radius: 0.75rem;
-            font-size: 1.1rem;
-            font-weight: 800;
-            cursor: pointer;
-            transition: background 0.2s;
-            min-height: 48px;
-        }
-        #pin-submit-r:hover { background: #dc2626; }
-        #pin-error-r { display: none; color: var(--primary); margin-top: 1rem; font-weight: 800; font-size: 0.9rem; }
-    
-        .collapsible-config {
-            cursor: pointer;
-            user-select: none;
-        }
-        .collapsible-config::after {
-            content: '\25BC';
-            float: right;
-            transition: transform 0.2s;
-        }
-        .collapsible-config.collapsed::after {
-            transform: rotate(-90deg);
-        }
-        .config-body {
-            transition: max-height 0.3s ease-out, opacity 0.3s ease-out;
-            max-height: 2000px;
-            opacity: 1;
-            overflow: hidden;
-        }
-        .config-body.collapsed {
-            max-height: 0;
-            opacity: 0;
-            padding-top: 0 !important;
-            padding-bottom: 0 !important;
-            margin-top: 0 !important;
-            margin-bottom: 0 !important;
-            border-top: none !important;
-        }
-    
-@media (max-width: 480px) { .btn-group { grid-template-columns: 1fr !important; } }</style>
+        .pin-btn:hover { background: var(--accent); }
+    </style>
 </head>
 <body>
 <div id="global-status-bar" style="background: #10b981; color: white; text-align: center; padding: 0.5rem; font-weight: bold; position: fixed; top: 0; left: 0; right: 0; z-index: 1000; transition: transform 0.3s ease-in-out; transform: translateY(-100%);">✅ Ready</div>
@@ -656,11 +511,11 @@ button, .btn { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 <div class="card">
 <h2>📺 Display Live Views</h2>
 <label>Change Screen View</label>
-<div class="btn-group" style="grid-template-columns: repeat(2, 1fr);">
+<div class="btn-group" >
 <button class="btn" id="btn-slides" onclick="setView('slides')">📺 Slideshow</button>
 <button class="btn" id="btn-draw" onclick="setView('draw')">🎯 Draw Screen</button>
 <button class="btn" id="btn-draw-generic" onclick="openGenericDrawPage()" style="background: #fbbf24; border-color: #f59e0b; color: black; font-weight: bold;">⭐ Generic Draw</button>
-<button class="btn" id="btn-congrats" onclick="setView('congrats')" >🎉 Winners Grid</button>
+<button class="btn" id="btn-congrats" onclick="setView('congrats')" >🎉 Congrats Screen</button>
 <button class="btn" id="btn-congrats-video" onclick="setView('congrats-video')"  style="background: #ef4444; color: white;">🎬 Congrats Video</button>
 </div>
 <label>Slideshow Navigation</label>
