@@ -3213,7 +3213,33 @@ button, .btn { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; f
 <button class="btn" id="btn-draw-generic" onclick="openGenericDrawPage()" style="border-width: 2px; background: #fbbf24; border-color: #f59e0b; color: black; font-weight: bold;">⭐ Open Generic Draw (Gold)</button>
 <button class="btn" id="btn-congrats" onclick="setView('congrats')"  style="border-width: 2px;">🎉 Winners Grid</button>
 </div>
-</div></div><div class="tab-content" id="tab-financials"><div class="card">
+</div>
+<div class="card">
+<h2>🖨️ Meat Raffle Record Sheets</h2>
+<p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1.5rem;">
+            Print Tonight's Meat Raffle Prize Checklist or an empty financial sheet for manual tracking.
+        </p>
+<div style="display: flex; gap: 1rem;">
+<button class="btn btn-primary" onclick="printManualRecordSheet()" style="flex: 1; padding: 0.8rem; font-size: 1rem; background-color: #2563eb; border-color: #1d4ed8; color: white;">🖨️ Print Checklist &amp; Financials</button>
+<button class="btn btn-primary" onclick="printEmptyFinancialSheetOnly()" style="flex: 1; padding: 0.8rem; font-size: 1rem; background-color: #10b981; border-color: #059669; color: white;">🖨️ Print Empty Financial Sheet</button>
+</div>
+</div>
+<div class="card">
+<h2>📋 End of Week &amp; Print</h2>
+<div style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem;">
+<button class="btn btn-primary" onclick="printFullDraw()" style="flex:1;">🖨️ Full Draw Print</button>
+<button class="btn btn-primary" onclick="printManualDraw()" style="flex:1; background-color: #6366f1; border-color: #4f46e5;">🖨️ Manual Draw Print</button>
+<button class="btn btn-primary" onclick="printGenericDraw()" style="flex:1; background-color: #f59e0b; border-color: #d97706;">🖨️ Generic Draw Print</button>
+<button class="btn btn-primary" onclick="printBlankDraw()" style="flex:1; background-color: #94a3b8; border-color: #64748b;">🖨️ Blank Draw Print</button>
+</div>
+<div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
+<button class="btn btn-primary" onclick="printFinancialSheet()" style="flex:1; background-color: #10b981; border-color: #059669; font-weight: bold;">🖨️ Print Financials (Cashup)</button>
+<button class="btn btn-primary" onclick="printAllPages()" style="flex:1; background-color: #eab308; border-color: #ca8a04; color: black; font-weight: bold;">🖨️ Print ALL Pages</button>
+</div>
+<button class="btn btn-danger" onclick="archiveDraws()" style="width: 100%; background-color: #ef4444; border-color: #dc2626; color: white;">⚠️ Confirm End of Week Draws</button>
+<button class="btn btn-danger" onclick="resetAllData()" style="width: 100%; background-color: #7f1d1d; border-color: #450a0a; color: white; margin-top: 0.5rem;">🚨 Reset All Data (New Week)</button>
+</div>
+</div><div class="tab-content" id="tab-financials"><div class="card">
 <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.75rem;">
 <h2 style="margin: 0;">💰 Financials &amp; Raffle Audit</h2>
 <div style="display: flex; align-items: center; gap: 0.5rem;">
@@ -3355,20 +3381,6 @@ button, .btn { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; f
             </p>
 </div>
 </div><div class="card">
-<h2>📋 End of Week &amp; Print</h2>
-<div style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem;">
-<button class="btn btn-primary" onclick="printFullDraw()" style="flex:1;">🖨️ Full Draw Print</button>
-<button class="btn btn-primary" onclick="printManualDraw()" style="flex:1; background-color: #6366f1; border-color: #4f46e5;">🖨️ Manual Draw Print</button>
-<button class="btn btn-primary" onclick="printGenericDraw()" style="flex:1; background-color: #f59e0b; border-color: #d97706;">🖨️ Generic Draw Print</button>
-<button class="btn btn-primary" onclick="printBlankDraw()" style="flex:1; background-color: #94a3b8; border-color: #64748b;">🖨️ Blank Draw Print</button>
-</div>
-<div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
-<button class="btn btn-primary" onclick="printFinancialSheet()" style="flex:1; background-color: #10b981; border-color: #059669; font-weight: bold;">🖨️ Print Financials (Cashup)</button>
-<button class="btn btn-primary" onclick="printAllPages()" style="flex:1; background-color: #eab308; border-color: #ca8a04; color: black; font-weight: bold;">🖨️ Print ALL Pages</button>
-</div>
-<button class="btn btn-danger" onclick="archiveDraws()" style="width: 100%; background-color: #ef4444; border-color: #dc2626; color: white;">⚠️ Confirm End of Week Draws</button>
-<button class="btn btn-danger" onclick="resetAllData()" style="width: 100%; background-color: #7f1d1d; border-color: #450a0a; color: white; margin-top: 0.5rem;">🚨 Reset All Data (New Week)</button>
-</div><div class="card">
 <h2>📱 Quick Access QR Codes</h2>
 <div style="display: flex; justify-content: space-between; gap: 1rem; margin-top: 1rem;">
 <div style="text-align: center; flex: 1;">
@@ -3410,16 +3422,7 @@ button, .btn { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; f
 <button class="btn" id="btn-play-pause" onclick="remoteSlide('toggle')">⏸ Pause</button>
 <button class="btn" onclick="remoteSlide('next')">Next ⏭</button>
 </div>
-</div><div class="card">
-<h2>🖨️ Meat Raffle Record Sheets</h2>
-<p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1.5rem;">
-            Print Tonight's Meat Raffle Prize Checklist or an empty financial sheet for manual tracking.
-        </p>
-<div style="display: flex; gap: 1rem;">
-<button class="btn btn-primary" onclick="printManualRecordSheet()" style="flex: 1; padding: 0.8rem; font-size: 1rem; background-color: #2563eb; border-color: #1d4ed8; color: white;">🖨️ Print Checklist &amp; Financials</button>
-<button class="btn btn-primary" onclick="printEmptyFinancialSheetOnly()" style="flex: 1; padding: 0.8rem; font-size: 1rem; background-color: #10b981; border-color: #059669; color: white;">🖨️ Print Empty Financial Sheet</button>
-</div>
-</div><div class="card">
+</div>><div class="card">
 <h2>🔑 Access PIN</h2>
 <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1.5rem;">
             Set the PIN required to access Admin and Remote pages.<br/>
