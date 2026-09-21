@@ -450,7 +450,7 @@
         <div><label style="font-size:0.75rem;">Thursday Vouchers Count</label><input id="cfg-thu-vouchers-count" onchange="updateDrawState()" oninput="updateDrawState()" type="number" value="0"/></div>
         <div><label style="font-size:0.75rem;">Thursday Voucher Value ($)</label><input id="cfg-thu-vouchers-value" onchange="updateDrawState()" oninput="updateDrawState()" type="number" value="0"/></div>
     </div>
-    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.5rem;">
+    <div style="display: flex; flex-direction: column; gap: 0.5rem;">
         <button class="btn" onclick="updateThursdayConfig()" style="background-color: #1e40af; color: white; border: none; padding: 0.6rem;">💾 Save Thursday Config</button>
         <button class="btn" onclick="resetDayDraw('thursday')" style="background-color: #b91c1c; color: white; border: none; padding: 0.6rem;">🔄 Reset Thursday Draw</button>
         <button class="btn" onclick="finishAndEndDraw('thursday')" style="background-color: #3b82f6; color: white; border: none; padding: 0.6rem;">Finish &amp; End Draw</button>
@@ -521,7 +521,7 @@
         <div><label style="font-size:0.75rem;">Sunday Vouchers Count</label><input id="cfg-sun-vouchers-count" onchange="updateDrawState()" oninput="updateDrawState()" type="number" value="0"/></div>
         <div><label style="font-size:0.75rem;">Sunday Voucher Value ($)</label><input id="cfg-sun-vouchers-value" onchange="updateDrawState()" oninput="updateDrawState()" type="number" value="0"/></div>
     </div>
-    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.5rem;">
+    <div style="display: flex; flex-direction: column; gap: 0.5rem;">
         <button class="btn" onclick="updateSundayConfig()" style="background-color: #991b1b; color: white; border: none; padding: 0.6rem;">💾 Save Sunday Config</button>
         <button class="btn" onclick="resetDayDraw('sunday')" style="background-color: #b91c1c; color: white; border: none; padding: 0.6rem;">🔄 Reset Sunday Draw</button>
         <button class="btn" onclick="finishAndEndDraw('sunday')" style="background-color: #ef4444; color: white; border: none; padding: 0.6rem;">Finish &amp; End Draw</button>
