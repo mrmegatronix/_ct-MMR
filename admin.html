@@ -170,13 +170,15 @@ input:focus, select:focus, textarea:focus {
 }
 .btn:hover { background-color: hsl(var(--secondary) / 0.8); }
 
-.btn.btn-primary { background-color: hsl(var(--primary)); color: hsl(var(--primary-foreground)); }
+.btn.btn-primary { background-color: hsl(var(--primary)); color: hsl(var(--primary-foreground)); font-weight: 700; box-shadow: 0 0 10px rgba(255,255,255,0.2); border: 1px solid hsl(var(--primary)); }
 .btn.btn-primary:hover { background-color: hsl(var(--primary) / 0.9); }
 
 .btn.btn-danger { background-color: hsl(var(--destructive)); color: hsl(var(--destructive-foreground)); }
 .btn.btn-danger:hover { background-color: hsl(var(--destructive) / 0.9); }
 
-.btn:disabled { opacity: 0.5; pointer-events: none; }
+
+.btn:disabled { opacity: 0.25; pointer-events: none; filter: grayscale(1); cursor: not-allowed; box-shadow: none; border-color: transparent; }
+
 
 .btn-group { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0.5rem; }
 
@@ -280,6 +282,28 @@ input:focus, select:focus, textarea:focus {
         <style>@keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.2; } 100% { opacity: 1; } }</style>
     </div>
 </div>
+<div class="container" style="padding-bottom: 0;">
+    <div class="draw-configs-split">
+        <div class="card">
+<h2>📺 Display View Mode</h2>
+<div class="btn-group">
+<button class="btn btn-secondary" id="btn-slides" onclick="setView('slides')">📺 Slideshow</button>
+<button class="btn btn-secondary" id="btn-draw" onclick="setView('draw')">🎯 Draw Screen</button>
+<button class="btn btn-secondary" id="btn-draw-generic" onclick="openGenericDrawPage()">⭐ Open Generic Draw (Gold)</button>
+<button class="btn btn-secondary" id="btn-congrats" onclick="setView('congrats')" >🎉 Congrats Screen</button>
+</div>
+</div>
+        <div class="card">
+<h2>🎮 Slide Navigation</h2>
+<div class="btn-group">
+<button class="btn btn-secondary" onclick="remoteSlide('prev')">⏮ Previous</button>
+<button class="btn btn-secondary" id="btn-play-pause" onclick="remoteSlide('toggle')">⏸ Pause</button>
+<button class="btn btn-secondary" onclick="remoteSlide('next')">Next ⏭</button>
+</div>
+</div>
+    </div>
+</div>
+
 <div class="tab-bar" style="margin-top: 1rem; padding: 0 1.5rem;">
 
 <button class="tab-btn active" id="btn-tab-config" onclick="switchAdminTab('tab-config')">⚙️ Draw Config</button>
@@ -438,14 +462,6 @@ input:focus, select:focus, textarea:focus {
 <!-- Display View Mode Card -->
 <!-- Checklist Print Card -->
 <!-- Change PIN Card -->
-<!-- Navigation Hub -->
-<nav class="nav-hub" style="margin-top: 3rem; display: flex; justify-content: center; gap: 20px; border-top: 1px solid var(--border); padding-top: 20px;">
-<a class="nav-link" href="index.html" style="color: var(--text-muted); text-decoration: none; font-size: 0.8rem; font-weight: 700; text-transform: uppercase;">📺 Display</a>
-<a class="nav-link" href="admin.html" style="color: var(--primary); text-decoration: none; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; border-bottom: 2px solid var(--primary);">🛠 Admin</a>
-<a class="nav-link" href="remote.html" style="color: var(--text-muted); text-decoration: none; font-size: 0.8rem; font-weight: 700; text-transform: uppercase;">📱 Remote</a>
-<span style="color: var(--border)">|</span>
-<a class="nav-link" href="../_ct-MATRIX/index.html" style="color: var(--text-muted); text-decoration: none; font-size: 0.8rem; font-weight: 700; text-transform: uppercase;">MATRIX</a>
-</nav>
 <!-- PiP Elements -->
 <div class="pip-window" id="pip-window">
 <iframe id="pip-frame" src="about:blank"></iframe>
@@ -2933,15 +2949,7 @@ input:focus, select:focus, textarea:focus {
 </div>
 </div>
 
-<div class="card">
-<h2>📺 Display View Mode</h2>
-<div class="btn-group">
-<button class="btn btn-secondary" id="btn-slides" onclick="setView('slides')">📺 Slideshow</button>
-<button class="btn btn-secondary" id="btn-draw" onclick="setView('draw')">🎯 Draw Screen</button>
-<button class="btn btn-secondary" id="btn-draw-generic" onclick="openGenericDrawPage()">⭐ Open Generic Draw (Gold)</button>
-<button class="btn btn-secondary" id="btn-congrats" onclick="setView('congrats')" >🎉 Congrats Screen</button>
-</div>
-</div>
+
 <div class="card">
 <h2>🖨️ Print Center</h2>
 <p class="text-muted">
@@ -3140,14 +3148,8 @@ input:focus, select:focus, textarea:focus {
 </div>
 <button class="btn btn-primary" onclick="saveFirebaseConfig()">💾 Save Firebase Config</button>
 <div class="status" id="fb-status-2"></div>
-</div><div class="card">
-<h2>🎮 Slide Navigation</h2>
-<div class="btn-group">
-<button class="btn btn-secondary" onclick="remoteSlide('prev')">⏮ Previous</button>
-<button class="btn btn-secondary" id="btn-play-pause" onclick="remoteSlide('toggle')">⏸ Pause</button>
-<button class="btn btn-secondary" onclick="remoteSlide('next')">Next ⏭</button>
 </div>
-</div>><div class="card">
+<div class="card">
 <h2>🔑 Access PIN</h2>
 <p class="text-muted">
             Set the PIN required to access Admin and Remote pages.<br/>

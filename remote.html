@@ -168,13 +168,15 @@ input:focus, select:focus, textarea:focus {
 }
 .btn:hover { background-color: hsl(var(--secondary) / 0.8); }
 
-.btn.btn-primary { background-color: hsl(var(--primary)); color: hsl(var(--primary-foreground)); }
+.btn.btn-primary { background-color: hsl(var(--primary)); color: hsl(var(--primary-foreground)); font-weight: 700; box-shadow: 0 0 10px rgba(255,255,255,0.2); border: 1px solid hsl(var(--primary)); }
 .btn.btn-primary:hover { background-color: hsl(var(--primary) / 0.9); }
 
 .btn.btn-danger { background-color: hsl(var(--destructive)); color: hsl(var(--destructive-foreground)); }
 .btn.btn-danger:hover { background-color: hsl(var(--destructive) / 0.9); }
 
-.btn:disabled { opacity: 0.5; pointer-events: none; }
+
+.btn:disabled { opacity: 0.25; pointer-events: none; filter: grayscale(1); cursor: not-allowed; box-shadow: none; border-color: transparent; }
+
 
 .btn-group { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0.5rem; }
 
