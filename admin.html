@@ -161,9 +161,10 @@ input:focus, select:focus, textarea:focus {
 }
 
 .btn {
-  display: inline-flex; align-items: center; justify-content: center;
-  white-space: nowrap; border-radius: calc(var(--radius) - 2px);
-  font-size: 0.875rem; font-weight: 500; height: 2.5rem; padding: 0.5rem 1rem;
+  display: inline-flex; align-items: center; justify-content: center; text-align: center;
+  white-space: normal; word-wrap: break-word; border-radius: calc(var(--radius) - 2px);
+  font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.02em; 
+  min-height: 2.5rem; padding: 0.5rem 1rem; line-height: 1.2;
   transition: all 0.15s; cursor: pointer; text-decoration: none;
   
   /* Available: colour border */
@@ -242,14 +243,17 @@ input:focus, select:focus, textarea:focus {
   font-size: 0.875rem; font-weight: 600; color: #fbbf24;
 }
 
-#pin-overlay { position: fixed; inset: 0; background: hsl(var(--background) / 0.95); backdrop-filter: blur(10px); z-index: 9999; display: flex; align-items: center; justify-content: center; }
-#pin-modal { background: hsl(var(--card)); border: 1px solid hsl(var(--border)); border-radius: var(--radius); padding: 2rem; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); width: 90%; max-width: 320px; }
-.pin-pad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; margin-top: 1.5rem; }
-.pin-btn { background: hsl(var(--secondary)); border: 1px solid hsl(var(--border)); color: hsl(var(--foreground)); height: 3.5rem; font-size: 1.25rem; font-weight: 600; border-radius: calc(var(--radius) - 2px); cursor: pointer; }
-.pin-btn:hover { background: hsl(var(--secondary) / 0.8); }
+#pin-overlay { position: fixed; inset: 0; background: hsl(var(--background) / 0.95); backdrop-filter: blur(8px); z-index: 9999; display: flex; align-items: center; justify-content: center; }
+#pin-modal { background: hsl(var(--card)); color: hsl(var(--card-foreground)); border: 1px solid hsl(var(--border)); border-radius: var(--radius); padding: 2.5rem 2rem; text-align: center; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5), 0 10px 10px -5px rgba(0,0,0,0.3); width: 90%; max-width: 340px; display: flex; flex-direction: column; align-items: center; }
+#pin-input { width: 100%; max-width: 240px; background: hsl(var(--background)); color: hsl(var(--foreground)); border: 1px solid hsl(var(--input)); border-radius: calc(var(--radius) - 2px); padding: 0.75rem; font-size: 1.5rem; letter-spacing: 0.2em; text-align: center; margin-bottom: 1.5rem; transition: border-color 0.15s, box-shadow 0.15s; }
+#pin-input:focus { outline: none; border-color: hsl(var(--ring)); box-shadow: 0 0 0 2px hsl(var(--ring) / 0.3); }
+.pin-pad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; width: 100%; max-width: 240px; }
+.pin-btn { background: transparent; border: 1px solid hsl(var(--border)); color: hsl(var(--foreground)); height: 3.5rem; font-size: 1.25rem; font-weight: 500; border-radius: calc(var(--radius) - 2px); cursor: pointer; transition: all 0.15s; display: flex; align-items: center; justify-content: center; }
+.pin-btn:hover { background: hsl(var(--accent)); color: hsl(var(--accent-foreground)); }
+.pin-btn:active { transform: scale(0.95); }
 
 /* Remove ugly ellipsis to favor fluid flex scaling where possible */
-.btn { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
 </style>
 <script>
         function switchAdminTab(tabId) {
@@ -264,10 +268,10 @@ input:focus, select:focus, textarea:focus {
 <!-- PIN Access Overlay -->
 <div id="pin-overlay">
 <div id="pin-modal">
-<div style="font-size: 3rem; margin-bottom: 1rem;">🔐</div>
-<h2 style="color: #f8fafc; margin: 0 0 0.5rem;">Restricted Access</h2>
-<p style="color: #94a3b8; margin: 0 0 2rem; font-size: 0.9rem;">Enter PIN to access Admin Panel</p>
-<input autocomplete="off" id="pin-input" maxlength="8" placeholder="Enter PIN" readonly="" type="password"/>
+<div style="font-size: 2.5rem; margin-bottom: 1rem; color: hsl(var(--primary));">🔐</div>
+<h2 style="font-size: 1.25rem; font-weight: 600; margin: 0 0 0.25rem;">Restricted Access</h2>
+<p style="color: hsl(var(--muted-foreground)); margin: 0 0 1.5rem; font-size: 0.875rem;">Enter PIN to access Admin Panel</p>
+<input autocomplete="off" id="pin-input" maxlength="8" placeholder="••••" readonly="" type="password"/>
 <div class="pin-pad">
 <button class="pin-btn" onclick="appendPin('1')" type="button">1</button>
 <button class="pin-btn" onclick="appendPin('2')" type="button">2</button>
@@ -497,14 +501,7 @@ input:focus, select:focus, textarea:focus {
 <!-- Display View Mode Card -->
 <!-- Checklist Print Card -->
 <!-- Change PIN Card -->
-<!-- PiP Elements -->
-<div class="pip-window" id="pip-window">
-<iframe id="pip-frame" src="about:blank"></iframe>
-</div>
-<button class="pip-toggle" onclick="togglePip()">
-<span style="font-size: 1.2rem;">🖼️</span>
-<span>LIVE PREVIEW</span>
-</button>
+
 <script>
         // ── Security Helpers ─────────────────────────────────────────────
         function sanitize(str) {
@@ -2727,7 +2724,7 @@ input:focus, select:focus, textarea:focus {
             }
 
             return `
-                <div class="print-page print-page-single" style="page-break-after: avoid; break-after: avoid; page-break-inside: avoid;">
+                <div class="print-page">
                     <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #0284c7; padding-bottom: 4px; margin-bottom: 8px;">
                         <h1 style="margin: 0; border: none; padding: 0; font-size: 1.4rem;">${isBlank ? 'Manual Draw Results Sheet' : 'Official Draw Results Sheet'}</h1>
                         <span style="font-weight: bold; color: #475569; font-size: 0.9rem;">${printedDate}</span>
@@ -2761,9 +2758,9 @@ input:focus, select:focus, textarea:focus {
         function printAllPages() {
             printHTML(
                 buildChecklistHTML('Final Draw') + 
-                '<div style="page-break-before: always;"></div>' + 
+                '' + 
                 buildFinancialSheetHTML() + 
-                '<div style="page-break-before: always;"></div>' + 
+                '' + 
                 buildDrawResultsHTML()
             );
         }
@@ -2778,8 +2775,7 @@ input:focus, select:focus, textarea:focus {
                 <!DOCTYPE html>
                 <html><head>
                 <style>
-                    @page { size: A4 portrait; margin: 8mm 10mm; } 
-                    @page landscape { size: A4 landscape; margin: 8mm 10mm; } 
+                    @page { size: A4 portrait; margin: 10mm; } 
                     @media print { 
                         html, body { 
                             background: #fff !important; 
@@ -2789,19 +2785,13 @@ input:focus, select:focus, textarea:focus {
                             -webkit-print-color-adjust: exact !important; 
                             print-color-adjust: exact !important; 
                         } 
-                        .landscape { 
-                            @page { size: A4 landscape; margin: 8mm 10mm; } 
-                            max-height: 190mm; 
-                        } 
                         .print-page { 
-                            page-break-inside: avoid !important; 
-                            break-inside: avoid !important; 
-                            page-break-after: avoid !important; 
-                            break-after: avoid !important; 
-                            max-height: 275mm; 
-                            overflow: hidden; 
-                            padding: 0; 
+                            page-break-after: always; 
+                            width: 100%; 
                             box-sizing: border-box; 
+                        }
+                        .print-page:last-child {
+                            page-break-after: auto;
                         }
                         .no-break, tr, .prize-row { page-break-inside: avoid; break-inside: avoid; }
                         table { page-break-inside: avoid; break-inside: avoid; }
@@ -2842,6 +2832,7 @@ input:focus, select:focus, textarea:focus {
                 'qr-remote': baseUrl + '/remote.html',
                 'qr-admin': baseUrl + '/admin.html',
                 'qr-archive': baseUrl + '/archive.html',
+                'qr-archive-admin': baseUrl + '/archive.html',
                 'qr-verify-admin': baseUrl + '/verify.html'
             };
 
@@ -3226,7 +3217,7 @@ input:focus, select:focus, textarea:focus {
 <h2>🔑 Access PIN</h2>
 <p class="text-muted">
             Set the PIN required to access Admin and Remote pages.<br/>
-            Default PIN is <code style="background: var(--bg); padding: 0.2rem 0.5rem; border-radius: 0.3rem;">5551</code>
+            Leave blank to remove PIN protection.
 </p>
 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
 <div class="form-group">
