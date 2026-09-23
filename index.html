@@ -505,6 +505,7 @@
                 drawnCount: drawnNumbersCount,
                 prizesLeft: prizesLeft,
                 activeEvent: state.draw.activeEvent,
+                thuEnabled: !!(state.draw.thursday && state.draw.thursday.enabled !== false),
                 sunEnabled: !!(state.draw.sunday && state.draw.sunday.enabled)
             });
             if (state.activeView === 'slides' && (state.activeView !== lastActiveView || currentSlidesJson !== lastRenderedSlidesJson)) {
