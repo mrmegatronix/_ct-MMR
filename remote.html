@@ -51,273 +51,167 @@
         function updateGenericConfig() {}
     </script>
 <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+/* Exact High-Fidelity Shadcn UI Dark Theme */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
-        :root {
-            --background: #09090b;
-            --foreground: #fafafa;
-            --card: #09090b;
-            --card-foreground: #fafafa;
-            --border: #27272a;
-            --input: #27272a;
-            --primary: #fafafa;
-            --primary-foreground: #18181b;
-            --secondary: #27272a;
-            --secondary-foreground: #fafafa;
-            --muted: #27272a;
-            --muted-foreground: #a1a1aa;
-            --accent: #27272a;
-            --accent-foreground: #fafafa;
-            --destructive: #7f1d1d;
-            --destructive-foreground: #fafafa;
-            --ring: #d4d4d8;
-            --radius: 0.5rem;
-        }
+:root {
+  --background: 240 10% 3.9%;
+  --foreground: 0 0% 98%;
+  --card: 240 10% 3.9%;
+  --card-foreground: 0 0% 98%;
+  --popover: 240 10% 3.9%;
+  --popover-foreground: 0 0% 98%;
+  --primary: 0 0% 98%;
+  --primary-foreground: 240 5.9% 10%;
+  --secondary: 240 3.7% 15.9%;
+  --secondary-foreground: 0 0% 98%;
+  --muted: 240 3.7% 15.9%;
+  --muted-foreground: 240 5% 64.9%;
+  --accent: 240 3.7% 15.9%;
+  --accent-foreground: 0 0% 98%;
+  --destructive: 0 62.8% 30.6%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 240 3.7% 15.9%;
+  --input: 240 3.7% 15.9%;
+  --ring: 240 4.9% 83.9%;
+  --radius: 0.5rem;
+}
 
-        html, body { 
-            background-color: var(--background); 
-            color: var(--foreground); 
-            font-family: 'Inter', sans-serif; 
-            margin: 0; 
-            padding: 0;
-            overflow-x: hidden;
-            -webkit-font-smoothing: antialiased;
-        }
+* {
+  box-sizing: border-box;
+  border-color: hsl(var(--border));
+}
 
-        /* Prevent ugly text wrapping as per rule, but allow flex layout to accommodate */
-        button, .btn { 
-            white-space: nowrap; 
-            overflow: hidden; 
-            text-overflow: ellipsis; 
-            font-size: 0.9rem; /* Reduce font size slightly to prevent clipping */
-        }
+html, body {
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  font-size: 16px;
+  line-height: 1.5;
+}
 
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 1rem 1.5rem;
-            background: var(--background);
-            border-bottom: 1px solid var(--border);
-            position: sticky;
-            top: 0;
-            z-index: 50;
-            backdrop-filter: blur(8px);
-            background: rgba(9, 9, 11, 0.8);
-        }
+h1, h2, h3, h4, h5, h6 { font-weight: 600; letter-spacing: -0.025em; margin: 0; }
+h2 { font-size: 1.5rem; }
+h3 { font-size: 1.25rem; }
+p { line-height: 1.75; margin: 0; }
+.text-muted { color: hsl(var(--muted-foreground)); font-size: 0.875rem; }
 
-        .header h1 {
-            margin: 0;
-            font-size: 1.25rem;
-            font-weight: 600;
-            letter-spacing: -0.025em;
-        }
+.container {
+  width: 100%;
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 2rem 1.5rem;
+}
 
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 2rem 1.5rem;
-            display: grid;
-            gap: 1.5rem;
-        }
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  background-color: hsl(var(--background) / 0.8);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid hsl(var(--border));
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+.header h1 { font-size: 1.125rem; }
 
-        /* Shadcn Card */
-        .card {
-            background: var(--card);
-            color: var(--card-foreground);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 1.5rem;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.4);
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-        }
+.card {
+  background-color: hsl(var(--card));
+  color: hsl(var(--card-foreground));
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  display: flex;
+  flex-direction: column;
+  padding: 1.5rem;
+  gap: 1.5rem;
+}
+.card > h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -0.025em;
+  margin-bottom: -0.75rem; /* pull up description */
+}
 
-        .card h2 {
-            margin: 0;
-            font-size: 1.125rem;
-            font-weight: 600;
-            letter-spacing: -0.025em;
-            border-bottom: 1px solid var(--border);
-            padding-bottom: 0.75rem;
-        }
+.form-group { display: flex; flex-direction: column; gap: 0.5rem; }
+label { font-size: 0.875rem; font-weight: 500; line-height: 1; color: hsl(var(--foreground)); }
 
-        /* Shadcn Button */
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: var(--radius);
-            font-weight: 500;
-            transition: colors 0.15s;
-            cursor: pointer;
-            border: 1px solid var(--border);
-            background: var(--secondary);
-            color: var(--secondary-foreground);
-            padding: 0.5rem 1rem;
-            height: 2.5rem;
-            text-decoration: none;
-        }
-        
-        .btn:hover {
-            background: var(--accent);
-        }
-        
-        .btn-primary {
-            background: var(--primary);
-            color: var(--primary-foreground);
-            border: transparent;
-        }
-        
-        .btn-primary:hover {
-            background: #e4e4e7;
-        }
-        
-        .btn-danger {
-            background: var(--destructive);
-            color: var(--destructive-foreground);
-            border: transparent;
-        }
-        
-        .btn-danger:hover {
-            background: #991b1b;
-        }
+input, select, textarea {
+  display: flex; height: 2.5rem; width: 100%;
+  border-radius: calc(var(--radius) - 2px);
+  border: 1px solid hsl(var(--input));
+  background-color: hsl(var(--background));
+  padding: 0.5rem 0.75rem; font-size: 0.875rem; color: hsl(var(--foreground));
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+input:focus, select:focus, textarea:focus {
+  outline: 2px solid transparent; outline-offset: 2px;
+  border-color: hsl(var(--ring)); box-shadow: 0 0 0 1px hsl(var(--ring));
+}
 
-        /* Forms & Inputs */
-        .form-group {
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-        }
+.btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  white-space: nowrap; border-radius: calc(var(--radius) - 2px);
+  font-size: 0.875rem; font-weight: 500; height: 2.5rem; padding: 0.5rem 1rem;
+  transition: background-color 0.15s, color 0.15s; cursor: pointer; border: none;
+  background-color: hsl(var(--secondary)); color: hsl(var(--secondary-foreground));
+  text-decoration: none;
+}
+.btn:hover { background-color: hsl(var(--secondary) / 0.8); }
 
-        label {
-            font-size: 0.875rem;
-            font-weight: 500;
-            color: var(--foreground);
-        }
+.btn.btn-primary { background-color: hsl(var(--primary)); color: hsl(var(--primary-foreground)); }
+.btn.btn-primary:hover { background-color: hsl(var(--primary) / 0.9); }
 
-        input, textarea, select {
-            background: var(--background);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 0.5rem 0.75rem;
-            color: var(--foreground);
-            font-family: inherit;
-            font-size: 0.875rem;
-            height: 2.5rem;
-            width: 100%;
-            box-sizing: border-box;
-        }
-        
-        input:focus, select:focus {
-            outline: none;
-            border-color: var(--ring);
-            box-shadow: 0 0 0 2px rgba(212,212,216,0.2);
-        }
+.btn.btn-danger { background-color: hsl(var(--destructive)); color: hsl(var(--destructive-foreground)); }
+.btn.btn-danger:hover { background-color: hsl(var(--destructive) / 0.9); }
 
-        /* Grid for buttons to prevent clipping */
-        .btn-group {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-            gap: 0.75rem;
-        }
-        
-        .draw-configs-split {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-            gap: 1.5rem;
-        }
+.btn:disabled { opacity: 0.5; pointer-events: none; }
 
-        .tab-bar {
-            display: flex;
-            gap: 0.5rem;
-            margin-bottom: 1.5rem;
-            border-bottom: 1px solid var(--border);
-            padding-bottom: 0.5rem;
-            overflow-x: auto;
-        }
+.btn-group { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0.5rem; }
 
-        .tab-btn {
-            background: transparent;
-            border: none;
-            color: var(--muted-foreground);
-            font-weight: 500;
-            padding: 0.5rem 1rem;
-            border-radius: var(--radius);
-            cursor: pointer;
-        }
+.tab-bar {
+  display: inline-flex; height: 2.5rem; align-items: center; justify-content: center;
+  border-radius: var(--radius); background-color: hsl(var(--muted)); padding: 0.25rem;
+  margin-bottom: 1.5rem; margin-top: 1rem; margin-left: 1.5rem;
+}
+.tab-btn {
+  display: inline-flex; align-items: center; justify-content: center; white-space: nowrap;
+  border-radius: calc(var(--radius) - 2px); padding: 0.25rem 0.75rem;
+  font-size: 0.875rem; font-weight: 500; transition: all 0.15s;
+  background: transparent; color: hsl(var(--muted-foreground)); border: none; cursor: pointer; height: 100%;
+}
+.tab-btn.active {
+  background-color: hsl(var(--background)); color: hsl(var(--foreground));
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+}
+.tab-content { display: none; }
+.tab-content.active { display: flex; flex-direction: column; gap: 1.5rem; }
 
-        .tab-btn:hover {
-            background: var(--secondary);
-            color: var(--secondary-foreground);
-        }
+.draw-configs-split { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem; }
+.live-clock-badge {
+  background: hsl(var(--secondary)); border: 1px solid hsl(var(--border));
+  padding: 0.25rem 0.75rem; border-radius: 1rem; font-family: monospace;
+  font-size: 0.875rem; font-weight: 600; color: #fbbf24;
+}
 
-        .tab-btn.active {
-            background: var(--secondary);
-            color: var(--foreground);
-            box-shadow: inset 0 1px 0 rgba(255,255,255,0.1);
-        }
+#pin-overlay { position: fixed; inset: 0; background: hsl(var(--background) / 0.95); backdrop-filter: blur(10px); z-index: 9999; display: flex; align-items: center; justify-content: center; }
+#pin-modal { background: hsl(var(--card)); border: 1px solid hsl(var(--border)); border-radius: var(--radius); padding: 2rem; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); width: 90%; max-width: 320px; }
+.pin-pad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; margin-top: 1.5rem; }
+.pin-btn { background: hsl(var(--secondary)); border: 1px solid hsl(var(--border)); color: hsl(var(--foreground)); height: 3.5rem; font-size: 1.25rem; font-weight: 600; border-radius: calc(var(--radius) - 2px); cursor: pointer; }
+.pin-btn:hover { background: hsl(var(--secondary) / 0.8); }
 
-        .tab-content { display: none; }
-        .tab-content.active { 
-            display: grid; 
-            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-            gap: 1.5rem;
-            animation: fadeIn 0.3s ease;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(4px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .live-clock-badge {
-            background: var(--secondary);
-            border: 1px solid var(--border);
-            padding: 0.25rem 0.75rem;
-            border-radius: 1rem;
-            font-family: monospace;
-            font-size: 0.875rem;
-            font-weight: 600;
-            color: #fbbf24;
-        }
-
-        .status {
-            font-size: 0.875rem;
-            color: var(--muted-foreground);
-            margin-top: 0.5rem;
-        }
-        
-        /* PIN Overlay */
-        #pin-overlay {
-            position: fixed; inset: 0;
-            background: rgba(9, 9, 11, 0.95);
-            backdrop-filter: blur(10px);
-            z-index: 9999;
-            display: flex; align-items: center; justify-content: center;
-        }
-        #pin-modal {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 2rem;
-            text-align: center;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            width: 90%; max-width: 320px;
-        }
-        .pin-pad {
-            display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem;
-        }
-        .pin-btn {
-            background: var(--secondary);
-            border: 1px solid var(--border);
-            color: var(--foreground);
-            height: 3.5rem; font-size: 1.25rem; font-weight: 600;
-            border-radius: var(--radius); cursor: pointer;
-        }
-        .pin-btn:hover { background: var(--accent); }
-    </style>
+/* Remove ugly ellipsis to favor fluid flex scaling where possible */
+.btn { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+</style>
 </head>
 <body>
 <div id="global-status-bar" style="background: #10b981; color: white; text-align: center; padding: 0.5rem; font-weight: bold; position: fixed; top: 0; left: 0; right: 0; z-index: 1000; transition: transform 0.3s ease-in-out; transform: translateY(-100%);">✅ Ready</div>
@@ -349,18 +243,20 @@
 <div style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap;">
 <h1 id="header-title">MMR Remote</h1>
 <div class="live-clock-badge" id="remote-clock">--<span class="colon-flash">:</span>--<span class="colon-flash">:</span>--</div>
+<div class="container">
+
 </div>
 <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap; justify-content: flex-end;">
 <span id="fb-status" style="font-size:0.8rem; color:#64748b;">🔴 Firebase: Not configured</span>
-<button class="btn btn-primary" id="btn-demo-mode" onclick="toggleDemoMode()" style="background-color: #8b5cf6; border-color: #7c3aed; padding: 0.5rem 1rem; min-height: 36px; height: 36px;">Demo Mode: OFF</button>
+<button class="btn btn-primary" id="btn-demo-mode" onclick="toggleDemoMode()">Demo Mode: OFF</button>
 </div>
 </div>
 <div class="grid">
 <!-- Live Draw Board (Top Card) -->
-<div class="card" style="padding: 0.85rem;">
+<div class="card">
 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
 <h2 style="margin: 0; border: none; padding: 0; font-size: 1.1rem;">🎰 Live Draw Controls</h2>
-<button class="btn" onclick="triggerConfetti()" style="background-color: #eab308; border-color: #ca8a04; color: black; min-height: 36px; height: 36px; padding: 0 0.6rem; font-size: 0.8rem;" type="button">🎉 Confetti</button>
+<button class="btn btn-secondary" onclick="triggerConfetti()" type="button">🎉 Confetti</button>
 </div>
 <div id="draw-rolling-label" style="display: none; text-align: center; font-size: 1.1rem; font-weight: bold; margin-bottom: 0.75rem; color: #f59e0b; animation: pulse 1s infinite;">🎰 ROLLING FOR WINNER...</div>
 
@@ -371,9 +267,9 @@
 <span id="lbl-active-draw-type" style="color: #38bdf8; font-weight: 800;">Full Meat Draw</span>
 </div>
 <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px;">
-<button class="btn" id="btn-mode-full" onclick="setDrawType('full')" style="padding: 0.4rem 0.2rem; font-size: 0.78rem; font-weight: bold; min-height: 34px; height: 34px;" type="button">🥩 Full Draw</button>
-<button class="btn" id="btn-mode-generic" onclick="setDrawType('generic')" style="padding: 0.4rem 0.2rem; font-size: 0.78rem; font-weight: bold; min-height: 34px; height: 34px;" type="button">⭐ Generic</button>
-<button class="btn" id="btn-mode-manual" onclick="setDrawType('manual')" style="padding: 0.4rem 0.2rem; font-size: 0.78rem; font-weight: bold; min-height: 34px; height: 34px;" type="button">📝 Manual</button>
+<button class="btn btn-secondary" id="btn-mode-full" onclick="setDrawType('full')" type="button">🥩 Full Draw</button>
+<button class="btn btn-secondary" id="btn-mode-generic" onclick="setDrawType('generic')" type="button">⭐ Generic</button>
+<button class="btn btn-secondary" id="btn-mode-manual" onclick="setDrawType('manual')" type="button">📝 Manual</button>
 </div>
 </div>
 
@@ -385,10 +281,10 @@
 <div class="draw-control-subtitle"><span id="lbl-left-100">0</span> Left</div>
 </div>
 <div class="draw-control-actions">
-<button class="btn draw-btn btn-draw-main" id="btn-draw-100" onclick="runDraw(100)" style="background-color: #ef4444; border-color: #dc2626; color: white;">
+<button class="btn draw-btn btn-draw-main" id="btn-draw-100" onclick="runDraw(100)">
                             🎰 DRAW $100
                         </button>
-<button class="btn draw-btn btn-redraw-icon" id="btn-redraw-100" onclick="runRedraw(100)" style="background-color: #1e293b; border-color: #ef4444; color: #ef4444;" title="Redraw $100">
+<button class="btn draw-btn btn-redraw-icon" id="btn-redraw-100" onclick="runRedraw(100)" title="Redraw $100">
                             🔄 REDRAW
                         </button>
 </div>
@@ -400,10 +296,10 @@
 <div class="draw-control-subtitle"><span id="lbl-left-50">0</span> Left</div>
 </div>
 <div class="draw-control-actions">
-<button class="btn draw-btn btn-draw-main" id="btn-draw-50" onclick="runDraw(50)" style="background-color: #2563eb; border-color: #1d4ed8; color: white;">
+<button class="btn draw-btn btn-draw-main" id="btn-draw-50" onclick="runDraw(50)">
                             🎰 DRAW $50
                         </button>
-<button class="btn draw-btn btn-redraw-icon" id="btn-redraw-50" onclick="runRedraw(50)" style="background-color: #1e293b; border-color: #ef4444; color: #ef4444;" title="Redraw $50">
+<button class="btn draw-btn btn-redraw-icon" id="btn-redraw-50" onclick="runRedraw(50)" title="Redraw $50">
                             🔄 REDRAW
                         </button>
 </div>
@@ -415,10 +311,10 @@
 <div class="draw-control-subtitle"><span id="lbl-left-25">0</span> Left</div>
 </div>
 <div class="draw-control-actions">
-<button class="btn draw-btn btn-draw-main" id="btn-draw-25" onclick="runDraw(25)" style="background-color: #10b981; border-color: #059669; color: white;">
+<button class="btn draw-btn btn-draw-main" id="btn-draw-25" onclick="runDraw(25)">
                             🎰 DRAW $25
                         </button>
-<button class="btn draw-btn btn-redraw-icon" id="btn-redraw-25" onclick="runRedraw(25)" style="background-color: #1e293b; border-color: #ef4444; color: #ef4444;" title="Redraw $25">
+<button class="btn draw-btn btn-redraw-icon" id="btn-redraw-25" onclick="runRedraw(25)" title="Redraw $25">
                             🔄 REDRAW
                         </button>
 </div>
@@ -430,10 +326,10 @@
 <div class="draw-control-subtitle">Special Prize</div>
 </div>
 <div class="draw-control-actions">
-<button class="btn draw-btn btn-draw-main" id="btn-draw-act-bonus" onclick="runDraw('bonus')" style="background-color: #eab308; border-color: #ca8a04; color: black;">
+<button class="btn draw-btn btn-draw-main" id="btn-draw-act-bonus" onclick="runDraw('bonus')">
                             🎁 DRAW BONUS
                         </button>
-<button class="btn draw-btn btn-redraw-icon" id="btn-redraw-act-bonus" onclick="runRedraw('bonus')" style="background-color: #1e293b; border-color: #eab308; color: #eab308;" title="Redraw Bonus">
+<button class="btn draw-btn btn-redraw-icon" id="btn-redraw-act-bonus" onclick="runRedraw('bonus')" title="Redraw Bonus">
                             🔄 REDRAW
                         </button>
 </div>
@@ -445,10 +341,10 @@
 <div class="draw-control-subtitle">Voucher</div>
 </div>
 <div class="draw-control-actions">
-<button class="btn draw-btn btn-draw-main" id="btn-draw-act-voucher" onclick="runDraw('voucher')" style="background-color: #ffffff; border-color: #cbd5e1; color: black;">
+<button class="btn draw-btn btn-draw-main" id="btn-draw-act-voucher" onclick="runDraw('voucher')">
                             🎟️ DRAW VOUCHER
                         </button>
-<button class="btn draw-btn btn-redraw-icon" id="btn-redraw-act-voucher" onclick="runRedraw('voucher')" style="background-color: #1e293b; border-color: #ffffff; color: #ffffff;" title="Redraw Voucher">
+<button class="btn draw-btn btn-redraw-icon" id="btn-redraw-act-voucher" onclick="runRedraw('voucher')" title="Redraw Voucher">
                             🔄 REDRAW
                         </button>
 </div>
@@ -460,10 +356,10 @@
 <div class="draw-control-subtitle">With Prize Countdown</div>
 </div>
 <div class="draw-control-actions">
-<button class="btn draw-btn btn-draw-main" id="btn-draw-act-generic-countdown" onclick="runDraw('generic-countdown')" style="background-color: #fbbf24; border-color: #f59e0b; color: black;">
+<button class="btn draw-btn btn-draw-main" id="btn-draw-act-generic-countdown" onclick="runDraw('generic-countdown')">
                             ⭐ DRAW (COUNT)
                         </button>
-<button class="btn draw-btn btn-redraw-icon" id="btn-redraw-act-generic-countdown" onclick="runRedraw('generic-countdown')" style="background-color: #1e293b; border-color: #fbbf24; color: #fbbf24;" title="Redraw Generic (Countdown)">
+<button class="btn draw-btn btn-redraw-icon" id="btn-redraw-act-generic-countdown" onclick="runRedraw('generic-countdown')" title="Redraw Generic (Countdown)">
                             🔄 REDRAW
                         </button>
 </div>
@@ -475,10 +371,10 @@
 <div class="draw-control-subtitle">Open / No Prize Limit</div>
 </div>
 <div class="draw-control-actions">
-<button class="btn draw-btn btn-draw-main" id="btn-draw-act-generic-nocountdown" onclick="runDraw('generic-no-countdown')" style="background-color: #d97706; border-color: #b45309; color: white;">
+<button class="btn draw-btn btn-draw-main" id="btn-draw-act-generic-nocountdown" onclick="runDraw('generic-no-countdown')">
                             ⭐ DRAW (OPEN)
                         </button>
-<button class="btn draw-btn btn-redraw-icon" id="btn-redraw-act-generic-nocountdown" onclick="runRedraw('generic-no-countdown')" style="background-color: #1e293b; border-color: #d97706; color: #fbbf24;" title="Redraw Generic (No Countdown)">
+<button class="btn draw-btn btn-redraw-icon" id="btn-redraw-act-generic-nocountdown" onclick="runRedraw('generic-no-countdown')" title="Redraw Generic (No Countdown)">
                             🔄 REDRAW
                         </button>
 </div>
@@ -487,7 +383,7 @@
 <div class="draw-control-row" id="row-prize-manual" style="border-left: 4px solid #8b5cf6; display: none; background: rgba(139, 92, 246, 0.1); padding: 0.85rem; text-align: center; flex-direction: column; gap: 8px;">
 <div style="font-size: 0.95rem; font-weight: 800; color: #a78bfa;">📝 MANUAL BARREL DRAW ACTIVE</div>
 <div style="font-size: 0.8rem; color: #cbd5e1;">Tickets are being drawn physically from the barrel. TV display is showing Manual Draw mode.</div>
-<button class="btn" onclick="finishAndEndDraw(state.draw && state.draw.activeEvent || 'thursday')" style="background-color: #8b5cf6; border-color: #7c3aed; color: white; padding: 0.5rem 1rem; margin: 0 auto; width: auto;" type="button">🏁 Finish &amp; End Draw (Show Congrats)</button>
+<button class="btn btn-secondary" onclick="finishAndEndDraw(state.draw && state.draw.activeEvent || 'thursday')" type="button">🏁 Finish &amp; End Draw (Show Congrats)</button>
 </div>
 </div>
 <!-- Draw Speed Setting Slider -->
@@ -512,21 +408,21 @@
 <h2>📺 Display Live Views</h2>
 <label>Change Screen View</label>
 <div class="btn-group" >
-<button class="btn" id="btn-slides" onclick="setView('slides')">📺 Slideshow</button>
-<button class="btn" id="btn-draw" onclick="setView('draw')">🎯 Draw Screen</button>
-<button class="btn" id="btn-draw-generic" onclick="openGenericDrawPage()" style="background: #fbbf24; border-color: #f59e0b; color: black; font-weight: bold;">⭐ Generic Draw</button>
-<button class="btn" id="btn-congrats" onclick="setView('congrats')" >🎉 Congrats Screen</button>
-<button class="btn" id="btn-congrats-video" onclick="setView('congrats-video')"  style="background: #ef4444; color: white;">🎬 Congrats Video</button>
+<button class="btn btn-secondary" id="btn-slides" onclick="setView('slides')">📺 Slideshow</button>
+<button class="btn btn-secondary" id="btn-draw" onclick="setView('draw')">🎯 Draw Screen</button>
+<button class="btn btn-secondary" id="btn-draw-generic" onclick="openGenericDrawPage()">⭐ Generic Draw</button>
+<button class="btn btn-secondary" id="btn-congrats" onclick="setView('congrats')" >🎉 Congrats Screen</button>
+<button class="btn btn-secondary" id="btn-congrats-video" onclick="setView('congrats-video')" >🎬 Congrats Video</button>
 </div>
 <label>Slideshow Navigation</label>
 <div class="btn-group">
-<button class="btn" onclick="remoteSlide('prev')">⏮ Prev</button>
-<button class="btn" id="btn-play-pause" onclick="remoteSlide('toggle')">⏸ Pause</button>
-<button class="btn" onclick="remoteSlide('next')">Next ⏭</button>
+<button class="btn btn-secondary" onclick="remoteSlide('prev')">⏮ Prev</button>
+<button class="btn btn-secondary" id="btn-play-pause" onclick="remoteSlide('toggle')">⏸ Pause</button>
+<button class="btn btn-secondary" onclick="remoteSlide('next')">Next ⏭</button>
 </div>
 </div>
 <!-- Remote Audio & Status Controls -->
-<div class="card" style="padding: 1rem;">
+<div class="card">
 <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
 
 <span id="fb-status-2" style="font-size:0.8rem; color:#64748b;">🔴 Firebase: Not configured</span>
@@ -564,16 +460,16 @@
 <h3 style="margin-bottom: 0.5rem; font-size: 1rem;">Verification</h3>
 <img alt="Verify QR Code" id="qr-verify-admin" style="background: white; padding: 0.5rem; border-radius: 0.5rem; width: 140px; height: 140px;"/>
 <div style="margin-top: 0.3rem; display: flex; flex-direction: column; gap: 0.5rem; align-items: center;">
-<a class="btn" href="verify.html" style="width: auto; padding: 0.2rem 0.5rem; font-size: 0.75rem;" target="_blank">Open in New Window ↗</a>
-<button class="btn" onclick="setView('qr-verify')" style="width: auto; padding: 0.2rem 0.5rem; font-size: 0.75rem; background-color: #3b82f6; border-color: #2563eb;">📺 Open on TV Screen</button>
+<a class="btn btn-secondary" href="verify.html" style="width: auto; padding: 0.2rem 0.5rem; font-size: 0.75rem;" target="_blank">Open in New Window ↗</a>
+<button class="btn btn-secondary" onclick="setView('qr-verify')">📺 Open on TV Screen</button>
 </div>
 </div>
 <div>
 <h3 style="margin-bottom: 0.5rem; font-size: 1rem;">Archive</h3>
 <img alt="Archive QR Code" id="qr-archive" style="background: white; padding: 0.5rem; border-radius: 0.5rem; width: 140px; height: 140px;"/>
 <div style="margin-top: 0.3rem; display: flex; flex-direction: column; gap: 0.5rem; align-items: center;">
-<a class="btn" href="archive.html" style="width: auto; padding: 0.2rem 0.5rem; font-size: 0.75rem;" target="_blank">Open in New Window ↗</a>
-<button class="btn" onclick="setView('qr-archive')" style="width: auto; padding: 0.2rem 0.5rem; font-size: 0.75rem; background-color: #3b82f6; border-color: #2563eb;">📺 Open on TV Screen</button>
+<a class="btn btn-secondary" href="archive.html" style="width: auto; padding: 0.2rem 0.5rem; font-size: 0.75rem;" target="_blank">Open in New Window ↗</a>
+<button class="btn btn-secondary" onclick="setView('qr-archive')">📺 Open on TV Screen</button>
 </div>
 </div>
 </div>
@@ -1019,16 +915,16 @@
                 lblType.style.color = type === 'generic' ? '#fbbf24' : (type === 'manual' ? '#c084fc' : '#38bdf8');
             }
             if (btnFull) {
-                btnFull.style.background = type === 'full' ? 'var(--primary)' : 'var(--secondary)';
-                btnFull.style.color = type === 'full' ? 'var(--primary-foreground)' : 'var(--secondary-foreground)';
+                btnFull.style.background = type === 'full' ? 'hsl(var(--primary))' : 'hsl(var(--secondary))';
+                btnFull.style.color = type === 'full' ? 'hsl(var(--primary-foreground))' : 'hsl(var(--secondary-foreground))';
             }
             if (btnGen) {
-                btnGen.style.background = type === 'generic' ? '#f59e0b' : 'var(--secondary)';
-                btnGen.style.color = type === 'generic' ? '#000' : 'var(--secondary-foreground)';
+                btnGen.style.background = type === 'generic' ? '#f59e0b' : 'hsl(var(--secondary))';
+                btnGen.style.color = type === 'generic' ? '#000' : 'hsl(var(--secondary-foreground))';
             }
             if (btnMan) {
-                btnMan.style.background = type === 'manual' ? '#8b5cf6' : 'var(--secondary)';
-                btnMan.style.color = type === 'manual' ? '#fff' : 'var(--secondary-foreground)';
+                btnMan.style.background = type === 'manual' ? '#8b5cf6' : 'hsl(var(--secondary))';
+                btnMan.style.color = type === 'manual' ? '#fff' : 'hsl(var(--secondary-foreground))';
             }
             
             const p100 = document.getElementById('row-prize-100');
@@ -2098,8 +1994,8 @@
                     .footer { margin-top: 12px; font-family: monospace; font-size: 9px; color: #64748b; display: flex; justify-content: space-between; border-top: 1px solid #cbd5e1; padding-top: 4px; }
                 </style>
                 </head><body>` + content + `
-</body>
-</body></html>
+</div></body>
+</div></body></html>
             `);
             win.document.close();
             win.focus();
@@ -2305,8 +2201,8 @@
 <p>It looks like a draw was interrupted or hasn't finished yet.</p>
 <p>Would you like to continue the current draw, or archive it and start a new one with the current configuration?</p>
 <div style="display: flex; gap: 1rem; justify-content: center; margin-top: 2rem;">
-<button class="btn" onclick="document.getElementById('resume-dialog').style.display='none'" style="background: #3b82f6; border-color: #2563eb; color: white;">Continue Draw</button>
-<button class="btn" onclick="startNewDrawFromDialog()" style="background: #ef4444; border-color: #dc2626; color: white;">Start New Draw</button>
+<button class="btn btn-secondary" onclick="document.getElementById('resume-dialog').style.display='none'">Continue Draw</button>
+<button class="btn btn-secondary" onclick="startNewDrawFromDialog()">Start New Draw</button>
 </div>
 </div>
 </div>
@@ -2332,5 +2228,5 @@
         // Wait a second for state to load from FB/Local, then check
         setTimeout(checkInProgressDraw, 1500);
     </script>
-</body>
+</div></body>
 </html>
