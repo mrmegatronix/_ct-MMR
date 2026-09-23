@@ -1019,19 +1019,16 @@
                 lblType.style.color = type === 'generic' ? '#fbbf24' : (type === 'manual' ? '#c084fc' : '#38bdf8');
             }
             if (btnFull) {
-                btnFull.style.backgroundColor = type === 'full' ? '#2563eb' : '#1e293b';
-                btnFull.style.borderColor = type === 'full' ? '#3b82f6' : 'var(--border)';
-                btnFull.style.color = type === 'full' ? '#ffffff' : '#94a3b8';
+                btnFull.style.background = type === 'full' ? 'var(--primary)' : 'var(--secondary)';
+                btnFull.style.color = type === 'full' ? 'var(--primary-foreground)' : 'var(--secondary-foreground)';
             }
             if (btnGen) {
-                btnGen.style.backgroundColor = type === 'generic' ? '#d97706' : '#1e293b';
-                btnGen.style.borderColor = type === 'generic' ? '#f59e0b' : 'var(--border)';
-                btnGen.style.color = type === 'generic' ? '#ffffff' : '#94a3b8';
+                btnGen.style.background = type === 'generic' ? '#f59e0b' : 'var(--secondary)';
+                btnGen.style.color = type === 'generic' ? '#000' : 'var(--secondary-foreground)';
             }
             if (btnMan) {
-                btnMan.style.backgroundColor = type === 'manual' ? '#7c3aed' : '#1e293b';
-                btnMan.style.borderColor = type === 'manual' ? '#8b5cf6' : 'var(--border)';
-                btnMan.style.color = type === 'manual' ? '#ffffff' : '#94a3b8';
+                btnMan.style.background = type === 'manual' ? '#8b5cf6' : 'var(--secondary)';
+                btnMan.style.color = type === 'manual' ? '#fff' : 'var(--secondary-foreground)';
             }
             
             const p100 = document.getElementById('row-prize-100');
@@ -1067,10 +1064,11 @@
             if (btnSlides && btnDraw && btnCongrats) {
                 const active = state.activeView || 'slides';
                 const isSlides = active === 'slides';
-                const curPrize = (state.draw && state.draw.activeEvent && state.draw[state.draw.activeEvent]) ? state.draw[state.draw.activeEvent].currentPrize : null;
-                const isGenericPrize = (type === 'generic') || curPrize === 'generic' || curPrize === 'generic-countdown' || curPrize === 'generic-no-countdown';
-                const isDraw = active === 'draw' && !isGenericPrize;
-                const isDrawGeneric = active === 'draw' && isGenericPrize;
+                const evt = (state.draw && state.draw.activeEvent) ? state.draw[state.draw.activeEvent] : null;
+                const curPrize = evt ? evt.currentPrize : null;
+                const isGenericPrize = (type === 'generic' && active === 'draw') || (curPrize === 'generic' || curPrize === 'generic-countdown' || curPrize === 'generic-no-countdown');
+                const isDrawGeneric = active === 'draw' && (curPrize === 'generic' || curPrize === 'generic-countdown' || curPrize === 'generic-no-countdown');
+                const isDraw = active === 'draw' && !isDrawGeneric;
                 const isCongrats = active === 'congrats';
                 const isCongratsVideo = active === 'congrats-video';
 

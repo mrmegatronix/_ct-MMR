@@ -540,9 +540,6 @@
 <a class="nav-link" href="remote.html" style="color: var(--text-muted); text-decoration: none; font-size: 0.8rem; font-weight: 700; text-transform: uppercase;">📱 Remote</a>
 <span style="color: var(--border)">|</span>
 <a class="nav-link" href="../_ct-MATRIX/index.html" style="color: var(--text-muted); text-decoration: none; font-size: 0.8rem; font-weight: 700; text-transform: uppercase;">MATRIX</a>
-<a class="nav-link" href="../_ct-MOM/index.html" style="color: var(--text-muted); text-decoration: none; font-size: 0.8rem; font-weight: 700; text-transform: uppercase;">MOM</a>
-<a class="nav-link" href="../__auto-dash/index.html" style="color: var(--text-muted); text-decoration: none; font-size: 0.8rem; font-weight: 700; text-transform: uppercase;">Auto-Dash</a>
-<a class="nav-link" href="../__sec-DASH/index.html" style="color: var(--text-muted); text-decoration: none; font-size: 0.8rem; font-weight: 700; text-transform: uppercase;">Sec-Dash</a>
 </nav>
 <!-- PiP Elements -->
 <div class="pip-window" id="pip-window">
@@ -1758,8 +1755,9 @@
             if (btnSlides && btnDraw && btnCongrats) {
                 const active = state.activeView || 'slides';
                 const isSlides = active === 'slides';
-                const isDraw = active === 'draw' && (!state.draw || !state.draw.activeEvent || !state.draw[state.draw.activeEvent] || state.draw[state.draw.activeEvent].currentPrize !== 'generic');
-                const isDrawGeneric = active === 'draw' && state.draw && state.draw.activeEvent && state.draw[state.draw.activeEvent] && state.draw[state.draw.activeEvent].currentPrize === 'generic';
+                const evt = (state.draw && state.draw.activeEvent) ? state.draw[state.draw.activeEvent] : null;
+                const isDrawGeneric = active === 'draw' && evt && evt.currentPrize === 'generic';
+                const isDraw = active === 'draw' && !isDrawGeneric;
                 const isCongrats = active === 'congrats';
                 const isCongratsVideo = active === 'congrats-video';
             const valBtns = [
@@ -2186,9 +2184,9 @@
                 <!DOCTYPE html><html><head><title>Tonight's Meat Raffle Prize Checklist & Financials</title><style>body{font-family:sans-serif; margin:20px; print-color-adjust:exact;}.print-container{max-width:1100px; border:3px solid #000; padding:20px;}.prize-row{border:3px solid #000; margin-bottom:15px; display:flex; padding:10px;}.prize-label{width:170px; font-weight:900;}.boxes-container{flex:1; display:flex; flex-wrap:wrap; gap:8px;}.remaining-col{width:140px; text-align:center; border-left:3px dashed #000; padding-left:15px;}.form-grid{display:grid; grid-template-columns:1fr 1fr; gap:15px;}.input-placeholder{border-bottom:2px solid #000; height:20px;}.financial-table{width:100%; border-collapse:collapse;}th,td{border:2px solid #000; padding:10px;}.text-right{text-align:right;}.bold{font-weight:bold;}.footer{margin-top:20px; font-family:monospace; font-size:10px; display:flex; justify-content:space-between;}</style></head><body>
     <div id="global-status-bar" style="background: var(--primary); color: white; text-align: center; padding: 0.5rem; font-weight: bold; position: sticky; top: 0; z-index: 1000; display: none;"></div>
                     <div class="print-container"><h1>${listTitle}</h1>
-                        <div class="prize-row" style="background:#fef2f2;"><div>${total100} x $100<br>PACK</div><div class="boxes-container">${renderBoxes(total100, numbers100)}</div><div class="remaining-col"><div>${rem100}</div>REMAINING</div></div>
-                        <div class="prize-row" style="background:#eff6ff;"><div>${total50} x $50<br>PACK</div><div class="boxes-container">${renderBoxes(total50, numbers50)}</div><div class="remaining-col"><div>${rem50}</div>REMAINING</div></div>
-                        <div class="prize-row" style="background:#f0fdf4;"><div>${total25} x $25<br>PACK</div><div class="boxes-container">${renderBoxes(total25, numbers25)}</div><div class="remaining-col"><div>${rem25}</div>REMAINING</div></div>
+                        <div class="prize-row" style="background:#fef2f2;"><div>${total100} x $100<br>PACK</div><div class="boxes-container">${renderBoxes(total100, numbers100)}</div><div class="remaining-col"><div>${rem100}</div>REMAINING</div>
+                        <div class="prize-row" style="background:#eff6ff;"><div>${total50} x $50<br>PACK</div><div class="boxes-container">${renderBoxes(total50, numbers50)}</div><div class="remaining-col"><div>${rem50}</div>REMAINING</div>
+                        <div class="prize-row" style="background:#f0fdf4;"><div>${total25} x $25<br>PACK</div><div class="boxes-container">${renderBoxes(total25, numbers25)}</div><div class="remaining-col"><div>${rem25}</div>REMAINING</div>
                         
                         <table class="financial-table" style="margin-top:20px; width: 50%; float: right; font-size: 12px;">
                             <thead><tr><th colspan="3" style="background:#f1f5f9; text-align:center;">💰 CASH DENOMINATIONS</th></tr></thead>
@@ -2235,7 +2233,7 @@
                 <title>Monster Meat Raffle — Empty Financial Sheet</title><style>body{font-family:sans-serif; margin:20px;}.print-container{max-width:1100px; border:3px solid #000; padding:20px;}.form-grid{display:grid; grid-template-columns:1fr 1fr; gap:15px;}.input-placeholder{border-bottom:2px solid #000; height:20px; margin-top:5px;}.financial-table{width:100%; border-collapse:collapse;}.financial-table th,td{border:2px solid #000; padding:10px;}.text-right{text-align:right;}.bold{font-weight:bold;}.footer{margin-top:20px; font-family:monospace; font-size:10px; display:flex; justify-content:space-between;}</style>
     <div id="global-status-bar" style="background: var(--primary); color: white; text-align: center; padding: 0.5rem; font-weight: bold; position: sticky; top: 0; z-index: 1000; display: none;"></div>
                     <div class="print-container"><h1>Monster Meat Raffle — Financial &amp; Host Summary</h1>
-                        <div class="form-grid"><div style="grid-column:span 2;"><strong>Raffle Date:</strong> ${printedDate}</div></div>
+                        <div class="form-grid"><div style="grid-column:span 2;"><strong>Raffle Date:</strong> ${printedDate}</div>
                         <table class="financial-table"><thead><tr><th>Sales Description</th><th>Recorded Value</th><th>Notes</th></tr></thead><tbody>
                             <tr><td class="bold">Start Ticket Number</td><td><div class="input-placeholder"></div></td><td></td></tr>
                             <tr><td class="bold">End Ticket Number</td><td><div class="input-placeholder"></div></td><td></td></tr>
@@ -2271,7 +2269,7 @@
                             </tbody>
                         </table>
                         <div class="footer"><span>Printed: ${timestamp}</span></div>
-                    </div><script>window.onload=()=>{window.print();window.close();}<\/script></div>
+                    </div><script>window.onload=()=>{window.print();window.close();}<\/script>
 </body></html>
             `);
             printWin.document.close();
@@ -2416,9 +2414,9 @@
                 <div class="landscape print-page">
                     <h1>Tonight's Meat Raffle Prize Checklist & Claim Sheet</h1>
                     <div style="font-size: 0.85rem; margin-bottom: 10px; color: #475569;">Tick empty square above each number box when winner collects prize.</div>
-                    <div class="prize-row" style="background:#fef2f2;"><div><strong>${total100} x $100</strong><br>PACKS</div><div class="boxes-container">${renderBoxes(total100, numbers100)}</div><div class="remaining-col"><div>${rem100}</div>LEFT</div></div>
-                    <div class="prize-row" style="background:#eff6ff;"><div><strong>${total50} x $50</strong><br>PACKS</div><div class="boxes-container">${renderBoxes(total50, numbers50)}</div><div class="remaining-col"><div>${rem50}</div>LEFT</div></div>
-                    <div class="prize-row" style="background:#f0fdf4;"><div><strong>${total25} x $25</strong><br>PACKS</div><div class="boxes-container">${renderBoxes(total25, numbers25)}</div><div class="remaining-col"><div>${rem25}</div>LEFT</div></div>
+                    <div class="prize-row" style="background:#fef2f2;"><div><strong>${total100} x $100</strong><br>PACKS</div><div class="boxes-container">${renderBoxes(total100, numbers100)}</div><div class="remaining-col"><div>${rem100}</div>LEFT</div>
+                    <div class="prize-row" style="background:#eff6ff;"><div><strong>${total50} x $50</strong><br>PACKS</div><div class="boxes-container">${renderBoxes(total50, numbers50)}</div><div class="remaining-col"><div>${rem50}</div>LEFT</div>
+                    <div class="prize-row" style="background:#f0fdf4;"><div><strong>${total25} x $25</strong><br>PACKS</div><div class="boxes-container">${renderBoxes(total25, numbers25)}</div><div class="remaining-col"><div>${rem25}</div>LEFT</div>
                     <div class="footer"><span>Session Hash: ${sessionHash}</span><span>Printed: ${timestamp}</span></div>
                 </div>
             `;
@@ -2829,7 +2827,7 @@
                     .bold { font-weight: bold; }
                     .footer { margin-top: 12px; font-family: monospace; font-size: 9px; color: #64748b; display: flex; justify-content: space-between; border-top: 1px solid #cbd5e1; padding-top: 4px; }
                 </style>
-                </head><body>` + content + `</div>
+                </head><body>` + content + `
 </body></html>
             `);
             win.document.close();
@@ -3040,29 +3038,37 @@
 </div>
 </div>
 <div class="card">
-<h2>🖨️ Meat Raffle Record Sheets</h2>
-<p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1.5rem;">
-            Print Tonight's Meat Raffle Prize Checklist or an empty financial sheet for manual tracking.
-        </p>
-<div style="display: flex; flex-direction: column; gap: 1rem;">
-<button class="btn btn-primary" onclick="printManualRecordSheet()" style="flex: 1; padding: 0.8rem; font-size: 1rem; background-color: #2563eb; border-color: #1d4ed8; color: white;">🖨️ Print Checklist &amp; Financials</button>
-<button class="btn btn-primary" onclick="printEmptyFinancialSheetOnly()" style="flex: 1; padding: 0.8rem; font-size: 1rem; background-color: #10b981; border-color: #059669; color: white;">🖨️ Print Empty Financial Sheet</button>
+<h2>🖨️ Print Center</h2>
+<p style="color: var(--muted-foreground); font-size: 0.85rem; margin-bottom: 1.5rem;">
+    Access all printable sheets for prep and end-of-week reporting.
+</p>
+<div class="draw-configs-split">
+    <div>
+        <h3 style="font-size: 0.9rem; color: var(--foreground); margin-bottom: 0.75rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem;">Pre-Draw Preparation</h3>
+        <div class="btn-group" style="grid-template-columns: 1fr;">
+            <button class="btn" onclick="printManualRecordSheet()">Checklist &amp; Financials</button>
+            <button class="btn" onclick="printEmptyFinancialSheetOnly()">Empty Financial Sheet</button>
+            <button class="btn" onclick="printBlankDraw()">Blank Draw Template</button>
+        </div>
+    </div>
+    <div>
+        <h3 style="font-size: 0.9rem; color: var(--foreground); margin-bottom: 0.75rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem;">End of Week Reports</h3>
+        <div class="btn-group" style="grid-template-columns: 1fr 1fr;">
+            <button class="btn" onclick="printFullDraw()">Full Draw</button>
+            <button class="btn" onclick="printManualDraw()">Manual Draw</button>
+            <button class="btn" onclick="printGenericDraw()">Generic Draw</button>
+            <button class="btn" onclick="printFinancialSheet()">Financials</button>
+        </div>
+        <button class="btn btn-primary" onclick="printAllPages()" style="width: 100%; margin-top: 0.75rem;">🖨️ Print ALL Pages</button>
+    </div>
 </div>
 </div>
-<div class="card">
-<h2>📋 End of Week &amp; Print</h2>
-<div style="display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 0.5rem;">
-<button class="btn btn-primary" onclick="printFullDraw()" style="flex:1;">🖨️ Full Draw Print</button>
-<button class="btn btn-primary" onclick="printManualDraw()" style="flex:1; background-color: #6366f1; border-color: #4f46e5;">🖨️ Manual Draw Print</button>
-<button class="btn btn-primary" onclick="printGenericDraw()" style="flex:1; background-color: #f59e0b; border-color: #d97706;">🖨️ Generic Draw Print</button>
-<button class="btn btn-primary" onclick="printBlankDraw()" style="flex:1; background-color: #94a3b8; border-color: #64748b;">🖨️ Blank Draw Print</button>
+<div class="card" style="border-color: var(--destructive);">
+<h2>🚨 End of Week Actions</h2>
+<div class="btn-group" style="grid-template-columns: 1fr 1fr;">
+    <button class="btn btn-danger" onclick="archiveDraws()">⚠️ Confirm End of Week Draws</button>
+    <button class="btn btn-danger" onclick="resetAllData()">🚨 Reset All Data (New Week)</button>
 </div>
-<div style="display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1rem;">
-<button class="btn btn-primary" onclick="printFinancialSheet()" style="flex:1; background-color: #10b981; border-color: #059669; font-weight: bold;">🖨️ Print Financials (Cashup)</button>
-<button class="btn btn-primary" onclick="printAllPages()" style="flex:1; background-color: #eab308; border-color: #ca8a04; color: black; font-weight: bold;">🖨️ Print ALL Pages</button>
-</div>
-<button class="btn btn-danger" onclick="archiveDraws()" style="width: 100%; background-color: #ef4444; border-color: #dc2626; color: white;">⚠️ Confirm End of Week Draws</button>
-<button class="btn btn-danger" onclick="resetAllData()" style="width: 100%; background-color: #7f1d1d; border-color: #450a0a; color: white; margin-top: 0.5rem;">🚨 Reset All Data (New Week)</button>
 </div>
 </div><div class="tab-content" id="tab-financials"><div class="card">
 <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.75rem;">
@@ -3146,17 +3152,6 @@
 </div>
 </div>
 <button class="btn btn-primary" onclick="saveFinancials()" style="width: 100%; background-color: #10b981; border-color: #059669;">💾 Save Financials &amp; Update</button>
-</div><div class="tab-content" id="tab-actions">
-<div class="card">
-<h2>🔍 Public Verification Audit</h2>
-<p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1.5rem;">
-            Patrons can scan this QR code on their phones to view the live, cryptographically-verifiable audit log of tonight's drawn numbers.
-        </p>
-<div style="text-align: center; padding: 1rem 0;">
-<img alt="Verify QR Code" id="qr-verify-admin" style="background: white; padding: 0.5rem; border-radius: 0.5rem; width: 140px; height: 140px; border: 1.5px solid var(--border);"/>
-<div style="margin-top: 0.75rem; font-size: 0.95rem; font-weight: 700; display: flex; flex-direction: column; gap: 0.5rem; align-items: center;">
-<a class="btn" href="verify.html" style="width: auto; padding: 0.5rem 1rem;" target="_blank">Open in New Window ↗</a>
-<button class="btn" onclick="setView('qr-verify')" style="width: auto; padding: 0.5rem 1rem; background-color: #3b82f6; border-color: #2563eb;">📺 Open on TV Screen</button>
 </div>
 </div>
 </div><div class="card">
@@ -3266,7 +3261,6 @@
 <button class="btn btn-primary" onclick="changePin()">💾 Save PIN</button>
 <div class="status" id="pin-change-status"></div>
 </div>
-</div></div>
 <!-- Verification QR Code -->
 <!-- Archive QR Code -->
 <!-- Draw Configuration -->
@@ -3305,5 +3299,5 @@
         // Wait a second for state to load from FB/Local, then check
         setTimeout(checkInProgressDraw, 1500);
     </script>
-</div>
+
 </body></html>
