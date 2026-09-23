@@ -424,6 +424,18 @@
                 }
             }
 
+            // Auto-fallback to slides if ALL draws are completely disabled
+            const _thuEn = !!(state.draw && state.draw.thursday && state.draw.thursday.enabled !== false);
+            const _sunEn = !!(state.draw && state.draw.sunday && state.draw.sunday.enabled);
+            if (!_thuEn && !_sunEn && state.activeView === 'draw') {
+                console.log('[MMR] Both draws disabled. Forcing view to slides.');
+                state.activeView = 'slides';
+                setTimeout(() => {
+                    bc.postMessage({ type: 'STATE_UPDATE', payload: { activeView: 'slides' } });
+                    writeFirebase({ activeView: 'slides' });
+                }, 0);
+            }
+
             // Check total configured prizes
             const activeEvtData = getActiveDrawData(state.draw);
             const cfgPrizes100 = activeEvtData.cfgPrizes100 !== undefined ? activeEvtData.cfgPrizes100 : (activeEvtData.prizes100 ?? 10);
