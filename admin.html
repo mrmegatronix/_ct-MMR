@@ -2123,7 +2123,7 @@ input:focus, select:focus, textarea:focus {
         function printManualRecordSheet() {
             const draw = getDrawStateData();
             const activeEvt = (draw && draw[draw.activeEvent || 'thursday']) || draw.thursday || draw || {};
-            const drawn = getActiveDrawnNumbers(draw);
+            const drawn = [];
             const numbers100 = drawn.filter(d => (typeof d === 'object' ? d.prize : 0) === 100).map(d => typeof d === 'object' ? d.number : d).reverse();
             const numbers50 = drawn.filter(d => (typeof d === 'object' ? d.prize : 0) === 50).map(d => typeof d === 'object' ? d.number : d).reverse();
             const numbers25 = drawn.filter(d => (typeof d === 'object' ? d.prize === 25 : false)).map(d => typeof d === 'object' ? d.number : d).reverse();
@@ -2725,13 +2725,11 @@ input:focus, select:focus, textarea:focus {
         
         function printAllPages() {
             printHTML(
-                buildChecklistHTML() + 
+                buildChecklistHTML('Final Draw') + 
                 '<div style="page-break-before: always;"></div>' + 
                 buildFinancialSheetHTML() + 
                 '<div style="page-break-before: always;"></div>' + 
-                buildDrawResultsHTML() +
-                '<div style="page-break-before: always;"></div>' + 
-                buildDrawResultsHTML(true)
+                buildDrawResultsHTML()
             );
         }
 
@@ -2999,22 +2997,20 @@ input:focus, select:focus, textarea:focus {
 </p>
 <div class="draw-configs-split">
     <div>
-        <h3 style="font-size: 0.9rem; color: var(--foreground); margin-bottom: 0.75rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem;">Pre-Draw Preparation</h3>
+        <h3 style="font-size: 0.9rem; color: var(--foreground); margin-bottom: 0.75rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem;">Pre-Draw Preparation (Blank)</h3>
         <div class="btn-group" style="grid-template-columns: 1fr;">
-            <button class="btn btn-secondary" onclick="printManualRecordSheet()">Checklist &amp; Financials</button>
-            <button class="btn btn-secondary" onclick="printEmptyFinancialSheetOnly()">Empty Financial Sheet</button>
-            <button class="btn btn-secondary" onclick="printBlankDraw()">Blank Draw Template</button>
+            <button class="btn btn-secondary" onclick="printBlankDraw()">🖨️ Blank Prize Checklist</button>
+            <button class="btn btn-secondary" onclick="printEmptyFinancialSheetOnly()">🖨️ Blank Financial Sheet</button>
+            <button class="btn btn-secondary" onclick="printManualRecordSheet()">🖨️ Blank Checklist + Financials (Combo)</button>
         </div>
     </div>
     <div>
-        <h3 style="font-size: 0.9rem; color: var(--foreground); margin-bottom: 0.75rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem;">End of Week Reports</h3>
-        <div class="btn-group" style="grid-template-columns: 1fr 1fr;">
-            <button class="btn btn-secondary" onclick="printFullDraw()">Full Draw</button>
-            <button class="btn btn-secondary" onclick="printManualDraw()">Manual Draw</button>
-            <button class="btn btn-secondary" onclick="printGenericDraw()">Generic Draw</button>
-            <button class="btn btn-secondary" onclick="printFinancialSheet()">Financials</button>
+        <h3 style="font-size: 0.9rem; color: var(--foreground); margin-bottom: 0.75rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem;">End of Week Reports (Filled)</h3>
+        <div class="btn-group" style="grid-template-columns: 1fr;">
+            <button class="btn btn-secondary" onclick="printFullDraw()">🖨️ Final Draw Results</button>
+            <button class="btn btn-secondary" onclick="printFinancialSheet()">🖨️ Final Financial Sheet</button>
+            <button class="btn btn-primary" onclick="printAllPages()">🖨️ Print ALL End of Week Reports</button>
         </div>
-        <button class="btn btn-primary" onclick="printAllPages()">🖨️ Print ALL Pages</button>
     </div>
 </div>
 </div>
