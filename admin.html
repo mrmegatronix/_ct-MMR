@@ -1029,7 +1029,7 @@ input:focus, select:focus, textarea:focus {
         }
 
         function resetDayDraw(day, confirmUser = true) {
-            if (confirmUser && !confirm(`Reset and start fresh ${day.toUpperCase()} draw?\n\nThis will clear all previous winning numbers and restore remaining prizes to the configured amounts.`)) {
+            if (confirmUser && !confirm(`Reset and start fresh ${day.toUpperCase()} draw?\n\nThis will clear all previous winning numbers and reset all prize configurations and bounds to 0.`)) {
                 return;
             }
             if (!state.draw) state.draw = {};
@@ -1054,7 +1054,28 @@ input:focus, select:focus, textarea:focus {
             d.currentPrize = null;
             d.drawsFinishedTime = null;
             d.isConfirmedFinished = false;
+            
             d.enabled = true;
+
+            // CLEAR THE DOM INPUTS TO 0 FOR THE NEW WEEK
+            const shortDay = day === 'thursday' ? 'thu' : 'sun';
+            const setVal = (id, val) => { const el = document.getElementById(id); if (el) el.value = val; };
+            
+            setVal(`cfg-${shortDay}-prizes-100`, '0');
+            setVal(`cfg-${shortDay}-prizes-50`, '0');
+            setVal(`cfg-${shortDay}-prizes-25`, '0');
+            setVal(`cfg-${shortDay}-vouchers-count`, '0');
+            setVal(`cfg-${shortDay}-vouchers-value`, '0');
+            
+            setVal(`cfg-${shortDay}-excludes`, '');
+            setVal(`cfg-${shortDay}-sold-start`, '1');
+            setVal(`cfg-${shortDay}-sold-end`, '0');
+            setVal(`cfg-${shortDay}-min`, '1');
+            setVal(`cfg-${shortDay}-max`, '0');
+
+            if (day === 'thursday' && typeof calculateThuTicketsSold === 'function') calculateThuTicketsSold();
+            if (day === 'sunday' && typeof calculateSunTicketsSold === 'function') calculateSunTicketsSold();
+
 
             if (state.draw.activeEvent === day) {
                 state.draw.drawnNumbers = [];
@@ -1401,7 +1422,7 @@ input:focus, select:focus, textarea:focus {
         }
 
         function resetAllData() {
-            if (confirm('🚨 DANGER: Are you sure you want to completely wipe all draw and financial data for a new week? Configuration will be kept.')) {
+            if (confirm('🚨 DANGER: Are you sure you want to completely wipe all draw, financial, AND configuration data for a new week?')) {
                 // Wipe draw state but keep config
                 state.draw = {
                     activeEvent: 'thursday',
@@ -1455,7 +1476,25 @@ input:focus, select:focus, textarea:focus {
                 const btnThu = document.getElementById('btn-confirm-thu');
                 if (btnThu) { btnThu.disabled = false; btnThu.innerText = 'Confirm Finished'; }
                 const btnSun = document.getElementById('btn-confirm-sun');
-                if (btnSun) { btnSun.disabled = false; btnSun.innerText = 'Confirm Finished'; }
+                if (btnSun) { btnSun.disabled = false; btnSun.innerText = 'Confirm Finished'; }// ALSO CLEAR ALL DOM CONFIGS TO 0
+                const days = ['thu', 'sun'];
+                days.forEach(shortDay => {
+                    const setVal = (id, val) => { const el = document.getElementById(id); if (el) el.value = val; };
+                    setVal(`cfg-${shortDay}-prizes-100`, '0');
+                    setVal(`cfg-${shortDay}-prizes-50`, '0');
+                    setVal(`cfg-${shortDay}-prizes-25`, '0');
+                    setVal(`cfg-${shortDay}-vouchers-count`, '0');
+                    setVal(`cfg-${shortDay}-vouchers-value`, '0');
+                    setVal(`cfg-${shortDay}-excludes`, '');
+                    setVal(`cfg-${shortDay}-sold-start`, '1');
+                    setVal(`cfg-${shortDay}-sold-end`, '0');
+                    setVal(`cfg-${shortDay}-min`, '1');
+                    setVal(`cfg-${shortDay}-max`, '0');
+                });
+                if (typeof calculateThuTicketsSold === 'function') calculateThuTicketsSold();
+                if (typeof calculateSunTicketsSold === 'function') calculateSunTicketsSold();
+
+
 
                 state.activeView = 'slides';
                 updateDrawState(); 
@@ -1463,7 +1502,10 @@ input:focus, select:focus, textarea:focus {
                 calcFinancials();
                 broadcast();
                 writeFirebase(state);
+                
                 showGlobalStatus('All Data Reset for New Week!', 'green');
+                
+                
             }
         }
 
