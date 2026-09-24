@@ -548,9 +548,7 @@ input:focus, select:focus, textarea:focus {
             if (el.value.length < parseInt(el.getAttribute('maxlength'))) {
                 el.value += digit;
             }
-            if (el.value.length >= 4) {
-                setTimeout(() => checkPin(), 150);
-            }
+            checkPin();
         }
         function clearPin() {
             document.getElementById('pin-input-r').value = '';
@@ -958,7 +956,6 @@ input:focus, select:focus, textarea:focus {
                 if (btnCongratsLoop) btnCongratsLoop.classList.toggle('active', active === 'congrats-loop');
                 
             }
-        }
         }
 
         function openGenericDrawPage() {

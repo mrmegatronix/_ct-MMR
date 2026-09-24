@@ -563,20 +563,29 @@ input:focus, select:focus, textarea:focus {
         })();
 
         function checkPin() {
-            const entered = document.getElementById('pin-input').value.trim();
+            const el = document.getElementById('pin-input');
+            const entered = el.value.trim();
             const stored = localStorage.getItem('mmr_pin') || '5551';
+            
             if (entered === stored || entered === '0001') {
                 sessionStorage.setItem('mmr_authed', 'true');
                 sessionStorage.setItem('mmr_role', 'admin');
                 document.getElementById('pin-overlay').style.display = 'none';
+                return;
             } else if (entered === '9292') {
                 sessionStorage.setItem('mmr_authed', 'true');
                 sessionStorage.setItem('mmr_role', 'host');
                 window.location.href = 'remote.html';
-            } else {
+                return;
+            }
+            
+            const isInvalidLength = entered.length >= Math.max(stored.length, 4);
+            if (isInvalidLength) {
                 document.getElementById('pin-error').style.display = 'block';
-                document.getElementById('pin-input').value = '';
-                document.getElementById('pin-input').focus();
+                el.value = '';
+                setTimeout(() => {
+                    document.getElementById('pin-error').style.display = 'none';
+                }, 2000);
             }
         }
 
@@ -1791,7 +1800,6 @@ input:focus, select:focus, textarea:focus {
                     genBtns.forEach(b => { if(b) b.disabled = false; });
                 }
             }
-        }
         }
 
         function writeFirebase(data) {
