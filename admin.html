@@ -2278,7 +2278,7 @@ input:focus, select:focus, textarea:focus {
             };
 
             return `
-                <div class="landscape print-page">
+                <div class="print-page landscape-page">
                     <h1>Tonight's Meat Raffle Prize Checklist & Claim Sheet</h1>
                     <div style="font-size: 0.85rem; margin-bottom: 10px; color: #475569;">Tick empty square above each number box when winner collects prize.</div>
                     <div class="prize-row" style="background:#fef2f2;"><div><strong>${total100} x $100</strong><br>PACKS</div><div class="boxes-container">${renderBoxes(total100, numbers100)}</div><div class="remaining-col"><div>${rem100}</div>LEFT</div>
@@ -2289,111 +2289,95 @@ input:focus, select:focus, textarea:focus {
             `;
         }
 
-        function buildBlankFinancialsHTML() {
+        function buildSingleDayFinancialSheetHTML(dayName) {
+            const fins = getFinancialsData() || {};
+            const draw = getDrawStateData() || {};
+            const dayFins = fins[dayName] || {};
+            const dayDraw = draw[dayName] || {};
+            
+            const cash = dayFins.cash || 0;
+            const eftpos = dayFins.eftpos || 0;
+            const singles = dayFins.singles || 0;
+            const strips = dayFins.strips || 0;
+            const reimb = dayFins.reimbursements || 0;
+            
+            const startNum = dayFins.startNum || '';
+            const endNum = dayFins.endNum || '';
+            const totalTickets = dayFins.totalTickets || '';
+            const totalVal = cash + eftpos - reimb;
+            const expectedVal = (singles * 5) + (strips * 20);
+            const variance = totalVal - expectedVal;
+
+            const isFinished = !!(dayDraw.isConfirmedFinished || dayDraw.drawsFinishedTime || (dayDraw.prizesLeft === 0 && (dayDraw.drawnNumbers || []).length > 0));
+            const prizePool = isFinished ? (dayFins.prizePool || 0) : 0;
+
             const printedDate = formatDDMMYYYY(new Date());
+            const dayTitle = dayName.toUpperCase();
+            const colorBg = dayName === 'thursday' ? '#eff6ff' : '#fef2f2';
+            const colorText = dayName === 'thursday' ? '#1e40af' : '#991b1b';
+            const colorBorder = dayName === 'thursday' ? '#2563eb' : '#ef4444';
+
+            const valStr = (v) => v ? v.toString() : '';
+            const curStr = (v) => v ? '$' + v.toFixed(2) : '';
+            const valOrBlank = (v) => `<div class="input-placeholder" style="display: flex; align-items: flex-end; justify-content: center; font-weight: bold; font-size: 1.1rem; height: 24px; padding-bottom: 2px;">${v}</div>`;
+
             return `
-                <div class="print-page">
+                <div class="print-page portrait-page">
                     <h1 style="margin-bottom: 4px;">Monster Meat Raffle — Official Financial Audit Sheet</h1>
                     <div style="font-weight: bold; margin-bottom: 10px; border-bottom: 2px solid #000; padding-bottom: 4px; display: flex; justify-content: space-between;">
-                        <span>Blank Audit Work Sheet</span>
+                        <span>${dayTitle} Raffle Cashup & Reconcilliation</span>
                         <span>Raffle Date / Week: ${printedDate}</span>
                     </div>
                     
                     <div style="display: flex; gap: 15px; margin-bottom: 10px;">
-                        <div style="flex: 3;">
-                            <h3 style="background:#eff6ff; color:#1e40af; border-left:4px solid #2563eb; padding:3px 8px; margin:0 0 4px 0; font-size:0.82rem;">THURSDAY RAFFLE BREAKDOWN</h3>
-                            <table class="financial-table" style="font-size:0.75rem; margin-bottom:6px;">
+                        <div style="flex: 1;">
+                            <h3 style="background:${colorBg}; color:${colorText}; border-left:4px solid ${colorBorder}; padding:3px 8px; margin:0 0 4px 0; font-size:0.82rem;">${dayTitle} SALES & TOTALS</h3>
+                            <table class="financial-table" style="font-size:0.75rem; margin-bottom:6px; width: 100%;">
                                 <thead><tr><th>Sales Description</th><th>Value / Count</th><th>Audit Notes</th></tr></thead>
                                 <tbody>
-                                    <tr><td class="bold">Ticket Start Number (#)</td><td><div class="input-placeholder"></div></td><td>First ticket sold</td></tr>
-                                    <tr><td class="bold">Ticket Finish Number (#)</td><td><div class="input-placeholder"></div></td><td>Last ticket sold</td></tr>
-                                    <tr><td class="bold">Total Tickets Sold</td><td><div class="input-placeholder"></div></td><td>Explicitly entered sold count</td></tr>
-                                    <tr><td class="bold">Singles Sold & Price</td><td><div class="input-placeholder"></div></td><td>@ $5.00 per single</td></tr>
-                                    <tr><td class="bold">Strips Sold & Price</td><td><div class="input-placeholder"></div></td><td>@ $20.00 per strip</td></tr>
-                                    <tr><td class="bold">Cash Total ($)</td><td><div class="input-placeholder"></div></td><td>Cash register till count</td></tr>
-                                    <tr><td class="bold">EFTPOS Total ($)</td><td><div class="input-placeholder"></div></td><td>EFTPOS terminal report</td></tr>
-                                    <tr><td class="bold">Reimbursements ($)</td><td><div class="input-placeholder"></div></td><td>Expenses / Payouts</td></tr>
-                                    <tr><td class="bold">Thursday Total ($)</td><td><div class="input-placeholder"></div></td><td>Cash + EFTPOS - Reimbursements</td></tr>
+                                    <tr><td class="bold">Ticket Start Number (#)</td><td>${valOrBlank(valStr(startNum))}</td><td>First ticket sold</td></tr>
+                                    <tr><td class="bold">Ticket Finish Number (#)</td><td>${valOrBlank(valStr(endNum))}</td><td>Last ticket sold</td></tr>
+                                    <tr><td class="bold">Total Tickets Sold</td><td>${valOrBlank(valStr(totalTickets))}</td><td>Explicitly entered sold count</td></tr>
+                                    <tr><td class="bold">Singles Sold & Price</td><td>${valOrBlank(valStr(singles))}</td><td>@ $5.00 per single</td></tr>
+                                    <tr><td class="bold">Strips Sold & Price</td><td>${valOrBlank(valStr(strips))}</td><td>@ $20.00 per strip</td></tr>
+                                    <tr><td class="bold">Cash Total ($)</td><td>${valOrBlank(curStr(cash))}</td><td>Cash register till count</td></tr>
+                                    <tr><td class="bold">EFTPOS Total ($)</td><td>${valOrBlank(curStr(eftpos))}</td><td>EFTPOS terminal report</td></tr>
+                                    <tr><td class="bold">Reimbursements ($)</td><td>${valOrBlank(curStr(reimb))}</td><td>Expenses / Payouts</td></tr>
+                                    <tr><td class="bold">Prize Pool Portion ($)</td><td>${valOrBlank(curStr(prizePool))}</td><td>Computed Prize Pool</td></tr>
+                                    <tr style="background:#f8fafc;"><td class="bold">FINAL ${dayTitle} TOTAL ($)</td><td style="color:#0369a1;">${valOrBlank(curStr(totalVal))}</td><td>Cash + EFTPOS - Reimb.</td></tr>
                                 </tbody>
                             </table>
-
-                            <h3 style="background:#fef2f2; color:#991b1b; border-left:4px solid #ef4444; padding:3px 8px; margin:4px 0 4px 0; font-size:0.82rem;">SUNDAY RAFFLE BREAKDOWN</h3>
-                            <table class="financial-table" style="font-size:0.75rem; margin-bottom:6px;">
-                                <thead><tr><th>Sales Description</th><th>Value / Count</th><th>Audit Notes</th></tr></thead>
-                                <tbody>
-                                    <tr><td class="bold">Ticket Start Number (#)</td><td><div class="input-placeholder"></div></td><td>First ticket sold</td></tr>
-                                    <tr><td class="bold">Ticket Finish Number (#)</td><td><div class="input-placeholder"></div></td><td>Last ticket sold</td></tr>
-                                    <tr><td class="bold">Total Tickets Sold</td><td><div class="input-placeholder"></div></td><td>Explicitly entered sold count</td></tr>
-                                    <tr><td class="bold">Singles Sold & Price</td><td><div class="input-placeholder"></div></td><td>@ $5.00 per single</td></tr>
-                                    <tr><td class="bold">Strips Sold & Price</td><td><div class="input-placeholder"></div></td><td>@ $20.00 per strip</td></tr>
-                                    <tr><td class="bold">Cash Total ($)</td><td><div class="input-placeholder"></div></td><td>Cash register till count</td></tr>
-                                    <tr><td class="bold">EFTPOS Total ($)</td><td><div class="input-placeholder"></div></td><td>EFTPOS terminal report</td></tr>
-                                    <tr><td class="bold">Reimbursements ($)</td><td><div class="input-placeholder"></div></td><td>Expenses / Payouts</td></tr>
-                                    <tr><td class="bold">Sunday Total ($)</td><td><div class="input-placeholder"></div></td><td>Cash + EFTPOS - Reimbursements</td></tr>
-                                </tbody>
-                            </table>
+                            
+                            <div style="background: #f1f5f9; padding: 6px 10px; border-radius: 4px; border: 1px dashed #94a3b8; font-size: 0.72rem;">
+                                <h4 style="margin: 0 0 4px 0; color: #334155; font-size: 0.78rem;">🧮 Auto-Calculation Audit</h4>
+                                <p style="margin: 2px 0;"><strong>1. Gross Expected:</strong> <code>Singles + Strips (${curStr(expectedVal)})</code></p>
+                                <p style="margin: 2px 0;"><strong>2. Total Collected:</strong> <code>Cash + EFTPOS - Reimb. (${curStr(totalVal)})</code></p>
+                                <p style="margin: 2px 0;"><strong>3. Till Variance:</strong> <code>Collected - Expected (${curStr(variance)})</code></p>
+                            </div>
                         </div>
 
-                        <div style="flex: 2; background: #f8fafc; border: 2px dashed #64748b; padding: 8px 10px; border-radius: 4px; font-size: 0.75rem;">
-                            <h4 style="margin-top: 0; color: #0284c7; border-bottom: 1.5px solid #0284c7; padding-bottom: 2px; margin-bottom: 4px;">📐 SELLER MANUAL MATH FORMULAS</h4>
-                            <p style="margin: 2px 0;"><strong>1. Gross Expected:</strong> <code>Singles + Strips</code></p>
-                            <p style="margin: 2px 0;"><strong>2. Total Collected:</strong> <code>Cash + EFTPOS - Reimbursements</code></p>
-                            <p style="margin: 2px 0;"><strong>3. Till Variance:</strong> <code>Collected - Expected (= $0.00)</code></p>
-                            <hr style="border: 0; border-top: 1px dashed #64748b; margin: 6px 0;">
-                            
-                            <h4 style="margin-top: 6px; color: #b45309; border-bottom: 1.5px solid #b45309; padding-bottom: 2px; margin-bottom: 4px;">💰 CASH DENOMINATIONS</h4>
+                        <!-- Right: Denominations -->
+                        <div style="flex: 1; border-left: 2px solid #e2e8f0; padding-left: 15px;">
+                            <h3 style="background:#fefce8; color:#a16207; border-left:4px solid #ca8a04; padding:3px 8px; margin:0 0 4px 0; font-size:0.82rem;">CASH TILL / REGISTER DENOMINATIONS</h3>
                             <table class="financial-table" style="font-size: 0.7rem; margin-bottom: 6px; width: 100%;">
                                 <thead><tr><th style="padding: 4px;">Note/Coin</th><th style="padding: 4px; width: 25%;">Count</th><th style="padding: 4px;">Value ($)</th></tr></thead>
                                 <tbody>
-                                    <tr><td style="padding: 4px;"><strong>$100</strong> Notes</td><td style="padding: 4px;"><div class="input-placeholder" style="margin: 0; height: 12px; border-bottom: 1px solid #000;"></div></td><td style="padding: 4px;"><div class="input-placeholder" style="margin: 0; height: 12px; border-bottom: 1px solid #000;"></div></td></tr>
-                                    <tr><td style="padding: 4px;"><strong>$50</strong> Notes</td><td style="padding: 4px;"><div class="input-placeholder" style="margin: 0; height: 12px; border-bottom: 1px solid #000;"></div></td><td style="padding: 4px;"><div class="input-placeholder" style="margin: 0; height: 12px; border-bottom: 1px solid #000;"></div></td></tr>
-                                    <tr><td style="padding: 4px;"><strong>$20</strong> Notes</td><td style="padding: 4px;"><div class="input-placeholder" style="margin: 0; height: 12px; border-bottom: 1px solid #000;"></div></td><td style="padding: 4px;"><div class="input-placeholder" style="margin: 0; height: 12px; border-bottom: 1px solid #000;"></div></td></tr>
-                                    <tr><td style="padding: 4px;"><strong>$10</strong> Notes</td><td style="padding: 4px;"><div class="input-placeholder" style="margin: 0; height: 12px; border-bottom: 1px solid #000;"></div></td><td style="padding: 4px;"><div class="input-placeholder" style="margin: 0; height: 12px; border-bottom: 1px solid #000;"></div></td></tr>
-                                    <tr><td style="padding: 4px;"><strong>$5</strong> Notes</td><td style="padding: 4px;"><div class="input-placeholder" style="margin: 0; height: 12px; border-bottom: 1px solid #000;"></div></td><td style="padding: 4px;"><div class="input-placeholder" style="margin: 0; height: 12px; border-bottom: 1px solid #000;"></div></td></tr>
-                                    <tr><td style="padding: 4px;"><strong>$2</strong> Coins</td><td style="padding: 4px;"><div class="input-placeholder" style="margin: 0; height: 12px; border-bottom: 1px solid #000;"></div></td><td style="padding: 4px;"><div class="input-placeholder" style="margin: 0; height: 12px; border-bottom: 1px solid #000;"></div></td></tr>
-                                    <tr><td style="padding: 4px;"><strong>$1</strong> Coins</td><td style="padding: 4px;"><div class="input-placeholder" style="margin: 0; height: 12px; border-bottom: 1px solid #000;"></div></td><td style="padding: 4px;"><div class="input-placeholder" style="margin: 0; height: 12px; border-bottom: 1px solid #000;"></div></td></tr>
-                                    <tr><td style="padding: 4px;"><strong>50c</strong> Coins</td><td style="padding: 4px;"><div class="input-placeholder" style="margin: 0; height: 12px; border-bottom: 1px solid #000;"></div></td><td style="padding: 4px;"><div class="input-placeholder" style="margin: 0; height: 12px; border-bottom: 1px solid #000;"></div></td></tr>
-                                    <tr><td style="padding: 4px;"><strong>20c</strong> Coins</td><td style="padding: 4px;"><div class="input-placeholder" style="margin: 0; height: 12px; border-bottom: 1px solid #000;"></div></td><td style="padding: 4px;"><div class="input-placeholder" style="margin: 0; height: 12px; border-bottom: 1px solid #000;"></div></td></tr>
-                                    <tr><td style="padding: 4px;"><strong>10c</strong> Coins</td><td style="padding: 4px;"><div class="input-placeholder" style="margin: 0; height: 12px; border-bottom: 1px solid #000;"></div></td><td style="padding: 4px;"><div class="input-placeholder" style="margin: 0; height: 12px; border-bottom: 1px solid #000;"></div></td></tr>
-                                    <tr style="background: #fefce8;"><td class="bold" style="padding: 4px;">TOTAL CASH</td><td style="padding: 4px;"></td><td style="padding: 4px;"><div class="input-placeholder" style="margin: 0; height: 12px; border-bottom: 1px solid #000;"></div></td></tr>
+                                    <tr><td style="padding: 4px;"><strong>$100</strong> Notes</td><td style="padding: 4px;"><div class="input-placeholder" style="margin: 0; height: 16px; border-bottom: 1px solid #000;"></div></td><td style="padding: 4px;"><div class="input-placeholder" style="margin: 0; height: 16px; border-bottom: 1px solid #000;"></div></td></tr>
+                                    <tr><td style="padding: 4px;"><strong>$50</strong> Notes</td><td style="padding: 4px;"><div class="input-placeholder" style="margin: 0; height: 16px; border-bottom: 1px solid #000;"></div></td><td style="padding: 4px;"><div class="input-placeholder" style="margin: 0; height: 16px; border-bottom: 1px solid #000;"></div></td></tr>
+                                    <tr><td style="padding: 4px;"><strong>$20</strong> Notes</td><td style="padding: 4px;"><div class="input-placeholder" style="margin: 0; height: 16px; border-bottom: 1px solid #000;"></div></td><td style="padding: 4px;"><div class="input-placeholder" style="margin: 0; height: 16px; border-bottom: 1px solid #000;"></div></td></tr>
+                                    <tr><td style="padding: 4px;"><strong>$10</strong> Notes</td><td style="padding: 4px;"><div class="input-placeholder" style="margin: 0; height: 16px; border-bottom: 1px solid #000;"></div></td><td style="padding: 4px;"><div class="input-placeholder" style="margin: 0; height: 16px; border-bottom: 1px solid #000;"></div></td></tr>
+                                    <tr><td style="padding: 4px;"><strong>$5</strong> Notes</td><td style="padding: 4px;"><div class="input-placeholder" style="margin: 0; height: 16px; border-bottom: 1px solid #000;"></div></td><td style="padding: 4px;"><div class="input-placeholder" style="margin: 0; height: 16px; border-bottom: 1px solid #000;"></div></td></tr>
+                                    <tr><td style="padding: 4px;"><strong>$2</strong> Coins</td><td style="padding: 4px;"><div class="input-placeholder" style="margin: 0; height: 16px; border-bottom: 1px solid #000;"></div></td><td style="padding: 4px;"><div class="input-placeholder" style="margin: 0; height: 16px; border-bottom: 1px solid #000;"></div></td></tr>
+                                    <tr><td style="padding: 4px;"><strong>$1</strong> Coins</td><td style="padding: 4px;"><div class="input-placeholder" style="margin: 0; height: 16px; border-bottom: 1px solid #000;"></div></td><td style="padding: 4px;"><div class="input-placeholder" style="margin: 0; height: 16px; border-bottom: 1px solid #000;"></div></td></tr>
+                                    <tr><td style="padding: 4px;"><strong>50c</strong> Coins</td><td style="padding: 4px;"><div class="input-placeholder" style="margin: 0; height: 16px; border-bottom: 1px solid #000;"></div></td><td style="padding: 4px;"><div class="input-placeholder" style="margin: 0; height: 16px; border-bottom: 1px solid #000;"></div></td></tr>
+                                    <tr><td style="padding: 4px;"><strong>20c</strong> Coins</td><td style="padding: 4px;"><div class="input-placeholder" style="margin: 0; height: 16px; border-bottom: 1px solid #000;"></div></td><td style="padding: 4px;"><div class="input-placeholder" style="margin: 0; height: 16px; border-bottom: 1px solid #000;"></div></td></tr>
+                                    <tr><td style="padding: 4px;"><strong>10c</strong> Coins</td><td style="padding: 4px;"><div class="input-placeholder" style="margin: 0; height: 16px; border-bottom: 1px solid #000;"></div></td><td style="padding: 4px;"><div class="input-placeholder" style="margin: 0; height: 16px; border-bottom: 1px solid #000;"></div></td></tr>
+                                    <tr style="background: #fefce8;"><td class="bold" style="padding: 4px;">TOTAL CASH</td><td style="padding: 4px;"></td><td style="padding: 4px;">${valOrBlank(curStr(cash))}</td></tr>
                                 </tbody>
                             </table>
-                            <hr style="border: 0; border-top: 1px dashed #64748b; margin: 6px 0;">
-                            <p style="font-size: 0.7rem; color: #475569; margin: 2px 0;">Seller Sig: ________________________________</p>
-                            <p style="font-size: 0.7rem; color: #475569; margin: 2px 0;">Duty Mgr Sig: _____________________________</p>
-                        </div>
-                    </div>
-
-                    <!-- Bottom Full Width Weekly Summary -->
-                    <div style="background: #f0fdf4; border: 2px solid #10b981; border-radius: 6px; padding: 8px 12px; margin-top: 6px;">
-                        <h3 style="margin: 0 0 4px 0; color: #166534; font-size: 0.88rem; border-bottom: 1.5px solid #10b981; padding-bottom: 2px; display: flex; justify-content: space-between;">
-                            <span>🏆 WEEKLY SUMMARY & GRAND TOTALS</span>
-                            <span style="font-size: 0.78rem; font-weight: normal; color: #15803d;">Manual Reconciled Totals</span>
-                        </h3>
-                        <table class="financial-table" style="font-size: 0.78rem; margin: 0; background: #fff;">
-                            <thead>
-                                <tr style="background: #dcfce7;">
-                                    <th>Combined Cash ($)</th>
-                                    <th>Combined EFTPOS ($)</th>
-                                    <th>Combined Reimbursements ($)</th>
-                                    <th>Combined Tickets Sold</th>
-                                    <th>Combined Prize Pool</th>
-                                    <th style="background: #10b981; color: white; text-align: center;">WEEKLY GRAND TOTAL ($)</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td><div class="input-placeholder"></div></td>
-                                    <td><div class="input-placeholder"></div></td>
-                                    <td><div class="input-placeholder"></div></td>
-                                    <td><div class="input-placeholder"></div></td>
-                                    <td><div class="input-placeholder"></div></td>
-                                    <td class="bold" style="color: #166534; font-size: 1.15rem; background: #f0fdf4; text-align: center;"><div class="input-placeholder"></div></td>
-                                </tr>
-                            </tbody>
-                        </table>
-                        <div style="font-size: 0.72rem; margin-top: 6px; color: #166534;">
-                            <strong>Weekly Summary Audit Notes:</strong> ____________________________________________________
+                            <hr style="border: 0; border-top: 1px dashed #64748b; margin: 15px 0;">
+                            <p style="font-size: 0.8rem; color: #475569; margin: 10px 0;">Seller Sig: ___________________________________</p>
+                            <p style="font-size: 0.8rem; color: #475569; margin: 10px 0;">Duty Mgr Sig: ________________________________</p>
                         </div>
                     </div>
                 </div>
@@ -2401,178 +2385,14 @@ input:focus, select:focus, textarea:focus {
         }
 
         function buildFinancialSheetHTML() {
-            const fins = getFinancialsData() || {};
-            const draw = getDrawStateData() || {};
-            const thuDraw = draw.thursday || {};
-            const sunDraw = draw.sunday || {};
-            const thu = fins.thursday || {};
-            const sun = fins.sunday || {};
-
-            const thuCash = thu.cash || 0; const thuEftpos = thu.eftpos || 0; const thuReimb = thu.reimbursements || 0;
-            const thuTotal = thuCash + thuEftpos - thuReimb;
-
-            const sunCash = sun.cash || 0; const sunEftpos = sun.eftpos || 0; const sunReimb = sun.reimbursements || 0;
-            const sunTotal = sunCash + sunEftpos - sunReimb;
-
-            const grandTotal = thuTotal + sunTotal;
-            const printedDate = formatDDMMYYYY(new Date());
-
-            const thuFinished = !!(thuDraw.isConfirmedFinished || thuDraw.drawsFinishedTime || (thuDraw.prizesLeft === 0 && (thuDraw.drawnNumbers || []).length > 0));
-            const sunFinished = !!(sunDraw.isConfirmedFinished || sunDraw.drawsFinishedTime || (sunDraw.prizesLeft === 0 && (sunDraw.drawnNumbers || []).length > 0));
-
-            const thuPrizePoolDisplay = thuFinished ? (thu.prizePool || 0) : 0;
-            const sunPrizePoolDisplay = sunFinished ? (sun.prizePool || 0) : 0;
-            const combinedPrizePoolDisplay = thuPrizePoolDisplay + sunPrizePoolDisplay;
-
-            return `
-                <div class="print-page">
-                    <h1 style="margin-bottom: 4px;">Weekly Financial & Draw Summary</h1>
-                    <div style="font-weight: bold; margin-bottom: 10px; border-bottom: 2px solid #000; padding-bottom: 4px; display: flex; justify-content: space-between;">
-                        <span>Monster Meat Raffle — Official Financial Audit</span>
-                        <span>Week / Date: ${printedDate}</span>
-                    </div>
-                    
-                    <!-- Top Side-by-Side Breakdown & Formulas -->
-                    <div style="display: flex; gap: 15px; margin-bottom: 10px;">
-                        <!-- Left: Thursday & Sunday Breakdown -->
-                        <div style="flex: 3;">
-                            <h3 style="background:#eff6ff; color:#1e40af; border-left:4px solid #2563eb; padding:3px 8px; margin:0 0 4px 0; font-size:0.82rem;">THURSDAY RAFFLE FINANCIAL BREAKDOWN</h3>
-                            <table class="financial-table" style="font-size:0.75rem; margin-bottom:6px;">
-                                <thead>
-                                    <tr>
-                                        <th>Ticket Range</th>
-                                        <th>Sold</th>
-                                        <th>Single ($)</th>
-                                        <th>Strips ($)</th>
-                                        <th>Cash ($)</th>
-                                        <th>EFTPOS ($)</th>
-                                        <th>Reimb. ($)</th>
-                                        <th>Prize Pool ($)</th>
-                                        <th>Total ($)</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td>#${thu.ticketStart || 1} - #${(thu.ticketFinish && thu.ticketFinish > 0) ? thu.ticketFinish : '...'}</td>
-                                        <td class="bold">${thu.ticketsSold || 0}</td>
-                                        <td>${thu.singlesSold || 0} x $${(thu.priceSingle || 5).toFixed(2)}</td>
-                                        <td>${thu.stripsSold || 0} x $${(thu.priceStrip || 20).toFixed(2)}</td>
-                                        <td>$${thuCash.toFixed(2)}</td>
-                                        <td>$${thuEftpos.toFixed(2)}</td>
-                                        <td>-$${thuReimb.toFixed(2)}</td>
-                                        <td>$${thuPrizePoolDisplay.toFixed(2)}</td>
-                                        <td class="bold" style="color:#2563eb;">$${thuTotal.toFixed(2)}</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                            <div style="font-size:0.7rem; margin-bottom:8px; display:flex; gap:12px; color:#475569;">
-                                <span><strong>Gen Notes:</strong> ${thu.notesGeneral || 'None'}</span>
-                                <span><strong>Reimb Notes:</strong> ${thu.notesReimb || 'None'}</span>
-                            </div>
-
-                            <h3 style="background:#fef2f2; color:#991b1b; border-left:4px solid #ef4444; padding:3px 8px; margin:4px 0 4px 0; font-size:0.82rem;">SUNDAY RAFFLE FINANCIAL BREAKDOWN</h3>
-                            <table class="financial-table" style="font-size:0.75rem; margin-bottom:6px;">
-                                <thead>
-                                    <tr>
-                                        <th>Ticket Range</th>
-                                        <th>Sold</th>
-                                        <th>Single ($)</th>
-                                        <th>Strips ($)</th>
-                                        <th>Cash ($)</th>
-                                        <th>EFTPOS ($)</th>
-                                        <th>Reimb. ($)</th>
-                                        <th>Prize Pool ($)</th>
-                                        <th>Total ($)</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td>#${sun.ticketStart || 1} - #${(sun.ticketFinish && sun.ticketFinish > 0) ? sun.ticketFinish : '...'}</td>
-                                        <td class="bold">${sun.ticketsSold || 0}</td>
-                                        <td>${sun.singlesSold || 0} x $${(sun.priceSingle || 5).toFixed(2)}</td>
-                                        <td>${sun.stripsSold || 0} x $${(sun.priceStrip || 20).toFixed(2)}</td>
-                                        <td>$${sunCash.toFixed(2)}</td>
-                                        <td>$${sunEftpos.toFixed(2)}</td>
-                                        <td>-$${sunReimb.toFixed(2)}</td>
-                                        <td>$${sunPrizePoolDisplay.toFixed(2)}</td>
-                                        <td class="bold" style="color:#ef4444;">$${sunTotal.toFixed(2)}</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                            <div style="font-size:0.7rem; margin-bottom:4px; display:flex; gap:12px; color:#475569;">
-                                <span><strong>Gen Notes:</strong> ${sun.notesGeneral || 'None'}</span>
-                                <span><strong>Reimb Notes:</strong> ${sun.notesReimb || 'None'}</span>
-                            </div>
-                        </div>
-
-                        <!-- Right: Seller Formulas -->
-                        <div style="flex: 2; background: #f8fafc; border: 2px dashed #64748b; padding: 8px 10px; border-radius: 4px; font-size: 0.75rem;">
-                            <h4 style="margin-top: 0; color: #0284c7; border-bottom: 1.5px solid #0284c7; padding-bottom: 2px; margin-bottom: 4px;">📐 SELLER MANUAL MATH FORMULAS</h4>
-                            <p style="margin: 2px 0;"><strong>1. Gross Expected:</strong> <code>Singles + Strips</code></p>
-                            <p style="margin: 2px 0;"><strong>2. Total Collected:</strong> <code>Cash + EFTPOS - Reimbursements</code></p>
-                            <p style="margin: 2px 0;"><strong>3. Till Variance:</strong> <code>Collected - Expected (= $0.00)</code></p>
-                            <hr style="border: 0; border-top: 1px dashed #64748b; margin: 6px 0;">
-                            
-                            <h4 style="margin-top: 6px; color: #b45309; border-bottom: 1.5px solid #b45309; padding-bottom: 2px; margin-bottom: 4px;">💰 CASH DENOMINATIONS</h4>
-                            <table class="financial-table" style="font-size: 0.7rem; margin-bottom: 6px; width: 100%;">
-                                <thead><tr><th style="padding: 4px;">Note/Coin</th><th style="padding: 4px; width: 25%;">Count</th><th style="padding: 4px;">Value ($)</th></tr></thead>
-                                <tbody>
-                                    <tr><td style="padding: 4px;"><strong>$100</strong> Notes</td><td style="padding: 4px;"><div class="input-placeholder" style="margin: 0; height: 12px; border-bottom: 1px solid #000;"></div></td><td style="padding: 4px;"><div class="input-placeholder" style="margin: 0; height: 12px; border-bottom: 1px solid #000;"></div></td></tr>
-                                    <tr><td style="padding: 4px;"><strong>$50</strong> Notes</td><td style="padding: 4px;"><div class="input-placeholder" style="margin: 0; height: 12px; border-bottom: 1px solid #000;"></div></td><td style="padding: 4px;"><div class="input-placeholder" style="margin: 0; height: 12px; border-bottom: 1px solid #000;"></div></td></tr>
-                                    <tr><td style="padding: 4px;"><strong>$20</strong> Notes</td><td style="padding: 4px;"><div class="input-placeholder" style="margin: 0; height: 12px; border-bottom: 1px solid #000;"></div></td><td style="padding: 4px;"><div class="input-placeholder" style="margin: 0; height: 12px; border-bottom: 1px solid #000;"></div></td></tr>
-                                    <tr><td style="padding: 4px;"><strong>$10</strong> Notes</td><td style="padding: 4px;"><div class="input-placeholder" style="margin: 0; height: 12px; border-bottom: 1px solid #000;"></div></td><td style="padding: 4px;"><div class="input-placeholder" style="margin: 0; height: 12px; border-bottom: 1px solid #000;"></div></td></tr>
-                                    <tr><td style="padding: 4px;"><strong>$5</strong> Notes</td><td style="padding: 4px;"><div class="input-placeholder" style="margin: 0; height: 12px; border-bottom: 1px solid #000;"></div></td><td style="padding: 4px;"><div class="input-placeholder" style="margin: 0; height: 12px; border-bottom: 1px solid #000;"></div></td></tr>
-                                    <tr><td style="padding: 4px;"><strong>$2</strong> Coins</td><td style="padding: 4px;"><div class="input-placeholder" style="margin: 0; height: 12px; border-bottom: 1px solid #000;"></div></td><td style="padding: 4px;"><div class="input-placeholder" style="margin: 0; height: 12px; border-bottom: 1px solid #000;"></div></td></tr>
-                                    <tr><td style="padding: 4px;"><strong>$1</strong> Coins</td><td style="padding: 4px;"><div class="input-placeholder" style="margin: 0; height: 12px; border-bottom: 1px solid #000;"></div></td><td style="padding: 4px;"><div class="input-placeholder" style="margin: 0; height: 12px; border-bottom: 1px solid #000;"></div></td></tr>
-                                    <tr><td style="padding: 4px;"><strong>50c</strong> Coins</td><td style="padding: 4px;"><div class="input-placeholder" style="margin: 0; height: 12px; border-bottom: 1px solid #000;"></div></td><td style="padding: 4px;"><div class="input-placeholder" style="margin: 0; height: 12px; border-bottom: 1px solid #000;"></div></td></tr>
-                                    <tr><td style="padding: 4px;"><strong>20c</strong> Coins</td><td style="padding: 4px;"><div class="input-placeholder" style="margin: 0; height: 12px; border-bottom: 1px solid #000;"></div></td><td style="padding: 4px;"><div class="input-placeholder" style="margin: 0; height: 12px; border-bottom: 1px solid #000;"></div></td></tr>
-                                    <tr><td style="padding: 4px;"><strong>10c</strong> Coins</td><td style="padding: 4px;"><div class="input-placeholder" style="margin: 0; height: 12px; border-bottom: 1px solid #000;"></div></td><td style="padding: 4px;"><div class="input-placeholder" style="margin: 0; height: 12px; border-bottom: 1px solid #000;"></div></td></tr>
-                                    <tr style="background: #fefce8;"><td class="bold" style="padding: 4px;">TOTAL CASH</td><td style="padding: 4px;"></td><td style="padding: 4px;"><div class="input-placeholder" style="margin: 0; height: 12px; border-bottom: 1px solid #000;"></div></td></tr>
-                                </tbody>
-                            </table>
-                            <hr style="border: 0; border-top: 1px dashed #64748b; margin: 6px 0;">
-                            <p style="font-size: 0.7rem; color: #475569; margin: 2px 0;">Seller Sig: ________________________________</p>
-                            <p style="font-size: 0.7rem; color: #475569; margin: 2px 0;">Duty Mgr Sig: _____________________________</p>
-                        </div>
-                    </div>
-
-                    <!-- BOTTOM: Full Width Weekly Summary & Grand Totals -->
-                    <div style="background: #f0fdf4; border: 2px solid #10b981; border-radius: 6px; padding: 8px 12px; margin-top: 6px;">
-                        <h3 style="margin: 0 0 6px 0; color: #166534; font-size: 0.9rem; border-bottom: 1.5px solid #10b981; padding-bottom: 3px; display: flex; justify-content: space-between;">
-                            <span>🏆 WEEKLY SUMMARY & GRAND TOTALS</span>
-                            <span style="font-size: 0.8rem; font-weight: normal; color: #15803d;">Audited Official Record</span>
-                        </h3>
-                        <table class="financial-table" style="font-size: 0.8rem; margin: 0; background: #fff;">
-                            <thead>
-                                <tr style="background: #dcfce7;">
-                                    <th>Combined Cash</th>
-                                    <th>Combined EFTPOS</th>
-                                    <th>Combined Reimbursements</th>
-                                    <th>Combined Tickets Sold</th>
-                                    <th>Combined Prize Pool</th>
-                                    <th style="background: #10b981; color: white; text-align: center;">WEEKLY GRAND TOTAL</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>$${(thuCash + sunCash).toFixed(2)}</td>
-                                    <td>$${(thuEftpos + sunEftpos).toFixed(2)}</td>
-                                    <td style="color:#ef4444;">-$${(thuReimb + sunReimb).toFixed(2)}</td>
-                                    <td class="bold">${((thu.ticketsSold || 0) + (sun.ticketsSold || 0))}</td>
-                                    <td>$${combinedPrizePoolDisplay.toFixed(2)}</td>
-                                    <td class="bold" style="color: #166534; font-size: 1.15rem; background: #f0fdf4; text-align: center;">$${grandTotal.toFixed(2)}</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                        <div style="font-size: 0.72rem; margin-top: 6px; color: #166534;">
-                            <strong>Weekly Summary Audit Notes:</strong> ${fins.weeklyNotes || 'None logged.'}
-                        </div>
-                    </div>
-                </div>
-            `;
+            return buildSingleDayFinancialSheetHTML('thursday') + buildSingleDayFinancialSheetHTML('sunday');
         }
-
-        function buildDrawResultsHTML(isBlank = false) {
+        
+        function buildBlankFinancialsHTML() {
+            // Unused, but kept for legacy if needed, returning the same empty format but for both days since buildSingleDay handles emptiness nicely
+            return buildSingleDayFinancialSheetHTML('thursday') + buildSingleDayFinancialSheetHTML('sunday');
+        }
+function buildDrawResultsHTML(isBlank = false) {
             const draw = getDrawStateData();
             const drawn = isBlank ? [] : getActiveDrawnNumbers(draw);
             const printedDate = formatDDMMYYYY(new Date());
@@ -2596,7 +2416,7 @@ input:focus, select:focus, textarea:focus {
             }
 
             return `
-                <div class="print-page">
+                <div class="print-page portrait-page">
                     <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #0284c7; padding-bottom: 4px; margin-bottom: 8px;">
                         <h1 style="margin: 0; border: none; padding: 0; font-size: 1.4rem;">${isBlank ? 'Manual Draw Results Sheet' : 'Official Draw Results Sheet'}</h1>
                         <span style="font-weight: bold; color: #475569; font-size: 0.9rem;">${printedDate}</span>
@@ -2621,10 +2441,10 @@ input:focus, select:focus, textarea:focus {
             `;
         }
 
-        function printFullDraw() { printHTML(buildChecklistHTML('Full Draw')); }
-        function printManualDraw() { printHTML(buildChecklistHTML('Manual Draw (Write Numbers Below)')); }
-        function printGenericDraw() { printHTML(buildChecklistHTML('Generic Draw')); }
-        function printBlankDraw() { printHTML(buildChecklistHTML('Blank Draw')); }
+        function printFullDraw() { printHTML(buildChecklistHTML('Full Draw'), 'landscape'); }
+        function printManualDraw() { printHTML(buildChecklistHTML('Manual Draw (Write Numbers Below)'), 'landscape'); }
+        function printGenericDraw() { printHTML(buildChecklistHTML('Generic Draw'), 'landscape'); }
+        function printBlankDraw() { printHTML(buildChecklistHTML('Blank Draw'), 'landscape'); }
         function printFinancialSheet() { printHTML(buildFinancialSheetHTML()); }
         
         function printAllPages() {
@@ -2637,7 +2457,7 @@ input:focus, select:focus, textarea:focus {
             );
         }
 
-        function printHTML(content) {
+        function printHTML(content, defaultOrientation = 'portrait') {
             const win = window.open('', '_blank');
             if (!win) {
                 alert('Popup blocked! Please allow popups for printing.');
@@ -2647,7 +2467,14 @@ input:focus, select:focus, textarea:focus {
                 <!DOCTYPE html>
                 <html><head>
                 <style>
-                    @page { size: A4 portrait; margin: 10mm; } 
+                    @page { margin: 10mm; }
+                    @page landscape_page { size: A4 landscape; }
+                    @page portrait_page { size: A4 portrait; }
+                    
+                    .landscape-page { page: landscape_page; }
+                    .portrait-page { page: portrait_page; }
+                    
+                    @page { size: A4 ${defaultOrientation}; } 
                     @media print { 
                         html, body { 
                             background: #fff !important; 
