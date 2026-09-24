@@ -57,9 +57,9 @@
         </div>
 
         <!-- CONGRATS VIEW -->
-        <div id="view-congrats" class="view">
-            <div class="congrats-title" style="font-size: 16vmin; margin-bottom: 2rem;">CONGRATULATIONS</div>
-            <div class="congrats-subtitle" style="font-size: 3vmin; line-height: 1.5;">To all our lucky winners!<br>Thank you for participating, we hope to see you next time.</div>
+        <div id="view-congrats" class="view" style="display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 4rem;">
+            <div class="congrats-title" style="font-size: 18vmin; margin-bottom: 3rem; text-shadow: 0 0 40px rgba(255, 215, 0, 0.8);">CONGRATULATIONS</div>
+            <div class="congrats-subtitle" style="font-size: 6vmin; line-height: 1.5; font-weight: 800; text-shadow: 0 0 20px rgba(255, 255, 255, 0.5); padding: 0 4rem;">To all our lucky winners!<br>Thank you for participating, we hope to see you next time.</div>
         </div>
         
         <!-- ROBS ADVERT VIEW -->
@@ -76,7 +76,7 @@
         </div>
         <!-- WINNING NUMBERS VIEW -->
         <div id="view-winning-numbers" class="view" style="display: flex; flex-direction: column; justify-content: flex-start; align-items: center; padding: 2rem; padding-top: 15rem; box-sizing: border-box; text-align: center;">
-            <div class="congrats-title" style="margin-bottom: 2rem; font-size: clamp(2.5rem, 6vmin, 4.5rem); text-shadow: 0 0 30px rgba(255,215,0,0.4); text-transform: uppercase; letter-spacing: 2px;">
+            <div class="congrats-title" style="margin-bottom: 2rem; font-size: clamp(4rem, 9vmin, 7rem); text-shadow: 0 0 40px rgba(255,215,0,0.6); text-transform: uppercase; letter-spacing: 2px; font-weight: 900;">
                 🏆 Tonight's Winners 🏆
             </div>
             <div style="display: flex; width: 95%; max-width: 1600px; flex: 1; justify-content: center; align-items: flex-start; margin-bottom: 2rem;">
@@ -459,6 +459,11 @@
                 }
             }
             
+            // Confetti on manual congrats view entry
+            if ((state.activeView === 'congrats' || state.activeView === 'congrats-loop') && lastActiveView !== state.activeView) {
+                triggerConfetti();
+            }
+
             // View switching
             Object.keys(views).forEach(k => {
                 views[k].classList.remove('active');
