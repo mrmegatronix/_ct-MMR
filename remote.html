@@ -938,143 +938,25 @@ input:focus, select:focus, textarea:focus {
         }
 
         function updateViewButtons() {
-            let activeEvtKey = (state.draw && state.draw.activeEvent) || 'thursday';
-            if (activeEvtKey === 'sunday' && (state.draw && state.draw.sunday && state.draw.sunday.enabled === false)) {
-                activeEvtKey = 'thursday';
-            }
-            const activeEvt = (state.draw && state.draw[activeEvtKey]) || {};
-            const type = activeEvt.type || state.draw.type || 'full';
+            const btnSlides = document.getElementById('btn-slides');
+            const btnDraw = document.getElementById('btn-draw');
+            const btnDrawGeneric = document.getElementById('btn-draw-generic');
+            const btnCongrats = document.getElementById('btn-congrats');
+            const btnCongratsVideo = document.getElementById('btn-congrats-video');
 
-            // Update Draw Mode Buttons UI
-            const btnFull = document.getElementById('btn-mode-full');
-            const btnGen = document.getElementById('btn-mode-generic');
-            const btnMan = document.getElementById('btn-mode-manual');
-            const lblType = document.getElementById('lbl-active-draw-type');
-
-            if (lblType) {
-                lblType.innerText = type === 'generic' ? '⭐ Generic Draw' : (type === 'manual' ? '📝 Manual Barrel Draw' : '🥩 Full Valued Draw');
-                lblType.style.color = type === 'generic' ? '#fbbf24' : (type === 'manual' ? '#c084fc' : '#38bdf8');
-            }
-            if (btnFull) {
-                btnFull.style.background = type === 'full' ? 'hsl(var(--primary))' : 'hsl(var(--secondary))';
-                btnFull.style.color = type === 'full' ? 'hsl(var(--primary-foreground))' : 'hsl(var(--secondary-foreground))';
-            }
-            if (btnGen) {
-                btnGen.style.background = type === 'generic' ? '#f59e0b' : 'hsl(var(--secondary))';
-                btnGen.style.color = type === 'generic' ? '#000' : 'hsl(var(--secondary-foreground))';
-            }
-            if (btnMan) {
-                btnMan.style.background = type === 'manual' ? '#8b5cf6' : 'hsl(var(--secondary))';
-                btnMan.style.color = type === 'manual' ? '#fff' : 'hsl(var(--secondary-foreground))';
-            }
-            
-            const p100 = document.getElementById('row-prize-100');
-            const p50 = document.getElementById('row-prize-50');
-            const p25 = document.getElementById('row-prize-25');
-            const pb = document.getElementById('row-prize-bonus');
-            const pv = document.getElementById('row-prize-voucher');
-            const pgCount = document.getElementById('row-prize-generic-countdown');
-            const pgNoCount = document.getElementById('row-prize-generic-nocountdown');
-            const pMan = document.getElementById('row-prize-manual');
-
-            const valRows = [p100, p50, p25, pb, pv];
-            const genRows = [pgCount, pgNoCount];
-
-            if (type === 'full') {
-                valRows.forEach(r => { if (r) r.style.display = ''; });
-                genRows.forEach(r => { if (r) r.style.display = 'none'; });
-                if (pMan) pMan.style.display = 'none';
-            } else if (type === 'generic') {
-                valRows.forEach(r => { if (r) r.style.display = 'none'; });
-                genRows.forEach(r => { if (r) r.style.display = ''; });
-                if (pMan) pMan.style.display = 'none';
-            } else if (type === 'manual') {
-                valRows.forEach(r => { if (r) r.style.display = 'none'; });
-                genRows.forEach(r => { if (r) r.style.display = 'none'; });
-                if (pMan) pMan.style.display = '';
-            }
-
-            const btnSlides = document.getElementById("btn-slides");
-            const btnDraw = document.getElementById("btn-draw");
-            const btnCongrats = document.getElementById("btn-congrats");
-            const btnCongratsVideo = document.getElementById("btn-congrats-video");
             if (btnSlides && btnDraw && btnCongrats) {
                 const active = state.activeView || 'slides';
-                const isSlides = active === 'slides';
                 const evt = (state.draw && state.draw.activeEvent) ? state.draw[state.draw.activeEvent] : null;
-                const curPrize = evt ? evt.currentPrize : null;
-                const isGenericPrize = (type === 'generic' && active === 'draw') || (curPrize === 'generic' || curPrize === 'generic-countdown' || curPrize === 'generic-no-countdown');
-                const isDrawGeneric = active === 'draw' && (curPrize === 'generic' || curPrize === 'generic-countdown' || curPrize === 'generic-no-countdown');
+                const isDrawGeneric = active === 'draw' && evt && evt.currentPrize === 'generic';
                 const isDraw = active === 'draw' && !isDrawGeneric;
-                const isCongrats = active === 'congrats';
-                const isCongratsVideo = active === 'congrats-video';
 
-                const valBtns = [
-                    document.getElementById('btn-draw-100'), document.getElementById('btn-redraw-100'),
-                    document.getElementById('btn-draw-50'), document.getElementById('btn-redraw-50'),
-                    document.getElementById('btn-draw-25'), document.getElementById('btn-redraw-25'),
-                    document.getElementById('btn-draw-act-bonus'), document.getElementById('btn-redraw-act-bonus'),
-                    document.getElementById('btn-draw-act-voucher'), document.getElementById('btn-redraw-act-voucher')
-                ];
-                const genBtns = [
-                    document.getElementById('btn-draw-act-generic-countdown'), document.getElementById('btn-redraw-act-generic-countdown'),
-                    document.getElementById('btn-draw-act-generic-nocountdown'), document.getElementById('btn-redraw-act-generic-nocountdown')
-                ];
-                
-                if (type === 'generic' || isDrawGeneric) {
-                    valBtns.forEach(b => { if(b) b.disabled = true; });
-                    genBtns.forEach(b => { if(b) b.disabled = false; });
-                } else if (type === 'full') {
-                    valBtns.forEach(b => { if(b) b.disabled = false; });
-                    genBtns.forEach(b => { if(b) b.disabled = true; });
-                } else if (type === 'manual') {
-                    valBtns.forEach(b => { if(b) b.disabled = true; });
-                    genBtns.forEach(b => { if(b) b.disabled = true; });
-                } else {
-                    valBtns.forEach(b => { if(b) b.disabled = false; });
-                    genBtns.forEach(b => { if(b) b.disabled = false; });
-                }
-
-                btnSlides.style.backgroundColor = isSlides ? '#2563eb' : 'rgba(30, 41, 59, 0.8)';
-                btnSlides.style.borderColor = isSlides ? '#60a5fa' : 'var(--border)';
-                btnSlides.style.color = isSlides ? '#ffffff' : 'var(--text)';
-                btnSlides.style.boxShadow = isSlides ? '0 0 16px rgba(37, 99, 235, 0.8)' : 'none';
-                btnSlides.style.fontWeight = isSlides ? 'bold' : 'normal';
-                btnSlides.style.transform = isSlides ? 'scale(1.03)' : 'none';
-
-                btnDraw.style.backgroundColor = isDraw ? '#ef4444' : 'rgba(30, 41, 59, 0.8)';
-                btnDraw.style.borderColor = isDraw ? '#f87171' : 'var(--border)';
-                btnDraw.style.color = isDraw ? '#ffffff' : 'var(--text)';
-                btnDraw.style.boxShadow = isDraw ? '0 0 16px rgba(239, 68, 68, 0.8)' : 'none';
-                btnDraw.style.fontWeight = isDraw ? 'bold' : 'normal';
-                btnDraw.style.transform = isDraw ? 'scale(1.03)' : 'none';
-
-                const btnDrawGeneric = document.getElementById("btn-draw-generic");
-                if (btnDrawGeneric) {
-                    btnDrawGeneric.style.backgroundColor = isDrawGeneric ? '#fbbf24' : 'rgba(30, 41, 59, 0.8)';
-                    btnDrawGeneric.style.borderColor = isDrawGeneric ? '#f59e0b' : 'var(--border)';
-                    btnDrawGeneric.style.color = isDrawGeneric ? 'black' : 'var(--text)';
-                    btnDrawGeneric.style.boxShadow = isDrawGeneric ? '0 0 16px rgba(251, 191, 36, 0.8)' : 'none';
-                    btnDrawGeneric.style.fontWeight = isDrawGeneric ? 'bold' : 'normal';
-                    btnDrawGeneric.style.transform = isDrawGeneric ? 'scale(1.03)' : 'none';
-                }
-
-                btnCongrats.style.backgroundColor = isCongrats ? '#10b981' : 'rgba(30, 41, 59, 0.8)';
-                btnCongrats.style.borderColor = isCongrats ? '#34d399' : 'var(--border)';
-                btnCongrats.style.color = isCongrats ? '#ffffff' : 'var(--text)';
-                btnCongrats.style.boxShadow = isCongrats ? '0 0 16px rgba(16, 185, 129, 0.8)' : 'none';
-                btnCongrats.style.fontWeight = isCongrats ? 'bold' : 'normal';
-                btnCongrats.style.transform = isCongrats ? 'scale(1.03)' : 'none';
-                
-                if (btnCongratsVideo) {
-                    btnCongratsVideo.style.backgroundColor = isCongratsVideo ? '#a855f7' : 'rgba(30, 41, 59, 0.8)';
-                    btnCongratsVideo.style.borderColor = isCongratsVideo ? '#d8b4fe' : 'var(--border)';
-                    btnCongratsVideo.style.color = isCongratsVideo ? '#ffffff' : 'var(--text)';
-                    btnCongratsVideo.style.boxShadow = isCongratsVideo ? '0 0 16px rgba(168, 85, 247, 0.8)' : 'none';
-                    btnCongratsVideo.style.fontWeight = isCongratsVideo ? 'bold' : 'normal';
-                    btnCongratsVideo.style.transform = isCongratsVideo ? 'scale(1.03)' : 'none';
-                }
+                if (btnSlides) btnSlides.classList.toggle('active', active === 'slides');
+                if (btnDraw) btnDraw.classList.toggle('active', isDraw);
+                if (btnDrawGeneric) btnDrawGeneric.classList.toggle('active', isDrawGeneric);
+                if (btnCongrats) btnCongrats.classList.toggle('active', active === 'congrats');
+                if (btnCongratsVideo) btnCongratsVideo.classList.toggle('active', active === 'congrats-video');
             }
+        }
         }
 
         function openGenericDrawPage() {

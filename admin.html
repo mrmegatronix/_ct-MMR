@@ -1711,7 +1711,7 @@ input:focus, select:focus, textarea:focus {
             if (view === 'draw') {
                 if (state && state.draw && state.draw.activeEvent && state.draw[state.draw.activeEvent]) {
                     if (state.draw[state.draw.activeEvent].currentPrize === 'generic') {
-                        state.draw[state.draw.activeEvent].currentPrize = 100;
+                        state.draw[state.draw.activeEvent].currentPrize = 0;
                     }
                     state.draw[state.draw.activeEvent].currentNumber = null;
                     payload.draw = state.draw;
@@ -1751,78 +1751,45 @@ input:focus, select:focus, textarea:focus {
         function updateViewButtons() {
             const btnSlides = document.getElementById('btn-slides');
             const btnDraw = document.getElementById('btn-draw');
+            const btnDrawGeneric = document.getElementById('btn-draw-generic');
             const btnCongrats = document.getElementById('btn-congrats');
+            const btnCongratsVideo = document.getElementById('btn-congrats-video');
+
             if (btnSlides && btnDraw && btnCongrats) {
                 const active = state.activeView || 'slides';
-                const isSlides = active === 'slides';
                 const evt = (state.draw && state.draw.activeEvent) ? state.draw[state.draw.activeEvent] : null;
                 const isDrawGeneric = active === 'draw' && evt && evt.currentPrize === 'generic';
                 const isDraw = active === 'draw' && !isDrawGeneric;
-                const isCongrats = active === 'congrats';
-                const isCongratsVideo = active === 'congrats-video';
-            const valBtns = [
-                document.getElementById('btn-draw-100'), document.getElementById('btn-redraw-100'),
-                document.getElementById('btn-draw-50'), document.getElementById('btn-redraw-50'),
-                document.getElementById('btn-draw-25'), document.getElementById('btn-redraw-25'),
-                document.getElementById('btn-draw-act-bonus'), document.getElementById('btn-redraw-act-bonus'),
-                document.getElementById('btn-draw-act-voucher'), document.getElementById('btn-redraw-act-voucher')
-            ];
-            const genBtns = [
-                document.getElementById('btn-draw-act-generic'), document.getElementById('btn-redraw-act-generic')
-            ];
-            
-            if (isDrawGeneric) {
-                valBtns.forEach(b => { if(b) b.disabled = true; });
-                genBtns.forEach(b => { if(b) b.disabled = false; });
-            } else if (isDraw) {
-                valBtns.forEach(b => { if(b) b.disabled = false; });
-                genBtns.forEach(b => { if(b) b.disabled = true; });
-            } else {
-                valBtns.forEach(b => { if(b) b.disabled = false; });
-                genBtns.forEach(b => { if(b) b.disabled = false; });
-            }
 
+                if (btnSlides) btnSlides.classList.toggle('active', active === 'slides');
+                if (btnDraw) btnDraw.classList.toggle('active', isDraw);
+                if (btnDrawGeneric) btnDrawGeneric.classList.toggle('active', isDrawGeneric);
+                if (btnCongrats) btnCongrats.classList.toggle('active', active === 'congrats');
+                if (btnCongratsVideo) btnCongratsVideo.classList.toggle('active', active === 'congrats-video');
 
-                btnSlides.style.backgroundColor = isSlides ? '#2563eb' : 'rgba(30, 41, 59, 0.8)';
-                btnSlides.style.borderColor = isSlides ? '#60a5fa' : 'var(--border)';
-                btnSlides.style.color = isSlides ? '#ffffff' : 'var(--text)';
-                btnSlides.style.boxShadow = isSlides ? '0 0 16px rgba(37, 99, 235, 0.8)' : 'none';
-                btnSlides.style.fontWeight = isSlides ? 'bold' : 'normal';
-                btnSlides.style.transform = isSlides ? 'scale(1.03)' : 'none';
-
-                btnDraw.style.backgroundColor = isDraw ? '#ef4444' : 'rgba(30, 41, 59, 0.8)';
-                btnDraw.style.borderColor = isDraw ? '#f87171' : 'var(--border)';
-                btnDraw.style.color = isDraw ? '#ffffff' : 'var(--text)';
-                btnDraw.style.boxShadow = isDraw ? '0 0 16px rgba(239, 68, 68, 0.8)' : 'none';
-                btnDraw.style.fontWeight = isDraw ? 'bold' : 'normal';
-                btnDraw.style.transform = isDraw ? 'scale(1.03)' : 'none';
-
-                const btnDrawGeneric = document.getElementById("btn-draw-generic");
-                if (btnDrawGeneric) {
-                    btnDrawGeneric.style.backgroundColor = isDrawGeneric ? '#fbbf24' : 'rgba(30, 41, 59, 0.8)';
-                    btnDrawGeneric.style.borderColor = isDrawGeneric ? '#f59e0b' : 'var(--border)';
-                    btnDrawGeneric.style.color = isDrawGeneric ? 'black' : 'var(--text)';
-                    btnDrawGeneric.style.boxShadow = isDrawGeneric ? '0 0 16px rgba(251, 191, 36, 0.8)' : 'none';
-                    btnDrawGeneric.style.fontWeight = isDrawGeneric ? 'bold' : 'normal';
-                    btnDrawGeneric.style.transform = isDrawGeneric ? 'scale(1.03)' : 'none';
-                }
-
-                btnCongrats.style.backgroundColor = isCongrats ? '#10b981' : 'rgba(30, 41, 59, 0.8)';
-                btnCongrats.style.borderColor = isCongrats ? '#34d399' : 'var(--border)';
-                btnCongrats.style.color = isCongrats ? '#ffffff' : 'var(--text)';
-                btnCongrats.style.boxShadow = isCongrats ? '0 0 16px rgba(16, 185, 129, 0.8)' : 'none';
-                btnCongrats.style.fontWeight = isCongrats ? 'bold' : 'normal';
-                btnCongrats.style.transform = isCongrats ? 'scale(1.03)' : 'none';
+                const valBtns = [
+                    document.getElementById('btn-draw-100'), document.getElementById('btn-redraw-100'),
+                    document.getElementById('btn-draw-50'), document.getElementById('btn-redraw-50'),
+                    document.getElementById('btn-draw-25'), document.getElementById('btn-redraw-25'),
+                    document.getElementById('btn-draw-act-bonus'), document.getElementById('btn-redraw-act-bonus'),
+                    document.getElementById('btn-draw-act-voucher'), document.getElementById('btn-redraw-act-voucher')
+                ];
+                const genBtns = [
+                    document.getElementById('btn-draw-act-generic'), document.getElementById('btn-redraw-act-generic')
+                ];
                 
-                if (btnCongratsVideo) {
-                    btnCongratsVideo.style.backgroundColor = isCongratsVideo ? '#a855f7' : 'rgba(30, 41, 59, 0.8)';
-                    btnCongratsVideo.style.borderColor = isCongratsVideo ? '#d8b4fe' : 'var(--border)';
-                    btnCongratsVideo.style.color = isCongratsVideo ? '#ffffff' : 'var(--text)';
-                    btnCongratsVideo.style.boxShadow = isCongratsVideo ? '0 0 16px rgba(168, 85, 247, 0.8)' : 'none';
-                    btnCongratsVideo.style.fontWeight = isCongratsVideo ? 'bold' : 'normal';
-                    btnCongratsVideo.style.transform = isCongratsVideo ? 'scale(1.03)' : 'none';
+                if (isDrawGeneric) {
+                    valBtns.forEach(b => { if(b) b.disabled = true; });
+                    genBtns.forEach(b => { if(b) b.disabled = false; });
+                } else if (isDraw) {
+                    valBtns.forEach(b => { if(b) b.disabled = false; });
+                    genBtns.forEach(b => { if(b) b.disabled = true; });
+                } else {
+                    valBtns.forEach(b => { if(b) b.disabled = false; });
+                    genBtns.forEach(b => { if(b) b.disabled = false; });
                 }
             }
+        }
         }
 
         function writeFirebase(data) {
