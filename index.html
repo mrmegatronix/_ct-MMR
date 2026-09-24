@@ -767,7 +767,8 @@
                 const digitsCount = Math.max(3, String(cfgMax).length);
 
                 let html = '';
-                const displayStr = (curNum === '-') ? '-'.repeat(digitsCount) : String(curNum).padStart(digitsCount, '0');
+                const isBlankPlaceholder = curNum === '-' || curNum === '---' || curNum === null || curNum === undefined || curNum === '';
+                const displayStr = isBlankPlaceholder ? '-'.repeat(digitsCount) : String(curNum).padStart(digitsCount, '0');
                 if (slotsContainer.dataset.lastRendered !== displayStr) {
                     for (let i = 0; i < displayStr.length; i++) {
                         const isDash = displayStr[i] === '-';
