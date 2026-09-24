@@ -1753,7 +1753,7 @@ input:focus, select:focus, textarea:focus {
             const btnDraw = document.getElementById('btn-draw');
             const btnDrawGeneric = document.getElementById('btn-draw-generic');
             const btnCongrats = document.getElementById('btn-congrats');
-            const btnCongratsVideo = document.getElementById('btn-congrats-video');
+            
 
             if (btnSlides && btnDraw && btnCongrats) {
                 const active = state.activeView || 'slides';
@@ -1765,7 +1765,7 @@ input:focus, select:focus, textarea:focus {
                 if (btnDraw) btnDraw.classList.toggle('active', isDraw);
                 if (btnDrawGeneric) btnDrawGeneric.classList.toggle('active', isDrawGeneric);
                 if (btnCongrats) btnCongrats.classList.toggle('active', active === 'congrats');
-                if (btnCongratsVideo) btnCongratsVideo.classList.toggle('active', active === 'congrats-video');
+                
 
                 const valBtns = [
                     document.getElementById('btn-draw-100'), document.getElementById('btn-redraw-100'),
