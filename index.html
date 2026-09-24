@@ -1807,16 +1807,7 @@
             }
         }
 
-                    const overlay = document.getElementById('darkness-overlay');
-                    if (overlay) overlay.style.opacity = '1';
-                }
-                
-                currentIdx++;
-                sequenceTimeout = setTimeout(showNext, step.duration);
-            }
-            
-            showNext();
-        }
+
 
         initFirebase();
         generateTVQRCodes();
