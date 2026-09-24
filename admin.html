@@ -1675,11 +1675,16 @@ input:focus, select:focus, textarea:focus {
         function saveFirebaseConfig() {
             const url = document.getElementById('fb-url').value.trim();
             localStorage.setItem('mmr_fb_url', url);
-            const el = document.getElementById('fb-status');
-            el.innerText = '✅ Firebase URL saved! Reload display/remote to apply.';
-            el.className = 'status status-success';
-            el.style.display = 'block';
-            setTimeout(() => el.style.display = 'none', 3000);
+            const el = document.getElementById('fb-status-2');
+            if (el) {
+                el.innerText = '✅ Firebase URL saved! Reload display/remote to apply.';
+                el.className = 'status status-success';
+                el.style.display = 'block';
+                setTimeout(() => el.style.display = 'none', 3000);
+            }
+            if (url && typeof initFirebase === 'function') {
+                initFirebase();
+            }
         }
 
         function toggleVoice(cb) {
@@ -2825,7 +2830,14 @@ input:focus, select:focus, textarea:focus {
 
         function generateQRCodes() {
             let baseUrl = window.location.href.split('?')[0].split('#')[0];
-            baseUrl = baseUrl.substring(0, baseUrl.lastIndexOf('/'));
+            if (!baseUrl.endsWith('/')) {
+                // If there's no trailing slash, check if it ends with a file extension
+                if (baseUrl.match(/\.[a-zA-Z0-9]+$/)) {
+                    baseUrl = baseUrl.substring(0, baseUrl.lastIndexOf('/'));
+                }
+            } else {
+                baseUrl = baseUrl.slice(0, -1);
+            }
             
             const urls = {
                 'qr-display': baseUrl + '/index.html',
@@ -2865,6 +2877,10 @@ input:focus, select:focus, textarea:focus {
 
         document.addEventListener('DOMContentLoaded', () => {
             generateQRCodes();
+            const fbInput = document.getElementById('fb-url');
+            if (fbInput) {
+                fbInput.value = localStorage.getItem('mmr_fb_url') || (window.MMR_CONFIG ? window.MMR_CONFIG.FIREBASE_DB_URL : '');
+            }
             try { init(); } catch (e) { console.error("init error:", e); }
             loadFinancials();
             
@@ -3209,6 +3225,7 @@ input:focus, select:focus, textarea:focus {
 <div class="form-group">
 <label>Database URL</label>
 <input id="fb-url" placeholder="https://your-project.firebaseio.com" type="text"/>
+
 </div>
 <button class="btn btn-primary" onclick="saveFirebaseConfig()">💾 Save Firebase Config</button>
 <div class="status" id="fb-status-2"></div>

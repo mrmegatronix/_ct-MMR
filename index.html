@@ -1936,11 +1936,19 @@
         }
 
         initFirebase();
+        generateTVQRCodes();
 
         // Generate QR codes for TV display
         function generateTVQRCodes() {
             let baseUrl = window.location.href.split('?')[0].split('#')[0];
-            baseUrl = baseUrl.substring(0, baseUrl.lastIndexOf('/'));
+            if (!baseUrl.endsWith('/')) {
+                // If there's no trailing slash, check if it ends with a file extension
+                if (baseUrl.match(/\.[a-zA-Z0-9]+$/)) {
+                    baseUrl = baseUrl.substring(0, baseUrl.lastIndexOf('/'));
+                }
+            } else {
+                baseUrl = baseUrl.slice(0, -1);
+            }
             const verifyUrl = encodeURIComponent(baseUrl + '/verify.html');
             const archiveUrl = encodeURIComponent(baseUrl + '/archive.html');
             
