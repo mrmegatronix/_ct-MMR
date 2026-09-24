@@ -452,9 +452,14 @@
             
             // View switching
             Object.keys(views).forEach(k => {
-                if (k === state.activeView) views[k].classList.add('active');
-                else views[k].classList.remove('active');
+                views[k].classList.remove('active');
             });
+            
+            if (state.activeView === 'congrats-loop') {
+                // The loop handles which one is active
+            } else if (views[state.activeView]) {
+                views[state.activeView].classList.add('active');
+            }
 
             
 
@@ -842,7 +847,7 @@
                 congratsStartTime = null;
             }
 
-            if (state.activeView === 'congrats' || state.activeView === 'winning-numbers' || state.activeView === 'view-robs-advert') {
+            if (state.activeView === 'congrats-loop') {
                 if (!postDrawLoopInterval) {
                     let steps = ['congrats'];
                     const activeEvent = (state.draw && state.draw.activeEvent) ? state.draw.activeEvent : 'thursday';
@@ -852,14 +857,19 @@
                         steps.push('winning-numbers');
                     }
                     
-                    let currentStepIdx = steps.indexOf(state.activeView) !== -1 ? steps.indexOf(state.activeView) : 0;
+                    let currentStepIdx = 0;
+                    
+                    // Immediately show the first step
+                    if (views[steps[currentStepIdx]]) views[steps[currentStepIdx]].classList.add('active');
                     
                     postDrawLoopInterval = setInterval(() => {
+                        // Hide current
+                        if (views[steps[currentStepIdx]]) views[steps[currentStepIdx]].classList.remove('active');
+                        // Next step
                         currentStepIdx = (currentStepIdx + 1) % steps.length;
-                        const nextView = steps[currentStepIdx];
-                        bc.postMessage({ type: 'STATE_UPDATE', payload: { activeView: nextView } });
-                        writeFirebase({ activeView: nextView });
-                    }, 10000); // Switch every 10 seconds
+                        // Show next
+                        if (views[steps[currentStepIdx]]) views[steps[currentStepIdx]].classList.add('active');
+                    }, 10000); // Switch every 10 seconds locally on display
                 }
             } else {
                 if (typeof postDrawLoopInterval !== 'undefined' && postDrawLoopInterval) {

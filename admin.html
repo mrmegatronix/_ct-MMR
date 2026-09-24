@@ -36,11 +36,11 @@
                     drawType = state.draw.sunday.type || 'full';
                 }
                 
-                // If it's a full draw, show winning-numbers, otherwise show congrats
+                // If it's a full draw, show alternating winners loop, otherwise show standard congrats
                 if (drawType === 'manual' || drawType === 'generic') {
                     state.activeView = 'congrats';
                 } else {
-                    state.activeView = 'winning-numbers';
+                    state.activeView = 'congrats-loop';
                 }
                 
                 updateState(state);
@@ -329,7 +329,8 @@ input:focus, select:focus, textarea:focus {
 <button class="btn btn-secondary" id="btn-slides" onclick="setView('slides')">📺 Slideshow</button>
 <button class="btn btn-secondary" id="btn-draw" onclick="setView('draw')">🎯 Draw Screen</button>
 <button class="btn btn-secondary" id="btn-draw-generic" onclick="openGenericDrawPage()">⭐ Open Generic Draw (Gold)</button>
-<button class="btn btn-secondary" id="btn-congrats" onclick="setView('congrats')" >🎉 Congrats Screen</button>
+<button class="btn btn-secondary" id="btn-congrats" onclick="setView('congrats')" >🎉 Congrats (Standard)</button>
+<button class="btn btn-secondary" id="btn-congrats-loop" onclick="setView('congrats-loop')" >🏆 Congrats (Winners)</button>
 </div>
 </div>
         <div class="card">
@@ -1753,6 +1754,7 @@ input:focus, select:focus, textarea:focus {
             const btnDraw = document.getElementById('btn-draw');
             const btnDrawGeneric = document.getElementById('btn-draw-generic');
             const btnCongrats = document.getElementById('btn-congrats');
+            const btnCongratsLoop = document.getElementById('btn-congrats-loop');
             
 
             if (btnSlides && btnDraw && btnCongrats) {
@@ -1765,6 +1767,7 @@ input:focus, select:focus, textarea:focus {
                 if (btnDraw) btnDraw.classList.toggle('active', isDraw);
                 if (btnDrawGeneric) btnDrawGeneric.classList.toggle('active', isDrawGeneric);
                 if (btnCongrats) btnCongrats.classList.toggle('active', active === 'congrats');
+                if (btnCongratsLoop) btnCongratsLoop.classList.toggle('active', active === 'congrats-loop');
                 
 
                 const valBtns = [
