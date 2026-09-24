@@ -388,6 +388,13 @@
         let lastActiveView = '';
         let postDrawLoopInterval = null;
 
+        function getActiveDrawnNumbers(drawObj) {
+            const d = drawObj || {};
+            const activeEvtName = (d && d.activeEvent) || 'thursday';
+            const activeEvt = (d && d[activeEvtName]) || d.thursday || d || {};
+            return Array.isArray(activeEvt.drawnNumbers) ? activeEvt.drawnNumbers : [];
+        }
+
         function updateState(newState) {
             if (newState && newState !== state) {
                 const { draw, ...rest } = newState;
@@ -436,6 +443,8 @@
                 } else if (day === targetDay && hour < 18) {
                     shouldTurnOff = true;
                 }
+                
+                if (state.demoMode) shouldTurnOff = false;
                 
                 if (shouldTurnOff) {
                     console.log('[MMR] Auto-corrected activeView from congrats to slides.');
@@ -893,6 +902,8 @@
                 } else if (day === targetDay && hour < 18) {
                     shouldTurnOff = true;
                 }
+                
+                if (state.demoMode) shouldTurnOff = false;
                 
                 if (shouldTurnOff) {
                     isPaused = false;
