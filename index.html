@@ -1005,14 +1005,14 @@
                         }
                     }
                 }
-                advertSlides.push({ title: "TICKETS ON SALE", subtitle: `🎟️ ${ticketsWording} 🎟️`, type: "advert", advertType: "tickets", duration: 25000 });
+                advertSlides.push({ title: "TICKETS ON SALE", subtitle: `🎟️ TICKETS ${ticketsWording} 🎟️`, type: "advert", advertType: "tickets", duration: 25000 });
                 advertSlides.push({ title: "MONSTER MEAT RAFFLE", subtitle: `🔥 DRAW STARTS ${drawWording} 🔥`, type: "advert", advertType: "draw_time", duration: 25000 });
-                advertSlides.push({ title: "MEAT TRAYS", subtitle: `🥩 Proudly supplied by Hibbard's Butchery 🥩`, type: "advert", advertType: "sponsor", duration: 25000 });
+                advertSlides.push({ title: "HIBBARD'S BUTCHERY", subtitle: `🥩 Meat Trays proudly supplied by Hibbard's Butchery 🥩`, type: "advert", advertType: "sponsor", duration: 25000 });
             } else if (!isCurrentEventEnabled) {
                 // User requested fallback slides when completely disabled
                 advertSlides.push({ title: "MONSTER MEAT RAFFLE", subtitle: `🔥 DRAW STARTS ${drawWording} 🔥`, type: "advert", advertType: "draw_time", duration: 25000 });
-                advertSlides.push({ title: "TICKETS ON SALE", subtitle: `🎟️ ${ticketsWording} 🎟️`, type: "advert", advertType: "tickets", duration: 25000 });
-                advertSlides.push({ title: "MEAT TRAYS", subtitle: `🥩 Proudly supplied by Hibbard's Butchery 🥩`, type: "advert", advertType: "sponsor", duration: 25000 });
+                advertSlides.push({ title: "TICKETS ON SALE", subtitle: `🎟️ TICKETS ${ticketsWording} 🎟️`, type: "advert", advertType: "tickets", duration: 25000 });
+                advertSlides.push({ title: "HIBBARD'S BUTCHERY", subtitle: `🥩 Meat Trays proudly supplied by Hibbard's Butchery 🥩`, type: "advert", advertType: "sponsor", duration: 25000 });
             }
 
             const finalSlides = [...visibleSlides, ...advertSlides];
