@@ -997,6 +997,12 @@
                     if (totalPrizes > 0) {
                         advertSlides.push({ title: `TOTAL PRIZES: ${totalPrizesStr}`, subtitle: "🍖 Premium Assorted Meat Trays must be won!! 🍖", type: "advert", advertType: "total", duration: 20000 });
                         advertSlides.push({ title: `TOTAL PRIZE POOL: ${totalPoolStr}`, subtitle: `🔥 in ${poolWording} Monster Meat Raffle Draw! 🔥`, type: "advert", advertType: "pool", duration: 25000 });
+                        
+                        const prevPool = Number(activeEvtData.cfgPrevPool || 0);
+                        if (prevPool > 0) {
+                            const prevPoolStr = "$" + prevPool.toLocaleString('en-NZ', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                            advertSlides.push({ title: `LAST WEEK'S POOL: ${prevPoolStr}`, subtitle: `💸 OVER ${prevPoolStr} GIVEN AWAY LAST WEEK 💸`, type: "advert", advertType: "prev_pool", duration: 25000 });
+                        }
                     }
                 }
                 advertSlides.push({ title: "TICKETS ON SALE", subtitle: `🎟️ ${ticketsWording} 🎟️`, type: "advert", advertType: "tickets", duration: 25000 });
@@ -1033,6 +1039,9 @@
                     } else if (slide.advertType === 'total') {
                         style = `background: radial-gradient(circle at center, #7c2d12 0%, #020617 100%); --badge-glow: rgba(239, 68, 68, 0.6); --title-glow: rgba(239, 68, 68, 0.4);`;
                         badge = '🍖';
+                    } else if (slide.advertType === 'prev_pool') {
+                        style = `background: radial-gradient(circle at center, #065f46 0%, #020617 100%); --badge-glow: rgba(52, 211, 153, 0.6); --title-glow: rgba(52, 211, 153, 0.4);`;
+                        badge = '💸';
                     } else if (slide.advertType === 'pool') {
                         style = `background: radial-gradient(circle at center, #4c1d95 0%, #020617 100%); --badge-glow: rgba(168, 85, 247, 0.6); --title-glow: rgba(168, 85, 247, 0.4);`;
                         badge = '💰';
