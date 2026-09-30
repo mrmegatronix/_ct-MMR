@@ -3,175 +3,65 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MMR - Live Visual Preview</title>
-    <style>
-
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-
-:root {
-  --background: 223 39% 7%;
-  --foreground: 0 0% 98%;
-  --card: 223 39% 7%;
-  --card-foreground: 0 0% 98%;
-  --popover: 223 39% 7%;
-  --popover-foreground: 0 0% 98%;
-  --primary: 0 0% 98%;
-  --primary-foreground: 223 39% 7%;
-  --secondary: 217.2 32.6% 17.5%;
-  --secondary-foreground: 0 0% 98%;
-  --muted: 217.2 32.6% 17.5%;
-  --muted-foreground: 215 20.2% 65.1%;
-  --accent: 217.2 32.6% 17.5%;
-  --accent-foreground: 0 0% 98%;
-  --destructive: 0 62.8% 30.6%;
-  --destructive-foreground: 0 0% 98%;
-  --border: 217.2 32.6% 17.5%;
-  --input: 217.2 32.6% 17.5%;
-  --ring: 212.7 26.8% 83.9%;
-  --radius: 0.5rem;
-}
-
-* { box-sizing: border-box; border-color: hsl(var(--border)); }
-
-html, body {
-  background-color: hsl(var(--background));
-  color: hsl(var(--foreground));
-  font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  margin: 0;
-  padding: 1.5rem;
-  line-height: 1.5;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-h1, h2, h3, h4, h5, h6 { font-weight: 600; letter-spacing: -0.025em; margin: 0; }
-
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: var(--radius);
-  font-size: 0.875rem;
-  font-weight: 500;
-  height: 2.25rem;
-  padding: 0 1rem;
-  transition: all 0.2s ease-in-out;
-  cursor: pointer;
-  border: 1px solid transparent;
-  text-decoration: none;
-  gap: 0.4rem;
-}
-.btn-primary { background: hsl(var(--primary)); color: hsl(var(--primary-foreground)); }
-.btn-primary:hover { opacity: 0.9; }
-.btn-secondary { background: hsl(var(--secondary)); color: hsl(var(--secondary-foreground)); }
-.btn-secondary:hover { opacity: 0.8; }
-.btn-danger { background: hsl(var(--destructive)); color: hsl(var(--destructive-foreground)); }
-.btn-danger:hover { opacity: 0.9; }
-
-
+    <title>MMR - Grid Preview</title>
+    <style>@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        :root {
+            --background: 223 39% 7%;
+            --border: 217.2 32.6% 17.5%;
+            --destructive: 0 62.8% 30.6%;
+            --destructive-foreground: 0 0% 98%;
+            --radius: 0.5rem;
+        }
+        body {
+            margin: 0;
+            background-color: hsl(var(--background));
+            color: white;
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
         .header-bar {
             width: 100%;
-            max-width: 1920px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: hsl(var(--secondary));
+            background: #1e293b;
             padding: 15px 30px;
-            border-radius: var(--radius);
-            margin-bottom: 20px;
             box-sizing: border-box;
-            border: 2px solid hsl(var(--border));
+            border-bottom: 2px solid hsl(var(--border));
         }
-        h1 {
-            margin: 0;
-            font-size: 1.5rem;
-            color: #fbbf24;
-            text-transform: uppercase;
-        }
-        .controls {
-            display: flex;
-            gap: 15px;
-        }
-        
-        /* Iframe wrapper for 16:9 scaling */
-        .preview-wrapper {
-            position: relative;
-            width: 100%;
-            max-width: 1280px; /* Base width */
-            aspect-ratio: 16 / 9;
-            background: #000;
+        h1 { margin: 0; font-size: 1.5rem; color: #fbbf24; text-transform: uppercase; }
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
             border-radius: var(--radius);
-            overflow: hidden;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.6);
-            border: 4px solid hsl(var(--border));
+            font-size: 0.875rem;
+            font-weight: 500;
+            height: 2.25rem;
+            padding: 0 1rem;
+            cursor: pointer;
+            border: 1px solid transparent;
+            text-decoration: none;
+            color: hsl(var(--destructive-foreground));
+            background: hsl(var(--destructive));
         }
-        
-        #tv-frame {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 1920px;
-            height: 1080px;
+        .btn:hover { opacity: 0.9; }
+        iframe {
+            flex: 1;
+            width: 100%;
             border: none;
-            transform-origin: top left;
+            background: transparent;
         }
-
     </style>
 </head>
 <body>
-
     <div class="header-bar">
-        <h1>📺 Live Visual TV Preview</h1>
-        <div class="controls">
-            <button class="btn btn-secondary" onclick="sendCommand('prev')">⏮ Prev Slide</button>
-            <button class="btn btn-secondary" onclick="sendCommand('toggle')">⏸ Pause / Auto</button>
-            <button class="btn btn-secondary" onclick="sendCommand('next')">Next ⏭</button>
-            <button class="btn btn-danger" onclick="window.location.href='admin.html'">Return to Admin</button>
-        </div>
+        <h1>🖼️ Promotional Slides Grid Preview</h1>
+        <button class="btn" onclick="window.location.href='admin.html'">Return to Admin</button>
     </div>
-    
-    <p style="color: #94a3b8; margin-top: -10px; margin-bottom: 20px; text-align: center;">
-        This is exactly what is playing on the main TV right now.<br>
-        If draws are disabled, it will ONLY cycle the promotional slides (Countdown, Tickets, Meat Trays, etc).
-    </p>
-
-    <div class="preview-wrapper" id="wrapper">
-        <iframe id="tv-frame" src="index.html"></iframe>
-    </div>
-
-    <script>
-        // Scale iframe to fit wrapper perfectly
-        function resizeIframe() {
-            const wrapper = document.getElementById('wrapper');
-            const frame = document.getElementById('tv-frame');
-            const scale = wrapper.clientWidth / 1920;
-            frame.style.transform = `scale(${scale})`;
-        }
-        
-        window.addEventListener('resize', resizeIframe);
-        window.addEventListener('load', resizeIframe);
-        
-        // Setup BroadcastChannel to send commands to the iframe
-        const bc = new BroadcastChannel('mmr_state_channel');
-        
-        function sendCommand(cmd) {
-            bc.postMessage({
-                type: 'SLIDE_CMD',
-                payload: {
-                    cmd: cmd,
-                    ts: Date.now()
-                }
-            });
-            
-            // If they are controlling slides, make sure it forces the slides view
-            bc.postMessage({
-                type: 'STATE_UPDATE',
-                payload: { activeView: 'slides' }
-            });
-        }
-    </script>
+    <iframe src="index.html?grid=true"></iframe>
 </body>
 </html>

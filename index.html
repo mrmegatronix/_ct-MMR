@@ -9,6 +9,47 @@
         document.write('<script src="config.js?v=' + Date.now() + '"><\/script>');
     </script>
     <script>document.write('<link rel="stylesheet" href="tv-styles.css?v=' + Date.now() + '">');</script>
+
+    <script>
+        const isGridPreview = new URLSearchParams(window.location.search).get('grid') === 'true';
+        if (isGridPreview) {
+            document.write(`
+            <style>
+                body { overflow-y: auto !important; height: auto !important; background: #070a13 !important; padding: 20px !important; }
+                #view-container { display: block !important; position: static !important; }
+                .view { display: block !important; position: static !important; opacity: 1 !important; visibility: visible !important; height: auto !important; }
+                #view-draw, #progress-container, .brand-logo, .slides-fixed-title, #ambient-confetti-container { display: none !important; }
+                
+                #slides-wrapper {
+                    position: static !important;
+                    display: grid !important;
+                    grid-template-columns: repeat(auto-fit, minmax(480px, 1fr)) !important;
+                    gap: 30px !important;
+                    width: 100% !important;
+                    height: auto !important;
+                    padding: 20px !important;
+                }
+                
+                .slide {
+                    position: relative !important;
+                    opacity: 1 !important;
+                    visibility: visible !important;
+                    transform: none !important;
+                    width: 100% !important;
+                    aspect-ratio: 16/9 !important;
+                    border: 4px solid #334155 !important;
+                    border-radius: 12px !important;
+                    overflow: hidden !important;
+                    box-shadow: 0 10px 25px rgba(0,0,0,0.5) !important;
+                }
+                
+                .slide h1 { font-size: clamp(2rem, 3vw, 3rem) !important; }
+                .slide h2 { font-size: clamp(1.2rem, 2vw, 1.8rem) !important; }
+            </style>
+            `);
+        }
+    </script>
+
 </head>
 <body>
 
