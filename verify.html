@@ -5,24 +5,80 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MMR - Draw Integrity Verification</title>
     <style>
-        :root {
-            --bg: #0b0f19;
-            --surface: #1e293b;
-            --primary: #ef4444;
-            --text: #f8fafc;
-            --text-muted: #64748b;
-            --border: #334155;
-            --success: #10b981;
-        }
 
-        body {
-            background: var(--bg);
-            color: var(--text);
-            font-family: -apple-system, system-ui, sans-serif;
-            margin: 0;
-            padding: 1.5rem;
-            box-sizing: border-box;
-        }
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+:root {
+  --background: 223 39% 7%;
+  --foreground: 0 0% 98%;
+  --card: 223 39% 7%;
+  --card-foreground: 0 0% 98%;
+  --popover: 223 39% 7%;
+  --popover-foreground: 0 0% 98%;
+  --primary: 0 0% 98%;
+  --primary-foreground: 223 39% 7%;
+  --secondary: 217.2 32.6% 17.5%;
+  --secondary-foreground: 0 0% 98%;
+  --muted: 217.2 32.6% 17.5%;
+  --muted-foreground: 215 20.2% 65.1%;
+  --accent: 217.2 32.6% 17.5%;
+  --accent-foreground: 0 0% 98%;
+  --destructive: 0 62.8% 30.6%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 217.2 32.6% 17.5%;
+  --input: 217.2 32.6% 17.5%;
+  --ring: 212.7 26.8% 83.9%;
+  --radius: 0.5rem;
+  
+  --bg: hsl(var(--background));
+  --surface: hsl(var(--secondary));
+  --surface-card: hsl(var(--card));
+  --text: hsl(var(--foreground));
+  --text-muted: hsl(var(--muted-foreground));
+  
+  --accent-100: #f59e0b;
+  --accent-50: #3b82f6;
+  --accent-25: #10b981;
+  --accent-bonus: #eab308;
+  --accent-voucher: #8b5cf6;
+  --success: #10b981;
+}
+
+* { box-sizing: border-box; border-color: hsl(var(--border)); }
+
+html, body {
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  margin: 0;
+  padding: 1.5rem;
+  line-height: 1.5;
+}
+
+h1, h2, h3, h4, h5, h6 { font-weight: 600; letter-spacing: -0.025em; margin: 0; }
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius);
+  font-size: 0.875rem;
+  font-weight: 500;
+  height: 2.25rem;
+  padding: 0 1rem;
+  transition: all 0.2s ease-in-out;
+  cursor: pointer;
+  border: 1px solid transparent;
+  text-decoration: none;
+  gap: 0.4rem;
+}
+.btn-primary { background: hsl(var(--primary)); color: hsl(var(--primary-foreground)); }
+.btn-primary:hover { opacity: 0.9; }
+.btn-secondary { background: hsl(var(--secondary)); color: hsl(var(--secondary-foreground)); }
+.btn-secondary:hover { opacity: 0.8; }
+.btn-danger { background: hsl(var(--destructive)); color: hsl(var(--destructive-foreground)); }
 
         .container {
             max-width: 800px;
