@@ -63,8 +63,8 @@
   --card-foreground: 0 0% 98%;
   --popover: 240 10% 3.9%;
   --popover-foreground: 0 0% 98%;
-  --primary: 0 0% 98%;
-  --primary-foreground: 240 5.9% 10%;
+  --primary: 217 91% 60%;
+  --primary-foreground: 0 0% 100%;
   --secondary: 240 3.7% 15.9%;
   --secondary-foreground: 0 0% 98%;
   --muted: 240 3.7% 15.9%;
@@ -77,6 +77,11 @@
   --input: 240 3.7% 15.9%;
   --ring: 240 4.9% 83.9%;
   --radius: 0.5rem;
+
+  --bg: hsl(var(--background));
+  --text: hsl(var(--foreground));
+  --text-muted: hsl(var(--muted-foreground));
+  --border-color: hsl(var(--border));
 }
 
 * {
@@ -93,154 +98,225 @@ html, body {
   margin: 0;
   padding: 0;
   overflow-x: hidden;
-  font-size: 16px;
+  font-size: 15px;
   line-height: 1.5;
 }
 
-h1, h2, h3, h4, h5, h6 { font-weight: 600; letter-spacing: -0.025em; margin: 0; }
-h2 { font-size: 1.5rem; }
-h3 { font-size: 1.25rem; }
-p { line-height: 1.75; margin: 0; }
-.text-muted { color: hsl(var(--muted-foreground)); font-size: 0.875rem; }
+h1, h2, h3, h4, h5, h6 { font-weight: 600; letter-spacing: -0.02em; margin: 0; }
+h2 { font-size: 1.25rem; }
+h3 { font-size: 1.1rem; }
+p { line-height: 1.6; margin: 0; }
+.text-muted { color: hsl(var(--muted-foreground)); font-size: 0.85rem; }
 
 .container {
   width: 100%;
-  max-width: 1200px;
+  max-width: 1240px;
   margin-left: auto;
   margin-right: auto;
-  padding: 2rem 1.5rem;
+  padding: 1.5rem;
 }
 
 .header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem 1.5rem;
-  background-color: hsl(var(--background) / 0.8);
+  padding: 0.75rem 1.5rem;
+  background-color: hsl(var(--background) / 0.85);
   backdrop-filter: blur(12px);
   border-bottom: 1px solid hsl(var(--border));
   position: sticky;
   top: 0;
   z-index: 50;
+  gap: 1rem;
 }
-.header h1 { font-size: 1.125rem; }
+.header h1 { font-size: 1.1rem; font-weight: 700; white-space: nowrap; margin: 0; }
 
 .card {
   background-color: hsl(var(--card));
   color: hsl(var(--card-foreground));
   border: 1px solid hsl(var(--border));
   border-radius: var(--radius);
-  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.2);
   display: flex;
   flex-direction: column;
-  padding: 1.5rem;
-  gap: 1.5rem;
-}
-.card > h2 {
-  font-size: 1.25rem;
-  font-weight: 600;
-  line-height: 1;
-  letter-spacing: -0.025em;
-  margin-bottom: -0.75rem; /* pull up description */
+  padding: 1.25rem;
+  gap: 1rem;
 }
 
-.form-group { display: flex; flex-direction: column; gap: 0.5rem; }
-label { font-size: 0.875rem; font-weight: 500; line-height: 1; color: hsl(var(--foreground)); }
+.form-group { display: flex; flex-direction: column; gap: 0.4rem; }
+label { font-size: 0.85rem; font-weight: 500; line-height: 1; color: hsl(var(--foreground)); }
 
-input, select, textarea {
-  display: flex; height: 2.5rem; width: 100%;
+input:not([type="checkbox"]):not([type="radio"]), select, textarea {
+  display: flex; height: 2.25rem; width: 100%;
   border-radius: calc(var(--radius) - 2px);
   border: 1px solid hsl(var(--input));
   background-color: hsl(var(--background));
-  padding: 0.5rem 0.75rem; font-size: 0.875rem; color: hsl(var(--foreground));
+  padding: 0.4rem 0.75rem; font-size: 0.85rem; color: hsl(var(--foreground));
   transition: border-color 0.15s, box-shadow 0.15s;
 }
-input:focus, select:focus, textarea:focus {
+input:not([type="checkbox"]):not([type="radio"]):focus, select:focus, textarea:focus {
   outline: 2px solid transparent; outline-offset: 2px;
   border-color: hsl(var(--ring)); box-shadow: 0 0 0 1px hsl(var(--ring));
 }
 
+input[type="checkbox"], input[type="radio"] {
+  accent-color: #3b82f6;
+  width: 1.05rem;
+  height: 1.05rem;
+  cursor: pointer;
+  margin: 0;
+  vertical-align: middle;
+}
+
+/* Custom Shadcn Switch */
+.switch {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  width: 2.2rem;
+  height: 1.25rem;
+  flex-shrink: 0;
+}
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+  position: absolute;
+  pointer-events: none;
+}
+.switch-slider {
+  position: absolute;
+  cursor: pointer;
+  inset: 0;
+  background-color: hsl(var(--secondary));
+  border-radius: 9999px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid hsl(var(--border));
+}
+.switch-slider:before {
+  position: absolute;
+  content: "";
+  height: 0.95rem;
+  width: 0.95rem;
+  left: 0.12rem;
+  bottom: 0.08rem;
+  background-color: hsl(var(--muted-foreground));
+  border-radius: 50%;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.switch input:checked + .switch-slider {
+  background-color: #3b82f6;
+  border-color: #3b82f6;
+}
+.switch input:checked + .switch-slider:before {
+  transform: translateX(0.95rem);
+  background-color: #ffffff;
+}
+
+.header-toggle-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: hsl(var(--foreground));
+  cursor: pointer;
+  white-space: nowrap;
+  user-select: none;
+}
+
 .btn {
   display: inline-flex; align-items: center; justify-content: center; text-align: center;
-  white-space: normal; word-wrap: break-word; border-radius: calc(var(--radius) - 2px);
-  font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.02em; 
-  min-height: 2.5rem; padding: 0.5rem 1rem; line-height: 1.2;
-  transition: all 0.15s; cursor: pointer; text-decoration: none;
-  
-  /* Available: colour border */
+  white-space: nowrap; border-radius: calc(var(--radius) - 2px);
+  font-size: 0.825rem; font-weight: 600; letter-spacing: -0.01em; 
+  height: 2.25rem; min-height: 2.25rem; padding: 0 0.85rem; line-height: 1;
+  transition: all 0.15s ease-in-out; cursor: pointer; text-decoration: none;
   background-color: transparent; 
-  border: 1px solid hsl(var(--primary)); 
-  color: hsl(var(--primary));
+  border: 1px solid hsl(var(--border)); 
+  color: hsl(var(--foreground));
 }
-.btn:hover { background-color: hsl(var(--primary) / 0.1); }
+.btn:hover { background-color: hsl(var(--accent)); color: hsl(var(--accent-foreground)); }
 
 /* Available Variant: Secondary */
 .btn.btn-secondary {
-  border: 1px solid hsl(var(--secondary-foreground) / 0.5);
-  color: hsl(var(--foreground));
+  border: 1px solid hsl(var(--border));
+  background-color: hsl(var(--secondary));
+  color: hsl(var(--secondary-foreground));
 }
 .btn.btn-secondary:hover {
-  background-color: hsl(var(--secondary-foreground) / 0.1);
+  background-color: hsl(var(--accent));
+  color: hsl(var(--accent-foreground));
+  border-color: hsl(var(--ring));
 }
 
-/* Active: full colour and border */
+/* Active & Primary */
 .btn.btn-primary, .btn.active { 
-  background-color: hsl(var(--primary)); 
-  color: hsl(var(--primary-foreground)); 
-  border: 1px solid hsl(var(--primary)); 
-  font-weight: 700; 
-  box-shadow: 0 0 10px rgba(59, 130, 246, 0.4); 
+  background-color: #2563eb; 
+  color: #ffffff; 
+  border: 1px solid #3b82f6; 
+  font-weight: 600; 
+  box-shadow: 0 0 10px rgba(37, 99, 235, 0.35); 
 }
 .btn.btn-primary:hover, .btn.active:hover { 
-  background-color: hsl(var(--primary) / 0.9); 
+  background-color: #1d4ed8; 
+  border-color: #60a5fa;
 }
 
-/* Danger Buttons (Solid) */
+/* Danger Buttons */
 .btn.btn-danger { 
   background-color: hsl(var(--destructive)); 
-  border: 1px solid hsl(var(--destructive));
+  border: 1px solid hsl(var(--destructive)); 
   color: hsl(var(--destructive-foreground)); 
 }
 .btn.btn-danger:hover { 
   background-color: hsl(var(--destructive) / 0.9); 
 }
 
-/* Unavailable: no colour & no border */
+/* Unavailable */
 .btn:disabled { 
   background-color: transparent !important; 
   border: 1px solid transparent !important; 
   color: hsl(var(--muted-foreground)) !important; 
-  opacity: 0.6; 
+  opacity: 0.5; 
   pointer-events: none; 
   cursor: not-allowed; 
   box-shadow: none !important; 
 }
 
-.btn-group { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0.5rem; }
+.btn-group { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 0.5rem; }
 
 .tab-bar {
-  display: inline-flex; height: 2.5rem; align-items: center; justify-content: center;
+  display: inline-flex; height: 2.25rem; align-items: center; justify-content: flex-start;
   border-radius: var(--radius); background-color: hsl(var(--muted)); padding: 0.25rem;
-  margin-bottom: 1.5rem; margin-top: 1rem; margin-left: 1.5rem;
+  margin-bottom: 1.25rem;
 }
 .tab-btn {
   display: inline-flex; align-items: center; justify-content: center; white-space: nowrap;
-  border-radius: calc(var(--radius) - 2px); padding: 0.25rem 0.75rem;
-  font-size: 0.875rem; font-weight: 500; transition: all 0.15s;
+  border-radius: calc(var(--radius) - 2px); padding: 0.25rem 0.85rem;
+  font-size: 0.85rem; font-weight: 500; transition: all 0.15s;
   background: transparent; color: hsl(var(--muted-foreground)); border: none; cursor: pointer; height: 100%;
 }
 .tab-btn.active {
   background-color: hsl(var(--background)); color: hsl(var(--foreground));
-  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  font-weight: 600; box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.2);
 }
 .tab-content { display: none; }
 .tab-content.active { display: flex; flex-direction: column; gap: 1.5rem; }
 
-.draw-configs-split { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem; }
+.draw-configs-split { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.25rem; }
+
 .live-clock-badge {
   background: hsl(var(--secondary)); border: 1px solid hsl(var(--border));
-  padding: 0.25rem 0.75rem; border-radius: 1rem; font-family: monospace;
-  font-size: 0.875rem; font-weight: 600; color: #fbbf24;
+  padding: 0.2rem 0.65rem; border-radius: 9999px; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.85rem; font-weight: 600; color: #fbbf24; display: inline-flex; align-items: center; gap: 1px;
+}
+@keyframes colonBlink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+.colon-flash {
+  animation: colonBlink 1s infinite;
+  display: inline-block;
 }
 
 #pin-overlay { position: fixed; inset: 0; background: hsl(var(--background) / 0.95); backdrop-filter: blur(8px); z-index: 9999; display: flex; align-items: center; justify-content: center; }
@@ -290,39 +366,42 @@ input:focus, select:focus, textarea:focus {
 </div>
 </div>
 <div class="header">
-<div style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap;">
-<h1 id="header-title">MMR Admin</h1>
+<div style="display: flex; align-items: center; gap: 12px; flex-shrink: 0;">
+<h1 id="header-title" style="white-space: nowrap;">MMR Admin</h1>
 <div class="live-clock-badge" id="admin-clock">--<span class="colon-flash">:</span>--<span class="colon-flash">:</span>--</div>
+<span id="fb-status" style="font-size:0.8rem; color:#64748b; font-weight: 600; white-space: nowrap;">🔴 Firebase: Not configured</span>
 </div>
-<div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap; justify-content: flex-end;">
-<span id="fb-status" style="font-size:0.8rem; color:#64748b;">🔴 Firebase: Not configured</span>
-<div class="voice-toggle-container">
-<label style="cursor:pointer; display:flex; align-items:center; gap:5px; font-size:0.8rem; font-weight:bold;">
-<input id="voice-toggle" onchange="toggleVoice(this)" type="checkbox"/> 🔊 Auto-Voice
-                </label>
-</div>
-<div class="voice-toggle-container">
-<label style="cursor:pointer; display:flex; align-items:center; gap:5px; font-size:0.8rem; font-weight:bold;">
-<input id="sound-toggle" onchange="toggleSound(this)" type="checkbox"/> 🎰 Slot Sounds
-                </label>
-</div>
-<button class="btn btn-primary" id="btn-demo-mode" onclick="toggleDemoMode()">Demo Mode: OFF</button>
-<a class="btn btn-secondary" href="index.html">TV Display</a>
-        <a class="btn btn-secondary" href="preview.html">Slide Preview</a>
-<a class="btn btn-primary" href="remote.html">Remote Control</a>
-
+<div style="display: flex; gap: 12px; align-items: center; justify-content: flex-end; flex-wrap: wrap;">
+<label class="header-toggle-label" title="Toggle Automated Voice Announcements">
+<span class="switch">
+<input id="voice-toggle" onchange="toggleVoice(this)" type="checkbox"/>
+<span class="switch-slider"></span>
+</span>
+<span>🔊 Auto-Voice</span>
+</label>
+<label class="header-toggle-label" title="Toggle Slot Machine Sound Effects">
+<span class="switch">
+<input id="sound-toggle" onchange="toggleSound(this)" type="checkbox"/>
+<span class="switch-slider"></span>
+</span>
+<span>🎰 Slot Sounds</span>
+</label>
+<button class="btn btn-secondary" id="btn-demo-mode" onclick="toggleDemoMode()" style="white-space: nowrap;">Demo Mode: OFF</button>
+<a class="btn btn-secondary" href="index.html" target="_blank" style="white-space: nowrap;">📺 TV Display</a>
+<a class="btn btn-secondary" href="preview.html" target="_blank" style="white-space: nowrap;">🖼️ Slide Preview</a>
+<a class="btn btn-primary" href="remote.html" target="_blank" style="white-space: nowrap;">🎮 Remote Control</a>
 </div>
 </div>
 <!-- PiP Live Monitor -->
-<div style="width: 100%; display: flex; flex-direction: column; align-items: center; background: #070a13; border-bottom: 1px solid var(--border); padding: 1.5rem 1rem;">
+<div style="width: 100%; display: flex; flex-direction: column; align-items: center; background: hsl(var(--background)); border-bottom: 1px solid hsl(var(--border)); padding: 1.25rem 1rem;">
     
     <div style="width: 100%; max-width: 800px; margin-bottom: 0.5rem; display: flex; justify-content: space-between; align-items: center;">
-        <div style="font-size: 0.8rem; color: #ef4444; font-weight: bold; display: flex; align-items: center; gap: 6px;">
+        <div style="font-size: 0.75rem; color: #ef4444; font-weight: 700; display: flex; align-items: center; gap: 6px; letter-spacing: 0.05em;">
             <span style="display:inline-block; width:8px; height:8px; background:#ef4444; border-radius:50%; animation: pulse 2s infinite;"></span> LIVE TV DISPLAY PREVIEW
         </div>
     </div>
     
-    <div style="width: 100%; max-width: 800px; aspect-ratio: 16/9; border-radius: 8px; overflow: hidden; border: 3px solid var(--border); background: #000; position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.5);" id="pip-container">
+    <div style="width: 100%; max-width: 800px; aspect-ratio: 16/9; border-radius: var(--radius); overflow: hidden; border: 1px solid hsl(var(--border)); background: #000; position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.4);" id="pip-container">
         <iframe id="pip-iframe" src="index.html?preview=true&v=2" style="position: absolute; top: 0; left: 0; width: 1920px; height: 1080px; transform-origin: top left; border: none;"></iframe>
         <style>@keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.2; } 100% { opacity: 1; } }</style>
     </div>
@@ -345,30 +424,28 @@ input:focus, select:focus, textarea:focus {
     <div class="draw-configs-split">
         <div class="card">
 <h2>📺 Display View Mode</h2>
-<div class="btn-group">
+<div class="btn-group" style="grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));">
 <button class="btn btn-secondary" id="btn-slides" onclick="setView('slides')">📺 Slideshow</button>
 <button class="btn btn-secondary" id="btn-draw" onclick="setView('draw')">🎯 Draw Screen</button>
-<button class="btn btn-secondary" id="btn-draw-generic" onclick="openGenericDrawPage()">⭐ Open Generic Draw (Gold)</button>
-<button class="btn btn-secondary" id="btn-congrats" onclick="setView('congrats')" >🎉 Congrats (Standard)</button>
-<button class="btn btn-secondary" id="btn-congrats-loop" onclick="setView('congrats-loop')" >🏆 Congrats (Winners)</button>
+<button class="btn btn-secondary" id="btn-draw-generic" onclick="openGenericDrawPage()">⭐ Generic Draw</button>
+<button class="btn btn-secondary" id="btn-congrats" onclick="setView('congrats')">🎉 Congrats</button>
+<button class="btn btn-secondary" id="btn-congrats-loop" onclick="setView('congrats-loop')">🏆 Winners Loop</button>
 </div>
 </div>
         <div class="card">
 <h2>🎮 Slide Navigation</h2>
-<div class="btn-group">
+<div class="btn-group" style="grid-template-columns: repeat(3, 1fr);">
 <button class="btn btn-secondary" onclick="remoteSlide('prev')">⏮ Previous</button>
 <button class="btn btn-secondary" id="btn-play-pause" onclick="remoteSlide('toggle')">⏸ Pause</button>
 <button class="btn btn-secondary" onclick="remoteSlide('next')">Next ⏭</button>
 </div>
 </div>
     </div>
-</div>
 
-<div class="tab-bar" style="margin-top: 1rem; padding: 0 1.5rem;">
-
-<button class="tab-btn active" id="btn-tab-config" onclick="switchAdminTab('tab-config')">⚙️ Draw Config</button>
-<button class="tab-btn" id="btn-tab-financials" onclick="switchAdminTab('tab-financials')">💰 Financials</button>
-
+    <div class="tab-bar" style="margin: 1.5rem 0 0.5rem 0;">
+        <button class="tab-btn active" id="btn-tab-config" onclick="switchAdminTab('tab-config')">⚙️ Draw Config</button>
+        <button class="tab-btn" id="btn-tab-financials" onclick="switchAdminTab('tab-financials')">💰 Financials</button>
+    </div>
 </div><div id="global-status-bar" style="background: #10b981; color: white; text-align: center; padding: 0.5rem; font-weight: bold; position: fixed; top: 0; left: 0; right: 0; z-index: 1000; transition: transform 0.3s ease-in-out; transform: translateY(-100%);">✅ Ready</div><div id="tabs-container" class="container"><div class="tab-content active" id="tab-config"><div class="card">
 <h2>🎰 Draw Configuration &amp; Prizes</h2>
 <p class="text-muted">
@@ -389,7 +466,7 @@ input:focus, select:focus, textarea:focus {
                 <input id="cfg-thu-enabled" onchange="updateDrawState()" style="width: auto;" type="checkbox" checked/> Enable
             </label>
             <label style="font-size: 0.85rem; font-weight: 700; color: #cbd5e1; margin-left: 5px;">Type:</label>
-            <select id="cfg-thu-type" onchange="updateDrawState()" style="padding: 4px 8px; border-radius: 4px; background: var(--bg); color: var(--text); border: 1px solid var(--border); font-weight: 600;">
+            <select id="cfg-thu-type" onchange="updateDrawState()" style="padding: 4px 8px; border-radius: 4px; background: hsl(var(--background)); color: hsl(var(--foreground)); border: 1px solid hsl(var(--border)); font-weight: 600;">
                 <option value="full">Full Draw</option>
                 <option value="manual">Manual Draw</option>
                 <option value="generic">Generic Draw</option>
@@ -464,7 +541,7 @@ input:focus, select:focus, textarea:focus {
                 <input id="cfg-sun-enabled" onchange="updateDrawState()" style="width: auto;" type="checkbox"/> Enable
             </label>
             <label style="font-size: 0.85rem; font-weight: 700; color: #cbd5e1; margin-left: 5px;">Type:</label>
-            <select id="cfg-sun-type" onchange="updateDrawState()" style="padding: 4px 8px; border-radius: 4px; background: var(--bg); color: var(--text); border: 1px solid var(--border); font-weight: 600;">
+            <select id="cfg-sun-type" onchange="updateDrawState()" style="padding: 4px 8px; border-radius: 4px; background: hsl(var(--background)); color: hsl(var(--foreground)); border: 1px solid hsl(var(--border)); font-weight: 600;">
                 <option value="full">Full Draw</option>
                 <option value="manual">Manual Draw</option>
                 <option value="generic">Generic Draw</option>
@@ -2784,7 +2861,7 @@ function buildDrawResultsHTML(isBlank = false) {
 </p>
 <div class="draw-configs-split">
     <div>
-        <h3 style="font-size: 0.9rem; color: var(--foreground); margin-bottom: 0.75rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem;">Pre-Draw Preparation (Blank)</h3>
+        <h3 style="font-size: 0.9rem; color: hsl(var(--foreground)); margin-bottom: 0.75rem; border-bottom: 1px solid hsl(var(--border)); padding-bottom: 0.5rem;">Pre-Draw Preparation (Blank)</h3>
         <div class="btn-group" style="grid-template-columns: 1fr;">
             <button class="btn btn-secondary" onclick="printBlankDraw()">🖨️ Blank Prize Checklist (Landscape)</button>
             <button class="btn btn-secondary" onclick="printDrawResults(true)">🖨️ Blank Results Sheet (Portrait)</button>
@@ -2793,7 +2870,7 @@ function buildDrawResultsHTML(isBlank = false) {
         <p style="font-size: 0.75rem; color: #64748b; margin-top: 6px;">Android users: Print these individually to avoid orientation glitches.</p>
     </div>
     <div>
-        <h3 style="font-size: 0.9rem; color: var(--foreground); margin-bottom: 0.75rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem;">End of Week Reports (Filled)</h3>
+        <h3 style="font-size: 0.9rem; color: hsl(var(--foreground)); margin-bottom: 0.75rem; border-bottom: 1px solid hsl(var(--border)); padding-bottom: 0.5rem;">End of Week Reports (Filled)</h3>
         <div class="btn-group" style="grid-template-columns: 1fr;">
             <button class="btn btn-secondary" onclick="printFullDraw()">🖨️ Final Prize Checklist (Landscape)</button>
             <button class="btn btn-secondary" onclick="printDrawResults(false)">🖨️ Final Results Sheet (Portrait)</button>
@@ -2899,7 +2976,7 @@ function buildDrawResultsHTML(isBlank = false) {
             Patrons can scan this QR code to view historical draw results.
         </p>
 <div style="text-align: center; padding: 1rem 0;">
-<img alt="Archive QR Code" id="qr-archive-admin" style="background: white; padding: 0.5rem; border-radius: 0.5rem; width: 140px; height: 140px; border: 1.5px solid var(--border);"/>
+<img alt="Archive QR Code" id="qr-archive-admin" style="background: white; padding: 0.5rem; border-radius: 0.5rem; width: 140px; height: 140px; border: 1px solid hsl(var(--border));"/>
 <div style="margin-top: 0.75rem; font-size: 0.95rem; font-weight: 700; display: flex; flex-direction: column; gap: 0.5rem; align-items: center;">
 <a class="btn btn-secondary" href="archive.html" style="width: auto; padding: 0.5rem 1rem;" target="_blank">Open in New Window ↗</a>
 <button class="btn btn-secondary" onclick="setView('qr-archive')">📺 Open on TV Screen</button>
@@ -2922,7 +2999,7 @@ function buildDrawResultsHTML(isBlank = false) {
 <label style="margin:0;">Manage Slide Visibility</label>
 <button class="btn btn-secondary" onclick="resetVisibility()">RESET ALL</button>
 </div>
-<div id="slides-list" style="background: var(--bg); border: 1px solid var(--border); border-radius: 0.5rem; padding: 1rem; max-height: 250px; overflow-y: auto;">
+<div id="slides-list" style="background: hsl(var(--background)); border: 1px solid hsl(var(--border)); border-radius: 0.5rem; padding: 1rem; max-height: 250px; overflow-y: auto;">
 <!-- Slides injected here -->
 </div>
 <button class="btn btn-primary" onclick="saveDisabledSlides()">💾 Apply Visibility Changes</button>
@@ -2935,7 +3012,7 @@ function buildDrawResultsHTML(isBlank = false) {
 "Sponsor", "Coasters Tavern", "normal", 30000, "bg.jpg", "logo.png", "", ""
 "Avatar", "Enjoy!", "avatar", 15000, "office.jpg", "avatar.png", "Hello!", ""
 "Winners", "Recent!", "winners", 20000, "wall.jpg", "", "", "w1.jpg,w2.jpg"</pre>
-<p style="font-size:0.75rem; color:var(--text-muted); margin-top:0.5rem;">
+<p style="font-size:0.75rem; color:hsl(var(--muted-foreground)); margin-top:0.5rem;">
                 Columns must exactly match this order. <strong>WinnerPhotos</strong> expects comma-separated URLs.
             </p>
 </div>
@@ -2943,22 +3020,22 @@ function buildDrawResultsHTML(isBlank = false) {
 <h2>📱 Quick Access QR Codes</h2>
 <div style="display: flex; justify-content: space-between; gap: 1rem; margin-top: 1rem;">
 <div style="text-align: center; flex: 1;">
-<img alt="TV Display QR" id="qr-display" style="background: white; padding: 0.5rem; display: inline-block; border-radius: 0.5rem; width: 120px; height: 120px; border: 1.5px solid var(--border);"/>
+<img alt="TV Display QR" id="qr-display" style="background: white; padding: 0.5rem; display: inline-block; border-radius: 0.5rem; width: 120px; height: 120px; border: 1px solid hsl(var(--border));"/>
 <div style="margin-top: 0.5rem; font-size: 0.8rem;">TV Display</div>
-<a href="#" id="link-display" style="color: var(--primary); font-size: 0.7rem;" target="_blank">Open ↗</a>
+<a href="#" id="link-display" style="color: hsl(var(--primary)); font-size: 0.7rem;" target="_blank">Open ↗</a>
 </div>
 <div style="text-align: center; flex: 1;">
-<img alt="Remote App QR" id="qr-remote" style="background: white; padding: 0.5rem; display: inline-block; border-radius: 0.5rem; width: 120px; height: 120px; border: 1.5px solid var(--border);"/>
+<img alt="Remote App QR" id="qr-remote" style="background: white; padding: 0.5rem; display: inline-block; border-radius: 0.5rem; width: 120px; height: 120px; border: 1px solid hsl(var(--border));"/>
 <div style="margin-top: 0.5rem; font-size: 0.8rem;">Remote App</div>
-<a href="#" id="link-remote" style="color: var(--primary); font-size: 0.7rem;" target="_blank">Open ↗</a>
+<a href="#" id="link-remote" style="color: hsl(var(--primary)); font-size: 0.7rem;" target="_blank">Open ↗</a>
 </div>
 <div style="text-align: center; flex: 1;">
-<img alt="Admin Portal QR" id="qr-admin" style="background: white; padding: 0.5rem; display: inline-block; border-radius: 0.5rem; width: 120px; height: 120px; border: 1.5px solid var(--border);"/>
+<img alt="Admin Portal QR" id="qr-admin" style="background: white; padding: 0.5rem; display: inline-block; border-radius: 0.5rem; width: 120px; height: 120px; border: 1px solid hsl(var(--border));"/>
 <div style="margin-top: 0.5rem; font-size: 0.8rem;">Admin Portal</div>
-<a href="#" id="link-admin" style="color: var(--primary); font-size: 0.7rem;" target="_blank">Open ↗</a>
+<a href="#" id="link-admin" style="color: hsl(var(--primary)); font-size: 0.7rem;" target="_blank">Open ↗</a>
 </div>
 <div style="text-align: center; flex: 1;">
-<img alt="Archive List QR" id="qr-archive" style="background: white; padding: 0.5rem; display: inline-block; border-radius: 0.5rem; width: 120px; height: 120px; border: 1.5px solid var(--border);"/>
+<img alt="Archive List QR" id="qr-archive" style="background: white; padding: 0.5rem; display: inline-block; border-radius: 0.5rem; width: 120px; height: 120px; border: 1px solid hsl(var(--border));"/>
 <div style="margin-top: 0.5rem; font-size: 0.8rem;">Archive List</div>
 <a href="#" id="link-archive" style="color: var(--primary); font-size: 0.7rem;" target="_blank">Open ↗</a>
 </div>
@@ -3001,8 +3078,8 @@ function buildDrawResultsHTML(isBlank = false) {
 <!-- Financial Entry -->
 <!-- Resume Draw Dialog -->
 <div id="resume-dialog" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:9999; align-items:center; justify-content:center;">
-<div style="background:var(--bg); border: 2px solid var(--primary); padding: 2rem; border-radius: 1rem; text-align: center; max-width: 400px;">
-<h2 style="margin-top:0; color:var(--primary);">Draw In Progress</h2>
+<div style="background: hsl(var(--card)); border: 1px solid hsl(var(--border)); padding: 2rem; border-radius: var(--radius); text-align: center; max-width: 400px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5);">
+<h2 style="margin-top:0; color: hsl(var(--foreground));">Draw In Progress</h2>
 <p>It looks like a draw was interrupted or hasn't finished yet.</p>
 <p>Would you like to continue the current draw, or archive it and start a new one with the current configuration?</p>
 <div style="display: flex; gap: 1rem; justify-content: center; margin-top: 2rem;">
