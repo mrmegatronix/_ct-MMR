@@ -419,6 +419,10 @@ input:focus, select:focus, textarea:focus {
         <div><label style="font-size:0.75rem;">Thursday Vouchers Count</label><input id="cfg-thu-vouchers-count" onchange="updateDrawState()" oninput="updateDrawState()" type="number" value="0"/></div>
         <div><label style="font-size:0.75rem;">Thursday Voucher Value ($)</label><input id="cfg-thu-vouchers-value" onchange="updateDrawState()" oninput="updateDrawState()" type="number" value="0"/></div>
     </div>
+    <div class="form-group" style="margin-bottom: 1rem;">
+        <label style="font-size:0.75rem; color:#f59e0b;">Thursday Total Prize Pool ($)</label>
+        <input id="cfg-thu-total-pool" readonly style="background: rgba(30, 41, 59, 0.8); color: #f59e0b; font-weight: 800;" type="text" value="$0.00"/>
+    </div>
     <div style="display: flex; flex-direction: column; gap: 0.5rem;">
         <button class="btn btn-secondary" onclick="updateThursdayConfig()">💾 Save Thursday Config</button>
         <button class="btn btn-secondary" onclick="resetDayDraw('thursday')">🔄 Reset Thursday Draw</button>
@@ -489,6 +493,10 @@ input:focus, select:focus, textarea:focus {
     <div class="form-group" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 1rem;">
         <div><label style="font-size:0.75rem;">Sunday Vouchers Count</label><input id="cfg-sun-vouchers-count" onchange="updateDrawState()" oninput="updateDrawState()" type="number" value="0"/></div>
         <div><label style="font-size:0.75rem;">Sunday Voucher Value ($)</label><input id="cfg-sun-vouchers-value" onchange="updateDrawState()" oninput="updateDrawState()" type="number" value="0"/></div>
+    </div>
+    <div class="form-group" style="margin-bottom: 1rem;">
+        <label style="font-size:0.75rem; color:#f59e0b;">Sunday Total Prize Pool ($)</label>
+        <input id="cfg-sun-total-pool" readonly style="background: rgba(30, 41, 59, 0.8); color: #f59e0b; font-weight: 800;" type="text" value="$0.00"/>
     </div>
     <div style="display: flex; flex-direction: column; gap: 0.5rem;">
         <button class="btn btn-secondary" onclick="updateSundayConfig()">💾 Save Sunday Config</button>
@@ -1185,7 +1193,7 @@ input:focus, select:focus, textarea:focus {
 
             if (btn) {
                 btn.innerText = isFinancialsUnlocked ? '🔓 Unlocked (Editing Allowed)' : '🔒 Locked (Click to Edit)';
-                btn.style.background = isFinancialsUnlocked ? '#16a34a' : '#334155';
+                isFinancialsUnlocked ? '#16a34a' : '#334155';
             }
         }
 
@@ -2597,9 +2605,9 @@ function buildDrawResultsHTML(isBlank = false) {
             isDemoMode = !isDemoMode;
             const btn = document.getElementById('btn-demo-mode');
             if (isDemoMode) {
-                btn.innerText = 'Demo Mode: ON';
-                btn.style.backgroundColor = '#ef4444';
-                btn.style.borderColor = '#dc2626';
+                btn.innerText = 'Demo Mode: ON'; btn.classList.add('btn-danger'); btn.classList.remove('btn-primary', 'btn-secondary');
+                
+                
                 
                 // Backup state
                 demoStateBackup = JSON.parse(JSON.stringify(state));
@@ -2624,9 +2632,9 @@ function buildDrawResultsHTML(isBlank = false) {
                 // Start automated drawing
                 scheduleNextDemoDraw();
             } else {
-                btn.innerText = 'Demo Mode: OFF';
-                btn.style.backgroundColor = '#8b5cf6';
-                btn.style.borderColor = '#7c3aed';
+                btn.innerText = 'Demo Mode: OFF'; btn.classList.remove('btn-danger'); btn.classList.add('btn-secondary');
+                
+                
                 
                 // Restore state
                 if (demoStateBackup) {

@@ -1994,9 +1994,9 @@ input:focus, select:focus, textarea:focus {
             const btn = document.getElementById('btn-demo-mode');
             if (isDemoMode) {
                 demoRunId++; // Invalidate any stale callbacks from a previous session
-                btn.innerText = 'Demo Mode: ON';
-                btn.style.backgroundColor = '#ef4444';
-                btn.style.borderColor = '#dc2626';
+                btn.innerText = 'Demo Mode: ON'; btn.classList.add('btn-danger'); btn.classList.remove('btn-primary', 'btn-secondary');
+                
+                
                 
                 // Backup state
                 demoStateBackup = JSON.parse(JSON.stringify(state));
@@ -2023,9 +2023,9 @@ input:focus, select:focus, textarea:focus {
                 scheduleNextDemoDraw(demoRunId);
             } else {
                 demoRunId++; // Invalidate pending callbacks
-                btn.innerText = 'Demo Mode: OFF';
-                btn.style.backgroundColor = '#8b5cf6';
-                btn.style.borderColor = '#7c3aed';
+                btn.innerText = 'Demo Mode: OFF'; btn.classList.remove('btn-danger'); btn.classList.add('btn-secondary');
+                
+                
                 
                 // Restore state
                 if (demoStateBackup) {
