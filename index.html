@@ -1088,6 +1088,9 @@
                                 </div>
                             </div>
                         `;
+                    } else if (slide.advertType === 'sponsor') {
+                        style = `background: radial-gradient(circle at center, #831843 0%, #030712 100%); --badge-glow: rgba(244, 63, 94, 0.6); --title-glow: rgba(244, 63, 94, 0.4);`;
+                        badge = '🥩';
                     }
                     
                     return `
@@ -1647,8 +1650,7 @@
                 if (!title && !subtitle && !bubbleText && !winnerPhotos && !bgImage && !overlayImage && !avatarImage && type !== 'countdown' && type !== 'avatar') return null;
 
                 const ruthlessString = [title, subtitle, type, bubbleText].join(' ').toLowerCase();
-                if (ruthlessString.includes('tbc') || ruthlessString.includes('tba') || 
-                    ruthlessString.includes('to be confirmed') || ruthlessString.includes('to be announced')) {
+                if (/\b(tbc|tba|to be confirmed|to be announced)\b/i.test(ruthlessString)) {
                     return null;
                 }
 

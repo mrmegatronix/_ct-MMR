@@ -682,10 +682,10 @@
             line-height: 1;
         }
         .advert-title {
-            font-size: clamp(4.5rem, 8.8vw, 9.5rem) !important;
+            font-size: clamp(3.2rem, 5.5vw, 6.5rem) !important;
             font-weight: 900 !important;
             text-transform: uppercase !important;
-            margin: 0 0 1.5rem 0 !important;
+            margin: 0 0 1rem 0 !important;
             letter-spacing: -1px !important;
             color: #fff !important;
             text-shadow: 0 0 45px var(--title-glow);
@@ -698,7 +698,7 @@
             text-overflow: ellipsis;
         }
         .advert-subtitle {
-            font-size: clamp(2.2rem, 3.4vw, 4.0rem) !important;
+            font-size: clamp(1.8rem, 2.6vw, 3.2rem) !important;
             max-width: 95% !important;
             box-sizing: border-box;
             font-weight: bold !important;
