@@ -629,10 +629,10 @@ input[type="checkbox"], input[type="radio"] {
         }
 
         (function checkAccess() {
-            // Force reset stored PIN to 5551 for migration if not already migrated
-            if (localStorage.getItem('mmr_pin_migration_5551') !== 'done') {
-                localStorage.setItem('mmr_pin', '5551');
-                localStorage.setItem('mmr_pin_migration_5551', 'done');
+            // Force reset stored PIN to 9292 for migration if not already migrated
+            if (localStorage.getItem('mmr_pin_migration_9292') !== 'done') {
+                localStorage.setItem('mmr_pin', '9292');
+                localStorage.setItem('mmr_pin_migration_9292', 'done');
             }
 
             const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '192.168.1.97';
@@ -661,22 +661,23 @@ input[type="checkbox"], input[type="radio"] {
         updateRemoteLiveClock();
 
         function checkPin() {
-            const entered = document.getElementById('pin-input-r').value.trim();
-            const stored = localStorage.getItem('mmr_pin') || '5551';
+            const el = document.getElementById('pin-input-r');
+            const entered = el.value.trim();
+            const stored = localStorage.getItem('mmr_pin') || '9292';
             if (entered === stored || entered === '0001') {
                 sessionStorage.setItem('mmr_authed', 'true');
                 sessionStorage.setItem('mmr_role', 'admin');
                 document.getElementById('pin-overlay').style.display = 'none';
                 applyRoleView();
-            } else if (entered === '9292') {
+            } else if (entered === '5551') {
                 sessionStorage.setItem('mmr_authed', 'true');
                 sessionStorage.setItem('mmr_role', 'host');
                 document.getElementById('pin-overlay').style.display = 'none';
                 applyRoleView();
-            } else {
+            } else if (entered.length >= Math.max(stored.length, 4)) {
                 document.getElementById('pin-error-r').style.display = 'block';
-                document.getElementById('pin-input-r').value = '';
-                document.getElementById('pin-input-r').focus();
+                el.value = '';
+                el.focus();
             }
         }
 
