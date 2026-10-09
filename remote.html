@@ -628,12 +628,19 @@ input[type="checkbox"], input[type="radio"] {
             el.value = el.value.slice(0, -1);
         }
 
+        async function sha256(str) {
+            const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+            return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        const ADMIN_PIN_HASH = '01b1ae255c781cfee556bfba386d7f64ad78a6485395d261791be1091cd87c88'; // SHA-256 for 2736
+        const REMOTE_PIN_HASH = '26c151f9669f97e9117673c9283843f75cab75cf338c189234dd048f08343e69'; // SHA-256 for 1192
+
         (function checkAccess() {
-            // Force reset stored PIN to 9292 for migration if not already migrated
-            if (localStorage.getItem('mmr_pin_migration_9292') !== 'done') {
-                localStorage.setItem('mmr_pin', '9292');
-                localStorage.setItem('mmr_pin_migration_9292', 'done');
-            }
+            // Clear legacy plaintext PIN from localStorage if present
+            localStorage.removeItem('mmr_pin');
+            localStorage.removeItem('mmr_pin_migration_5551');
+            localStorage.removeItem('mmr_pin_migration_9292');
 
             const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '192.168.1.97';
             if (isLocal) {
@@ -660,21 +667,25 @@ input[type="checkbox"], input[type="radio"] {
         setInterval(updateRemoteLiveClock, 1000);
         updateRemoteLiveClock();
 
-        function checkPin() {
+        async function checkPin() {
             const el = document.getElementById('pin-input-r');
             const entered = el.value.trim();
-            const stored = localStorage.getItem('mmr_pin') || '9292';
-            if (entered === stored || entered === '0001') {
+            if (!entered) return;
+
+            const hash = await sha256(entered);
+            const customAdminHash = localStorage.getItem('mmr_admin_hash');
+
+            if (hash === (customAdminHash || ADMIN_PIN_HASH)) {
                 sessionStorage.setItem('mmr_authed', 'true');
                 sessionStorage.setItem('mmr_role', 'admin');
                 document.getElementById('pin-overlay').style.display = 'none';
                 applyRoleView();
-            } else if (entered === '5551') {
+            } else if (hash === REMOTE_PIN_HASH) {
                 sessionStorage.setItem('mmr_authed', 'true');
                 sessionStorage.setItem('mmr_role', 'host');
                 document.getElementById('pin-overlay').style.display = 'none';
                 applyRoleView();
-            } else if (entered.length >= Math.max(stored.length, 4)) {
+            } else if (entered.length >= 4) {
                 document.getElementById('pin-error-r').style.display = 'block';
                 el.value = '';
                 el.focus();

@@ -649,12 +649,19 @@ input[type="checkbox"], input[type="radio"] {
             el.value = el.value.slice(0, -1);
         }
 
+        async function sha256(str) {
+            const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+            return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        const ADMIN_PIN_HASH = '01b1ae255c781cfee556bfba386d7f64ad78a6485395d261791be1091cd87c88'; // SHA-256 for 2736
+        const REMOTE_PIN_HASH = '26c151f9669f97e9117673c9283843f75cab75cf338c189234dd048f08343e69'; // SHA-256 for 1192
+
         (function checkAccess() {
-            // Force reset stored PIN to 5551 for migration if not already migrated
-            if (localStorage.getItem('mmr_pin_migration_5551') !== 'done') {
-                localStorage.setItem('mmr_pin', '5551');
-                localStorage.setItem('mmr_pin_migration_5551', 'done');
-            }
+            // Clear legacy plaintext PIN from localStorage if present
+            localStorage.removeItem('mmr_pin');
+            localStorage.removeItem('mmr_pin_migration_5551');
+            localStorage.removeItem('mmr_pin_migration_9292');
 
             const isLocal = false;
             if (isLocal) {
@@ -667,25 +674,27 @@ input[type="checkbox"], input[type="radio"] {
             }
         })();
 
-        function checkPin() {
+        async function checkPin() {
             const el = document.getElementById('pin-input');
             const entered = el.value.trim();
-            const stored = localStorage.getItem('mmr_pin') || '5551';
-            
-            if (entered === stored || entered === '0001') {
+            if (!entered) return;
+
+            const hash = await sha256(entered);
+            const customAdminHash = localStorage.getItem('mmr_admin_hash');
+
+            if (hash === (customAdminHash || ADMIN_PIN_HASH)) {
                 sessionStorage.setItem('mmr_authed', 'true');
                 sessionStorage.setItem('mmr_role', 'admin');
                 document.getElementById('pin-overlay').style.display = 'none';
                 return;
-            } else if (entered === '9292') {
+            } else if (hash === REMOTE_PIN_HASH) {
                 sessionStorage.setItem('mmr_authed', 'true');
                 sessionStorage.setItem('mmr_role', 'host');
                 window.location.href = 'remote.html';
                 return;
             }
-            
-            const isInvalidLength = entered.length >= Math.max(stored.length, 4);
-            if (isInvalidLength) {
+
+            if (entered.length >= 4) {
                 document.getElementById('pin-error').style.display = 'block';
                 el.value = '';
                 setTimeout(() => {
@@ -707,7 +716,7 @@ input[type="checkbox"], input[type="radio"] {
         setInterval(updateAdminLiveClock, 1000);
         updateAdminLiveClock();
 
-        function changePin() {
+        async function changePin() {
             const newPin = document.getElementById('new-pin').value.trim();
             const confirmPin = document.getElementById('confirm-pin').value.trim();
             const el = document.getElementById('pin-change-status');
@@ -723,8 +732,10 @@ input[type="checkbox"], input[type="radio"] {
                 el.style.display = 'block';
                 return;
             }
-            localStorage.setItem('mmr_pin', newPin);
-            el.textContent = '✅ PIN updated! Active immediately on this device.';
+            const newHash = await sha256(newPin);
+            localStorage.setItem('mmr_admin_hash', newHash);
+            localStorage.removeItem('mmr_pin');
+            el.textContent = '✅ PIN updated securely! Active immediately on this device.';
             el.className = 'status status-success';
             el.style.display = 'block';
             document.getElementById('new-pin').value = '';
