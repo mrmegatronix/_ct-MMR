@@ -39,7 +39,7 @@
 
 ## 5. Episodic Memory & Change Log
 - **2026-09-11**: Initialized persistent `memory.md` bank across repository root.
-- **2026-10-09**: Replaced plaintext PINs with SHA-256 hashed auth in `admin.html` and `remote.html` matching `_ct-MATRIX` keypad UX. Fixed slideshow auto-advance issue by automatically locking onto the countdown slide during the 10-minute draw buildup, last-minute heartbeat, and Meat O'Clock climax.
+- **2026-10-09**: Replaced plaintext PINs with SHA-256 hashed auth in `admin.html` and `remote.html` matching `_ct-MATRIX` keypad UX. Fixed slideshow auto-advance issue by automatically locking onto the countdown slide during the 10-minute draw buildup, last-minute heartbeat, and Meat O'Clock climax. Harmonized Congrats buttons, auto-disabled finished draws, reset lingering prize counts, added dynamic "Last Weeks Lucky Winners" / "Last Weeks Total Prize Pool" slides, unlocked financial inputs, and auto-synced raffle config into the financials calculator.
 
 ## 6. Agent References
 - [Agent Guidelines & Protocols](AGENTS.md)

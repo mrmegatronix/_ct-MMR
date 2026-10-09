@@ -1065,8 +1065,11 @@
 
             const advertSlides = [];
             
+            const prevPool = Number(activeEvtData.lastPool || (state.draw && state.draw.lastWeekPool) || activeEvtData.cfgPrevPool || 0);
+            const prevWinners = Number(activeEvtData.lastWinners || (state.draw && state.draw.lastWeekWinners) || activeEvtData.cfgPrevWinners || 0);
+
             const drawType = activeEvt.type || 'full';
-            if (isCurrentEventEnabled && (drawType === 'full' || drawType === 'manual')) {
+            if (isCurrentEventEnabled && !isDrawFinished && (drawType === 'full' || drawType === 'manual')) {
                 if (!isTBC) {
                     if (t100 > 0) advertSlides.push({ title: `${t100Str} x $100 TRAYS`, subtitle: "🥩 Premium Assorted Meat Trays to be won!! 🥩", type: "advert", advertType: "p100", duration: 30000 });
                     if (t50 > 0) advertSlides.push({ title: `${t50Str} x $50 TRAYS`, subtitle: "🍗 Premium Assorted Meat Trays to be won!! 🍗", type: "advert", advertType: "p50", duration: 30000 });
@@ -1075,19 +1078,32 @@
                     if (totalPrizes > 0) {
                         advertSlides.push({ title: `TOTAL PRIZES: ${totalPrizesStr}`, subtitle: "🍖 Premium Assorted Meat Trays must be won!! 🍖", type: "advert", advertType: "total", duration: 20000 });
                         advertSlides.push({ title: `TOTAL PRIZE POOL: ${totalPoolStr}`, subtitle: `🔥 in ${poolWording} Monster Meat Raffle Draw! 🔥`, type: "advert", advertType: "pool", duration: 25000 });
-                        
-                        const prevPool = Number(activeEvtData.cfgPrevPool || 0);
-                        if (prevPool > 0) {
-                            const prevPoolStr = "$" + prevPool.toLocaleString('en-NZ', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-                            advertSlides.push({ title: `LAST WEEK'S POOL: ${prevPoolStr}`, subtitle: `💸 OVER ${prevPoolStr} GIVEN AWAY LAST WEEK 💸`, type: "advert", advertType: "prev_pool", duration: 25000 });
-                        }
                     }
                 }
                 advertSlides.push({ title: "TICKETS ON SALE", subtitle: `🎟️ TICKETS ${ticketsWording} 🎟️`, type: "advert", advertType: "tickets", duration: 25000 });
                 advertSlides.push({ title: "MONSTER MEAT RAFFLE", subtitle: `🔥 DRAW STARTS ${drawWording} 🔥`, type: "advert", advertType: "draw_time", duration: 25000 });
                 advertSlides.push({ title: "HIBBARD'S BUTCHERY", subtitle: `🥩 Meat Trays proudly supplied by Hibbard's Butchery 🥩`, type: "advert", advertType: "sponsor", duration: 25000 });
-            } else if (!isCurrentEventEnabled) {
-                // User requested fallback slides when completely disabled
+            } else {
+                // When draw is finished or draw is disabled / between draws:
+                if (prevWinners > 0) {
+                    advertSlides.push({
+                        title: `Last Weeks Lucky Winners: ${prevWinners}`,
+                        subtitle: "🎉 Congratulations to all our lucky winners! 🎉",
+                        type: "advert",
+                        advertType: "prev_winners",
+                        duration: 25000
+                    });
+                }
+                if (prevPool > 0) {
+                    const prevPoolStr = "$" + prevPool.toLocaleString('en-NZ', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                    advertSlides.push({
+                        title: `Last Weeks Total Prize Pool: ${prevPoolStr}`,
+                        subtitle: `💸 OVER ${prevPoolStr} GIVEN AWAY LAST WEEK 💸`,
+                        type: "advert",
+                        advertType: "prev_pool",
+                        duration: 25000
+                    });
+                }
                 advertSlides.push({ title: "MONSTER MEAT RAFFLE", subtitle: `🔥 DRAW STARTS ${drawWording} 🔥`, type: "advert", advertType: "draw_time", duration: 25000 });
                 advertSlides.push({ title: "TICKETS ON SALE", subtitle: `🎟️ TICKETS ${ticketsWording} 🎟️`, type: "advert", advertType: "tickets", duration: 25000 });
                 advertSlides.push({ title: "HIBBARD'S BUTCHERY", subtitle: `🥩 Meat Trays proudly supplied by Hibbard's Butchery 🥩`, type: "advert", advertType: "sponsor", duration: 25000 });
@@ -1125,6 +1141,9 @@
                     } else if (slide.advertType === 'total') {
                         style = `background: radial-gradient(circle at center, #7c2d12 0%, #020617 100%); --badge-glow: rgba(239, 68, 68, 0.6); --title-glow: rgba(239, 68, 68, 0.4);`;
                         badge = '🍖';
+                    } else if (slide.advertType === 'prev_winners') {
+                        style = `background: radial-gradient(circle at center, #581c87 0%, #020617 100%); --badge-glow: rgba(168, 85, 247, 0.6); --title-glow: rgba(168, 85, 247, 0.4);`;
+                        badge = '🏆';
                     } else if (slide.advertType === 'prev_pool') {
                         style = `background: radial-gradient(circle at center, #065f46 0%, #020617 100%); --badge-glow: rgba(52, 211, 153, 0.6); --title-glow: rgba(52, 211, 153, 0.4);`;
                         badge = '💸';

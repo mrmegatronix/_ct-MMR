@@ -24,18 +24,58 @@
             }
         }
         function finishAndEndDraw(day) {
-            if (confirm(`Are you sure you want to Finish & End the ${day} draw? This will trigger the Congrats screen.`)) {
-                let drawType = 'full';
-                if (day === 'thursday') {
-                    state.draw.thursday.isConfirmedFinished = true;
-                    state.draw.thursday.drawsFinishedTime = state.draw.thursday.drawsFinishedTime || new Date().toISOString();
-                    drawType = state.draw.thursday.type || 'full';
-                } else if (day === 'sunday') {
-                    state.draw.sunday.isConfirmedFinished = true;
-                    state.draw.sunday.drawsFinishedTime = state.draw.sunday.drawsFinishedTime || new Date().toISOString();
-                    drawType = state.draw.sunday.type || 'full';
-                }
+            if (confirm(`Are you sure you want to Finish & End the ${day} draw? This will trigger the Congrats screen, disable this draw, and update dynamic slides.`)) {
+                if (!state.draw) state.draw = {};
+                if (!state.draw[day]) state.draw[day] = {};
+                const activeEvt = state.draw[day];
                 
+                activeEvt.isConfirmedFinished = true;
+                activeEvt.drawsFinishedTime = activeEvt.drawsFinishedTime || new Date().toISOString();
+                const drawType = activeEvt.type || 'full';
+
+                // Automatically uncheck and disable the finished draw!
+                activeEvt.enabled = false;
+                const chk = document.getElementById(`cfg-${day === 'thursday' ? 'thu' : 'sun'}-enabled`);
+                if (chk) chk.checked = false;
+
+                // Capture last week's winners and prize pool for dynamic slides
+                const p100 = activeEvt.cfgPrizes100 || 0;
+                const p50 = activeEvt.cfgPrizes50 || 0;
+                const p25 = activeEvt.cfgPrizes25 || 0;
+                const vVal = activeEvt.cfgVouchersValue || 0;
+                const vCount = activeEvt.cfgVouchersCount || 0;
+                const pool = (p100 * 100) + (p50 * 50) + (p25 * 25) + vVal;
+                const drawnCount = (activeEvt.drawnNumbers || []).length;
+                const winners = drawnCount > 0 ? drawnCount : (p100 + p50 + p25 + vCount);
+
+                if (pool > 0) {
+                    state.draw.lastWeekPool = pool;
+                    activeEvt.lastPool = pool;
+                    activeEvt.cfgPrevPool = pool;
+                }
+                if (winners > 0) {
+                    state.draw.lastWeekWinners = winners;
+                    activeEvt.lastWinners = winners;
+                    activeEvt.cfgPrevWinners = winners;
+                }
+
+                // Reset upcoming prize counts to 0 so they don't linger
+                activeEvt.cfgPrizes100 = 0;
+                activeEvt.cfgPrizes50 = 0;
+                activeEvt.cfgPrizes25 = 0;
+                activeEvt.cfgVouchersCount = 0;
+                activeEvt.cfgVouchersValue = 0;
+                activeEvt.prizesLeft = 0;
+
+                const shortD = day === 'thursday' ? 'thu' : 'sun';
+                const setVal = (id, v) => { const el = document.getElementById(id); if (el) el.value = v; };
+                setVal(`cfg-${shortD}-prizes-100`, '0');
+                setVal(`cfg-${shortD}-prizes-50`, '0');
+                setVal(`cfg-${shortD}-prizes-25`, '0');
+                setVal(`cfg-${shortD}-vouchers-count`, '0');
+                setVal(`cfg-${shortD}-vouchers-value`, '0');
+                setVal(`cfg-${shortD}-total-pool`, '$0.00');
+
                 // If it's a full draw, show alternating winners loop, otherwise show standard congrats
                 if (drawType === 'manual' || drawType === 'generic') {
                     state.activeView = 'congrats';
@@ -43,8 +83,12 @@
                     state.activeView = 'congrats-loop';
                 }
                 
+                updateDrawState();
+                calcFinancials();
                 updateState(state);
-                showGlobalStatus(`${day.toUpperCase()} Draw Finished! Congrats screen active.`, 'blue');
+                broadcast();
+                writeFirebase(state);
+                showGlobalStatus(`${day.toUpperCase()} Draw Finished! Disabled, prize counts reset, Congrats active.`, 'blue');
             }
         }
         function updateGenericConfig() {
@@ -523,8 +567,8 @@ input[type="checkbox"], input[type="radio"] {
 <button class="btn btn-secondary" id="btn-slides" onclick="setView('slides')">📺 Slideshow</button>
 <button class="btn btn-secondary" id="btn-draw" onclick="setView('draw')">🎯 Draw Screen</button>
 <button class="btn btn-secondary" id="btn-draw-generic" onclick="openGenericDrawPage()">⭐ Generic Draw</button>
-<button class="btn btn-secondary" id="btn-congrats" onclick="setView('congrats')">🎉 Congrats</button>
-<button class="btn btn-secondary" id="btn-congrats-loop" onclick="setView('congrats-loop')">🏆 Winners Loop</button>
+<button class="btn btn-secondary" id="btn-congrats" onclick="setView('congrats')">🎉 Congrats (Standard)</button>
+<button class="btn btn-secondary" id="btn-congrats-loop" onclick="setView('congrats-loop')">🏆 Congrats (Winners Loop)</button>
 </div>
 </div>
         <div class="card">
@@ -1529,6 +1573,38 @@ input[type="checkbox"], input[type="radio"] {
             const num = (id) => parseFloat(document.getElementById(id)?.value) || 0;
             const elSet = (id, val) => { const el = document.getElementById(id); if (el) el.value = val; };
 
+            // 1. Auto-sync ticket range and prize pool from active Raffle Config
+            if (selectedFinancialDateKey === 'current') {
+                const cfgThuStart = parseInt(document.getElementById('cfg-thu-sold-start')?.value) || 1;
+                const cfgThuEnd = parseInt(document.getElementById('cfg-thu-sold-end')?.value) || 0;
+                const cfgThuSold = (cfgThuEnd >= cfgThuStart) ? (cfgThuEnd - cfgThuStart + 1) : 0;
+                const cfgThu100 = parseInt(document.getElementById('cfg-thu-prizes-100')?.value) || 0;
+                const cfgThu50 = parseInt(document.getElementById('cfg-thu-prizes-50')?.value) || 0;
+                const cfgThu25 = parseInt(document.getElementById('cfg-thu-prizes-25')?.value) || 0;
+                const cfgThuVv = parseInt(document.getElementById('cfg-thu-vouchers-value')?.value) || 0;
+                const cfgThuPool = (cfgThu100 * 100) + (cfgThu50 * 50) + (cfgThu25 * 25) + cfgThuVv;
+
+                elSet('fin-thu-ticket-start', cfgThuStart);
+                elSet('fin-thu-ticket-finish', cfgThuEnd);
+                elSet('fin-thu-tickets', cfgThuSold);
+                elSet('fin-thu-prizepool', cfgThuPool);
+
+                const cfgSunStart = parseInt(document.getElementById('cfg-sun-sold-start')?.value) || 1;
+                const cfgSunEnd = parseInt(document.getElementById('cfg-sun-sold-end')?.value) || 0;
+                const cfgSunSold = (cfgSunEnd >= cfgSunStart) ? (cfgSunEnd - cfgSunStart + 1) : 0;
+                const cfgSun100 = parseInt(document.getElementById('cfg-sun-prizes-100')?.value) || 0;
+                const cfgSun50 = parseInt(document.getElementById('cfg-sun-prizes-50')?.value) || 0;
+                const cfgSun25 = parseInt(document.getElementById('cfg-sun-prizes-25')?.value) || 0;
+                const cfgSunVv = parseInt(document.getElementById('cfg-sun-vouchers-value')?.value) || 0;
+                const cfgSunPool = (cfgSun100 * 100) + (cfgSun50 * 50) + (cfgSun25 * 25) + cfgSunVv;
+
+                elSet('fin-sun-ticket-start', cfgSunStart);
+                elSet('fin-sun-ticket-finish', cfgSunEnd);
+                elSet('fin-sun-tickets', cfgSunSold);
+                elSet('fin-sun-prizepool', cfgSunPool);
+            }
+
+            // 2. Thursday Calculations
             let thuTickets = num('fin-thu-tickets');
             const thuStart = num('fin-thu-ticket-start');
             const thuFinish = num('fin-thu-ticket-finish');
@@ -1536,11 +1612,24 @@ input[type="checkbox"], input[type="radio"] {
                 thuTickets = (thuFinish - thuStart) + 1;
                 elSet('fin-thu-tickets', thuTickets);
             }
-            const thuCash = num('fin-thu-cash');
+
+            const thuSingles = num('fin-thu-singles');
+            const thuPriceSingle = num('fin-thu-price-single') || 5;
+            const thuStrips = num('fin-thu-strips');
+            const thuPriceStrip = num('fin-thu-price-strip') || 20;
+            const thuCalcRevenue = (thuSingles * thuPriceSingle) + (thuStrips * thuPriceStrip);
+
+            let thuCash = num('fin-thu-cash');
             const thuEftpos = num('fin-thu-eftpos');
+            if (thuCalcRevenue > 0 && thuCash === 0 && thuEftpos === 0) {
+                thuCash = thuCalcRevenue;
+                elSet('fin-thu-cash', thuCash);
+            }
+
             const thuReimb = num('fin-thu-reimb');
             const thuTotal = thuCash + thuEftpos - thuReimb;
 
+            // 3. Sunday Calculations
             let sunTickets = num('fin-sun-tickets');
             const sunStart = num('fin-sun-ticket-start');
             const sunFinish = num('fin-sun-ticket-finish');
@@ -1548,22 +1637,27 @@ input[type="checkbox"], input[type="radio"] {
                 sunTickets = (sunFinish - sunStart) + 1;
                 elSet('fin-sun-tickets', sunTickets);
             }
-            const sunCash = num('fin-sun-cash');
+
+            const sunSingles = num('fin-sun-singles');
+            const sunPriceSingle = num('fin-sun-price-single') || 5;
+            const sunStrips = num('fin-sun-strips');
+            const sunPriceStrip = num('fin-sun-price-strip') || 20;
+            const sunCalcRevenue = (sunSingles * sunPriceSingle) + (sunStrips * sunPriceStrip);
+
+            let sunCash = num('fin-sun-cash');
             const sunEftpos = num('fin-sun-eftpos');
+            if (sunCalcRevenue > 0 && sunCash === 0 && sunEftpos === 0) {
+                sunCash = sunCalcRevenue;
+                elSet('fin-sun-cash', sunCash);
+            }
+
             const sunReimb = num('fin-sun-reimb');
             const sunTotal = sunCash + sunEftpos - sunReimb;
 
-            const draw = getDrawStateData() || {};
-            const thuDraw = draw.thursday || {};
-            const sunDraw = draw.sunday || {};
-            const thuFinished = !!(thuDraw.isConfirmedFinished || thuDraw.drawsFinishedTime || (thuDraw.prizesLeft === 0 && (thuDraw.drawnNumbers || []).length > 0));
-            const sunFinished = !!(sunDraw.isConfirmedFinished || sunDraw.drawsFinishedTime || (sunDraw.prizesLeft === 0 && (sunDraw.drawnNumbers || []).length > 0));
-
-            const thuPrizepoolRaw = num('fin-thu-prizepool');
-            const sunPrizepoolRaw = num('fin-sun-prizepool');
-            const thuPrizepoolDisplay = thuFinished ? thuPrizepoolRaw : 0;
-            const sunPrizepoolDisplay = sunFinished ? sunPrizepoolRaw : 0;
-            const totalPrizepool = thuPrizepoolDisplay + sunPrizepoolDisplay;
+            // 4. Totals and Summaries
+            const thuPrizepool = num('fin-thu-prizepool');
+            const sunPrizepool = num('fin-sun-prizepool');
+            const totalPrizepool = thuPrizepool + sunPrizepool;
 
             const totalCash = thuCash + sunCash;
             const totalEftpos = thuEftpos + sunEftpos;
@@ -1579,6 +1673,26 @@ input[type="checkbox"], input[type="radio"] {
             elSet('fin-grand-total', '$' + grandTotal.toFixed(2));
             elSet('fin-total-tickets', totalTickets);
             elSet('fin-total-prizepool', '$' + totalPrizepool.toFixed(2));
+
+            // Sync with state.financials
+            if (!state.financials) state.financials = {};
+            state.financials.thursday = {
+                ticketStart: thuStart, ticketFinish: thuFinish, ticketsSold: thuTickets,
+                prizePool: thuPrizepool, priceSingle: thuPriceSingle, singlesSold: thuSingles,
+                priceStrip: thuPriceStrip, stripsSold: thuStrips, cash: thuCash,
+                eftpos: thuEftpos, reimbursements: thuReimb,
+                notesGeneral: document.getElementById('fin-thu-notes-gen')?.value || '',
+                notesReimb: document.getElementById('fin-thu-notes-reimb')?.value || ''
+            };
+            state.financials.sunday = {
+                ticketStart: sunStart, ticketFinish: sunFinish, ticketsSold: sunTickets,
+                prizePool: sunPrizepool, priceSingle: sunPriceSingle, singlesSold: sunSingles,
+                priceStrip: sunPriceStrip, stripsSold: sunStrips, cash: sunCash,
+                eftpos: sunEftpos, reimbursements: sunReimb,
+                notesGeneral: document.getElementById('fin-sun-notes-gen')?.value || '',
+                notesReimb: document.getElementById('fin-sun-notes-reimb')?.value || ''
+            };
+            state.financials.weeklyNotes = document.getElementById('fin-weekly-notes')?.value || '';
         }
 
         function saveFinancials() {
@@ -1693,21 +1807,70 @@ input[type="checkbox"], input[type="radio"] {
         }
 
         function archiveDraws() {
-            if(confirm('Are you sure you want to end the week and archive the draws?')) {
+            if(confirm('Are you sure you want to end the week and archive the draws? This will disable active draws, reset prize counts to 0, and update dynamic slides with last week\'s results.')) {
+                // Calculate weekly totals
+                const thu = state.draw?.thursday || {};
+                const sun = state.draw?.sunday || {};
+                const thuPool = (thu.cfgPrizes100 || 0) * 100 + (thu.cfgPrizes50 || 0) * 50 + (thu.cfgPrizes25 || 0) * 25 + (thu.cfgVouchersValue || 0);
+                const sunPool = (sun.cfgPrizes100 || 0) * 100 + (sun.cfgPrizes50 || 0) * 50 + (sun.cfgPrizes25 || 0) * 25 + (sun.cfgVouchersValue || 0);
+                const totalWeeklyPool = thuPool + sunPool || state.draw?.lastWeekPool || 0;
+                const thuWinners = (thu.drawnNumbers || []).length || ((thu.cfgPrizes100 || 0) + (thu.cfgPrizes50 || 0) + (thu.cfgPrizes25 || 0) + (thu.cfgVouchersCount || 0));
+                const sunWinners = (sun.drawnNumbers || []).length || ((sun.cfgPrizes100 || 0) + (sun.cfgPrizes50 || 0) + (sun.cfgPrizes25 || 0) + (sun.cfgVouchersCount || 0));
+                const totalWeeklyWinners = thuWinners + sunWinners || state.draw?.lastWeekWinners || 0;
+
+                if (totalWeeklyPool > 0) state.draw.lastWeekPool = totalWeeklyPool;
+                if (totalWeeklyWinners > 0) state.draw.lastWeekWinners = totalWeeklyWinners;
+
                 if (fbDbUrl) {
                     const archiveData = {
                         timestamp: new Date().toISOString(),
                         drawState: state.draw,
-                        financials: state.financials
+                        financials: state.financials,
+                        lastWeekPool: state.draw.lastWeekPool,
+                        lastWeekWinners: state.draw.lastWeekWinners
                     };
                     fetch(`${fbDbUrl}/mmr_archive.json`, {
                         method: 'POST',
                         body: JSON.stringify(archiveData),
                         headers: { 'Content-Type': 'application/json' }
-                    }).then(() => {
-                        showGlobalStatus('Archived successfully!', 'green');
                     }).catch(e => console.warn('[MMR Admin] Firebase archive error:', e));
                 }
+
+                // Reset draws and disable both
+                ['thursday', 'sunday'].forEach(day => {
+                    if (state.draw[day]) {
+                        state.draw[day].enabled = false;
+                        state.draw[day].isConfirmedFinished = true;
+                        state.draw[day].drawnNumbers = [];
+                        state.draw[day].currentNumber = '---';
+                        state.draw[day].currentPrize = null;
+                        state.draw[day].cfgPrizes100 = 0;
+                        state.draw[day].cfgPrizes50 = 0;
+                        state.draw[day].cfgPrizes25 = 0;
+                        state.draw[day].cfgVouchersCount = 0;
+                        state.draw[day].cfgVouchersValue = 0;
+                        state.draw[day].prizesLeft = 0;
+                    }
+                });
+
+                ['thu', 'sun'].forEach(shortDay => {
+                    const setVal = (id, val) => { const el = document.getElementById(id); if (el) el.value = val; };
+                    const setChk = (id, val) => { const el = document.getElementById(id); if (el) el.checked = val; };
+                    setChk(`cfg-${shortDay}-enabled`, false);
+                    setVal(`cfg-${shortDay}-prizes-100`, '0');
+                    setVal(`cfg-${shortDay}-prizes-50`, '0');
+                    setVal(`cfg-${shortDay}-prizes-25`, '0');
+                    setVal(`cfg-${shortDay}-vouchers-count`, '0');
+                    setVal(`cfg-${shortDay}-vouchers-value`, '0');
+                    setVal(`cfg-${shortDay}-total-pool`, '$0.00');
+                });
+
+                state.activeView = 'slides';
+                updateDrawState();
+                calcFinancials();
+                broadcast();
+                writeFirebase(state);
+                showGlobalStatus('Week Ended & Archived! Both draws disabled, prize counts reset, dynamic slides updated.', 'green');
             }
         }
 
@@ -3029,52 +3192,52 @@ function buildDrawResultsHTML(isBlank = false) {
 <div style="background: rgba(59, 130, 246, 0.1); border: 1px solid #3b82f6; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem;">
 <h3 style="margin-top: 0; color: #3b82f6;">Thursday Raffle Financials</h3>
 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0.75rem; margin-bottom: 0.75rem;">
-<div class="form-group"><label style="font-size:0.75rem;">Ticket Start (#)</label><input class="fin-field" id="fin-thu-ticket-start" oninput="calcFinancials()" readonly="" type="number" value="1"/></div>
-<div class="form-group"><label style="font-size:0.75rem;">Ticket Finish (#)</label><input class="fin-field" id="fin-thu-ticket-finish" oninput="calcFinancials()" readonly="" type="number" value="0"/></div>
-<div class="form-group"><label style="font-size:0.75rem;">Tickets Sold</label><input class="fin-field" id="fin-thu-tickets" oninput="calcFinancials()" readonly="" type="number" value="0"/></div>
-<div class="form-group"><label style="font-size:0.75rem;">Prize Pool Total ($)</label><input class="fin-field" id="fin-thu-prizepool" oninput="calcFinancials()" readonly="" step="0.01" type="number" value="0"/></div>
+<div class="form-group"><label style="font-size:0.75rem;">Ticket Start (#)</label><input class="fin-field" id="fin-thu-ticket-start" oninput="calcFinancials()" type="number" value="1"/></div>
+<div class="form-group"><label style="font-size:0.75rem;">Ticket Finish (#)</label><input class="fin-field" id="fin-thu-ticket-finish" oninput="calcFinancials()" type="number" value="0"/></div>
+<div class="form-group"><label style="font-size:0.75rem;">Tickets Sold</label><input class="fin-field" id="fin-thu-tickets" oninput="calcFinancials()" readonly style="background: rgba(30, 41, 59, 0.8); color: #60a5fa; font-weight: 800;" type="number" value="0"/></div>
+<div class="form-group"><label style="font-size:0.75rem;">Prize Pool Total ($)</label><input class="fin-field" id="fin-thu-prizepool" oninput="calcFinancials()" readonly style="background: rgba(30, 41, 59, 0.8); color: #f59e0b; font-weight: 800;" step="0.01" type="number" value="0"/></div>
 </div>
 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0.75rem; margin-bottom: 0.75rem;">
-<div class="form-group"><label style="font-size:0.75rem;">Ticket Price Single ($)</label><input class="fin-field" id="fin-thu-price-single" oninput="calcFinancials()" readonly="" step="0.01" type="number" value="5.00"/></div>
-<div class="form-group"><label style="font-size:0.75rem;">Singles Sold</label><input class="fin-field" id="fin-thu-singles" oninput="calcFinancials()" readonly="" type="number" value="0"/></div>
-<div class="form-group"><label style="font-size:0.75rem;">Ticket Price Strip ($)</label><input class="fin-field" id="fin-thu-price-strip" oninput="calcFinancials()" readonly="" step="0.01" type="number" value="20.00"/></div>
-<div class="form-group"><label style="font-size:0.75rem;">Strips Sold</label><input class="fin-field" id="fin-thu-strips" oninput="calcFinancials()" readonly="" type="number" value="0"/></div>
+<div class="form-group"><label style="font-size:0.75rem;">Ticket Price Single ($)</label><input class="fin-field" id="fin-thu-price-single" oninput="calcFinancials()" step="0.01" type="number" value="5.00"/></div>
+<div class="form-group"><label style="font-size:0.75rem;">Singles Sold</label><input class="fin-field" id="fin-thu-singles" oninput="calcFinancials()" type="number" value="0"/></div>
+<div class="form-group"><label style="font-size:0.75rem;">Ticket Price Strip ($)</label><input class="fin-field" id="fin-thu-price-strip" oninput="calcFinancials()" step="0.01" type="number" value="20.00"/></div>
+<div class="form-group"><label style="font-size:0.75rem;">Strips Sold</label><input class="fin-field" id="fin-thu-strips" oninput="calcFinancials()" type="number" value="0"/></div>
 </div>
 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0.75rem; margin-bottom: 0.75rem;">
-<div class="form-group"><label style="font-size:0.75rem;">Cash Total ($)</label><input class="fin-field" id="fin-thu-cash" oninput="calcFinancials()" readonly="" step="0.01" type="number" value="0"/></div>
-<div class="form-group"><label style="font-size:0.75rem;">EFTPOS Total ($)</label><input class="fin-field" id="fin-thu-eftpos" oninput="calcFinancials()" readonly="" step="0.01" type="number" value="0"/></div>
-<div class="form-group"><label style="font-size:0.75rem;">Reimbursements ($)</label><input class="fin-field" id="fin-thu-reimb" oninput="calcFinancials()" readonly="" step="0.01" type="number" value="0"/></div>
-<div class="form-group"><label style="font-size:0.75rem;">Thursday Total ($)</label><input id="fin-thu-total" readonly="" style="background: #0d1526; font-weight: bold; color: #3b82f6; font-size: 1rem;" type="text" value="$0.00"/></div>
+<div class="form-group"><label style="font-size:0.75rem;">Cash Total ($)</label><input class="fin-field" id="fin-thu-cash" oninput="calcFinancials()" step="0.01" type="number" value="0"/></div>
+<div class="form-group"><label style="font-size:0.75rem;">EFTPOS Total ($)</label><input class="fin-field" id="fin-thu-eftpos" oninput="calcFinancials()" step="0.01" type="number" value="0"/></div>
+<div class="form-group"><label style="font-size:0.75rem;">Reimbursements ($)</label><input class="fin-field" id="fin-thu-reimb" oninput="calcFinancials()" step="0.01" type="number" value="0"/></div>
+<div class="form-group"><label style="font-size:0.75rem;">Thursday Total ($)</label><input id="fin-thu-total" readonly style="background: #0d1526; font-weight: bold; color: #3b82f6; font-size: 1rem;" type="text" value="$0.00"/></div>
 </div>
 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
-<div class="form-group"><label style="font-size:0.75rem;">General Notes</label><input class="fin-field" id="fin-thu-notes-gen" placeholder="Thursday general notes" readonly="" type="text"/></div>
-<div class="form-group"><label style="font-size:0.75rem;">Reimbursements Notes</label><input class="fin-field" id="fin-thu-notes-reimb" placeholder="Thursday reimbursement notes" readonly="" type="text"/></div>
+<div class="form-group"><label style="font-size:0.75rem;">General Notes</label><input class="fin-field" id="fin-thu-notes-gen" placeholder="Thursday general notes" type="text"/></div>
+<div class="form-group"><label style="font-size:0.75rem;">Reimbursements Notes</label><input class="fin-field" id="fin-thu-notes-reimb" placeholder="Thursday reimbursement notes" type="text"/></div>
 </div>
 </div>
 <!-- Sunday Financials -->
 <div style="background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem;">
 <h3 style="margin-top: 0; color: #ef4444;">Sunday Raffle Financials</h3>
 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0.75rem; margin-bottom: 0.75rem;">
-<div class="form-group"><label style="font-size:0.75rem;">Ticket Start (#)</label><input class="fin-field" id="fin-sun-ticket-start" oninput="calcFinancials()" readonly="" type="number" value="1"/></div>
-<div class="form-group"><label style="font-size:0.75rem;">Ticket Finish (#)</label><input class="fin-field" id="fin-sun-ticket-finish" oninput="calcFinancials()" readonly="" type="number" value="0"/></div>
-<div class="form-group"><label style="font-size:0.75rem;">Tickets Sold</label><input class="fin-field" id="fin-sun-tickets" oninput="calcFinancials()" readonly="" type="number" value="0"/></div>
-<div class="form-group"><label style="font-size:0.75rem;">Prize Pool Total ($)</label><input class="fin-field" id="fin-sun-prizepool" oninput="calcFinancials()" readonly="" step="0.01" type="number" value="0"/></div>
+<div class="form-group"><label style="font-size:0.75rem;">Ticket Start (#)</label><input class="fin-field" id="fin-sun-ticket-start" oninput="calcFinancials()" type="number" value="1"/></div>
+<div class="form-group"><label style="font-size:0.75rem;">Ticket Finish (#)</label><input class="fin-field" id="fin-sun-ticket-finish" oninput="calcFinancials()" type="number" value="0"/></div>
+<div class="form-group"><label style="font-size:0.75rem;">Tickets Sold</label><input class="fin-field" id="fin-sun-tickets" oninput="calcFinancials()" readonly style="background: rgba(30, 41, 59, 0.8); color: #f87171; font-weight: 800;" type="number" value="0"/></div>
+<div class="form-group"><label style="font-size:0.75rem;">Prize Pool Total ($)</label><input class="fin-field" id="fin-sun-prizepool" oninput="calcFinancials()" readonly style="background: rgba(30, 41, 59, 0.8); color: #f59e0b; font-weight: 800;" step="0.01" type="number" value="0"/></div>
 </div>
 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0.75rem; margin-bottom: 0.75rem;">
-<div class="form-group"><label style="font-size:0.75rem;">Ticket Price Single ($)</label><input class="fin-field" id="fin-sun-price-single" oninput="calcFinancials()" readonly="" step="0.01" type="number" value="5.00"/></div>
-<div class="form-group"><label style="font-size:0.75rem;">Singles Sold</label><input class="fin-field" id="fin-sun-singles" oninput="calcFinancials()" readonly="" type="number" value="0"/></div>
-<div class="form-group"><label style="font-size:0.75rem;">Ticket Price Strip ($)</label><input class="fin-field" id="fin-sun-price-strip" oninput="calcFinancials()" readonly="" step="0.01" type="number" value="20.00"/></div>
-<div class="form-group"><label style="font-size:0.75rem;">Strips Sold</label><input class="fin-field" id="fin-sun-strips" oninput="calcFinancials()" readonly="" type="number" value="0"/></div>
+<div class="form-group"><label style="font-size:0.75rem;">Ticket Price Single ($)</label><input class="fin-field" id="fin-sun-price-single" oninput="calcFinancials()" step="0.01" type="number" value="5.00"/></div>
+<div class="form-group"><label style="font-size:0.75rem;">Singles Sold</label><input class="fin-field" id="fin-sun-singles" oninput="calcFinancials()" type="number" value="0"/></div>
+<div class="form-group"><label style="font-size:0.75rem;">Ticket Price Strip ($)</label><input class="fin-field" id="fin-sun-price-strip" oninput="calcFinancials()" step="0.01" type="number" value="20.00"/></div>
+<div class="form-group"><label style="font-size:0.75rem;">Strips Sold</label><input class="fin-field" id="fin-sun-strips" oninput="calcFinancials()" type="number" value="0"/></div>
 </div>
 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0.75rem; margin-bottom: 0.75rem;">
-<div class="form-group"><label style="font-size:0.75rem;">Cash Total ($)</label><input class="fin-field" id="fin-sun-cash" oninput="calcFinancials()" readonly="" step="0.01" type="number" value="0"/></div>
-<div class="form-group"><label style="font-size:0.75rem;">EFTPOS Total ($)</label><input class="fin-field" id="fin-sun-eftpos" oninput="calcFinancials()" readonly="" step="0.01" type="number" value="0"/></div>
-<div class="form-group"><label style="font-size:0.75rem;">Reimbursements ($)</label><input class="fin-field" id="fin-sun-reimb" oninput="calcFinancials()" readonly="" step="0.01" type="number" value="0"/></div>
-<div class="form-group"><label style="font-size:0.75rem;">Sunday Total ($)</label><input id="fin-sun-total" readonly="" style="background: #0d1526; font-weight: bold; color: #ef4444; font-size: 1rem;" type="text" value="$0.00"/></div>
+<div class="form-group"><label style="font-size:0.75rem;">Cash Total ($)</label><input class="fin-field" id="fin-sun-cash" oninput="calcFinancials()" step="0.01" type="number" value="0"/></div>
+<div class="form-group"><label style="font-size:0.75rem;">EFTPOS Total ($)</label><input class="fin-field" id="fin-sun-eftpos" oninput="calcFinancials()" step="0.01" type="number" value="0"/></div>
+<div class="form-group"><label style="font-size:0.75rem;">Reimbursements ($)</label><input class="fin-field" id="fin-sun-reimb" oninput="calcFinancials()" step="0.01" type="number" value="0"/></div>
+<div class="form-group"><label style="font-size:0.75rem;">Sunday Total ($)</label><input id="fin-sun-total" readonly style="background: #0d1526; font-weight: bold; color: #ef4444; font-size: 1rem;" type="text" value="$0.00"/></div>
 </div>
 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
-<div class="form-group"><label style="font-size:0.75rem;">General Notes</label><input class="fin-field" id="fin-sun-notes-gen" placeholder="Sunday general notes" readonly="" type="text"/></div>
-<div class="form-group"><label style="font-size:0.75rem;">Reimbursements Notes</label><input class="fin-field" id="fin-sun-notes-reimb" placeholder="Sunday reimbursement notes" readonly="" type="text"/></div>
+<div class="form-group"><label style="font-size:0.75rem;">General Notes</label><input class="fin-field" id="fin-sun-notes-gen" placeholder="Sunday general notes" type="text"/></div>
+<div class="form-group"><label style="font-size:0.75rem;">Reimbursements Notes</label><input class="fin-field" id="fin-sun-notes-reimb" placeholder="Sunday reimbursement notes" type="text"/></div>
 </div>
 </div>
 <!-- Weekly Summary & Grand Totals -->

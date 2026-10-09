@@ -25,27 +25,56 @@
             }
         }
         function finishAndEndDraw(day) {
-            if (confirm(`Are you sure you want to Finish & End the ${day} draw? This will trigger the Congrats screen.`)) {
-                let drawType = 'full';
-                if (day === 'thursday') {
-                    state.draw.thursday.isConfirmedFinished = true;
-                    state.draw.thursday.drawsFinishedTime = state.draw.thursday.drawsFinishedTime || new Date().toISOString();
-                    drawType = state.draw.thursday.type || 'full';
-                } else if (day === 'sunday') {
-                    state.draw.sunday.isConfirmedFinished = true;
-                    state.draw.sunday.drawsFinishedTime = state.draw.sunday.drawsFinishedTime || new Date().toISOString();
-                    drawType = state.draw.sunday.type || 'full';
-                }
+            if (confirm(`Are you sure you want to Finish & End the ${day} draw? This will trigger the Congrats screen, disable this draw, and update dynamic slides.`)) {
+                if (!state.draw) state.draw = {};
+                if (!state.draw[day]) state.draw[day] = {};
+                const activeEvt = state.draw[day];
                 
-                // If it's a full draw, show winning-numbers, otherwise show congrats
+                activeEvt.isConfirmedFinished = true;
+                activeEvt.drawsFinishedTime = activeEvt.drawsFinishedTime || new Date().toISOString();
+                const drawType = activeEvt.type || 'full';
+
+                // Automatically uncheck and disable the finished draw!
+                activeEvt.enabled = false;
+
+                // Capture last week's winners and prize pool for dynamic slides
+                const p100 = activeEvt.cfgPrizes100 || 0;
+                const p50 = activeEvt.cfgPrizes50 || 0;
+                const p25 = activeEvt.cfgPrizes25 || 0;
+                const vVal = activeEvt.cfgVouchersValue || 0;
+                const vCount = activeEvt.cfgVouchersCount || 0;
+                const pool = (p100 * 100) + (p50 * 50) + (p25 * 25) + vVal;
+                const drawnCount = (activeEvt.drawnNumbers || []).length;
+                const winners = drawnCount > 0 ? drawnCount : (p100 + p50 + p25 + vCount);
+
+                if (pool > 0) {
+                    state.draw.lastWeekPool = pool;
+                    activeEvt.lastPool = pool;
+                    activeEvt.cfgPrevPool = pool;
+                }
+                if (winners > 0) {
+                    state.draw.lastWeekWinners = winners;
+                    activeEvt.lastWinners = winners;
+                    activeEvt.cfgPrevWinners = winners;
+                }
+
+                // Reset upcoming prize counts to 0 so they don't linger
+                activeEvt.cfgPrizes100 = 0;
+                activeEvt.cfgPrizes50 = 0;
+                activeEvt.cfgPrizes25 = 0;
+                activeEvt.cfgVouchersCount = 0;
+                activeEvt.cfgVouchersValue = 0;
+                activeEvt.prizesLeft = 0;
+
+                // If it's a full draw, show alternating winners loop, otherwise show standard congrats
                 if (drawType === 'manual' || drawType === 'generic') {
                     state.activeView = 'congrats';
                 } else {
-                    state.activeView = 'winning-numbers';
+                    state.activeView = 'congrats-loop';
                 }
                 
                 updateState(state);
-                showGlobalStatus(`${day.toUpperCase()} Draw Finished! Congrats screen active.`, 'blue');
+                showGlobalStatus(`${day.toUpperCase()} Draw Finished! Disabled, prize counts reset, Congrats active.`, 'blue');
             }
         }
         function updateGenericConfig() {}
@@ -613,8 +642,8 @@ input[type="checkbox"], input[type="radio"] {
 <button class="btn btn-secondary" id="btn-slides" onclick="setView('slides')">📺 Slideshow</button>
 <button class="btn btn-secondary" id="btn-draw" onclick="setView('draw')">🎯 Draw Screen</button>
 <button class="btn btn-secondary" id="btn-draw-generic" onclick="openGenericDrawPage()">⭐ Generic Draw</button>
-<button class="btn btn-secondary" id="btn-congrats" onclick="setView('congrats')" >🎉 Congrats (Standard)</button>
-<button class="btn btn-secondary" id="btn-congrats-loop" onclick="setView('congrats-loop')" >🏆 Congrats (Winners)</button>
+<button class="btn btn-secondary" id="btn-congrats" onclick="setView('congrats')">🎉 Congrats (Standard)</button>
+<button class="btn btn-secondary" id="btn-congrats-loop" onclick="setView('congrats-loop')">🏆 Congrats (Winners Loop)</button>
 </div>
 <label>Slideshow Navigation</label>
 <div class="btn-group">
