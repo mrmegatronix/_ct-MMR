@@ -319,14 +319,101 @@ input[type="checkbox"], input[type="radio"] {
   display: inline-block;
 }
 
-#pin-overlay { position: fixed; inset: 0; background: hsl(var(--background) / 0.95); backdrop-filter: blur(8px); z-index: 9999; display: flex; align-items: center; justify-content: center; }
-#pin-modal { background: hsl(var(--card)); color: hsl(var(--card-foreground)); border: 1px solid hsl(var(--border)); border-radius: var(--radius); padding: 2.5rem 2rem; text-align: center; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5), 0 10px 10px -5px rgba(0,0,0,0.3); width: 90%; max-width: 340px; display: flex; flex-direction: column; align-items: center; }
-#pin-input { width: 100%; max-width: 240px; background: hsl(var(--background)); color: hsl(var(--foreground)); border: 1px solid hsl(var(--input)); border-radius: calc(var(--radius) - 2px); padding: 0.75rem; font-size: 1.5rem; letter-spacing: 0.2em; text-align: center; margin-bottom: 1.5rem; transition: border-color 0.15s, box-shadow 0.15s; }
-#pin-input:focus { outline: none; border-color: hsl(var(--ring)); box-shadow: 0 0 0 2px hsl(var(--ring) / 0.3); }
-.pin-pad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; width: 100%; max-width: 240px; }
-.pin-btn { background: transparent; border: 1px solid hsl(var(--border)); color: hsl(var(--foreground)); height: 3.5rem; font-size: 1.25rem; font-weight: 500; border-radius: calc(var(--radius) - 2px); cursor: pointer; transition: all 0.15s; display: flex; align-items: center; justify-content: center; }
-.pin-btn:hover { background: hsl(var(--accent)); color: hsl(var(--accent-foreground)); }
-.pin-btn:active { transform: scale(0.95); }
+/* --- CT-MATRIX STYLE AUTH OVERLAY --- */
+.auth-overlay { 
+  position: fixed; inset: 0; 
+  background: radial-gradient(circle at center, #0f172a 0%, #020617 100%);
+  z-index: 10000; display: flex; align-items: center; justify-content: center; 
+}
+.auth-overlay::before {
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(circle at center, transparent 0%, rgba(2, 6, 23, 0.85) 100%);
+  backdrop-filter: blur(12px);
+}
+.pin-box { 
+  background: rgba(15, 23, 42, 0.88); 
+  padding: 3rem 2.5rem; 
+  border-radius: 32px; 
+  border: 1px solid rgba(255, 255, 255, 0.12); 
+  text-align: center;
+  backdrop-filter: blur(30px);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7), 0 0 40px rgba(6, 182, 212, 0.15);
+  width: 90%;
+  max-width: 400px;
+  position: relative;
+  z-index: 1;
+}
+.pin-display-wrap {
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 1.5rem 0 2rem;
+  background: rgba(0, 0, 0, 0.45);
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+#pin-display { 
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; 
+  font-size: 3rem; 
+  color: #06b6d4; 
+  letter-spacing: 16px; 
+  text-shadow: 0 0 20px rgba(6, 182, 212, 0.6);
+  min-height: 1em;
+}
+.pin-pad {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+.pin-btn {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #f8fafc;
+  aspect-ratio: 1;
+  border-radius: 18px;
+  font-size: 1.4rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.pin-btn:hover { 
+  background: rgba(255, 255, 255, 0.1); 
+  border-color: rgba(255, 255, 255, 0.25); 
+  transform: translateY(-2px); 
+}
+.pin-btn:active { 
+  transform: scale(0.95); 
+  background: rgba(255, 255, 255, 0.18); 
+}
+.pin-btn.special { 
+  color: #06b6d4; 
+  font-weight: 800; 
+  font-size: 1rem; 
+  letter-spacing: 1px;
+}
+.pin-btn.primary { 
+  background: linear-gradient(135deg, #06b6d4, #2563eb); 
+  color: #fff; 
+  border: none; 
+  font-weight: 900; 
+  font-size: 1rem;
+  letter-spacing: 1px;
+}
+.pin-btn.primary:hover { 
+  filter: brightness(1.15); 
+  box-shadow: 0 0 20px rgba(6, 182, 212, 0.5); 
+}
+.shake { animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both; }
+@keyframes shake {
+  10%, 90% { transform: translate3d(-1px, 0, 0); }
+  20%, 80% { transform: translate3d(2px, 0, 0); }
+  30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+  40%, 60% { transform: translate3d(4px, 0, 0); }
+}
 
 /* Remove ugly ellipsis to favor fluid flex scaling where possible */
 
@@ -341,29 +428,37 @@ input[type="checkbox"], input[type="radio"] {
     </script>
 </head>
 <body>
-<!-- PIN Access Overlay -->
-<div id="pin-overlay">
-<div id="pin-modal">
-<div style="font-size: 2.5rem; margin-bottom: 1rem; color: hsl(var(--primary));">🔐</div>
-<h2 style="font-size: 1.25rem; font-weight: 600; margin: 0 0 0.25rem;">Restricted Access</h2>
-<p style="color: hsl(var(--muted-foreground)); margin: 0 0 1.5rem; font-size: 0.875rem;">Enter PIN to access Admin Panel</p>
-<input autocomplete="off" id="pin-input" maxlength="8" placeholder="••••" readonly="" type="password"/>
-<div class="pin-pad">
-<button class="pin-btn" onclick="appendPin('1')" type="button">1</button>
-<button class="pin-btn" onclick="appendPin('2')" type="button">2</button>
-<button class="pin-btn" onclick="appendPin('3')" type="button">3</button>
-<button class="pin-btn" onclick="appendPin('4')" type="button">4</button>
-<button class="pin-btn" onclick="appendPin('5')" type="button">5</button>
-<button class="pin-btn" onclick="appendPin('6')" type="button">6</button>
-<button class="pin-btn" onclick="appendPin('7')" type="button">7</button>
-<button class="pin-btn" onclick="appendPin('8')" type="button">8</button>
-<button class="pin-btn" onclick="appendPin('9')" type="button">9</button>
-<button class="pin-btn" onclick="clearPin()" type="button">C</button>
-<button class="pin-btn" onclick="appendPin('0')" type="button">0</button>
-<button class="pin-btn" onclick="backspacePin()" type="button">⌫</button>
-</div>
-<div id="pin-error">❌ Incorrect PIN. Try again.</div>
-</div>
+<!-- PIN Access Overlay (Matrix Style) -->
+<div id="pin-overlay" class="auth-overlay">
+    <div class="pin-box" id="pin-box">
+        <div style="margin-bottom: 1.5rem;">
+            <div style="font-size: 0.7rem; font-weight: 900; letter-spacing: 4px; color: #06b6d4; margin-bottom: 0.5rem; text-transform: uppercase;">Secure Access</div>
+            <h1 style="margin:0; font-weight:900; color: #fff; font-size: 1.8rem; letter-spacing: -1px;">MMR <span style="font-weight:300; opacity:0.5">ADMIN</span></h1>
+        </div>
+        
+        <div class="pin-display-wrap">
+            <div id="pin-display"></div>
+        </div>
+
+        <div class="pin-pad">
+            <button class="pin-btn" onclick="pressKey('1')" type="button">1</button>
+            <button class="pin-btn" onclick="pressKey('2')" type="button">2</button>
+            <button class="pin-btn" onclick="pressKey('3')" type="button">3</button>
+            <button class="pin-btn" onclick="pressKey('4')" type="button">4</button>
+            <button class="pin-btn" onclick="pressKey('5')" type="button">5</button>
+            <button class="pin-btn" onclick="pressKey('6')" type="button">6</button>
+            <button class="pin-btn" onclick="pressKey('7')" type="button">7</button>
+            <button class="pin-btn" onclick="pressKey('8')" type="button">8</button>
+            <button class="pin-btn" onclick="pressKey('9')" type="button">9</button>
+            <button class="pin-btn special" onclick="pressKey('C')" type="button">CLR</button>
+            <button class="pin-btn" onclick="pressKey('0')" type="button">0</button>
+            <button class="pin-btn primary" onclick="pressKey('E')" type="button">OK</button>
+        </div>
+
+        <div style="margin-top: 2rem; font-size: 0.7rem; color: #94a3b8; font-weight: 800; letter-spacing: 1px; text-transform: uppercase;">
+            <span style="color: #10b981;">●</span> Encrypted Session Active
+        </div>
+    </div>
 </div>
 <div class="header">
 <div style="display: flex; align-items: center; gap: 12px; flex-shrink: 0;">
@@ -632,22 +727,8 @@ input[type="checkbox"], input[type="radio"] {
             return false; // prevent default anchor navigation
         }
 
-        // ── PIN Access Control ───────────────────────────────────────────
-        function appendPin(digit) {
-            const el = document.getElementById('pin-input');
-            if (el.value.length < parseInt(el.getAttribute('maxlength'))) {
-                el.value += digit;
-            }
-            // Check immediately on every digit
-            checkPin();
-        }
-        function clearPin() {
-            document.getElementById('pin-input').value = '';
-        }
-        function backspacePin() {
-            const el = document.getElementById('pin-input');
-            el.value = el.value.slice(0, -1);
-        }
+        // ── PIN Access Control (Matrix Style) ───────────────────────────
+        let pinBuffer = '';
 
         async function sha256(str) {
             const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
@@ -674,10 +755,28 @@ input[type="checkbox"], input[type="radio"] {
             }
         })();
 
+        function pressKey(k) {
+            const display = document.getElementById('pin-display');
+            if (!display) return;
+            if (k === 'C') {
+                pinBuffer = '';
+                display.innerText = '';
+            } else if (k === 'E') {
+                checkPin();
+            } else if (pinBuffer.length < 8) {
+                pinBuffer += k;
+                display.innerText = '•'.repeat(pinBuffer.length);
+                if (pinBuffer.length === 4) {
+                    setTimeout(checkPin, 100);
+                }
+            }
+        }
+
         async function checkPin() {
-            const el = document.getElementById('pin-input');
-            const entered = el.value.trim();
-            if (!entered) return;
+            if (!pinBuffer) return;
+            const entered = pinBuffer.trim();
+            const box = document.getElementById('pin-box');
+            const display = document.getElementById('pin-display');
 
             const hash = await sha256(entered);
             const customAdminHash = localStorage.getItem('mmr_admin_hash');
@@ -685,7 +784,12 @@ input[type="checkbox"], input[type="radio"] {
             if (hash === (customAdminHash || ADMIN_PIN_HASH)) {
                 sessionStorage.setItem('mmr_authed', 'true');
                 sessionStorage.setItem('mmr_role', 'admin');
-                document.getElementById('pin-overlay').style.display = 'none';
+                const overlay = document.getElementById('pin-overlay');
+                overlay.style.opacity = '0';
+                overlay.style.transition = 'opacity 0.3s ease';
+                setTimeout(() => {
+                    overlay.style.display = 'none';
+                }, 300);
                 return;
             } else if (hash === REMOTE_PIN_HASH) {
                 sessionStorage.setItem('mmr_authed', 'true');
@@ -694,14 +798,24 @@ input[type="checkbox"], input[type="radio"] {
                 return;
             }
 
-            if (entered.length >= 4) {
-                document.getElementById('pin-error').style.display = 'block';
-                el.value = '';
-                setTimeout(() => {
-                    document.getElementById('pin-error').style.display = 'none';
-                }, 2000);
+            pinBuffer = '';
+            if (display) display.innerText = '';
+            if (box) {
+                box.classList.add('shake');
+                setTimeout(() => box.classList.remove('shake'), 500);
+            }
+            if (typeof showGlobalStatus === 'function') {
+                showGlobalStatus('ACCESS DENIED', 'red');
             }
         }
+
+        window.addEventListener('keydown', (e) => {
+            const overlay = document.getElementById('pin-overlay');
+            if (!overlay || overlay.style.display === 'none') return;
+            if (e.key >= '0' && e.key <= '9') pressKey(e.key);
+            if (e.key === 'Enter') pressKey('E');
+            if (e.key === 'Escape' || e.key === 'Backspace') pressKey('C');
+        });
 
         function updateAdminLiveClock() {
             const clockEl = document.getElementById('admin-clock');
