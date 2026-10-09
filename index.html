@@ -336,7 +336,10 @@
             if (cmd === 'toggle') toggleSlidePlay(true);
         }
 
+        let manualSlideOverrideUntil = 0;
+
         function nextSlide(fromRemote) {
+            manualSlideOverrideUntil = Date.now() + 15000;
             const slides = document.querySelectorAll('.slide');
             if (slides.length === 0) return;
             slides[currentSlideIdx].classList.remove('active');
@@ -352,6 +355,7 @@
         }
 
         function prevSlide(fromRemote) {
+            manualSlideOverrideUntil = Date.now() + 15000;
             const slides = document.querySelectorAll('.slide');
             if (slides.length === 0) return;
             slides[currentSlideIdx].classList.remove('active');
@@ -851,6 +855,26 @@
         }
 
         let hasTriggeredCountdownFireworks = false;
+        let wasCountdownLocked = false;
+
+        function isCountdownLocked() {
+            const nzNow = getNZDate();
+            const target = state.nextDrawTime ? new Date(state.nextDrawTime) : null;
+            if (!target || isNaN(target.getTime())) return false;
+            const diff = target.getTime() - nzNow.getTime();
+            // Lock during the 10-minute build up before draw until 30 minutes after scheduled draw
+            return diff <= 10 * 60 * 1000 && diff > -(30 * 60 * 1000);
+        }
+
+        function getCountdownSlideIndex() {
+            const slides = document.querySelectorAll('.slide');
+            for (let i = 0; i < slides.length; i++) {
+                if (slides[i].getAttribute('data-type') === 'countdown') {
+                    return i;
+                }
+            }
+            return -1;
+        }
 
         setInterval(() => {
             const nzNow = getNZDate();
@@ -884,6 +908,31 @@
                 }
             } else {
                 hasTriggeredCountdownFireworks = false;
+            }
+
+            // Countdown build-up lock (10 minutes before draw until 30 minutes after or until draw starts)
+            if (state.activeView === 'slides' && isCountdownLocked()) {
+                wasCountdownLocked = true;
+                if (Date.now() >= manualSlideOverrideUntil) {
+                    const cdIdx = getCountdownSlideIndex();
+                    if (cdIdx !== -1) {
+                        const slides = document.querySelectorAll('.slide');
+                        if (slides.length > 0 && (!slides[cdIdx].classList.contains('active') || currentSlideIdx !== cdIdx)) {
+                            slides.forEach(s => s.classList.remove('active'));
+                            slides[cdIdx].classList.add('active');
+                            currentSlideIdx = cdIdx;
+                            playActiveCarousel();
+                        }
+                        clearInterval(slideInterval);
+                        clearInterval(progressInterval);
+                        if (progressBar) progressBar.style.width = '100%';
+                    }
+                }
+            } else if (wasCountdownLocked) {
+                wasCountdownLocked = false;
+                const slides = document.querySelectorAll('.slide');
+                const curDur = (slides[currentSlideIdx] && parseInt(slides[currentSlideIdx].getAttribute('data-duration'))) || 30000;
+                startSlideTimer(curDur);
             }
 
             // Removed congrats timeline transition to video per request
@@ -1048,6 +1097,14 @@
 
             if (finalSlides.length === 0) return;
 
+            // Safety boundary check
+            if (currentSlideIdx >= finalSlides.length) currentSlideIdx = 0;
+
+            if (isCountdownLocked()) {
+                const cdIdx = finalSlides.findIndex(s => s.type === 'countdown');
+                if (cdIdx !== -1) currentSlideIdx = cdIdx;
+            }
+
             // Render ALL slides to DOM first
             slidesWrapper.innerHTML = finalSlides.map((slide, i) => {
                 if (slide.type === 'advert') {
@@ -1190,6 +1247,23 @@
             clearInterval(slideInterval);
             clearInterval(progressInterval);
             if (isLocked) return;
+
+            // Lock onto countdown slide during the 10-minute draw buildup & Meat O'Clock
+            if (state.activeView === 'slides' && isCountdownLocked()) {
+                const cdIdx = getCountdownSlideIndex();
+                if (cdIdx !== -1) {
+                    const slides = document.querySelectorAll('.slide');
+                    if (slides.length > 0 && currentSlideIdx !== cdIdx) {
+                        if (slides[currentSlideIdx]) slides[currentSlideIdx].classList.remove('active');
+                        currentSlideIdx = cdIdx;
+                        slides[currentSlideIdx].classList.add('active');
+                        playActiveCarousel();
+                    }
+                    if (progressBar) progressBar.style.width = '100%';
+                    return;
+                }
+            }
+
             const effectiveDuration = customSlideDuration || duration;
             
             let start = Date.now();
@@ -1206,6 +1280,25 @@
 
             slideInterval = setInterval(() => {
                 if (isPaused || isLocked) return;
+
+                // Lock if entering countdown build-up window
+                if (state.activeView === 'slides' && isCountdownLocked()) {
+                    const cdIdx = getCountdownSlideIndex();
+                    if (cdIdx !== -1) {
+                        const slides = document.querySelectorAll('.slide');
+                        if (slides.length > 0) {
+                            if (slides[currentSlideIdx]) slides[currentSlideIdx].classList.remove('active');
+                            currentSlideIdx = cdIdx;
+                            slides[currentSlideIdx].classList.add('active');
+                            playActiveCarousel();
+                            if (progressBar) progressBar.style.width = '100%';
+                            clearInterval(slideInterval);
+                            clearInterval(progressInterval);
+                            return;
+                        }
+                    }
+                }
+
                 const slides = document.querySelectorAll('.slide');
                 if(slides.length === 0) return;
                 
@@ -1214,10 +1307,6 @@
                 slides[currentSlideIdx].classList.add('active');
                 
                 const nextDur = customSlideDuration || parseInt(slides[currentSlideIdx].getAttribute('data-duration')) || 30000;
-                const nextType = slides[currentSlideIdx].getAttribute('data-type');
-                
-                // If it's a countdown slide and draw hasn't happened yet (or just recently started), lock it
-                // (Locking logic omitted or was previously removed)
                 
                 startSlideTimer(nextDur);
             }, effectiveDuration);
