@@ -526,9 +526,9 @@ input[type="checkbox"], input[type="radio"] {
 <span>🎰 Slot Sounds</span>
 </label>
 <button class="btn btn-secondary" id="btn-demo-mode" onclick="toggleDemoMode()" style="white-space: nowrap;">Demo Mode: OFF</button>
-<a class="btn btn-secondary" href="index.html" target="_blank" style="white-space: nowrap;">📺 TV Display</a>
-<a class="btn btn-secondary" href="preview.html" target="_blank" style="white-space: nowrap;">🖼️ Slide Preview</a>
-<a class="btn btn-primary" href="remote.html" target="_blank" style="white-space: nowrap;">🎮 Remote Control</a>
+<a class="btn btn-secondary" href="index.html" target="_blank" rel="noopener noreferrer" style="white-space: nowrap;">📺 TV Display</a>
+<a class="btn btn-secondary" href="preview.html" target="_blank" rel="noopener noreferrer" style="white-space: nowrap;">🖼️ Slide Preview</a>
+<a class="btn btn-primary" href="remote.html" target="_blank" rel="noopener noreferrer" style="white-space: nowrap;">🎮 Remote Control</a>
 </div>
 </div>
 <!-- PiP Live Monitor -->
@@ -3266,14 +3266,14 @@ function buildDrawResultsHTML(isBlank = false) {
 <div style="text-align: center; padding: 1rem 0;">
 <img alt="Archive QR Code" id="qr-archive-admin" style="background: white; padding: 0.5rem; border-radius: 0.5rem; width: 140px; height: 140px; border: 1px solid hsl(var(--border));"/>
 <div style="margin-top: 0.75rem; font-size: 0.95rem; font-weight: 700; display: flex; flex-direction: column; gap: 0.5rem; align-items: center;">
-<a class="btn btn-secondary" href="archive.html" style="width: auto; padding: 0.5rem 1rem;" target="_blank">Open in New Window ↗</a>
+<a class="btn btn-secondary" href="archive.html" style="width: auto; padding: 0.5rem 1rem;" target="_blank" rel="noopener noreferrer">Open in New Window ↗</a>
 <button class="btn btn-secondary" onclick="setView('qr-archive')">📺 Open on TV Screen</button>
 </div>
 </div>
 </div><div class="card">
 <div style="display: flex; justify-content: space-between; align-items: start;">
 <h2>Google Sheets Synchronization</h2>
-<a href="#" id="open-sheet-link" onclick="return openSheet()" style="font-size:0.8rem; color:var(--primary); text-decoration:none; font-weight:bold;" target="_blank">
+<a href="#" id="open-sheet-link" onclick="return openSheet()" style="font-size:0.8rem; color:var(--primary); text-decoration:none; font-weight:bold;" target="_blank" rel="noopener noreferrer">
                 📊 Open Google Sheet ↗
             </a>
 </div>
@@ -3310,22 +3310,22 @@ function buildDrawResultsHTML(isBlank = false) {
 <div style="text-align: center; flex: 1;">
 <img alt="TV Display QR" id="qr-display" style="background: white; padding: 0.5rem; display: inline-block; border-radius: 0.5rem; width: 120px; height: 120px; border: 1px solid hsl(var(--border));"/>
 <div style="margin-top: 0.5rem; font-size: 0.8rem;">TV Display</div>
-<a href="#" id="link-display" style="color: hsl(var(--primary)); font-size: 0.7rem;" target="_blank">Open ↗</a>
+<a href="#" id="link-display" style="color: hsl(var(--primary)); font-size: 0.7rem;" target="_blank" rel="noopener noreferrer">Open ↗</a>
 </div>
 <div style="text-align: center; flex: 1;">
 <img alt="Remote App QR" id="qr-remote" style="background: white; padding: 0.5rem; display: inline-block; border-radius: 0.5rem; width: 120px; height: 120px; border: 1px solid hsl(var(--border));"/>
 <div style="margin-top: 0.5rem; font-size: 0.8rem;">Remote App</div>
-<a href="#" id="link-remote" style="color: hsl(var(--primary)); font-size: 0.7rem;" target="_blank">Open ↗</a>
+<a href="#" id="link-remote" style="color: hsl(var(--primary)); font-size: 0.7rem;" target="_blank" rel="noopener noreferrer">Open ↗</a>
 </div>
 <div style="text-align: center; flex: 1;">
 <img alt="Admin Portal QR" id="qr-admin" style="background: white; padding: 0.5rem; display: inline-block; border-radius: 0.5rem; width: 120px; height: 120px; border: 1px solid hsl(var(--border));"/>
 <div style="margin-top: 0.5rem; font-size: 0.8rem;">Admin Portal</div>
-<a href="#" id="link-admin" style="color: hsl(var(--primary)); font-size: 0.7rem;" target="_blank">Open ↗</a>
+<a href="#" id="link-admin" style="color: hsl(var(--primary)); font-size: 0.7rem;" target="_blank" rel="noopener noreferrer">Open ↗</a>
 </div>
 <div style="text-align: center; flex: 1;">
 <img alt="Archive List QR" id="qr-archive" style="background: white; padding: 0.5rem; display: inline-block; border-radius: 0.5rem; width: 120px; height: 120px; border: 1px solid hsl(var(--border));"/>
 <div style="margin-top: 0.5rem; font-size: 0.8rem;">Archive List</div>
-<a href="#" id="link-archive" style="color: var(--primary); font-size: 0.7rem;" target="_blank">Open ↗</a>
+<a href="#" id="link-archive" style="color: var(--primary); font-size: 0.7rem;" target="_blank" rel="noopener noreferrer">Open ↗</a>
 </div>
 </div>
 </div><div class="card">

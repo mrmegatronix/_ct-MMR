@@ -164,7 +164,9 @@
             color: #FFFFFF;
             -webkit-text-fill-color: #FFFFFF;
             text-transform: uppercase;
-            line-height: 1.1;
+            line-height: 1.22;
+            overflow: hidden;
+            text-overflow: ellipsis;
             filter: drop-shadow(0 0 15px #ef4444) drop-shadow(0 0 30px rgba(239, 68, 68, 0.6));
             margin-bottom: 1rem;
             position: relative;
