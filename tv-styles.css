@@ -71,12 +71,14 @@
             justify-content: center;
             text-align: center;
             opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
             transform: scale(1.05);
             transition: opacity 1.5s ease-in-out, transform 1.5s cubic-bezier(0.4, 0, 0.2, 1);
             padding: 3rem 4rem;
             overflow: hidden;
         }
-        .slide.active { opacity: 1; transform: scale(1); }
+        .slide.active { opacity: 1; visibility: visible; pointer-events: auto; transform: scale(1); }
 
         .slides-fixed-title {
             position: relative;
@@ -676,12 +678,16 @@
             word-wrap: break-word;
         }
         .advert-badge-container {
-            font-size: clamp(8rem, 13vmin, 13rem) !important;
-            margin-bottom: 1rem !important;
+            font-size: clamp(5.5rem, 10vmin, 9rem) !important;
+            margin-bottom: 0.8rem !important;
             filter: drop-shadow(0 0 35px var(--badge-glow));
             animation: pulse-badge 2s infinite ease-in-out;
             z-index: 2;
-            line-height: 1;
+            line-height: 1.25;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         .advert-title {
             font-size: clamp(2.6rem, 4.2vw, 5.0rem) !important;
