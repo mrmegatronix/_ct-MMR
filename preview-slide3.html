@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=1920, height=1080, initial-scale=1.0">
+    <title>Preview Slide 3 — Long Headline on 2 Lines</title>
+    <link rel="stylesheet" href="tv-styles.css">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html, body {
+            width: 1920px;
+            height: 1080px;
+            overflow: hidden;
+            background: #020617;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+        #slides-stage {
+            width: 1920px;
+            height: 1080px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+        .slide-advert {
+            position: relative !important;
+            flex: 1 !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+            transform: none !important;
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: center !important;
+            justify-content: center !important;
+            padding: 2rem 4rem !important;
+            gap: 1.8rem !important;
+        }
+        .advert-badge-container {
+            font-size: 14rem !important;
+            line-height: 1 !important;
+            margin: 0 !important;
+            max-height: 240px !important;
+            filter: drop-shadow(0 0 45px rgba(52, 211, 153, 0.7)) !important;
+            animation: pulse-badge 2s infinite ease-in-out;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .advert-title {
+            font-size: 7.0rem !important;
+            font-weight: 900 !important;
+            text-transform: uppercase !important;
+            line-height: 1.15 !important;
+            text-align: center !important;
+            color: #FFFFFF !important;
+            text-shadow: 0 0 50px rgba(52, 211, 153, 0.6) !important;
+            margin: 0 !important;
+            max-width: 95% !important;
+            letter-spacing: -0.5px !important;
+        }
+        .advert-subtitle {
+            font-size: 3.6rem !important;
+            font-weight: 800 !important;
+            color: #f1f5f9 !important;
+            text-shadow: 0 4px 20px rgba(0,0,0,0.9) !important;
+            margin: 0 !important;
+            text-align: center !important;
+            line-height: 1.25 !important;
+            max-width: 90% !important;
+            letter-spacing: 0.05em !important;
+        }
+    </style>
+</head>
+<body>
+    <div id="slides-stage">
+        <div class="slides-fixed-title">MONSTER MEAT RAFFLE</div>
+        <div class="slide-advert" style="background: radial-gradient(circle at center, #065f46 0%, #020617 100%);">
+            <div class="slide-image-overlay"></div>
+            <div class="advert-badge-container">🎟️</div>
+            <h1 class="advert-title">
+                LAST WEEKS TOTAL PRIZE POOL:<br>
+                <span style="color: #34d399; font-size: 7.8rem; text-shadow: 0 0 40px rgba(52, 211, 153, 0.85);">$2,000.00</span>
+            </h1>
+            <h2 class="advert-subtitle">🎟️ A TOTAL OF $2,000.00 IN RAFFLES 🎟️</h2>
+        </div>
+        <div id="progress-container"><div id="progress-bar" style="width: 70%;"></div></div>
+    </div>
+</body>
+</html>

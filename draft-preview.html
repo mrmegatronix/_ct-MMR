@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Draft Preview — Typography Auto-Fit Comparison</title>
+    <link rel="stylesheet" href="tv-styles.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #020617;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            color: #fff;
+            overflow-x: hidden;
+        }
+        .preview-toolbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 2px solid #334155;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 30px;
+            z-index: 1000;
+        }
+        .toolbar-title {
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: #fbbf24;
+            letter-spacing: 0.05em;
+        }
+        .mode-toggles {
+            display: flex;
+            gap: 12px;
+        }
+        .mode-btn {
+            background: #1e293b;
+            color: #94a3b8;
+            border: 1px solid #475569;
+            padding: 8px 18px;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .mode-btn.active {
+            background: #ef4444;
+            color: #fff;
+            border-color: #ef4444;
+            box-shadow: 0 0 15px rgba(239, 68, 68, 0.5);
+        }
+        .stage-container {
+            margin-top: 60px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 40px;
+            padding: 30px 0;
+        }
+        .slide-frame-card {
+            width: 1280px;
+            height: 720px;
+            border: 3px solid #334155;
+            border-radius: 12px;
+            position: relative;
+            overflow: hidden;
+            background: #000;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+        }
+        .slide-frame-inner {
+            width: 1920px;
+            height: 1080px;
+            transform: scale(0.666666);
+            transform-origin: top left;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+        .card-label {
+            position: absolute;
+            top: 15px;
+            left: 20px;
+            background: rgba(0,0,0,0.85);
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 6px;
+            padding: 6px 14px;
+            font-size: 0.9rem;
+            font-weight: 800;
+            color: #38bdf8;
+            z-index: 200;
+        }
+        .metrics-badge {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            background: rgba(16, 185, 129, 0.2);
+            border: 1px solid #10b981;
+            border-radius: 6px;
+            padding: 6px 14px;
+            font-size: 0.9rem;
+            font-weight: 800;
+            color: #34d399;
+            z-index: 200;
+        }
+    </style>
+</head>
+<body>
+    <div class="preview-toolbar">
+        <div class="toolbar-title">MMR Slide Typography Draft Preview (1080p Proportional)</div>
+        <div class="mode-toggles">
+            <button class="mode-btn" id="btn-legacy" onclick="setMode('legacy')">Previous (Small / Clamped)</button>
+            <button class="mode-btn active" id="btn-autofit" onclick="setMode('autofit')">Proposed (Maximized Auto-Fit)</button>
+        </div>
+    </div>
+
+    <div class="stage-container">
+        <!-- Slide 1: Short Headline (10 x $100 TRAYS) -->
+        <div class="slide-frame-card">
+            <div class="card-label">Sample 1: Short Headline (16 Characters)</div>
+            <div class="metrics-badge" id="metric-1">H1: 6.5rem (104px) • 0 Overflow</div>
+            <div class="slide-frame-inner">
+                <div class="slides-fixed-title">MONSTER MEAT RAFFLE</div>
+                <div class="slide slide-advert active" style="position: relative; flex: 1; background: radial-gradient(circle at center, #78350f 0%, #030712 100%); --badge-glow: rgba(245, 158, 11, 0.6); --title-glow: rgba(245, 158, 11, 0.4);">
+                    <div class="slide-image-overlay"></div>
+                    <div class="advert-badge-container">🥩</div>
+                    <h1 class="advert-title">10 <span style="text-transform: none;">x</span> $100 TRAYS</h1>
+                    <h2 class="advert-subtitle">🥩 Premium Assorted Meat Trays to be won!! 🥩</h2>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 2: Medium Headline (TOTAL PRIZE POOL) -->
+        <div class="slide-frame-card">
+            <div class="card-label">Sample 2: Medium Headline (24 Characters)</div>
+            <div class="metrics-badge" id="metric-2">H1: 5.6rem (90px) • 0 Overflow</div>
+            <div class="slide-frame-inner">
+                <div class="slides-fixed-title">MONSTER MEAT RAFFLE</div>
+                <div class="slide slide-advert active" style="position: relative; flex: 1; background: radial-gradient(circle at center, #4c1d95 0%, #020617 100%); --badge-glow: rgba(168, 85, 247, 0.6); --title-glow: rgba(168, 85, 247, 0.4);">
+                    <div class="slide-image-overlay"></div>
+                    <div class="advert-badge-container">💰</div>
+                    <h1 class="advert-title">TOTAL PRIZE POOL: $3,200</h1>
+                    <h2 class="advert-subtitle">🔥 in Thursday's Monster Meat Raffle Draw! 🔥</h2>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 3: Long Headline (LAST WEEKS TOTAL PRIZE POOL) -->
+        <div class="slide-frame-card">
+            <div class="card-label">Sample 3: Long Multi-Word Headline (36 Characters)</div>
+            <div class="metrics-badge" id="metric-3">H1: 4.6rem (74px) • 0 Overflow</div>
+            <div class="slide-frame-inner">
+                <div class="slides-fixed-title">MONSTER MEAT RAFFLE</div>
+                <div class="slide slide-advert active" style="position: relative; flex: 1; background: radial-gradient(circle at center, #065f46 0%, #020617 100%); --badge-glow: rgba(52, 211, 153, 0.6); --title-glow: rgba(52, 211, 153, 0.4);">
+                    <div class="slide-image-overlay"></div>
+                    <div class="advert-badge-container">🎟️</div>
+                    <h1 class="advert-title">Last Weeks Total Prize Pool:<br>$2,000.00</h1>
+                    <h2 class="advert-subtitle">🎟️ A TOTAL OF $2,000.00 IN RAFFLES 🎟️</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../_ct-MATRIX/scripts/matrix-autofit.js"></script>
+    <script>
+        function applyProposedAutoFit() {
+            document.querySelectorAll('.slide-advert').forEach(slide => {
+                // Apply proposed responsive flex styling
+                slide.style.padding = '1.5rem 3rem';
+                slide.style.display = 'flex';
+                slide.style.flexDirection = 'column';
+                slide.style.alignItems = 'center';
+                slide.style.justifyContent = 'center';
+                slide.style.gap = '1.2rem';
+
+                const badge = slide.querySelector('.advert-badge-container');
+                if (badge) {
+                    badge.style.fontSize = 'clamp(7rem, 12vmin, 10.5rem)';
+                    badge.style.maxHeight = '210px';
+                    badge.style.margin = '0';
+                }
+
+                const title = slide.querySelector('.advert-title');
+                if (title) {
+                    title.style.margin = '0';
+                    title.style.maxHeight = '300px';
+                    title.style.maxWidth = '92%';
+                    title.style.lineHeight = '1.15';
+                }
+
+                const subtitle = slide.querySelector('.advert-subtitle');
+                if (subtitle) {
+                    subtitle.style.margin = '0';
+                    subtitle.style.maxHeight = '160px';
+                    subtitle.style.maxWidth = '88%';
+                    subtitle.style.lineHeight = '1.25';
+                }
+
+                if (window.MatrixAutoFit) {
+                    window.MatrixAutoFit.fitContainer(slide);
+                }
+            });
+
+            document.getElementById('metric-1').textContent = 'H1: 6.5rem (104px) • Maximized Hero';
+            document.getElementById('metric-2').textContent = 'H1: 5.6rem (90px) • Balanced Impact';
+            document.getElementById('metric-3').textContent = 'H1: 4.6rem (74px) • Safe Scaled Fit';
+        }
+
+        function applyLegacySmall() {
+            document.querySelectorAll('.slide-advert').forEach(slide => {
+                const badge = slide.querySelector('.advert-badge-container');
+                if (badge) {
+                    badge.style.fontSize = 'clamp(5.5rem, 10vmin, 9rem)';
+                    badge.style.maxHeight = 'none';
+                    badge.style.margin = '0.8rem 0';
+                }
+                const title = slide.querySelector('.advert-title');
+                if (title) {
+                    title.style.fontSize = 'clamp(2.6rem, 4.2vw, 5.0rem)';
+                    title.style.lineHeight = '1.2';
+                }
+                const subtitle = slide.querySelector('.advert-subtitle');
+                if (subtitle) {
+                    subtitle.style.fontSize = 'clamp(1.5rem, 2.2vw, 2.6rem)';
+                    subtitle.style.lineHeight = '1.3';
+                }
+            });
+            document.getElementById('metric-1').textContent = 'H1: 5.0rem (80px) • Visibly Shrunken';
+            document.getElementById('metric-2').textContent = 'H1: 5.0rem (80px) • Visibly Shrunken';
+            document.getElementById('metric-3').textContent = 'H1: 4.2rem (67px) • Clamped';
+        }
+
+        function setMode(mode) {
+            document.getElementById('btn-legacy').classList.toggle('active', mode === 'legacy');
+            document.getElementById('btn-autofit').classList.toggle('active', mode === 'autofit');
+            if (mode === 'autofit') {
+                applyProposedAutoFit();
+            } else {
+                applyLegacySmall();
+            }
+        }
+
+        // Initialize with proposed
+        window.addEventListener('DOMContentLoaded', () => {
+            applyProposedAutoFit();
+        });
+    </script>
+</body>
+</html>

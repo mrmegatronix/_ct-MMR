@@ -1097,8 +1097,8 @@
                 if (prevPool > 0) {
                     const prevPoolStr = "$" + prevPool.toLocaleString('en-NZ', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
                     advertSlides.push({
-                        title: `Last Weeks Total Prize Pool: ${prevPoolStr}`,
-                        subtitle: `💸 OVER ${prevPoolStr} GIVEN AWAY LAST WEEK 💸`,
+                        title: `Last Weeks Total Prize Pool:\n${prevPoolStr}`,
+                        subtitle: `🎟️ A TOTAL OF ${prevPoolStr} IN RAFFLES 🎟️`,
                         type: "advert",
                         advertType: "prev_pool",
                         duration: 25000
@@ -1146,7 +1146,7 @@
                         badge = '🏆';
                     } else if (slide.advertType === 'prev_pool') {
                         style = `background: radial-gradient(circle at center, #065f46 0%, #020617 100%); --badge-glow: rgba(52, 211, 153, 0.6); --title-glow: rgba(52, 211, 153, 0.4);`;
-                        badge = '💸';
+                        badge = '🎟️';
                     } else if (slide.advertType === 'pool') {
                         style = `background: radial-gradient(circle at center, #4c1d95 0%, #020617 100%); --badge-glow: rgba(168, 85, 247, 0.6); --title-glow: rgba(168, 85, 247, 0.4);`;
                         badge = '💰';
@@ -1173,7 +1173,7 @@
                         <div class="slide slide-advert ${i === currentSlideIdx ? 'active' : ''}" style="${style}" data-duration="${slide.duration}" data-type="advert">
                             <div class="slide-image-overlay"></div>
                             <div class="advert-badge-container">${badge}</div>
-                            <h1 class="advert-title">${sanitize(slide.title).replace(/ x /gi, ' <span style="text-transform: none;">x</span> ')}</h1>
+                            <h1 class="advert-title">${sanitize(slide.title).replace(/\n/g, '<br>').replace(/ x /gi, ' <span style="text-transform: none;">x</span> ')}</h1>
                             <h2 class="advert-subtitle">${sanitize(slide.subtitle)}</h2>
                         </div>
                     `;
